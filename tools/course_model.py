@@ -171,7 +171,7 @@ def render_catalog_markdown(catalog: dict) -> str:
                 )
                 lines.append(
                     f"- [{label}]({resource['url']}) — stable `{item_id}` ID generated "
-                    "from the normalized URL — chưa kiểm tra"
+                    f"from the normalized URL — {_resource_check_label(resource)}"
                 )
         else:
             lines.append("- —")
@@ -394,6 +394,24 @@ def _resource_label_for_lesson(resource, lesson_id):
 
 def _escape_markdown_label(label):
     return label.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+
+
+def _resource_check_label(resource):
+    check = resource.get("check", {})
+    status = check.get("status")
+    http_status = check.get("httpStatus")
+    http_suffix = f" (HTTP {http_status})" if http_status is not None else ""
+    labels = {
+        "ok": f"truy xuất được{http_suffix}",
+        "redirected": f"chuyển hướng và truy xuất được{http_suffix}",
+        "blocked": f"bị chặn{http_suffix}",
+        "not_found": f"không tìm thấy{http_suffix}",
+        "http_error": f"lỗi HTTP{http_suffix}",
+        "network_error": "lỗi mạng",
+        "content_unreadable": f"truy xuất được nhưng nội dung không thể trích xuất{http_suffix}",
+        "invalid": "URL không hợp lệ",
+    }
+    return labels.get(status, "chưa kiểm tra")
 
 
 def _excel_date(value):

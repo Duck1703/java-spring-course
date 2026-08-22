@@ -22,7 +22,19 @@
         "Final theory"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/index.html",
+        "contentType": "text/html",
+        "contentBytes": 126198,
+        "contentSha256": "3f24f2e5979af91e7713c0cfbd84a6f42ef554173de6278ffe99088a7ced6ad4",
+        "cacheText": ".course-cache/resources/res-004dba8a7332.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-0196dd00302a",
@@ -41,7 +53,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/IandI/index.html",
+        "contentType": "text/html",
+        "contentBytes": 18842,
+        "contentSha256": "4bec3ed24efb115370e0ea495c198507619e8f85c5bc57e1e1ab542847117365",
+        "cacheText": ".course-cache/resources/res-0196dd00302a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-01d4c9bc1c9c",
@@ -60,7 +84,19 @@
         "Assignment"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/jpa-entities",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 615929,
+        "contentSha256": "af408e121181a841e55ea2b649589643f3c1f8a4850f828fd84a9019bf2f9a7e",
+        "cacheText": ".course-cache/resources/res-01d4c9bc1c9c.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-02399daadb94",
@@ -79,7 +115,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 636932,
+        "contentSha256": "2d5181785b3a9eab706f2586f340a1b76839c23fd4d06b7483262e48372562c5",
+        "cacheText": ".course-cache/resources/res-02399daadb94.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-033c4bfa05f5",
@@ -100,7 +148,19 @@
         "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-async",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 635844,
+        "contentSha256": "f963fcda7316d1fc7c1a59f422eeef5d899d0f1deb67fcd99c838e2a3d4598d1",
+        "cacheText": ".course-cache/resources/res-033c4bfa05f5.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-062b84a9042d",
@@ -119,7 +179,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-enum",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561300,
+        "contentSha256": "b1f3ff62ddfacc4202eb2eda947f882bd16a18710c401671d70a41f321916da3",
+        "cacheText": ".course-cache/resources/res-062b84a9042d.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-06398bb0cc69",
@@ -137,7 +209,19 @@
         "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html",
+        "contentType": "text/html",
+        "contentBytes": 90766,
+        "contentSha256": "8ffa8e6f09c79f54d4ecc360c653ff147f044a27cc32f16949a35ff74f446d7f",
+        "cacheText": ".course-cache/resources/res-06398bb0cc69.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-06dd51e41e25",
@@ -156,7 +240,19 @@
         "Assignment"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-response-entity",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 616387,
+        "contentSha256": "bff80fdfae0aca37a4ac6971bfc54a656c00a15d13d8403dcc22dbeee0cfd0fc",
+        "cacheText": ".course-cache/resources/res-06dd51e41e25.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-0851edc9dd41",
@@ -175,7 +271,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-functional-interface",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561396,
+        "contentSha256": "591cc1111e322ef18863c7bf39f1663c718517266ed929d1eba1f03a89dacee6",
+        "cacheText": ".course-cache/resources/res-0851edc9dd41.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-0c7109cb4fa8",
@@ -194,7 +302,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-serialization",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 615362,
+        "contentSha256": "6fdf83333781f1adc4d788b1d0b6218aac3f85c231d4bb3812cd1c2983090acc",
+        "cacheText": ".course-cache/resources/res-0c7109cb4fa8.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-10672cc3a9fa",
@@ -213,7 +333,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-method-overloading-riding",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561426,
+        "contentSha256": "d42aef7e438f78a96acb4cafd0bb5a307ded33d7d58f36b470a4af3c7c0d2f97",
+        "cacheText": ".course-cache/resources/res-10672cc3a9fa.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-12fa3a9d4910",
@@ -234,7 +366,19 @@
         "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-collections",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 418397,
+        "contentSha256": "de105c57ead6055910cb7d1ee64224970836dc164e6bcaae5f38083c10651111",
+        "cacheText": ".course-cache/resources/res-12fa3a9d4910.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-1559f0cd62e7",
@@ -253,7 +397,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html",
+        "contentType": "text/html",
+        "contentBytes": 148689,
+        "contentSha256": "0e72e7137cc68f944f12ea0760307e660bd18857b63f1630538c5fc137b55edc",
+        "cacheText": ".course-cache/resources/res-1559f0cd62e7.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-1c6109c5ec54",
@@ -274,7 +430,19 @@
         "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-redis-cache",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 615287,
+        "contentSha256": "9e1bb2ca8e080c000e92be3e4c51511f7241cc30644415849e29a7b2a9c95c3b",
+        "cacheText": ".course-cache/resources/res-1c6109c5ec54.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-1cec64c5e683",
@@ -295,7 +463,19 @@
         "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-string-pool",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 613540,
+        "contentSha256": "130c6c3bd46103794c50365bdee208de4129d812fd7dbd1f3f90fb092c0b53c8",
+        "cacheText": ".course-cache/resources/res-1cec64c5e683.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-1f904f56cc5a",
@@ -314,7 +494,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-bean-validation",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 624119,
+        "contentSha256": "1cebbeee447551eed34f3b2451d819cc765f81a9af51f671735671f7887a27b3",
+        "cacheText": ".course-cache/resources/res-1f904f56cc5a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-284db3d782e6",
@@ -333,7 +525,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html",
+        "contentType": "text/html",
+        "contentBytes": 420802,
+        "contentSha256": "2e9f5cb17a7b090f94d4c3ea553e6297a75660efce8d232564fd4e145091f182",
+        "cacheText": ".course-cache/resources/res-284db3d782e6.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-28c8c8bc71df",
@@ -351,7 +555,19 @@
         "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://vladmihalcea.com/how-to-batch-insert-and-update-statements-with-hibernate/",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 229863,
+        "contentSha256": "86b14dcc22326053ab0ef5e9b9c950a1b84f0255d21a5f3a4f9d4b837ee98707",
+        "cacheText": ".course-cache/resources/res-28c8c8bc71df.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-28fe8d3fda30",
@@ -370,7 +586,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html",
+        "contentType": "text/html",
+        "contentBytes": 30540,
+        "contentSha256": "6b951b20733bb9563755c94f0b280074c552f2283adc17a0bd9ebdd32c94530a",
+        "cacheText": ".course-cache/resources/res-28fe8d3fda30.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-2aefb097db80",
@@ -391,7 +619,19 @@
         "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html",
+        "contentType": "text/html",
+        "contentBytes": 155232,
+        "contentSha256": "14ed43cab97dbc92d5ceed40ba54d224d16d5baae7d62e14d959d358d40adb9a",
+        "cacheText": ".course-cache/resources/res-2aefb097db80.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-2c011d89d6e0",
@@ -409,7 +649,19 @@
         "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-transactional-propagation-isolation",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 627855,
+        "contentSha256": "109d6bb01aebd648f878cfa9b5fbeddfca6f21c409f010b8b80ac9d451b1fdb1",
+        "cacheText": ".course-cache/resources/res-2c011d89d6e0.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-2e4a3dd62ec7",
@@ -430,7 +682,19 @@
         "- Assignment 7: E-Commerce Data Layer\n  - Entities: User, Product, Category, Order, OrderItem\n  - Full relationships + cascade correct\n  - Repository query: top-selling products, orders by date range, user history\n  - Flyway migration (V1__init.sql → V2__seed_data.sql)\n  - @DataJpaTest integration test"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-data-jpa-pagination-sorting",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 615333,
+        "contentSha256": "5fadba3cd30404293361bc7cb41e884e2eacb6744fb54c3abf0471a1301e614a",
+        "cacheText": ".course-cache/resources/res-2e4a3dd62ec7.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-30d834f8fef0",
@@ -452,7 +716,19 @@
         "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-exceptions",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 640062,
+        "contentSha256": "8b7f2806e7f669057dd8e541a4d4f3b6fb47d3c8ad4d513fa51aec8924eecd9a",
+        "cacheText": ".course-cache/resources/res-30d834f8fef0.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-31a2e0685799",
@@ -471,7 +747,19 @@
         "Assignment"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html",
+        "contentType": "text/html",
+        "contentBytes": 333392,
+        "contentSha256": "0987c2b56cad0adbb85ebda68773c7255b93c65077964be9bb365c66817545d9",
+        "cacheText": ".course-cache/resources/res-31a2e0685799.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-3393c8cbdaaf",
@@ -490,7 +778,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-thread-lifecycle",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 622475,
+        "contentSha256": "68a3d6e2543847fabbd60f677cacc427fdd69c7a09ea910164c637708a41aa3c",
+        "cacheText": ".course-cache/resources/res-3393c8cbdaaf.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-347895e9400e",
@@ -509,7 +809,19 @@
         "Assignment"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "redirected",
+        "httpStatus": 200,
+        "finalUrl": "https://spring.io/guides/gs/caching/",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 420405,
+        "contentSha256": "d21c645e5a911cb41237791066f2954c241d0dcf19bca0fcd9bd9c72d1ec3634",
+        "cacheText": ".course-cache/resources/res-347895e9400e.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-348a6a4cb0b8",
@@ -527,7 +839,19 @@
         "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc.html",
+        "contentType": "text/html",
+        "contentBytes": 110403,
+        "contentSha256": "d51985675f5749f7c4dad8e57ae7b9a82ff5e0ddbdd0319c154412660454c4a9",
+        "cacheText": ".course-cache/resources/res-348a6a4cb0b8.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-36a8d5deef22",
@@ -548,7 +872,19 @@
         "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-polymorphism",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 618263,
+        "contentSha256": "ad99fe9ccc79a21115bdfab2130f9fcb82be996294f1030c50e1dfa74a8cdeaa",
+        "cacheText": ".course-cache/resources/res-36a8d5deef22.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-3807593857d1",
@@ -567,7 +903,19 @@
         "Assignment"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/integration-testing-in-spring",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 641394,
+        "contentSha256": "10619100c17dff511ce68dbbfcc792d9c6ff1d989873ccc92ebbe2a520ba2710",
+        "cacheText": ".course-cache/resources/res-3807593857d1.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-39bc1924ee00",
@@ -585,7 +933,19 @@
         "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/building-a-restful-web-service-with-spring",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561498,
+        "contentSha256": "5db353bda52ac74a2809e631da20c359b4b05263db9102265a27986c7e02238c",
+        "cacheText": ".course-cache/resources/res-39bc1924ee00.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-4b45b7c76586",
@@ -603,7 +963,19 @@
         "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-resilience4j",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 832896,
+        "contentSha256": "95455346cfbab70c88ad9e536017d4d020b9c54072db25aad759a3f2c957ae33",
+        "cacheText": ".course-cache/resources/res-4b45b7c76586.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-4bc225ad1d9e",
@@ -622,7 +994,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-inner-class-enums",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561377,
+        "contentSha256": "51383a30f2ed8377bd100e9095c4329d047b0d62b7567be0a6b6beaf12e6de05",
+        "cacheText": ".course-cache/resources/res-4bc225ad1d9e.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-4f42c781654a",
@@ -641,7 +1025,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-constructors",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 614963,
+        "contentSha256": "cda07f3a9203a5cc0790c5a69099d5d7e358a9a1fee3fc2bc5a3d02d1dbab9a8",
+        "cacheText": ".course-cache/resources/res-4f42c781654a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-543deb939f9e",
@@ -662,7 +1058,19 @@
         "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/io/fileio.html",
+        "contentType": "text/html",
+        "contentBytes": 22725,
+        "contentSha256": "76c094095e9c2dba7e6496fa5f08c3045811166177427043eb10533ab64f9a75",
+        "cacheText": ".course-cache/resources/res-543deb939f9e.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-553bbd92e5d0",
@@ -688,7 +1096,19 @@
         "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://docs.spring.io/spring-data/jpa/reference/repositories.html",
+        "contentType": "text/html; charset=iso-8859-1",
+        "contentBytes": 549,
+        "contentSha256": "b69821e7a28137efb180f4c6c6220513a61d5b5b1630b03fa5baa4eb49bf2439",
+        "cacheText": ".course-cache/resources/res-553bbd92e5d0.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-55e66ec50cc0",
@@ -707,7 +1127,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-streams",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 410181,
+        "contentSha256": "294df93cfaa6c7501f487af95e98cf6ae493e416d16b6981f99a6afb33ec81fd",
+        "cacheText": ".course-cache/resources/res-55e66ec50cc0.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-563d80135c91",
@@ -726,7 +1158,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-access-modifiers",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 614259,
+        "contentSha256": "c41b26f1c1e9be105af7a0c5fff751a317c6f6c506bf21c85276e5bf31e88217",
+        "cacheText": ".course-cache/resources/res-563d80135c91.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-56487c83dc65",
@@ -745,7 +1189,19 @@
         "Assignment"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 415707,
+        "contentSha256": "4ecbbed8d1273fbbe2a0097ccb582bb01c24ac41a44f183c455efc235e6f4728",
+        "cacheText": ".course-cache/resources/res-56487c83dc65.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-56b8234cf832",
@@ -763,7 +1219,19 @@
         "Final theory"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-framework/reference/index.html",
+        "contentType": "text/html",
+        "contentBytes": 110281,
+        "contentSha256": "735c2bd5bb8dd820bd004a01293d9e0f2fa6209fa5760eca5ede31f4ae24b1a8",
+        "cacheText": ".course-cache/resources/res-56b8234cf832.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-62d9985bbc6f",
@@ -784,7 +1252,19 @@
         "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-string-immutability",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561390,
+        "contentSha256": "33e35ada3ef9970237f2a19e17410dae405baffc667aeac1d9ad5308d529542f",
+        "cacheText": ".course-cache/resources/res-62d9985bbc6f.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-6543ba492a80",
@@ -803,7 +1283,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "redirected",
+        "httpStatus": 200,
+        "finalUrl": "https://spring.io/guides/gs/uploading-files/",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 439356,
+        "contentSha256": "08674a5e45ff512a386bb8e81594c81f175e5970685833d9ef3ce0a73cb08715",
+        "cacheText": ".course-cache/resources/res-6543ba492a80.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-65703b737426",
@@ -827,7 +1319,19 @@
         "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html",
+        "contentType": "text/html",
+        "contentBytes": 165627,
+        "contentSha256": "5a9edac0b23725c55cedcf730f1bd4775df4337749d5a3a2fd3fb98fd133d1db",
+        "cacheText": ".course-cache/resources/res-65703b737426.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-710573bd4385",
@@ -846,7 +1350,19 @@
         "Assignment"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html",
+        "contentType": "text/html",
+        "contentBytes": 58596,
+        "contentSha256": "4968a38e648781aec31b4a411b581c89c6497e656da2b7bc31bfdb61c34acf2e",
+        "cacheText": ".course-cache/resources/res-710573bd4385.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-713a3e371ba0",
@@ -865,7 +1381,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-stream-filter-lambda",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 616309,
+        "contentSha256": "5000d2a46e2376ad1d7c8ffe88c0d15d45c383eb4f5e0da31020b0fc00cc6a6f",
+        "cacheText": ".course-cache/resources/res-713a3e371ba0.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-740a979a150e",
@@ -884,7 +1412,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/for.html",
+        "contentType": "text/html",
+        "contentBytes": 22858,
+        "contentSha256": "a275c08d69e32e19e956cd40d49102c67307e2b606474677c8e675bceadf849f",
+        "cacheText": ".course-cache/resources/res-740a979a150e.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-749fa81acd48",
@@ -906,7 +1446,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/hibernate-lazy-eager-loading",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 631692,
+        "contentSha256": "ddc82ec1e739ba98c30cd9431306e7e39e74f7e8011266cd535bf73c6b1f0ca7",
+        "cacheText": ".course-cache/resources/res-749fa81acd48.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-74d398e3d23c",
@@ -930,7 +1482,19 @@
         "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-file-upload",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 617941,
+        "contentSha256": "efbf173151eebb26c416609a3ee588759460ad0fc54bba781b554590fb2934de",
+        "cacheText": ".course-cache/resources/res-74d398e3d23c.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-74dcb3852a23",
@@ -949,7 +1513,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html",
+        "contentType": "text/html",
+        "contentBytes": 19788,
+        "contentSha256": "3848a7423459443b315bf1d7459585bbbd25b9ed1ec613531e9fb529631a25e8",
+        "cacheText": ".course-cache/resources/res-74dcb3852a23.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-79cbefdda273",
@@ -973,7 +1549,19 @@
         "Final Defense"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "redirected",
+        "httpStatus": 200,
+        "finalUrl": "https://springdoc.org/",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 241237,
+        "contentSha256": "e3fcd4e4a0cbe8983a9cefe68147964095495eca7f98089a1257de19c52799e8",
+        "cacheText": ".course-cache/resources/res-79cbefdda273.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-7bf1b25b2e6b",
@@ -991,7 +1579,19 @@
         "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/configuration-properties-in-spring-boot",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 629238,
+        "contentSha256": "6fe345081e822f4e40cfc6eb288fdf9cac7187829829922361eb5ed1818777f5",
+        "cacheText": ".course-cache/resources/res-7bf1b25b2e6b.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-7f4116f00d7f",
@@ -1012,7 +1612,19 @@
         "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-mvc-custom-validator",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 621633,
+        "contentSha256": "c53105b271cc25c730ab80de004fbbbd1ea7cd90d14a1d17d5680fd7c05b9fc0",
+        "cacheText": ".course-cache/resources/res-7f4116f00d7f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-82b36b19c96f",
@@ -1033,7 +1645,19 @@
         "- Assignment 7: E-Commerce Data Layer\n  - Entities: User, Product, Category, Order, OrderItem\n  - Full relationships + cascade correct\n  - Repository query: top-selling products, orders by date range, user history\n  - Flyway migration (V1__init.sql → V2__seed_data.sql)\n  - @DataJpaTest integration test"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/database-auditing-jpa",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 623952,
+        "contentSha256": "060072f0afec4e466982fd944707cf158398b01ee6a123d26f9db4182f1f3831",
+        "cacheText": ".course-cache/resources/res-82b36b19c96f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-82c961b7a92a",
@@ -1054,7 +1678,19 @@
         "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html",
+        "contentType": "text/html",
+        "contentBytes": 19405,
+        "contentSha256": "f8bd2ba536c9c1cd6f986826041c0b92707867bd72fbb060b67b8a7967952dfb",
+        "cacheText": ".course-cache/resources/res-82c961b7a92a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-8437fa16cd25",
@@ -1072,7 +1708,19 @@
         "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://vladmihalcea.com/hibernate-softdelete-annotation/",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 227708,
+        "contentSha256": "ee91b5c3b65ace834aa0b274058dbdb6d44ca5fc19e885f39256314947dc5388",
+        "cacheText": ".course-cache/resources/res-8437fa16cd25.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-84fc38d27c0a",
@@ -1093,7 +1741,19 @@
         "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 38462,
+        "contentSha256": "1e59f574d2b15a6b1ef336821b9767f8708a0cb3e57fbf736b678676531ed5e8",
+        "cacheText": ".course-cache/resources/res-84fc38d27c0a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-88adadc6f2f4",
@@ -1114,7 +1774,19 @@
         "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-io",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 405753,
+        "contentSha256": "30061855c268a2c590a097b94666928efd5a71d28e6d60c6c676bb39e682ac97",
+        "cacheText": ".course-cache/resources/res-88adadc6f2f4.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-899383bc8d09",
@@ -1135,7 +1807,19 @@
         "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/collections/index.html",
+        "contentType": "text/html",
+        "contentBytes": 16280,
+        "contentSha256": "f34c14ad58e5480bc5c1a878a55c878b0fe03c12a9ed17c194fcbf71e7325b9a",
+        "cacheText": ".course-cache/resources/res-899383bc8d09.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-8a73cd80ad49",
@@ -1157,7 +1841,19 @@
         "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-return-errors-problemdetail",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 818025,
+        "contentSha256": "29577890f4ca37694390426e2f348b840938a5670484119f6243817296b6e189",
+        "cacheText": ".course-cache/resources/res-8a73cd80ad49.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-8abee0bfd5a7",
@@ -1176,7 +1872,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-generics",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 623255,
+        "contentSha256": "9ff91189a1b966e3f813e5470330f958718992b567473ad3223eb82afe3cb82b",
+        "cacheText": ".course-cache/resources/res-8abee0bfd5a7.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-8d5e61cc0a53",
@@ -1197,7 +1905,19 @@
         "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/docker-compose-support-spring-boot",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 620945,
+        "contentSha256": "34db9d05b104fbf0e64ca0f35c1c16fe546f779539e0c089f7cbf67c831d6cb2",
+        "cacheText": ".course-cache/resources/res-8d5e61cc0a53.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-8fc303d6f753",
@@ -1215,7 +1935,19 @@
         "Final theory"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-tutorial",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 430095,
+        "contentSha256": "83578c4e56c6289f802d44bbaa3c0aac997f30481de0024ddd8c0457f78ea76d",
+        "cacheText": ".course-cache/resources/res-8fc303d6f753.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-93813d9b62f4",
@@ -1234,7 +1966,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-structured-logging",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 622696,
+        "contentSha256": "33d61e412f13aa8c69627785e27b4e06469d499d9ebfae7a6a45cc470dfd5a9e",
+        "cacheText": ".course-cache/resources/res-93813d9b62f4.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-9458879c2540",
@@ -1253,7 +1997,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-encapsulation",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561354,
+        "contentSha256": "16e33371ee0a1ece74942e279ad83faac7d3eca494cb7650d5532f8ca1807fd8",
+        "cacheText": ".course-cache/resources/res-9458879c2540.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-9762250d04d9",
@@ -1274,7 +2030,19 @@
         "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-try-with-resources",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 614772,
+        "contentSha256": "1c5b10deba8a09d8b8e64f659ba48c8aa10cf9c781ab06f4ccd127b70c2e633c",
+        "cacheText": ".course-cache/resources/res-9762250d04d9.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-97fce5fda99a",
@@ -1292,7 +2060,19 @@
         "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-scheduled-tasks",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 636851,
+        "contentSha256": "78e20e072c4997698b7a621785dcc66d941f5a3cdf4f3cad7fb44d20c1973aeb",
+        "cacheText": ".course-cache/resources/res-97fce5fda99a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-99801d0b7043",
@@ -1311,7 +2091,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/jvm-vs-jre-vs-jdk",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 623175,
+        "contentSha256": "b5f941f108c4833086ff7e4fba098cd197032e584104fe492fea474ba2ceb846",
+        "cacheText": ".course-cache/resources/res-99801d0b7043.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-9a6cde117315",
@@ -1330,7 +2122,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-volatile",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 621303,
+        "contentSha256": "df965b270ccd0be670e026ba483c63356052c099973738ce3046c20013ba6ac6",
+        "cacheText": ".course-cache/resources/res-9a6cde117315.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-9b1feb8ea22f",
@@ -1351,7 +2155,19 @@
         "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-stream",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561312,
+        "contentSha256": "18cf1c4d3c8e08f6d2868f80d6bd8c95b6e6a041ae68ea24620b2be92aba7a4d",
+        "cacheText": ".course-cache/resources/res-9b1feb8ea22f.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-9d76570d9362",
@@ -1370,7 +2186,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html",
+        "contentType": "text/html",
+        "contentBytes": 23224,
+        "contentSha256": "deeab7f877c6d1f860216643a7e751650961c12df4b97dc9f810250e3c4233a2",
+        "cacheText": ".course-cache/resources/res-9d76570d9362.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-a553d0d4478d",
@@ -1389,7 +2217,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-synchronized",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 620914,
+        "contentSha256": "f1cdc2c342b8e6f06125e41867ec17d4e6ad3cacd59f7f0e12f610e2587d31c0",
+        "cacheText": ".course-cache/resources/res-a553d0d4478d.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-aa4cbb2b9a5c",
@@ -1410,7 +2250,19 @@
         "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/spring-data-jpa-sort",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561366,
+        "contentSha256": "1cea8799ae7ad4c84c90861460dd89c4fe076ce0be61159d89da02715432a08a",
+        "cacheText": ".course-cache/resources/res-aa4cbb2b9a5c.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-aad15fef0599",
@@ -1431,7 +2283,19 @@
         "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-inheritance",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 619404,
+        "contentSha256": "9738f30d080b46686d63ca8f5339f15614dd6dbe80a086b4eb16a3a969b53235",
+        "cacheText": ".course-cache/resources/res-aad15fef0599.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-acff7fd27edc",
@@ -1450,7 +2314,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html",
+        "contentType": "text/html",
+        "contentBytes": 222054,
+        "contentSha256": "ffbb1d397e08180bb7e55c350f422e76b1d10daad6dcdeb7a9978310edc6fcec",
+        "cacheText": ".course-cache/resources/res-acff7fd27edc.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-ae202f300a2b",
@@ -1471,7 +2347,19 @@
         "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/javaOO/index.html",
+        "contentType": "text/html",
+        "contentBytes": 20925,
+        "contentSha256": "0d934ff359a5405ae78a41931aaddffebce8be0c706d7ba624ff9e47251273c3",
+        "cacheText": ".course-cache/resources/res-ae202f300a2b.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-ae66be8c9f5f",
@@ -1495,7 +2383,19 @@
         "Final Defense"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-testing",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 613834,
+        "contentSha256": "01aa62a03124589f3b9496f5836f9812b5ecdf03d3d6c415d5f0cfcddf6dbf2f",
+        "cacheText": ".course-cache/resources/res-ae66be8c9f5f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-aee8bfb64b8c",
@@ -1513,7 +2413,19 @@
         "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/reference/features/external-config.html",
+        "contentType": "text/html",
+        "contentBytes": 264384,
+        "contentSha256": "6fa9d1d896f41f86dc3019edd3d7f6cdaabc7ff1e76f9806875821132df29c14",
+        "cacheText": ".course-cache/resources/res-aee8bfb64b8c.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-af7171222f9a",
@@ -1531,7 +2443,19 @@
         "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/spring-problem-detail",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561372,
+        "contentSha256": "23f1f613f9787717941eac5e975262a308d448d2eb084936ae09e6b5b6dfe7d2",
+        "cacheText": ".course-cache/resources/res-af7171222f9a.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-afbebe6cf212",
@@ -1551,7 +2475,19 @@
         "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html",
+        "contentType": "text/html",
+        "contentBytes": 41157,
+        "contentSha256": "60047d42261edf5a8d1c431691e2e4c3dfab365e23179c89b6c7a065f7ce40ff",
+        "cacheText": ".course-cache/resources/res-afbebe6cf212.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-b307e54a2685",
@@ -1569,7 +2505,19 @@
         "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/exception-handling-for-rest-with-spring",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 643668,
+        "contentSha256": "a32cff5e4ef6f760c4be8b4abe47e02c19dcbaa6f7f7388a3456e87d39a63a48",
+        "cacheText": ".course-cache/resources/res-b307e54a2685.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-b5dd43254a15",
@@ -1590,7 +2538,19 @@
         "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-abstract-class",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 613760,
+        "contentSha256": "f7fe7d8aa424a9f7bde7c69f129e18b08bca60365510b6f4d08959059d0f010c",
+        "cacheText": ".course-cache/resources/res-b5dd43254a15.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-b6fc716e051f",
@@ -1609,7 +2569,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/reference/using/auto-configuration.html",
+        "contentType": "text/html",
+        "contentBytes": 91770,
+        "contentSha256": "c4cfd34d034b3e8f9c94f04c1e8ec4b467b224dc9669674bae90c45db959d292",
+        "cacheText": ".course-cache/resources/res-b6fc716e051f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-b73632f693f7",
@@ -1630,7 +2602,19 @@
         "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-stream-collectors",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561378,
+        "contentSha256": "99310a2c37522cab12d7d9521a0b41f5e500eaa2c8fb1936061d99d045b13d61",
+        "cacheText": ".course-cache/resources/res-b73632f693f7.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-b8b29a249f37",
@@ -1651,7 +2635,19 @@
         "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-5-webclient",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 627842,
+        "contentSha256": "27284e9c520f736678de7d0fc6862bfdbf7d073023418b82f339da1685527353",
+        "cacheText": ".course-cache/resources/res-b8b29a249f37.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-bb04db80cab2",
@@ -1672,7 +2668,19 @@
         "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-framework/reference/core/beans/introduction.html",
+        "contentType": "text/html",
+        "contentBytes": 112526,
+        "contentSha256": "3f3f361a1c9e6a98ab1a7f62d375ce2113526f8433cf08c8c9ae8cb4c38573e8",
+        "cacheText": ".course-cache/resources/res-bb04db80cab2.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-bccebfeaf062",
@@ -1691,7 +2699,19 @@
         "Assignment"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/junit-5",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 619305,
+        "contentSha256": "1977d7d3c55ddfe1034a598f41c3b8da1f9b3d759965c5adbe9c59b47ba6b65d",
+        "cacheText": ".course-cache/resources/res-bccebfeaf062.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-be79b4f73d01",
@@ -1714,7 +2734,19 @@
         "Final Defense"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/reference/testing/testcontainers.html",
+        "contentType": "text/html",
+        "contentBytes": 137350,
+        "contentSha256": "b8adea664f34631aaa22116981bc7489cd1ebbe0fe80bc3bbc10cb0cf67b3b59",
+        "cacheText": ".course-cache/resources/res-be79b4f73d01.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-bf1095022eae",
@@ -1736,7 +2768,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html",
+        "contentType": "text/html",
+        "contentBytes": 154726,
+        "contentSha256": "b92a38b33928937a39899a6b656cad047836ebeb7abffda76d8de6ef51bbd9fd",
+        "cacheText": ".course-cache/resources/res-bf1095022eae.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-c246ae22f99a",
@@ -1755,7 +2799,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-solid-principles",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561372,
+        "contentSha256": "296c3346369aed3bb04c3d42aa306dfc0201ada41ea42c1e1762b288a2cc2c8c",
+        "cacheText": ".course-cache/resources/res-c246ae22f99a.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-ce09de5e928a",
@@ -1776,7 +2832,19 @@
         "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://vladmihalcea.com/n-plus-1-query-problem/",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 233024,
+        "contentSha256": "69fc7204c6c1b9416574ff25a3647bce2f1a202239a0e0dc1f83d82c829bcfc6",
+        "cacheText": ".course-cache/resources/res-ce09de5e928a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-cf695e39df80",
@@ -1801,7 +2869,19 @@
         "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/jpa-cascade-types",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 622053,
+        "contentSha256": "211bec01c094744432a4a385e3f16cb281f514de229844723e562bac7212f6c0",
+        "cacheText": ".course-cache/resources/res-cf695e39df80.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d1d09e3813e4",
@@ -1820,7 +2900,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-security-csrf",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 627389,
+        "contentSha256": "2eae613baccf9c364b58f3b793bd3db0bf8dac4f16fd89dd1494322113d53b03",
+        "cacheText": ".course-cache/resources/res-d1d09e3813e4.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d20f2a5470d7",
@@ -1839,7 +2931,19 @@
         "Assignment"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/jpa-hibernate-associations",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 820971,
+        "contentSha256": "22514401f38592ff9fd426950bc82aa9eb61c0e2453de1c19b884d39dbfeaea5",
+        "cacheText": ".course-cache/resources/res-d20f2a5470d7.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d5aebfb9d1ed",
@@ -1858,7 +2962,19 @@
         "Assignment"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html",
+        "contentType": "text/html",
+        "contentBytes": 125808,
+        "contentSha256": "1c80b41c5257b396f6053c0f4286dc29440775fc55d0f312af4cc70bb9622ff0",
+        "cacheText": ".course-cache/resources/res-d5aebfb9d1ed.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d5dfac91a451",
@@ -1876,7 +2992,19 @@
         "Final theory"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-tutorial",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 419755,
+        "contentSha256": "8b009018e0046f2110a6565763aa2613051547ac6c9c4e49956852a2dffb4530",
+        "cacheText": ".course-cache/resources/res-d5dfac91a451.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d6607fed4419",
@@ -1897,7 +3025,19 @@
         "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-nio-2-file-api",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 621676,
+        "contentSha256": "4b4492eb268177461cc8015e5ab30624a96a567f54e2173538d13956c2ed8bb4",
+        "cacheText": ".course-cache/resources/res-d6607fed4419.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-d8a874d76b06",
@@ -1916,7 +3056,19 @@
         "Assignment"
       ],
       "assignedBatch": "spring-core-web",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-requestmapping",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 633382,
+        "contentSha256": "755d27be49ee7bfba2ca5eab2ba1a5d661ebec81cd94de80d52cda11228eb260",
+        "cacheText": ".course-cache/resources/res-d8a874d76b06.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-df903793f0b9",
@@ -1937,7 +3089,19 @@
         "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html",
+        "contentType": "text/html",
+        "contentBytes": 21602,
+        "contentSha256": "9709587abf09e5cafabaaa6954fc51c9373cd6e3b9560dc0388b47321510d5a0",
+        "cacheText": ".course-cache/resources/res-df903793f0b9.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-e3236d24d45f",
@@ -1960,7 +3124,19 @@
         "Final Defense"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-docker-images",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 618559,
+        "contentSha256": "f93d55d21e6a12dcc537422748fe8a49653e1527f9c084213a8a40a4c2ec3034",
+        "cacheText": ".course-cache/resources/res-e3236d24d45f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-e3b2dcb60e96",
@@ -1981,7 +3157,19 @@
         "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/generics/index.html",
+        "contentType": "text/html",
+        "contentBytes": 19303,
+        "contentSha256": "2377373e473f8cf568ee59f7e1db2ec1f477c1a8e5ab6c00b9a5ec10d9a1066b",
+        "cacheText": ".course-cache/resources/res-e3b2dcb60e96.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-e95ba2d69401",
@@ -2005,7 +3193,19 @@
         "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-cache-tutorial",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 635185,
+        "contentSha256": "701f5912093e2fa4ea19dc547cc36814c8c7af6deb759a4e5088688cba576583",
+        "cacheText": ".course-cache/resources/res-e95ba2d69401.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-ea68bcb99823",
@@ -2027,7 +3227,19 @@
         "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/java-csv",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 611449,
+        "contentSha256": "bf7fc1548eb64520f3167cbe71639a36a41c138aec661267db6c0e525b0bd0c6",
+        "cacheText": ".course-cache/resources/res-ea68bcb99823.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-ec467b92f9e7",
@@ -2046,7 +3258,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-interface",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561330,
+        "contentSha256": "ec1de0961b57614e37a54ff11bb6bbf425ba700cc3f53e0a9b56d619b43d8233",
+        "cacheText": ".course-cache/resources/res-ec467b92f9e7.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-f023c0083770",
@@ -2067,7 +3291,19 @@
         "Final theory"
       ],
       "assignedBatch": "project-final",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-boot/index.html",
+        "contentType": "text/html",
+        "contentBytes": 83975,
+        "contentSha256": "daeebca43ac8510d865e81a4094eb4fe1b3eaea21ac169d169a589c05de36af4",
+        "cacheText": ".course-cache/resources/res-f023c0083770.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-f301a3d0645a",
@@ -2086,7 +3322,19 @@
         "Assignment"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html",
+        "contentType": "text/html",
+        "contentBytes": 120932,
+        "contentSha256": "3146c810589c26e231ab7aa0c7b15cd1dbc573126fd096894f697f84d30d108f",
+        "cacheText": ".course-cache/resources/res-f301a3d0645a.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-f31ffcf74f40",
@@ -2105,7 +3353,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "not_found",
+        "httpStatus": 404,
+        "finalUrl": "https://www.baeldung.com/java-records",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 561318,
+        "contentSha256": "3675a4235fa71e551e843e66a5a5db3931cdf871678a5e1f1ff371ad62e1e016",
+        "cacheText": ".course-cache/resources/res-f31ffcf74f40.txt",
+        "truncated": false,
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      }
     },
     {
       "resourceId": "res-f6c8ab355f09",
@@ -2124,7 +3384,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-circuit-breaker-vs-retry",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 819302,
+        "contentSha256": "8e2e6a3e54b54b158ba54e1e4f1764b1ebec54feece0d49a5cea071d587022e3",
+        "cacheText": ".course-cache/resources/res-f6c8ab355f09.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-f7cc3f86702d",
@@ -2143,7 +3415,19 @@
         "Assignment"
       ],
       "assignedBatch": "java-foundations",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/java/data/index.html",
+        "contentType": "text/html",
+        "contentBytes": 18739,
+        "contentSha256": "a4492c58a3354085b7584c03b25b61871b706b815fa6e21ced4f211ba7989502",
+        "cacheText": ".course-cache/resources/res-f7cc3f86702d.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-fa00cc21947b",
@@ -2162,7 +3446,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "data-security",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-security-method-security",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 633652,
+        "contentSha256": "09d59993e2620ba127882fcaf609e25c76fb7072ca057187a48d359e8f381440",
+        "cacheText": ".course-cache/resources/res-fa00cc21947b.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-fa57300ac53c",
@@ -2181,7 +3477,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "production",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.baeldung.com/spring-boot-actuators",
+        "contentType": "text/html; charset=UTF-8",
+        "contentBytes": 643684,
+        "contentSha256": "ff1e48e1bd13de90d08de0e439420c797a6c685bcf87907831853800a099cb9c",
+        "cacheText": ".course-cache/resources/res-fa57300ac53c.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-fc9869512a5f",
@@ -2200,7 +3508,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html",
+        "contentType": "text/html",
+        "contentBytes": 20981,
+        "contentSha256": "af65ebf7afeb8ff386d5ca24d44577614879c0f76acf1279c646b170dc6a79d8",
+        "cacheText": ".course-cache/resources/res-fc9869512a5f.txt",
+        "truncated": false,
+        "error": null
+      }
     },
     {
       "resourceId": "res-fe3cc9768091",
@@ -2219,7 +3539,19 @@
         "Guides/Review"
       ],
       "assignedBatch": "java-advanced",
-      "check": {}
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-08-22T16:33:26.013701Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html",
+        "contentType": "text/html",
+        "contentBytes": 20118,
+        "contentSha256": "577c2ff2c29173fe29e413db7408313d881e6cb38d80c616a119bb9d87f679d0",
+        "cacheText": ".course-cache/resources/res-fe3cc9768091.txt",
+        "truncated": false,
+        "error": null
+      }
     }
   ]
 }

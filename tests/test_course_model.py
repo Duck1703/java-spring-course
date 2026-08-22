@@ -127,6 +127,14 @@ class ScheduleParserTests(unittest.TestCase):
         self.assertIn("[JVM \\[Architecture\\]](https://example.com/a_(b))", markdown)
         self.assertIn("chưa kiểm tra", markdown)
 
+        catalog["resources"][0]["check"] = {
+            "status": "redirected",
+            "httpStatus": 200,
+        }
+        markdown = render_catalog_markdown(catalog)
+        self.assertIn("chuyển hướng và truy xuất được (HTTP 200)", markdown)
+        self.assertNotIn("đã đọc", markdown)
+
     def test_manifest_assigns_first_linked_unit_batch_and_empty_check(self):
         from tools.extract_catalog import build_manifest
 
