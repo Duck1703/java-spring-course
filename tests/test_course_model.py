@@ -87,7 +87,7 @@ class ScheduleParserTests(unittest.TestCase):
                     "unitId": "unit-01",
                     "group": "java",
                     "title": "JVM, JRE, JDK & Data Types",
-                    "outline": ["JVM Architecture"],
+                    "outline": ["JVM Architecture\n  - Primitive Types "],
                     "objectives": ["LO1"],
                     "durationMinutes": 150,
                     "activities": [{"row": 3, "text": "Assignment", "deliveryType": "Lecture", "durationMinutes": 150, "trainer": "A", "format": "Online", "date": "2026-08-22"}],
@@ -119,6 +119,10 @@ class ScheduleParserTests(unittest.TestCase):
         self.assertIn("## Day 1 — JVM, JRE, JDK & Data Types", markdown)
         heading = next(line for line in markdown.splitlines() if line.startswith("## Day"))
         self.assertNotIn("\n", heading)
+        self.assertTrue(
+            all(line == line.rstrip() for line in markdown.splitlines()),
+            "rendered Markdown must not contain trailing whitespace",
+        )
         self.assertIn("- **Nhóm:** Java", markdown)
         self.assertIn("[JVM \\[Architecture\\]](https://example.com/a_(b))", markdown)
         self.assertIn("chưa kiểm tra", markdown)

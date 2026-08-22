@@ -338,7 +338,7 @@
 ### Nội dung và hoạt động
 - - Assignment 5: Multi-module Notification Service
   - Interface `NotificationService` → EmailSender, SmsSender, PushSender
-  - @Qualifier or @Profile select implementation 
+  - @Qualifier or @Profile select implementation
   - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)
   - Retry logic when send fail
   - The Factory pattern creates the correct sender based on the notification type.

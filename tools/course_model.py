@@ -158,7 +158,8 @@ def render_catalog_markdown(catalog: dict) -> str:
         for activity in lesson["activities"]:
             _append_unique(content_items, activity["text"])
         if content_items:
-            lines.extend(f"- {item}" for item in content_items)
+            for item in content_items:
+                lines.extend(line.rstrip() for line in f"- {item}".splitlines())
         else:
             lines.append("- —")
         lines.extend(["", "### Tài liệu"])
