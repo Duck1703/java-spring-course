@@ -1,0 +1,2225 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-22T15:49:01.995554Z",
+  "source": {
+    "workbook": "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx",
+    "sheet": "JavaSpring_Schedule"
+  },
+  "resources": [
+    {
+      "resourceId": "res-004dba8a7332",
+      "requestedUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/index.html",
+      "labelVariants": [
+        "Java Language Specification (JLS)"
+      ],
+      "lessonIds": [
+        "day-37"
+      ],
+      "unitIds": [
+        "unit-13"
+      ],
+      "relevantOutline": [
+        "Final theory"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-0196dd00302a",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/IandI/index.html",
+      "labelVariants": [
+        "Interface & Inheritance"
+      ],
+      "lessonIds": [
+        "day-07"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-01d4c9bc1c9c",
+      "requestedUrl": "https://www.baeldung.com/jpa-entities",
+      "labelVariants": [
+        "JPA Entities"
+      ],
+      "lessonIds": [
+        "day-19"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-02399daadb94",
+      "requestedUrl": "https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring",
+      "labelVariants": [
+        "IoC & DI"
+      ],
+      "lessonIds": [
+        "day-14"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "Dependency Injection & Configuration\n+ DI Types\n+ @Autowired resolution\n+ @Configuration & @Bean\n+ @ConfigurationProperties\n+ Profiles",
+        "Guides/Review"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-033c4bfa05f5",
+      "requestedUrl": "https://www.baeldung.com/spring-async",
+      "labelVariants": [
+        "@Async"
+      ],
+      "lessonIds": [
+        "day-27",
+        "day-35"
+      ],
+      "unitIds": [
+        "unit-09",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-062b84a9042d",
+      "requestedUrl": "https://www.baeldung.com/java-enum",
+      "labelVariants": [
+        "Enum"
+      ],
+      "lessonIds": [
+        "day-07"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-06398bb0cc69",
+      "requestedUrl": "https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html",
+      "labelVariants": [
+        "Structuring Your Code"
+      ],
+      "lessonIds": [
+        "day-31"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-06dd51e41e25",
+      "requestedUrl": "https://www.baeldung.com/spring-response-entity",
+      "labelVariants": [
+        "ResponseEntity"
+      ],
+      "lessonIds": [
+        "day-16"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Controller & Request/Response\n+ @RestController\n+ Request mapping\n+ Parameter handling\n+ ResponseEntity\n+ Content negotiation",
+        "Assignment"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-0851edc9dd41",
+      "requestedUrl": "https://www.baeldung.com/java-functional-interface",
+      "labelVariants": [
+        "Lambda & Functional Interface"
+      ],
+      "lessonIds": [
+        "day-10"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-0c7109cb4fa8",
+      "requestedUrl": "https://www.baeldung.com/java-serialization",
+      "labelVariants": [
+        "Serialization"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-10672cc3a9fa",
+      "requestedUrl": "https://www.baeldung.com/java-method-overloading-riding",
+      "labelVariants": [
+        "Override/Overloading"
+      ],
+      "lessonIds": [
+        "day-05"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Inheritance, Polymorphism & Abstract\n+ Inheritance\n+ Method Overriding\n+ Method Overloading\n+ Polymorphism\n+ Abstract class",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-12fa3a9d4910",
+      "requestedUrl": "https://www.baeldung.com/java-collections",
+      "labelVariants": [
+        "Java Collections"
+      ],
+      "lessonIds": [
+        "day-08",
+        "day-09"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review",
+        "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-1559f0cd62e7",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html",
+      "labelVariants": [
+        "CSRF (Official)"
+      ],
+      "lessonIds": [
+        "day-23"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authorization & JPA Performance\n+ Method Security\n+ CORS & CSRF\n+ N+1 Problem\n+ Batch fetching\n+ Soft Delete",
+        "Guides/Review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-1c6109c5ec54",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-redis-cache",
+      "labelVariants": [
+        "Redis Cache"
+      ],
+      "lessonIds": [
+        "day-25",
+        "day-27"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "Caching & Async Processing\n+ Spring Cache\n+ Redis Cache\n+ Cache Patterns\n+ @Async\n+ @Scheduled",
+        "Assignment",
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-1cec64c5e683",
+      "requestedUrl": "https://www.baeldung.com/java-string-pool",
+      "labelVariants": [
+        "String & String Pool"
+      ],
+      "lessonIds": [
+        "day-01",
+        "day-03"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment",
+        "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-1f904f56cc5a",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-bean-validation",
+      "labelVariants": [
+        "Bean Validation"
+      ],
+      "lessonIds": [
+        "day-17"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Validation & Exception Handling\n+ Bean Validation\n+ Custom Validator\n+ @RestControllerAdvice\n+ ProblemDetail (RFC 9457)\n+ Business Exception hierarchy",
+        "Guides/Review"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-284db3d782e6",
+      "requestedUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html",
+      "labelVariants": [
+        "Pattern Matching (JLS)"
+      ],
+      "lessonIds": [
+        "day-02"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "Operators & Control Flow\n+ Operators\n+ Switch expressions\n+ Pattern Matching\n+ Loops & Stream intro",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-28c8c8bc71df",
+      "requestedUrl": "https://vladmihalcea.com/how-to-batch-insert-and-update-statements-with-hibernate/",
+      "labelVariants": [
+        "Batch Insert/Update"
+      ],
+      "lessonIds": [
+        "day-24"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-28fe8d3fda30",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html",
+      "labelVariants": [
+        "Switch Expressions"
+      ],
+      "lessonIds": [
+        "day-02"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "Operators & Control Flow\n+ Operators\n+ Switch expressions\n+ Pattern Matching\n+ Loops & Stream intro",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-2aefb097db80",
+      "requestedUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html",
+      "labelVariants": [
+        "Request Mapping"
+      ],
+      "lessonIds": [
+        "day-16",
+        "day-18"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Controller & Request/Response\n+ @RestController\n+ Request mapping\n+ Parameter handling\n+ ResponseEntity\n+ Content negotiation",
+        "Assignment",
+        "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-2c011d89d6e0",
+      "requestedUrl": "https://www.baeldung.com/spring-transactional-propagation-isolation",
+      "labelVariants": [
+        "@Transactional"
+      ],
+      "lessonIds": [
+        "day-35"
+      ],
+      "unitIds": [
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-2e4a3dd62ec7",
+      "requestedUrl": "https://www.baeldung.com/spring-data-jpa-pagination-sorting",
+      "labelVariants": [
+        "JPA Pagination & Sorting"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-21"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "- Assignment 7: E-Commerce Data Layer\n  - Entities: User, Product, Category, Order, OrderItem\n  - Full relationships + cascade correct\n  - Repository query: top-selling products, orders by date range, user history\n  - Flyway migration (V1__init.sql → V2__seed_data.sql)\n  - @DataJpaTest integration test"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-30d834f8fef0",
+      "requestedUrl": "https://www.baeldung.com/java-exceptions",
+      "labelVariants": [
+        "Java Exceptions",
+        "Exceptions"
+      ],
+      "lessonIds": [
+        "day-08",
+        "day-09"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review",
+        "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-31a2e0685799",
+      "requestedUrl": "https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html",
+      "labelVariants": [
+        "Testing Spring Boot Applications"
+      ],
+      "lessonIds": [
+        "day-28"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Testing Spring Boot\n+ Unit Testing\n+ @WebMvcTest\n+ @DataJpaTest\n+ Integration Test\n+ Testcontainers",
+        "Assignment"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-3393c8cbdaaf",
+      "requestedUrl": "https://www.baeldung.com/java-thread-lifecycle",
+      "labelVariants": [
+        "Thread Fundamentals"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-347895e9400e",
+      "requestedUrl": "https://spring.io/guides/gs/caching",
+      "labelVariants": [
+        "Getting Started with Caching"
+      ],
+      "lessonIds": [
+        "day-25"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "Caching & Async Processing\n+ Spring Cache\n+ Redis Cache\n+ Cache Patterns\n+ @Async\n+ @Scheduled",
+        "Assignment"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-348a6a4cb0b8",
+      "requestedUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc.html",
+      "labelVariants": [
+        "Spring MVC"
+      ],
+      "lessonIds": [
+        "day-31"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-36a8d5deef22",
+      "requestedUrl": "https://www.baeldung.com/java-polymorphism",
+      "labelVariants": [
+        "Polymorphism"
+      ],
+      "lessonIds": [
+        "day-05",
+        "day-06"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Inheritance, Polymorphism & Abstract\n+ Inheritance\n+ Method Overriding\n+ Method Overloading\n+ Polymorphism\n+ Abstract class",
+        "Guides/Review",
+        "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-3807593857d1",
+      "requestedUrl": "https://www.baeldung.com/integration-testing-in-spring",
+      "labelVariants": [
+        "Integration Testing"
+      ],
+      "lessonIds": [
+        "day-28"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Testing Spring Boot\n+ Unit Testing\n+ @WebMvcTest\n+ @DataJpaTest\n+ Integration Test\n+ Testcontainers",
+        "Assignment"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-39bc1924ee00",
+      "requestedUrl": "https://www.baeldung.com/building-a-restful-web-service-with-spring",
+      "labelVariants": [
+        "Building REST API"
+      ],
+      "lessonIds": [
+        "day-31"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Architecture overview\n+ API design"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-4b45b7c76586",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-resilience4j",
+      "labelVariants": [
+        "Resilience4j"
+      ],
+      "lessonIds": [
+        "day-27"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-4bc225ad1d9e",
+      "requestedUrl": "https://www.baeldung.com/java-inner-class-enums",
+      "labelVariants": [
+        "Inner Classes & Enums"
+      ],
+      "lessonIds": [
+        "day-07"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-4f42c781654a",
+      "requestedUrl": "https://www.baeldung.com/java-constructors",
+      "labelVariants": [
+        "Constructors"
+      ],
+      "lessonIds": [
+        "day-04"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Classes, Objects, Encapsulation\n+ Class structure\n+ Access modifiers\n+ Encapsulation\n+ Records\n+ this & super",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-543deb939f9e",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/io/fileio.html",
+      "labelVariants": [
+        "File I/O"
+      ],
+      "lessonIds": [
+        "day-11",
+        "day-12"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review",
+        "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-553bbd92e5d0",
+      "requestedUrl": "https://docs.spring.io/spring-data/jpa/reference/repositories.html",
+      "labelVariants": [
+        "Spring Data Repositories"
+      ],
+      "lessonIds": [
+        "day-21",
+        "day-32",
+        "day-33",
+        "day-34"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "- Assignment 7: E-Commerce Data Layer\n  - Entities: User, Product, Category, Order, OrderItem\n  - Full relationships + cascade correct\n  - Repository query: top-selling products, orders by date range, user history\n  - Flyway migration (V1__init.sql → V2__seed_data.sql)\n  - @DataJpaTest integration test",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review",
+        "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-55e66ec50cc0",
+      "requestedUrl": "https://www.baeldung.com/java-streams",
+      "labelVariants": [
+        "Java Streams"
+      ],
+      "lessonIds": [
+        "day-10"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-563d80135c91",
+      "requestedUrl": "https://www.baeldung.com/java-access-modifiers",
+      "labelVariants": [
+        "Access Modifiers"
+      ],
+      "lessonIds": [
+        "day-04"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Classes, Objects, Encapsulation\n+ Class structure\n+ Access modifiers\n+ Encapsulation\n+ Records\n+ this & super",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-56487c83dc65",
+      "requestedUrl": "https://www.baeldung.com/spring-boot",
+      "labelVariants": [
+        "Spring Boot Overview"
+      ],
+      "lessonIds": [
+        "day-13"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "Spring Boot Fundamentals & Bean Lifecycle\n+ Spring Boot Architecture\n+ IoC Container\n+ Bean scopes\n+ Bean lifecycle\n+ Stereotype annotations",
+        "Assignment"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-56b8234cf832",
+      "requestedUrl": "https://docs.spring.io/spring-framework/reference/index.html",
+      "labelVariants": [
+        "Spring Framework Reference"
+      ],
+      "lessonIds": [
+        "day-37"
+      ],
+      "unitIds": [
+        "unit-13"
+      ],
+      "relevantOutline": [
+        "Final theory"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-62d9985bbc6f",
+      "requestedUrl": "https://www.baeldung.com/java-string-immutability",
+      "labelVariants": [
+        "String Immutability"
+      ],
+      "lessonIds": [
+        "day-01",
+        "day-03"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment",
+        "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-6543ba492a80",
+      "requestedUrl": "https://spring.io/guides/gs/uploading-files",
+      "labelVariants": [
+        "Uploading Files Guide"
+      ],
+      "lessonIds": [
+        "day-26"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "File Upload/Download & External API\n+ Multipart Upload\n+ Download\n+ WebClient\n+ Resilience\n+ CSV/Excel Export",
+        "Guides/Review"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-65703b737426",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html",
+      "labelVariants": [
+        "JWT with Spring Security"
+      ],
+      "lessonIds": [
+        "day-22",
+        "day-24",
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-08",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment",
+        "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-710573bd4385",
+      "requestedUrl": "https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html",
+      "labelVariants": [
+        "Redis Cache (Spring Data)"
+      ],
+      "lessonIds": [
+        "day-25"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "Caching & Async Processing\n+ Spring Cache\n+ Redis Cache\n+ Cache Patterns\n+ @Async\n+ @Scheduled",
+        "Assignment"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-713a3e371ba0",
+      "requestedUrl": "https://www.baeldung.com/java-stream-filter-lambda",
+      "labelVariants": [
+        "Stream Filter & Lambda"
+      ],
+      "lessonIds": [
+        "day-10"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-740a979a150e",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/for.html",
+      "labelVariants": [
+        "For/While Loops"
+      ],
+      "lessonIds": [
+        "day-02"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "Operators & Control Flow\n+ Operators\n+ Switch expressions\n+ Pattern Matching\n+ Loops & Stream intro",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-749fa81acd48",
+      "requestedUrl": "https://www.baeldung.com/hibernate-lazy-eager-loading",
+      "labelVariants": [
+        "Lazy/Eager Loading"
+      ],
+      "lessonIds": [
+        "day-19",
+        "day-20"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment",
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-74d398e3d23c",
+      "requestedUrl": "https://www.baeldung.com/spring-file-upload",
+      "labelVariants": [
+        "File Upload"
+      ],
+      "lessonIds": [
+        "day-26",
+        "day-27",
+        "day-34"
+      ],
+      "unitIds": [
+        "unit-09",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "File Upload/Download & External API\n+ Multipart Upload\n+ Download\n+ WebClient\n+ Resilience\n+ CSV/Excel Export",
+        "Guides/Review",
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)",
+        "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-74dcb3852a23",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html",
+      "labelVariants": [
+        "Exceptions"
+      ],
+      "lessonIds": [
+        "day-08"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-79cbefdda273",
+      "requestedUrl": "http://springdoc.org/",
+      "labelVariants": [
+        "OpenAPI / SpringDoc"
+      ],
+      "lessonIds": [
+        "day-29",
+        "day-30",
+        "day-36"
+      ],
+      "unitIds": [
+        "unit-10",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Documentation, Logging, Monitoring & Docker\n+ OpenAPI / Swagger\n+ Structured Logging\n+ Actuator & Metrics\n+ Docker\n+ docker-compose",
+        "Guides/Review",
+        "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build",
+        "Final Defense"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-7bf1b25b2e6b",
+      "requestedUrl": "https://www.baeldung.com/configuration-properties-in-spring-boot",
+      "labelVariants": [
+        "@ConfigurationProperties"
+      ],
+      "lessonIds": [
+        "day-15"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-7f4116f00d7f",
+      "requestedUrl": "https://www.baeldung.com/spring-mvc-custom-validator",
+      "labelVariants": [
+        "Custom Validator"
+      ],
+      "lessonIds": [
+        "day-17",
+        "day-18"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Validation & Exception Handling\n+ Bean Validation\n+ Custom Validator\n+ @RestControllerAdvice\n+ ProblemDetail (RFC 9457)\n+ Business Exception hierarchy",
+        "Guides/Review",
+        "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-82b36b19c96f",
+      "requestedUrl": "https://www.baeldung.com/database-auditing-jpa",
+      "labelVariants": [
+        "Database Auditing"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-21"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "- Assignment 7: E-Commerce Data Layer\n  - Entities: User, Product, Category, Order, OrderItem\n  - Full relationships + cascade correct\n  - Repository query: top-selling products, orders by date range, user history\n  - Flyway migration (V1__init.sql → V2__seed_data.sql)\n  - @DataJpaTest integration test"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-82c961b7a92a",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html",
+      "labelVariants": [
+        "Control Flow"
+      ],
+      "lessonIds": [
+        "day-02",
+        "day-03"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "Operators & Control Flow\n+ Operators\n+ Switch expressions\n+ Pattern Matching\n+ Loops & Stream intro",
+        "Guides/Review",
+        "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-8437fa16cd25",
+      "requestedUrl": "https://vladmihalcea.com/hibernate-softdelete-annotation/",
+      "labelVariants": [
+        "Hibernate Soft Delete"
+      ],
+      "lessonIds": [
+        "day-24"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-84fc38d27c0a",
+      "requestedUrl": "https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/",
+      "labelVariants": [
+        "Testcontainers"
+      ],
+      "lessonIds": [
+        "day-29",
+        "day-30"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Documentation, Logging, Monitoring & Docker\n+ OpenAPI / Swagger\n+ Structured Logging\n+ Actuator & Metrics\n+ Docker\n+ docker-compose",
+        "Guides/Review",
+        "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-88adadc6f2f4",
+      "requestedUrl": "https://www.baeldung.com/java-io",
+      "labelVariants": [
+        "Java I/O"
+      ],
+      "lessonIds": [
+        "day-11",
+        "day-12"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review",
+        "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-899383bc8d09",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/collections/index.html",
+      "labelVariants": [
+        "Collections"
+      ],
+      "lessonIds": [
+        "day-08",
+        "day-09"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review",
+        "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-8a73cd80ad49",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-return-errors-problemdetail",
+      "labelVariants": [
+        "ProblemDetail (RFC 9457)",
+        "ProblemDetail"
+      ],
+      "lessonIds": [
+        "day-17",
+        "day-18"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Validation & Exception Handling\n+ Bean Validation\n+ Custom Validator\n+ @RestControllerAdvice\n+ ProblemDetail (RFC 9457)\n+ Business Exception hierarchy",
+        "Guides/Review",
+        "- Lab 6: User & Task Management API\n  - CRUD Task: title, description, status (TODO/IN_PROGRESS/DONE), priority, dueDate\n  - Validation: title notBlank, dueDate in future, valid status transition\n  - Custom validator: @ValidStatusTransition\n  - Global exception handler ProblemDetail\n  - Postman collection export"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-8abee0bfd5a7",
+      "requestedUrl": "https://www.baeldung.com/java-generics",
+      "labelVariants": [
+        "Java Generics"
+      ],
+      "lessonIds": [
+        "day-08"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-8d5e61cc0a53",
+      "requestedUrl": "https://www.baeldung.com/docker-compose-support-spring-boot",
+      "labelVariants": [
+        "Docker Compose"
+      ],
+      "lessonIds": [
+        "day-30",
+        "day-35"
+      ],
+      "unitIds": [
+        "unit-10",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-8fc303d6f753",
+      "requestedUrl": "https://www.baeldung.com/spring-tutorial",
+      "labelVariants": [
+        "Baeldung Spring Tutorials"
+      ],
+      "lessonIds": [
+        "day-37"
+      ],
+      "unitIds": [
+        "unit-13"
+      ],
+      "relevantOutline": [
+        "Final theory"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-93813d9b62f4",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-structured-logging",
+      "labelVariants": [
+        "Structured Logging"
+      ],
+      "lessonIds": [
+        "day-29"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Documentation, Logging, Monitoring & Docker\n+ OpenAPI / Swagger\n+ Structured Logging\n+ Actuator & Metrics\n+ Docker\n+ docker-compose",
+        "Guides/Review"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-9458879c2540",
+      "requestedUrl": "https://www.baeldung.com/java-encapsulation",
+      "labelVariants": [
+        "Encapsulation"
+      ],
+      "lessonIds": [
+        "day-04"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Classes, Objects, Encapsulation\n+ Class structure\n+ Access modifiers\n+ Encapsulation\n+ Records\n+ this & super",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-9762250d04d9",
+      "requestedUrl": "https://www.baeldung.com/java-try-with-resources",
+      "labelVariants": [
+        "Try-with-resources"
+      ],
+      "lessonIds": [
+        "day-08",
+        "day-09"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review",
+        "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-97fce5fda99a",
+      "requestedUrl": "https://www.baeldung.com/spring-scheduled-tasks",
+      "labelVariants": [
+        "@Scheduled"
+      ],
+      "lessonIds": [
+        "day-27"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-99801d0b7043",
+      "requestedUrl": "https://www.baeldung.com/jvm-vs-jre-vs-jdk",
+      "labelVariants": [
+        "JVM vs JRE vs JDK"
+      ],
+      "lessonIds": [
+        "day-01"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-9a6cde117315",
+      "requestedUrl": "https://www.baeldung.com/java-volatile",
+      "labelVariants": [
+        "Volatile"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-9b1feb8ea22f",
+      "requestedUrl": "https://www.baeldung.com/java-stream",
+      "labelVariants": [
+        "Stream API"
+      ],
+      "lessonIds": [
+        "day-10",
+        "day-12"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+        "Assignment",
+        "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-9d76570d9362",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html",
+      "labelVariants": [
+        "Autoboxing"
+      ],
+      "lessonIds": [
+        "day-01"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-a553d0d4478d",
+      "requestedUrl": "https://www.baeldung.com/java-synchronized",
+      "labelVariants": [
+        "Synchronized"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-aa4cbb2b9a5c",
+      "requestedUrl": "https://www.baeldung.com/spring-data-jpa-sort",
+      "labelVariants": [
+        "Pagination & Sort"
+      ],
+      "lessonIds": [
+        "day-33",
+        "day-34"
+      ],
+      "unitIds": [
+        "unit-11",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review",
+        "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-aad15fef0599",
+      "requestedUrl": "https://www.baeldung.com/java-inheritance",
+      "labelVariants": [
+        "Inheritance"
+      ],
+      "lessonIds": [
+        "day-05",
+        "day-06"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Inheritance, Polymorphism & Abstract\n+ Inheritance\n+ Method Overriding\n+ Method Overloading\n+ Polymorphism\n+ Abstract class",
+        "Guides/Review",
+        "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-acff7fd27edc",
+      "requestedUrl": "https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html",
+      "labelVariants": [
+        "JVM Architecture"
+      ],
+      "lessonIds": [
+        "day-01"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-ae202f300a2b",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/javaOO/index.html",
+      "labelVariants": [
+        "OOP Concepts"
+      ],
+      "lessonIds": [
+        "day-04",
+        "day-06"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Classes, Objects, Encapsulation\n+ Class structure\n+ Access modifiers\n+ Encapsulation\n+ Records\n+ this & super",
+        "Assignment",
+        "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-ae66be8c9f5f",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-testing",
+      "labelVariants": [
+        "Spring Boot Testing"
+      ],
+      "lessonIds": [
+        "day-28",
+        "day-30",
+        "day-36"
+      ],
+      "unitIds": [
+        "unit-10",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Testing Spring Boot\n+ Unit Testing\n+ @WebMvcTest\n+ @DataJpaTest\n+ Integration Test\n+ Testcontainers",
+        "Assignment",
+        "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build",
+        "Final Defense"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-aee8bfb64b8c",
+      "requestedUrl": "https://docs.spring.io/spring-boot/reference/features/external-config.html",
+      "labelVariants": [
+        "External Config"
+      ],
+      "lessonIds": [
+        "day-15"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-af7171222f9a",
+      "requestedUrl": "https://www.baeldung.com/spring-problem-detail",
+      "labelVariants": [
+        "ProblemDetail"
+      ],
+      "lessonIds": [
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-afbebe6cf212",
+      "requestedUrl": "https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html",
+      "labelVariants": [
+        "JPA Entity"
+      ],
+      "lessonIds": [
+        "day-32",
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-b307e54a2685",
+      "requestedUrl": "https://www.baeldung.com/exception-handling-for-rest-with-spring",
+      "labelVariants": [
+        "Exception Handling"
+      ],
+      "lessonIds": [
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-b5dd43254a15",
+      "requestedUrl": "https://www.baeldung.com/java-abstract-class",
+      "labelVariants": [
+        "Abstract Class"
+      ],
+      "lessonIds": [
+        "day-05",
+        "day-06"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Inheritance, Polymorphism & Abstract\n+ Inheritance\n+ Method Overriding\n+ Method Overloading\n+ Polymorphism\n+ Abstract class",
+        "Guides/Review",
+        "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-b6fc716e051f",
+      "requestedUrl": "https://docs.spring.io/spring-boot/reference/using/auto-configuration.html",
+      "labelVariants": [
+        "Auto-configuration"
+      ],
+      "lessonIds": [
+        "day-14"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "Dependency Injection & Configuration\n+ DI Types\n+ @Autowired resolution\n+ @Configuration & @Bean\n+ @ConfigurationProperties\n+ Profiles",
+        "Guides/Review"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-b73632f693f7",
+      "requestedUrl": "https://www.baeldung.com/java-stream-collectors",
+      "labelVariants": [
+        "Collectors"
+      ],
+      "lessonIds": [
+        "day-10",
+        "day-12"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+        "Assignment",
+        "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-b8b29a249f37",
+      "requestedUrl": "https://www.baeldung.com/spring-5-webclient",
+      "labelVariants": [
+        "WebClient"
+      ],
+      "lessonIds": [
+        "day-26",
+        "day-27"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "File Upload/Download & External API\n+ Multipart Upload\n+ Download\n+ WebClient\n+ Resilience\n+ CSV/Excel Export",
+        "Guides/Review",
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-bb04db80cab2",
+      "requestedUrl": "https://docs.spring.io/spring-framework/reference/core/beans/introduction.html",
+      "labelVariants": [
+        "IoC Container"
+      ],
+      "lessonIds": [
+        "day-13",
+        "day-15"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "Spring Boot Fundamentals & Bean Lifecycle\n+ Spring Boot Architecture\n+ IoC Container\n+ Bean scopes\n+ Bean lifecycle\n+ Stereotype annotations",
+        "Assignment",
+        "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-bccebfeaf062",
+      "requestedUrl": "https://www.baeldung.com/junit-5",
+      "labelVariants": [
+        "JUnit 5"
+      ],
+      "lessonIds": [
+        "day-28"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Testing Spring Boot\n+ Unit Testing\n+ @WebMvcTest\n+ @DataJpaTest\n+ Integration Test\n+ Testcontainers",
+        "Assignment"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-be79b4f73d01",
+      "requestedUrl": "https://docs.spring.io/spring-boot/reference/testing/testcontainers.html",
+      "labelVariants": [
+        "Testcontainers for Spring Boot",
+        "Testcontainers"
+      ],
+      "lessonIds": [
+        "day-29",
+        "day-36"
+      ],
+      "unitIds": [
+        "unit-10",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Documentation, Logging, Monitoring & Docker\n+ OpenAPI / Swagger\n+ Structured Logging\n+ Actuator & Metrics\n+ Docker\n+ docker-compose",
+        "Guides/Review",
+        "Final Defense"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-bf1095022eae",
+      "requestedUrl": "https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html",
+      "labelVariants": [
+        "Bean Scopes"
+      ],
+      "lessonIds": [
+        "day-13",
+        "day-14"
+      ],
+      "unitIds": [
+        "unit-05"
+      ],
+      "relevantOutline": [
+        "Spring Boot Fundamentals & Bean Lifecycle\n+ Spring Boot Architecture\n+ IoC Container\n+ Bean scopes\n+ Bean lifecycle\n+ Stereotype annotations",
+        "Assignment",
+        "Dependency Injection & Configuration\n+ DI Types\n+ @Autowired resolution\n+ @Configuration & @Bean\n+ @ConfigurationProperties\n+ Profiles",
+        "Guides/Review"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-c246ae22f99a",
+      "requestedUrl": "https://www.baeldung.com/java-solid-principles",
+      "labelVariants": [
+        "SOLID Principles"
+      ],
+      "lessonIds": [
+        "day-07"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-ce09de5e928a",
+      "requestedUrl": "https://vladmihalcea.com/n-plus-1-query-problem/",
+      "labelVariants": [
+        "N+1 Problem"
+      ],
+      "lessonIds": [
+        "day-23",
+        "day-24"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authorization & JPA Performance\n+ Method Security\n+ CORS & CSRF\n+ N+1 Problem\n+ Batch fetching\n+ Soft Delete",
+        "Guides/Review",
+        "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-cf695e39df80",
+      "requestedUrl": "https://www.baeldung.com/jpa-cascade-types",
+      "labelVariants": [
+        "JPA Cascade Types"
+      ],
+      "lessonIds": [
+        "day-19",
+        "day-20",
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment",
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d1d09e3813e4",
+      "requestedUrl": "https://www.baeldung.com/spring-security-csrf",
+      "labelVariants": [
+        "CSRF Protection"
+      ],
+      "lessonIds": [
+        "day-23"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authorization & JPA Performance\n+ Method Security\n+ CORS & CSRF\n+ N+1 Problem\n+ Batch fetching\n+ Soft Delete",
+        "Guides/Review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d20f2a5470d7",
+      "requestedUrl": "https://www.baeldung.com/jpa-hibernate-associations",
+      "labelVariants": [
+        "JPA Associations"
+      ],
+      "lessonIds": [
+        "day-19"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d5aebfb9d1ed",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html",
+      "labelVariants": [
+        "Password Storage"
+      ],
+      "lessonIds": [
+        "day-22"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d5dfac91a451",
+      "requestedUrl": "https://www.baeldung.com/java-tutorial",
+      "labelVariants": [
+        "Baeldung Java Tutorials"
+      ],
+      "lessonIds": [
+        "day-37"
+      ],
+      "unitIds": [
+        "unit-13"
+      ],
+      "relevantOutline": [
+        "Final theory"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d6607fed4419",
+      "requestedUrl": "https://www.baeldung.com/java-nio-2-file-api",
+      "labelVariants": [
+        "NIO.2 File API"
+      ],
+      "lessonIds": [
+        "day-11",
+        "day-12"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review",
+        "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-d8a874d76b06",
+      "requestedUrl": "https://www.baeldung.com/spring-requestmapping",
+      "labelVariants": [
+        "Spring RequestMapping"
+      ],
+      "lessonIds": [
+        "day-16"
+      ],
+      "unitIds": [
+        "unit-06"
+      ],
+      "relevantOutline": [
+        "Controller & Request/Response\n+ @RestController\n+ Request mapping\n+ Parameter handling\n+ ResponseEntity\n+ Content negotiation",
+        "Assignment"
+      ],
+      "assignedBatch": "spring-core-web",
+      "check": {}
+    },
+    {
+      "resourceId": "res-df903793f0b9",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html",
+      "labelVariants": [
+        "Operators"
+      ],
+      "lessonIds": [
+        "day-02",
+        "day-03"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "Operators & Control Flow\n+ Operators\n+ Switch expressions\n+ Pattern Matching\n+ Loops & Stream intro",
+        "Guides/Review",
+        "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-e3236d24d45f",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-docker-images",
+      "labelVariants": [
+        "Docker with Spring Boot"
+      ],
+      "lessonIds": [
+        "day-30",
+        "day-35",
+        "day-36"
+      ],
+      "unitIds": [
+        "unit-10",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify",
+        "Final Defense"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-e3b2dcb60e96",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/generics/index.html",
+      "labelVariants": [
+        "Generics"
+      ],
+      "lessonIds": [
+        "day-08",
+        "day-09"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Generics, Collections & Exception Handling\n+ Generics\n+ List implementations\n+ Set/Map\n+ Exception hierarchy\n+ try-with-resources",
+        "Guides/Review",
+        "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-e95ba2d69401",
+      "requestedUrl": "https://www.baeldung.com/spring-cache-tutorial",
+      "labelVariants": [
+        "Spring Cache"
+      ],
+      "lessonIds": [
+        "day-25",
+        "day-27",
+        "day-34"
+      ],
+      "unitIds": [
+        "unit-09",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "Caching & Async Processing\n+ Spring Cache\n+ Redis Cache\n+ Cache Patterns\n+ @Async\n+ @Scheduled",
+        "Assignment",
+        "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)",
+        "Development Sprint 2\n- Product CRUD + search + filter + pagination\n- Product image upload\n- Cart management\n- Caching setup (categories, products)"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-ea68bcb99823",
+      "requestedUrl": "https://www.baeldung.com/java-csv",
+      "labelVariants": [
+        "Java CSV"
+      ],
+      "lessonIds": [
+        "day-26",
+        "day-35"
+      ],
+      "unitIds": [
+        "unit-09",
+        "unit-12"
+      ],
+      "relevantOutline": [
+        "File Upload/Download & External API\n+ Multipart Upload\n+ Download\n+ WebClient\n+ Resilience\n+ CSV/Excel Export",
+        "Guides/Review",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-ec467b92f9e7",
+      "requestedUrl": "https://www.baeldung.com/java-interface",
+      "labelVariants": [
+        "Java Interface"
+      ],
+      "lessonIds": [
+        "day-07"
+      ],
+      "unitIds": [
+        "unit-03"
+      ],
+      "relevantOutline": [
+        "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+        "Assignment"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-f023c0083770",
+      "requestedUrl": "https://docs.spring.io/spring-boot/index.html",
+      "labelVariants": [
+        "Spring Boot Reference"
+      ],
+      "lessonIds": [
+        "day-31",
+        "day-37"
+      ],
+      "unitIds": [
+        "unit-11",
+        "unit-13"
+      ],
+      "relevantOutline": [
+        "System Design & Project Kickoff\n+ Architecture overview\n+ API design",
+        "Final theory"
+      ],
+      "assignedBatch": "project-final",
+      "check": {}
+    },
+    {
+      "resourceId": "res-f301a3d0645a",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html",
+      "labelVariants": [
+        "Stateless Session"
+      ],
+      "lessonIds": [
+        "day-22"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-f31ffcf74f40",
+      "requestedUrl": "https://www.baeldung.com/java-records",
+      "labelVariants": [
+        "Records"
+      ],
+      "lessonIds": [
+        "day-04"
+      ],
+      "unitIds": [
+        "unit-02"
+      ],
+      "relevantOutline": [
+        "Classes, Objects, Encapsulation\n+ Class structure\n+ Access modifiers\n+ Encapsulation\n+ Records\n+ this & super",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-f6c8ab355f09",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-circuit-breaker-vs-retry",
+      "labelVariants": [
+        "Circuit Breaker"
+      ],
+      "lessonIds": [
+        "day-26"
+      ],
+      "unitIds": [
+        "unit-09"
+      ],
+      "relevantOutline": [
+        "File Upload/Download & External API\n+ Multipart Upload\n+ Download\n+ WebClient\n+ Resilience\n+ CSV/Excel Export",
+        "Guides/Review"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-f7cc3f86702d",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/data/index.html",
+      "labelVariants": [
+        "Data Types"
+      ],
+      "lessonIds": [
+        "day-01"
+      ],
+      "unitIds": [
+        "unit-01"
+      ],
+      "relevantOutline": [
+        "JVM, JRE, JDK & Data Types\n+ JVM Architecture\n+ JRE vs JDK\n+ Primitive Types & Wrappers\n+ String & String Pool\n+ Arrays & varargs",
+        "Assignment"
+      ],
+      "assignedBatch": "java-foundations",
+      "check": {}
+    },
+    {
+      "resourceId": "res-fa00cc21947b",
+      "requestedUrl": "https://www.baeldung.com/spring-security-method-security",
+      "labelVariants": [
+        "Method Security"
+      ],
+      "lessonIds": [
+        "day-23"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authorization & JPA Performance\n+ Method Security\n+ CORS & CSRF\n+ N+1 Problem\n+ Batch fetching\n+ Soft Delete",
+        "Guides/Review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {}
+    },
+    {
+      "resourceId": "res-fa57300ac53c",
+      "requestedUrl": "https://www.baeldung.com/spring-boot-actuators",
+      "labelVariants": [
+        "Actuator"
+      ],
+      "lessonIds": [
+        "day-29"
+      ],
+      "unitIds": [
+        "unit-10"
+      ],
+      "relevantOutline": [
+        "Documentation, Logging, Monitoring & Docker\n+ OpenAPI / Swagger\n+ Structured Logging\n+ Actuator & Metrics\n+ Docker\n+ docker-compose",
+        "Guides/Review"
+      ],
+      "assignedBatch": "production",
+      "check": {}
+    },
+    {
+      "resourceId": "res-fc9869512a5f",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html",
+      "labelVariants": [
+        "Synchronization (Oracle)"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    },
+    {
+      "resourceId": "res-fe3cc9768091",
+      "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html",
+      "labelVariants": [
+        "ExecutorService"
+      ],
+      "lessonIds": [
+        "day-11"
+      ],
+      "unitIds": [
+        "unit-04"
+      ],
+      "relevantOutline": [
+        "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+        "Guides/Review"
+      ],
+      "assignedBatch": "java-advanced",
+      "check": {}
+    }
+  ]
+}
