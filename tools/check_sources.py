@@ -135,14 +135,35 @@ class _HostPacer:
                     self._last_request_by_host[host] = time.monotonic()
 
 
+class _PacedResponse:
+    def __init__(self, response, request_slot):
+        self._response = response
+        self._request_slot = request_slot
+
+    def __getattr__(self, name):
+        return getattr(self._response, name)
+
+    def close(self):
+        request_slot = self._request_slot
+        self._request_slot = None
+        try:
+            return self._response.close()
+        finally:
+            if request_slot is not None:
+                request_slot.__exit__(None, None, None)
+
+
 class _PacedHTTPHandler(HTTPHandler):
     def __init__(self, pacer):
         super().__init__()
         self.pacer = pacer
 
     def http_open(self, request):
-        with self.pacer.request_slot(request.full_url):
-            return super().http_open(request)
+        return _open_paced_response(
+            self.pacer,
+            request.full_url,
+            lambda: super(_PacedHTTPHandler, self).http_open(request),
+        )
 
 
 class _PacedHTTPSHandler(HTTPSHandler):
@@ -151,8 +172,21 @@ class _PacedHTTPSHandler(HTTPSHandler):
         self.pacer = pacer
 
     def https_open(self, request):
-        with self.pacer.request_slot(request.full_url):
-            return super().https_open(request)
+        return _open_paced_response(
+            self.pacer,
+            request.full_url,
+            lambda: super(_PacedHTTPSHandler, self).https_open(request),
+        )
+
+
+def _open_paced_response(pacer, url, open_response):
+    request_slot = pacer.request_slot(url)
+    request_slot.__enter__()
+    try:
+        return _PacedResponse(open_response(), request_slot)
+    except BaseException:
+        request_slot.__exit__(*sys.exc_info())
+        raise
 
 
 _FETCH_STATE = threading.local()

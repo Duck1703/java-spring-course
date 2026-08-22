@@ -56,6 +56,9 @@ class _Handler(BaseHTTPRequestHandler):
         if self.path == "/large":
             self._send(200, b"x" * 100, "text/plain; charset=utf-8")
             return
+        if self.path.startswith("/slow-body/"):
+            self._send_slow_body()
+            return
         if self.path.startswith("/pace/"):
             self._send(200, self.path.encode(), "text/plain; charset=utf-8")
             return
@@ -68,6 +71,24 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_slow_body(self):
+        body = b"slow body"
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        with self.server.active_body_lock:
+            self.server.active_bodies += 1
+            self.server.max_active_bodies = max(
+                self.server.max_active_bodies, self.server.active_bodies
+            )
+        try:
+            time.sleep(0.1)
+            self.wfile.write(body)
+        finally:
+            with self.server.active_body_lock:
+                self.server.active_bodies -= 1
+
     def log_message(self, format, *args):
         pass
 
@@ -76,6 +97,9 @@ class LocalServer:
     def __enter__(self):
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
         self.server.requests = []
+        self.server.active_body_lock = threading.Lock()
+        self.server.active_bodies = 0
+        self.server.max_active_bodies = 0
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         host, port = self.server.server_address
@@ -316,6 +340,36 @@ class CliTests(unittest.TestCase):
             all(later - earlier >= 0.04 for earlier, later in zip(starts, starts[1:])),
             starts,
         )
+
+    def test_same_host_response_bodies_do_not_download_in_parallel(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            urls = [f"{server.base_url}/slow-body/{index}" for index in range(2)]
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            _write_json(catalog_path, _catalog_without_lessons(urls))
+            _write_json(manifest_path, _manifest_for_urls(urls))
+
+            main(
+                [
+                    "--catalog",
+                    str(catalog_path),
+                    "--manifest",
+                    str(manifest_path),
+                    "--markdown",
+                    str(root / "catalog.md"),
+                    "--cache-dir",
+                    str(root / "cache"),
+                    "--max-workers",
+                    "2",
+                    "--per-host-delay",
+                    "0",
+                ]
+            )
+
+            max_active_bodies = server.server.max_active_bodies
+
+        self.assertEqual(max_active_bodies, 1)
 
     def test_redirect_follow_up_get_obeys_same_host_pacing(self):
         with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
