@@ -18,7 +18,7 @@
 - Chỉ `read.status = "read"` khi nội dung body thực tế đã được truy xuất và đọc; link lỗi/bị chặn không được dùng làm citation.
 - Không lưu hoặc xuất bản bản sao toàn văn dài từ website nguồn; cache raw chỉ phục vụ xử lý cục bộ, source notes phải là diễn giải ngắn.
 - Không thêm dependency bên thứ ba.
-- Workspace hiện không phải Git repository; mỗi task kết thúc bằng validation checkpoint thay vì commit. Không tự khởi tạo Git.
+- Workspace đã được người dùng cho phép khởi tạo Git cục bộ ngày 2026-08-22 để dùng worktree/diff review; mỗi task phải commit cục bộ sau khi validation pass và không được push nếu chưa có yêu cầu riêng.
 
 ---
 

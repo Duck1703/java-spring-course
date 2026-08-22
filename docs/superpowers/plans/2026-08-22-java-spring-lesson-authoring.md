@@ -20,7 +20,7 @@
 - Technical lessons have at least one code/config example; project/OJT/evaluation lessons instead have a concrete deliverable example or template.
 - Never copy a source run longer than 300 characters; paraphrase and cite.
 - No backend/runtime AI dependencies.
-- Workspace is not a Git repository; tasks end in validation checkpoints, not commits.
+- The user authorized a local Git repository on 2026-08-22 for worktree/diff review; each task commits locally after validation and nothing is pushed without separate authorization.
 
 ---
 

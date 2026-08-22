@@ -21,7 +21,7 @@
 - Every lesson shows 2–4 practices with Hint and hidden Solution, plus original assignments where present.
 - Persist completion, last lesson, exercise/quiz state, module collapse state and theme in localStorage; support safe reset and JSON export/import.
 - Respect keyboard navigation, visible focus, semantic structure, color contrast and `prefers-reduced-motion`.
-- Workspace is not a Git repository; tasks end in test/inspection checkpoints, not commits.
+- The user authorized a local Git repository on 2026-08-22 for worktree/diff review; each task commits locally after tests/inspection and nothing is pushed without separate authorization.
 
 ---
 
