@@ -1,0 +1,520 @@
+[
+  {
+    "resourceId": "res-004dba8a7332",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/index.html",
+    "lessonIds": [
+      "day-37"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/index.html",
+      "contentSha256": "3f24f2e5979af91e7713c0cfbd84a6f42ef554173de6278ffe99088a7ced6ad4"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "The Java Language Specification (Java SE 17 Edition)",
+      "relevantHeadings": [
+        "Chapter 1. Introduction",
+        "Table of Contents"
+      ],
+      "topics": [
+        "Java SE 17",
+        "Language Specification",
+        "JLS"
+      ],
+      "facts": [
+        {
+          "topic": "Pham vi JLS 17",
+          "summary": "The Java Language Specification, Java SE 17 Edition (JLS 17) dinh nghia toan bo cu phap va ngon ngu Java 17, bao gom cac tinh nang moi nhu sealed classes, pattern matching for switch, records, text blocks.",
+          "locator": "Trang bia: 'Java SE 17 Edition' + Table of Contents chay tu Chapter 1 den Chapter 19"
+        },
+        {
+          "topic": "Cau truc chuan",
+          "summary": "JLS 17 chia thanh 19 chuong: Introduction, Grammars, Lexical Structure, Types/Values/Variables, Names, Packages/Modules, Classes, Interfaces, Arrays, Exceptions, Execution, Binary Compatibility, Blocks/Statements, Expressions, Threads/Locks, Type Inference, Syntax Summary.",
+          "locator": "Table of Contents, cac chuong 1-19"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-06398bb0cc69",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html",
+    "lessonIds": [
+      "day-31"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/reference/using/structuring-your-code.html",
+      "contentSha256": "8ffa8e6f09c79f54d4ecc360c653ff147f044a27cc32f16949a35ff74f446d7f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Structuring Your Code (Spring Boot Reference)",
+      "relevantHeadings": [
+        "Structuring Your Code",
+        "Using the default Package",
+        "Locating the Main Application Class"
+      ],
+      "topics": [
+        "Spring Boot project structure",
+        "@SpringBootApplication",
+        "package naming"
+      ],
+      "facts": [
+        {
+          "topic": "Khong dung default package",
+          "summary": "Spring Boot khuyen cao KHONG dung default package (class khong co package declaration) vi gay van de voi @ComponentScan, @ConfigurationPropertiesScan, @EntityScan, @SpringBootApplication — moi class tu moi jar deu duoc quet.",
+          "locator": "muc 'Using the default Package'"
+        },
+        {
+          "topic": "Vi tri Main Application Class",
+          "summary": "Nen dat class main (co @SpringBootApplication) o root package tren cac class khac; package cua class nay duoc dung lam base search package cho @Entity, @ComponentScan, etc.",
+          "locator": "muc 'Locating the Main Application Class', vi du layout com.example.myapplication"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-2c011d89d6e0",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/spring-transactional-propagation-isolation",
+    "lessonIds": [
+      "day-35"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-transactional-propagation-isolation",
+      "contentSha256": "109d6bb01aebd648f878cfa9b5fbeddfca6f21c409f010b8b80ac9d451b1fdb1"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Transaction Propagation and Isolation in Spring @Transactional (Baeldung)",
+      "relevantHeadings": [
+        "3. Transaction Propagation",
+        "4. Transaction Isolation"
+      ],
+      "topics": [
+        "@Transactional",
+        "propagation",
+        "isolation levels",
+        "REQUIRED",
+        "REQUIRES_NEW",
+        "NESTED"
+      ],
+      "facts": [
+        {
+          "topic": "7 loai propagation",
+          "summary": "Spring ho tro 7 propagation: REQUIRED (mac dinh, dung tx hien co hoac tao moi), SUPPORTS (dung tx neu co, khong thi non-tx), MANDATORY (bat buoc phai co tx, nguoc lai nem exception), NEVER (khong duoc co tx), NOT_SUPPORTED (suspend tx hien co), REQUIRES_NEW (luon tao tx moi, suspend tx cu), NESTED (savepoint trong tx hien co, chi DataSourceTransactionManager ho tro).",
+          "locator": "muc 3.1-3.7, cac vi du pseudo-code"
+        },
+        {
+          "topic": "5 muc isolation",
+          "summary": "Isolation co 5 muc: DEFAULT (dung mac dinh cua RDBMS), READ_UNCOMMITTED (doc duoc uncommitted data, tat ca side effects), READ_COMMITTED (ngan dirty read, mac dinh Postgres/SQL Server/Oracle), REPEATABLE_READ (ngan dirty + non-repeatable read, mac dinh MySQL), SERIALIZABLE (ngan het, chay serial, giam concurrency).",
+          "locator": "muc 4.1-4.5, bang tac dong side effects"
+        },
+        {
+          "topic": "Priority @Transactional",
+          "summary": "Uu tien gan @Transactional tu thap den cao: interface < superclass < class < interface method < superclass method < class method; class-level ap dung cho tat ca public method chua co annotation.",
+          "locator": "muc 2.2, How to Use @Transactional"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-348a6a4cb0b8",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc.html",
+    "lessonIds": [
+      "day-31"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc.html",
+      "contentSha256": "d51985675f5749f7c4dad8e57ae7b9a82ff5e0ddbdd0319c154412660454c4a9"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring Web MVC (Spring Framework Reference)",
+      "relevantHeadings": [
+        "Spring Web MVC",
+        "DispatcherServlet",
+        "Annotated Controllers",
+        "Handler Methods",
+        "Error Responses"
+      ],
+      "topics": [
+        "DispatcherServlet",
+        "@Controller",
+        "@RestController",
+        "HandlerMethod",
+        "Error Responses"
+      ],
+      "facts": [
+        {
+          "topic": "DispatcherServlet la trung tam",
+          "summary": "DispatcherServlet la front controller cua Spring MVC, tiep nhan tat ca request, delegate den handler mappings -> controller -> view resolvers. No duoc cau hinh qua web.xml hoac Servlet 3.0+ programmatic registration.",
+          "locator": "muc 'DispatcherServlet', 'Spring Web MVC is the original web framework built on the Servlet API'"
+        },
+        {
+          "topic": "Annotated Controllers",
+          "summary": "Controller duoc danh dau @Controller hoac @RestController (ket hop @Controller + @ResponseBody). Phuong thuc handler duoc map bang @RequestMapping/@GetMapping/@PostMapping... voi cac argument: @RequestParam, @RequestBody, @PathVariable, @ModelAttribute, @SessionAttribute, etc.",
+          "locator": "muc 'Annotated Controllers Declaration' den 'Handler Methods Method Arguments'"
+        },
+        {
+          "topic": "Error Responses & ControllerAdvice",
+          "summary": "Spring MVC ho tro @ExceptionHandler (controller-level), @ControllerAdvice/@RestControllerAdvice (global), ResponseStatusException (throw truc tiep), va custom HandlerExceptionResolver. Spring Boot cung cap BasicErrorController + Whitelabel Error Page + JSON response mac dinh, tuy chinh qua server.error.* properties.",
+          "locator": "muc 'Error Responses', 'Controller Advice', va Spring Boot ErrorController"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-39bc1924ee00",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/building-a-restful-web-service-with-spring",
+    "lessonIds": [
+      "day-31"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/building-a-restful-web-service-with-spring",
+      "contentSha256": "5db353bda52ac74a2809e631da20c359b4b05263db9102265a27986c7e02238c"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "HTTP 404 (checkedAt=2026-08-22T16:33:26.013701Z, httpStatus=404, error='HTTPError: HTTP Error 404: Not Found') — requestedUrl https://www.baeldung.com/building-a-restful-web-service-with-spring tra ve trang 'Page not found – Baeldung' khong co noi dung ky thuat."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-56b8234cf832",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-framework/reference/index.html",
+    "lessonIds": [
+      "day-37"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-framework/reference/index.html",
+      "contentSha256": "735c2bd5bb8dd820bd004a01293d9e0f2fa6209fa5760eca5ede31f4ae24b1a8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring Framework Documentation (Overview)",
+      "relevantHeadings": [
+        "Overview",
+        "Core Technologies",
+        "Testing",
+        "Data Access",
+        "Web Servlet",
+        "Web Reactive",
+        "Integration",
+        "Languages"
+      ],
+      "topics": [
+        "Spring Framework 7.x",
+        "Core IoC",
+        "AOP",
+        "Testing",
+        "Web MVC",
+        "WebFlux"
+      ],
+      "facts": [
+        {
+          "topic": "Cau truc Spring Framework Reference",
+          "summary": "Tai lieu Spring Framework chia 7 phan chinh: Overview (History, Design Philosophy), Core Technologies (IoC Container, Events, Resources, i18n, Validation, Data Binding, SpEL, AOP, AOT), Testing (Mock Objects, TestContext Framework, Spring MVC Test, WebTestClient), Data Access (Transactions, JDBC, R2DBC, O/R Mapping), Web Servlet (Spring MVC, WebSocket, STOMP), Web Reactive (WebFlux, WebClient, RSocket), Integration (REST Clients, JMS, JCA, JMX, Email, Tasks, Caching, Observability).",
+          "locator": "muc 'Overview', 'Spring Framework Documentation' + cac phan Core/Testing/Data Access/Web Servlet/Web Reactive/Integration"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-8fc303d6f753",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/spring-tutorial",
+    "lessonIds": [
+      "day-37"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-tutorial",
+      "contentSha256": "83578c4e56c6289f802d44bbaa3c0aac997f30481de0024ddd8c0457f78ea76d"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java Back to Basics Tutorial (Baeldung Series landing page)",
+      "relevantHeadings": [
+        "Series"
+      ],
+      "topics": [
+        "Java core",
+        "Baeldung Series",
+        "learning path"
+      ],
+      "facts": [
+        {
+          "topic": "Series landing page",
+          "summary": "Trang nay la 'Java Back to Basics Tutorial' Series landing page — chi liet ke cac sub-series (Get Started with Java, Java Strings, Java Concurrency, Java Collections, Java Streams, Java IO) ma khong chua noi dung ky thuat sau. La trang toc muc (TOC) de dieu huong nguoi hoc den cac bai viet rieng.",
+          "locator": "muc 'Series', danh sach 6 sub-series"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-aa4cbb2b9a5c",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/spring-data-jpa-sort",
+    "lessonIds": [
+      "day-33",
+      "day-34"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/spring-data-jpa-sort",
+      "contentSha256": "1cea8799ae7ad4c84c90861460dd89c4fe076ce0be61159d89da02715432a08a"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "HTTP 404 (checkedAt=2026-08-22T16:33:26.013701Z, httpStatus=404, error='HTTPError: HTTP Error 404: Not Found') — requestedUrl https://www.baeldung.com/spring-data-jpa-sort tra ve trang 'Page not found – Baeldung' khong co noi dung ky thuat."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-af7171222f9a",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/spring-problem-detail",
+    "lessonIds": [
+      "day-32"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/spring-problem-detail",
+      "contentSha256": "23f1f613f9787717941eac5e975262a308d448d2eb084936ae09e6b5b6dfe7d2"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "HTTP 404 (checkedAt=2026-08-22T16:33:26.013701Z, httpStatus=404, error='HTTPError: HTTP Error 404: Not Found') — requestedUrl https://www.baeldung.com/spring-problem-detail tra ve trang 'Page not found – Baeldung' khong co noi dung ky thuat."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-afbebe6cf212",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html",
+    "lessonIds": [
+      "day-32",
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html",
+      "contentSha256": "60047d42261edf5a8d1c431691e2e4c3dfab365e23179c89b6c7a065f7ce40ff"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Persisting Entities (Spring Data JPA Reference)",
+      "relevantHeadings": [
+        "Persisting Entities",
+        "Saving Entities",
+        "Entity State-detection Strategies"
+      ],
+      "topics": [
+        "Spring Data JPA",
+        "CrudRepository.save",
+        "EntityManager.persist/merge",
+        "Persistable interface"
+      ],
+      "facts": [
+        {
+          "topic": "save() behavior",
+          "summary": "CrudRepository.save(entity) goi entityManager.persist() neu entity chua duoc persist (isNew() == true), nguoc lai goi entityManager.merge(). Spring Data JPA dung Version-property hoac Id-property de detect entity moi (mac dinh: version null hoac id null => new).",
+          "locator": "muc 'Saving Entities', 'Entity State-detection Strategies', Option 1"
+        },
+        {
+          "topic": "Implement Persistable de tu chinh",
+          "summary": "Entity co the implement Persistable<ID> va override isNew() de tu quy dinh logic phat hien entity moi; pattern thong dung la base class AbstractEntity voi @Transient boolean isNew = true, @PostPersist/@PostLoad dat isNew = false.",
+          "locator": "muc 'Entity State-detection Strategies', Option 2, vi du AbstractEntity"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-b307e54a2685",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/exception-handling-for-rest-with-spring",
+    "lessonIds": [
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/exception-handling-for-rest-with-spring",
+      "contentSha256": "a32cff5e4ef6f760c4be8b4abe47e02c19dcbaa6f7f7388a3456e87d39a63a48"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Error Handling for REST with Spring (Baeldung)",
+      "relevantHeadings": [
+        "2. @ExceptionHandler",
+        "2.1. Local Exception Handling",
+        "2.2. Global Exception Handling",
+        "3. Annotate Exceptions Directly",
+        "4. ResponseStatusException",
+        "5. HandlerExceptionResolver",
+        "6.2. Spring Boot Support"
+      ],
+      "topics": [
+        "@ExceptionHandler",
+        "@ControllerAdvice",
+        "@RestControllerAdvice",
+        "ResponseStatusException",
+        "ProblemDetail",
+        "Spring Boot ErrorController"
+      ],
+      "facts": [
+        {
+          "topic": "@ExceptionHandler co ban",
+          "summary": "@ExceptionHandler phuong thuc tra ve void/Object/ResponseEntity/ProblemDetail; co the chi dinh exception qua annotation hoac method parameter. Tu Spring 6.2 ho tro content negotiation bang produces (APPLICATION_JSON_VALUE, TEXT_PLAIN_VALUE).",
+          "locator": "muc 2, vi du handleException2 tra ve ProblemDetail"
+        },
+        {
+          "topic": "Global handling voi @RestControllerAdvice",
+          "summary": "@RestControllerAdvice (hoac @ControllerAdvice) chua cac @ExceptionHandler chung cho toan bo ung dung; co the ke thua ResponseEntityExceptionHandler de dung san ProblemDetails generation va MVC exception handling.",
+          "locator": "muc 2.2, vi du MyGlobalExceptionHandler + MyCustomResponseEntityExceptionHandler"
+        },
+        {
+          "topic": "Spring Boot ErrorController & properties",
+          "summary": "Spring Boot cung cap BasicErrorController: Whitelabel Error Page cho browser, JSON response cho REST. Tuy chinh qua server.error.whitelabel.enabled, server.error.include-stacktrace, server.error.include-message. Co the override bang custom ErrorController bean hoac ErrorAttributes bean.",
+          "locator": "muc 6.2, vi du MyCustomErrorAttributes, MyErrorController"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d5dfac91a451",
+    "batch": "project-final",
+    "requestedUrl": "https://www.baeldung.com/java-tutorial",
+    "lessonIds": [
+      "day-37"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-tutorial",
+      "contentSha256": "8b009018e0046f2110a6565763aa2613051547ac6c9c4e49956852a2dffb4530"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java Tutorial (Baeldung Series landing page)",
+      "relevantHeadings": [
+        "Series"
+      ],
+      "topics": [
+        "Java",
+        "Baeldung Series",
+        "learning path"
+      ],
+      "facts": [
+        {
+          "topic": "Series landing page",
+          "summary": "Trang 'Java Tutorial' la Series landing page cua Baeldung — chi la toc muc lien ket den cac tutorial Java rieng le (Java core, collections, streams, IO, concurrency...), khong chua noi dung ky thuat sau. Tinh chat tuong tu 'Java Back to Basics' (res-8fc303d6f753).",
+          "locator": "muc 'Series', trang chi chua danhsach link den cac tutorial"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f023c0083770",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-boot/index.html",
+    "lessonIds": [
+      "day-31",
+      "day-37"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/index.html",
+      "contentSha256": "daeebca43ac8510d865e81a4094eb4fe1b3eaea21ac169d169a589c05de36af4"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring Boot Reference (Overview)",
+      "relevantHeadings": [
+        "Spring Boot",
+        "Overview",
+        "Primary goals"
+      ],
+      "topics": [
+        "Spring Boot 4.x",
+        "opinionated defaults",
+        "embedded servers",
+        "auto-configuration"
+      ],
+      "facts": [
+        {
+          "topic": "Muc tieu chinh cua Spring Boot",
+          "summary": "Spring Boot co 3 muc tieu: (1) Getting-started experience nhanh hon cho Spring development; (2) Opinionated out-of-the-box nhung get out of the way khi can tu chinh; (3) Cung cap non-functional features chung: embedded servers, security, metrics, health checks, externalized config. Khong code generation (tru native image) va khong yeu cau XML config.",
+          "locator": "muc 'Overview', 'Spring Boot helps you to create stand-alone...', 3 primary goals"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
