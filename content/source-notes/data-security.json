@@ -1,0 +1,853 @@
+[
+  {
+    "resourceId": "res-01d4c9bc1c9c",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/jpa-entities",
+    "lessonIds": [
+      "day-19"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/jpa-entities",
+      "contentSha256": "af408e121181a841e55ea2b649589643f3c1f8a4850f828fd84a9019bf2f9a7e"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Defining JPA Entities | Baeldung",
+      "relevantHeadings": [
+        "2. Entity",
+        "2.1. The Entity Annotation",
+        "2.2. The Id Annotation",
+        "2.4. The Column Annotation",
+        "2.7. The Enumerated Annotation"
+      ],
+      "topics": [
+        "JPA entity annotations",
+        "Chiến lược sinh khóa chính",
+        "Mapping cột/bảng"
+      ],
+      "facts": [
+        {
+          "topic": "@Entity annotation",
+          "summary": "Một lớp POJO trở thành JPA entity khi gắn @Entity ở mức class; entity bắt buộc có constructor không tham số và một khóa chính, đồng thời class không được khai báo final vì các JPA provider cần subclass nó để cung cấp chức năng riêng.",
+          "locator": "2.1. The Entity Annotation"
+        },
+        {
+          "topic": "Chiến lược sinh khóa chính",
+          "summary": "@Id đánh dấu khóa chính, còn @GeneratedValue(strategy=...) chọn 1 trong 4 chiến lược sinh id: AUTO (để JPA provider tự chọn), TABLE, SEQUENCE, hoặc IDENTITY.",
+          "locator": "2.2. The Id Annotation"
+        },
+        {
+          "topic": "@Table và @Column",
+          "summary": "@Table(name, schema) đổi tên bảng/khai báo schema khi tên bảng khác tên entity; @Column(name, length, nullable, unique) tùy biến chi tiết cột tương ứng, nếu không khai báo thì tên cột mặc định lấy theo tên field.",
+          "locator": "2.3. The Table Annotation / 2.4. The Column Annotation"
+        },
+        {
+          "topic": "@Transient, @Temporal, @Enumerated",
+          "summary": "@Transient đánh dấu field không được lưu xuống DB (ví dụ field tính toán như tuổi); @Temporal dùng cho kiểu ngày giờ kiểu cũ (JPA 3.1 đã hỗ trợ trực tiếp java.time.*); @Enumerated(EnumType.STRING) lưu enum theo tên thay vì theo ordinal mặc định.",
+          "locator": "2.5. The Transient Annotation / 2.6. The Temporal Annotation / 2.7. The Enumerated Annotation"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-1559f0cd62e7",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html",
+    "lessonIds": [
+      "day-23"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html",
+      "contentSha256": "0e72e7137cc68f944f12ea0760307e660bd18857b63f1630538c5fc137b55edc"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Cross Site Request Forgery (CSRF) :: Spring Security",
+      "relevantHeadings": [
+        "Cross Site Request Forgery (CSRF)",
+        "Understanding CSRF Protection's Components",
+        "Persisting the CsrfToken",
+        "Handling the CsrfToken"
+      ],
+      "topics": [
+        "Kiến trúc CsrfFilter",
+        "CsrfTokenRepository",
+        "Bảo vệ BREACH"
+      ],
+      "facts": [
+        {
+          "topic": "CsrfFilter gồm hai phần",
+          "summary": "CsrfFilter chia bảo vệ CSRF thành hai bước: (1) cung cấp CsrfToken cho ứng dụng qua CsrfTokenRequestHandler, và (2) xác định request có cần bảo vệ CSRF không, tải và xác thực token, xử lý AccessDeniedException nếu token sai/thiếu.",
+          "locator": "Understanding CSRF Protection's Components"
+        },
+        {
+          "topic": "Tải token trễ (deferred)",
+          "summary": "Từ Spring Security 6, việc tải CsrfToken đã lưu (persisted) được hoãn lại (DeferredCsrfToken) để tránh phải đọc session ở mọi request, cải thiện hiệu năng so với Spring Security 5.",
+          "locator": "Migrating to Spring Security 6"
+        },
+        {
+          "topic": "CsrfTokenRepository",
+          "summary": "Mặc định Spring Security lưu CsrfToken trong HttpSession qua HttpSessionCsrfTokenRepository; CookieCsrfTokenRepository lưu token vào cookie tên XSRF-TOKEN và đọc lại từ header X-XSRF-TOKEN hoặc tham số _csrf, phù hợp cho ứng dụng JavaScript phía client.",
+          "locator": "Persisting the CsrfToken"
+        },
+        {
+          "topic": "Bảo vệ BREACH bằng XorCsrfTokenRequestAttributeHandler",
+          "summary": "Handler mặc định XorCsrfTokenRequestAttributeHandler mã hóa thêm phần ngẫu nhiên vào giá trị CsrfToken mỗi request để chống tấn công BREACH; CsrfTokenRequestAttributeHandler là lựa chọn để tắt bảo vệ BREACH này.",
+          "locator": "Using the XorCsrfTokenRequestAttributeHandler (BREACH)"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-28c8c8bc71df",
+    "batch": "data-security",
+    "requestedUrl": "https://vladmihalcea.com/how-to-batch-insert-and-update-statements-with-hibernate/",
+    "lessonIds": [
+      "day-24"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://vladmihalcea.com/how-to-batch-insert-and-update-statements-with-hibernate/",
+      "contentSha256": "86b14dcc22326053ab0ef5e9b9c950a1b84f0255d21a5f3a4f9d4b837ee98707"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "How to batch INSERT and UPDATE statements with Hibernate - Vlad Mihalcea",
+      "relevantHeadings": [
+        "Default batch support",
+        "Configuring hibernate.jdbc.batch_size",
+        "Ordering statements",
+        "Benchmark"
+      ],
+      "topics": [
+        "Hibernate JDBC batching",
+        "hibernate.jdbc.batch_size",
+        "Ordering insert/update"
+      ],
+      "facts": [
+        {
+          "topic": "Mặc định không batch",
+          "summary": "Khi chưa cấu hình gì, Hibernate thực thi từng câu INSERT/UPDATE riêng lẻ, mỗi câu là một round-trip mạng riêng tới database — không tận dụng JDBC batching.",
+          "locator": "Default batch support"
+        },
+        {
+          "topic": "Cấu hình hibernate.jdbc.batch_size",
+          "summary": "Đặt thuộc tính hibernate.jdbc.batch_size (khuyến nghị 5-30) sẽ bật JDBC2 batch update; sau khi bật, các câu INSERT cùng bảng (ví dụ Comment) được gộp thành batch, nhưng UPDATE vẫn có thể tách rời nếu không cùng cấu hình order.",
+          "locator": "Configuring hibernate.jdbc.batch_size"
+        },
+        {
+          "topic": "hibernate.order_inserts / order_updates",
+          "summary": "Bật hibernate.order_inserts=true và hibernate.order_updates=true giúp Hibernate sắp xếp các câu lệnh theo bảng để gộp batch hiệu quả hơn; lưu ý một JDBC batch chỉ nhắm tới một bảng duy nhất, trộn lệnh nhiều bảng sẽ làm gãy batch.",
+          "locator": "Ordering statements"
+        },
+        {
+          "topic": "Hiệu năng đo được",
+          "summary": "Benchmark trên PostgreSQL cho thấy càng nhiều dòng, lợi ích batching càng lớn: ở 30000 statement, insert không batch mất 5889ms còn có batch chỉ 2640ms; ở 300000 statement chênh lệch còn rõ hơn (51785ms so với 16052ms).",
+          "locator": "Benchmark"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-2e4a3dd62ec7",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/spring-data-jpa-pagination-sorting",
+    "lessonIds": [
+      "day-20",
+      "day-21"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-data-jpa-pagination-sorting",
+      "contentSha256": "5fadba3cd30404293361bc7cb41e884e2eacb6744fb54c3abf0471a1301e614a"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Pagination and Sorting using Spring Data JPA | Baeldung",
+      "relevantHeadings": [
+        "3. Creating a Repository",
+        "4. Pagination",
+        "5. Pagination and Sorting"
+      ],
+      "topics": [
+        "PagingAndSortingRepository",
+        "PageRequest",
+        "Page vs Slice"
+      ],
+      "facts": [
+        {
+          "topic": "PagingAndSortingRepository",
+          "summary": "Repository kế thừa PagingAndSortingRepository (hoặc JpaRepository, vốn cũng kế thừa nó) sẽ có sẵn findAll(Pageable) và findAll(Sort) mà không cần khai báo thêm.",
+          "locator": "3. Creating a Repository"
+        },
+        {
+          "topic": "PageRequest.of",
+          "summary": "PageRequest.of(pageNumber, pageSize) tạo đối tượng Pageable; số trang bắt đầu từ 0, ví dụ PageRequest.of(0, 2) là trang đầu tiên gồm 2 phần tử.",
+          "locator": "4. Pagination"
+        },
+        {
+          "topic": "Page<T> vs Slice<T>",
+          "summary": "findAll(Pageable) trả về Page<T> theo mặc định, kèm tổng số trang nhưng tốn thêm một count query; để tránh chi phí đó có thể trả Slice<T> (chỉ biết có trang kế tiếp hay không) hoặc List<T>.",
+          "locator": "4. Pagination"
+        },
+        {
+          "topic": "Kết hợp sort vào PageRequest",
+          "summary": "Có thể truyền Sort.by(\"field\").descending().and(Sort.by(\"field2\")) trực tiếp vào PageRequest.of(page, size, sort) để vừa phân trang vừa sắp xếp trong cùng một lời gọi repository.",
+          "locator": "5. Pagination and Sorting"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-553bbd92e5d0",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-data/jpa/reference/repositories.html",
+    "lessonIds": [
+      "day-21",
+      "day-32",
+      "day-33",
+      "day-34"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://docs.spring.io/spring-data/jpa/reference/repositories.html",
+      "contentSha256": "b69821e7a28137efb180f4c6c6220513a61d5b5b1630b03fa5baa4eb49bf2439"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "requestedUrl https://docs.spring.io/spring-data/jpa/reference/repositories.html tra ve HTTP 404 (HTTPError: HTTP Error 404: Not Found) trong lan GET/access that o Task 2 (checkedAt trong content/source-manifest.json). Khong co noi dung cache hop le de doc; khong dung webfetch-fallback."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-65703b737426",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html",
+    "lessonIds": [
+      "day-22",
+      "day-24",
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html",
+      "contentSha256": "5a9edac0b23725c55cedcf730f1bd4775df4337749d5a3a2fd3fb98fd133d1db"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "OAuth 2.0 Resource Server JWT :: Spring Security",
+      "relevantHeadings": [
+        "Minimal Configuration for JWTs",
+        "Startup Expectations",
+        "Runtime Expectations",
+        "How JWT Authentication Works"
+      ],
+      "topics": [
+        "Cấu hình JWT resource server",
+        "Quy trình discovery",
+        "JwtAuthenticationProvider"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu hình tối thiểu qua issuer-uri",
+          "summary": "Chỉ cần khai báo spring.security.oauth2.resourceserver.jwt.issuer-uri trỏ tới authorization server, Resource Server sẽ tự cấu hình: khám phá public key của authorization server và xác thực JWT gửi tới dựa trên claim iss.",
+          "locator": "Specifying the Authorization Server"
+        },
+        {
+          "topic": "Quy trình discovery lúc khởi động",
+          "summary": "Ở request đầu tiên chứa JWT, Resource Server truy vấn endpoint Provider Configuration để lấy jwks_url, truy vấn jwks_url để lấy thuật toán hỗ trợ, rồi cấu hình chiến lược xác thực; việc này được hoãn lại qua SupplierJwtDecoder nên khởi động ứng dụng không phụ thuộc vào việc authorization server có sẵn sàng hay không.",
+          "locator": "Startup Expectations"
+        },
+        {
+          "topic": "Xử lý mỗi request có Bearer token",
+          "summary": "Với mỗi request có JWT hợp lệ, Resource Server xác thực chữ ký bằng public key lấy từ jwks_url, kiểm tra claim exp/nbf/iss, rồi ánh xạ từng scope thành authority có tiền tố SCOPE_.",
+          "locator": "Runtime Expectations"
+        },
+        {
+          "topic": "JwtAuthenticationProvider",
+          "summary": "JwtAuthenticationProvider dùng JwtDecoder để giải mã/xác thực JWT rồi dùng JwtAuthenticationConverter để chuyển thành tập granted authorities; khi thành công trả về JwtAuthenticationToken có principal là đối tượng Jwt và authority bao gồm FACTOR_BEARER.",
+          "locator": "How JWT Authentication Works"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-749fa81acd48",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/hibernate-lazy-eager-loading",
+    "lessonIds": [
+      "day-19",
+      "day-20"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/hibernate-lazy-eager-loading",
+      "contentSha256": "ddc82ec1e739ba98c30cd9431306e7e39e74f7e8011266cd535bf73c6b1f0ca7"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Eager/Lazy Loading in Hibernate Baeldung",
+      "relevantHeadings": [
+        "3. Eager and Lazy Loading",
+        "6. Advantages and Disadvantages",
+        "7. JPA Default FetchType",
+        "8. Lazy Loading in Hibernate"
+      ],
+      "topics": [
+        "FetchType.LAZY vs EAGER",
+        "Default fetch type theo spec",
+        "Proxy & LazyInitializationException"
+      ],
+      "facts": [
+        {
+          "topic": "Khái niệm eager vs lazy",
+          "summary": "Eager loading khởi tạo dữ liệu liên kết ngay khi tạo đối tượng; lazy loading trì hoãn việc khởi tạo tới khi thật sự cần, cấu hình qua fetch = FetchType.LAZY hoặc FetchType.EAGER trên annotation quan hệ.",
+          "locator": "3. Eager and Lazy Loading / 4. Loading Configuration"
+        },
+        {
+          "topic": "FetchType mặc định theo Jakarta Persistence",
+          "summary": "Theo đặc tả Jakarta Persistence, @OneToMany và @ManyToMany mặc định dùng FetchType.LAZY, còn @OneToOne và @ManyToOne mặc định dùng FetchType.EAGER; Hibernate khuyến nghị đánh dấu tĩnh mọi quan hệ là LAZY rồi dùng chiến lược fetch động khi cần eager.",
+          "locator": "7. JPA Default FetchType"
+        },
+        {
+          "topic": "Cơ chế proxy của lazy loading",
+          "summary": "Hibernate hiện thực lazy loading bằng cách chèn một proxy thay cho entity thật; khi truy cập field bị lazy trước khi được khởi tạo (ví dụ sau khi session đã đóng) sẽ ném LazyInitializationException.",
+          "locator": "8. Lazy Loading in Hibernate"
+        },
+        {
+          "topic": "Ưu/nhược điểm hai chiến lược",
+          "summary": "Lazy giảm thời gian tải ban đầu và tránh N+1 không cần thiết nhưng có thể trễ khi truy cập liên kết sau này; eager tránh độ trễ đó nhưng tải nhiều dữ liệu không cần thiết và vẫn có thể gặp N+1 nếu không dùng JOIN FETCH.",
+          "locator": "6. Advantages and Disadvantages"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-82b36b19c96f",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/database-auditing-jpa",
+    "lessonIds": [
+      "day-20",
+      "day-21"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/database-auditing-jpa",
+      "contentSha256": "060072f0afec4e466982fd944707cf158398b01ee6a123d26f9db4182f1f3831"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Auditing with JPA, Hibernate, and Spring Data JPA | Baeldung",
+      "relevantHeadings": [
+        "2.1. @PrePersist, @PreUpdate, and @PreRemove",
+        "3.1. Getting Started with Envers",
+        "4.1. Enabling JPA Auditing",
+        "4.4. Auditing the Author of Changes With Spring Security",
+        "5. Conclusion"
+      ],
+      "topics": [
+        "JPA lifecycle callback auditing",
+        "Hibernate Envers",
+        "Spring Data JPA auditing"
+      ],
+      "facts": [
+        {
+          "topic": "Auditing thuần JPA bằng callback",
+          "summary": "JPA không có API auditing riêng nhưng có thể dùng callback @PrePersist/@PreUpdate/@PreRemove; theo đặc tả JPA 2, các callback này chỉ được sửa \"non-relationship state\" của entity, không được gọi EntityManager/Query hay sửa quan hệ.",
+          "locator": "2.1. @PrePersist, @PreUpdate, and @PreRemove"
+        },
+        {
+          "topic": "Hibernate Envers",
+          "summary": "Thêm dependency hibernate-envers và gắn @Audited lên entity (và các entity liên quan) để Hibernate tự sinh bảng lịch sử dạng <table>_AUD kèm cột REV/REVTYPE, cùng bảng REVINFO lưu REV và REVTSTMP cho mỗi revision.",
+          "locator": "3.1. Getting Started with Envers / 3.2. Creating Audit Log Tables"
+        },
+        {
+          "topic": "Spring Data JPA auditing",
+          "summary": "Bật @EnableJpaAuditing trên class @Configuration, gắn @EntityListeners(AuditingEntityListener.class) lên entity, rồi dùng @CreatedDate/@LastModifiedDate để tự động set thời điểm; @CreatedBy/@LastModifiedBy lấy tên principal hiện tại từ SecurityContext qua interface AuditorAware<T>.",
+          "locator": "4.1. Enabling JPA Auditing / 4.4. Auditing the Author of Changes With Spring Security"
+        },
+        {
+          "topic": "Hạn chế chung khi audit DELETE",
+          "summary": "Cả cách tiếp cận JPA thuần và Spring Data JPA đều không audit được thao tác xóa vì chỉ được sửa non-relationship state (giá trị set trong @PreRemove sẽ bị xóa theo entity); Envers không bị hạn chế này vì ghi vào bảng khác.",
+          "locator": "5. Conclusion"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-8437fa16cd25",
+    "batch": "data-security",
+    "requestedUrl": "https://vladmihalcea.com/hibernate-softdelete-annotation/",
+    "lessonIds": [
+      "day-24"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://vladmihalcea.com/hibernate-softdelete-annotation/",
+      "contentSha256": "ee91b5c3b65ace834aa0b274058dbdb6d44ca5fc19e885f39256314947dc5388"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Hibernate SoftDelete annotation - Vlad Mihalcea",
+      "relevantHeadings": [
+        "Introduction",
+        "Domain Model",
+        "Testing the Hibernate SoftDelete annotation on the Tag entity"
+      ],
+      "topics": [
+        "@SoftDelete annotation (Hibernate 6.4)",
+        "Cơ chế UPDATE thay DELETE",
+        "@NotFound cho quan hệ LAZY"
+      ],
+      "facts": [
+        {
+          "topic": "@SoftDelete là cơ chế native của Hibernate 6.4",
+          "summary": "Annotation @SoftDelete được giới thiệu từ Hibernate 6.4, cho phép bật soft delete gắn thẳng lên entity mà không cần tự viết @SQLDelete/@Loader/@Where như cách làm thủ công trước đó.",
+          "locator": "Introduction"
+        },
+        {
+          "topic": "Cơ chế UPDATE thay cho DELETE",
+          "summary": "Khi remove một entity có @SoftDelete, Hibernate sinh câu UPDATE ... SET deleted = true thay vì DELETE, và tự động thêm điều kiện deleted = false vào WHERE của các query sau đó nên bản ghi đã xóa mềm sẽ không xuất hiện lại.",
+          "locator": "Testing the Hibernate SoftDelete annotation on the Tag entity"
+        },
+        {
+          "topic": "Áp dụng cho cả bảng join nhiều-nhiều",
+          "summary": "@SoftDelete có thể gắn cả lên entity (Post, PostDetails, PostComment) lẫn lên collection @ManyToMany (ví dụ tags) để soft-delete luôn cả các dòng trong bảng join post_tag.",
+          "locator": "The Post entity is mapped as follows"
+        },
+        {
+          "topic": "Cần @NotFound cho @ManyToOne LAZY",
+          "summary": "Khi entity cha có thể bị soft-delete, các quan hệ @ManyToOne(fetch = FetchType.LAZY) trỏ tới nó cần thêm @NotFound(action = NotFoundAction.EXCEPTION) vì sự tồn tại của khóa ngoại không còn đảm bảo entity cha vẫn còn (có thể đã bị soft-delete).",
+          "locator": "The post_comments table is mapped to the PostComment entity as follows"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ce09de5e928a",
+    "batch": "data-security",
+    "requestedUrl": "https://vladmihalcea.com/n-plus-1-query-problem/",
+    "lessonIds": [
+      "day-23",
+      "day-24"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://vladmihalcea.com/n-plus-1-query-problem/",
+      "contentSha256": "69fc7204c6c1b9416574ff25a3647bce2f1a202239a0e0dc1f83d82c829bcfc6"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "N+1 query problem with JPA and Hibernate - Vlad Mihalcea",
+      "relevantHeadings": [
+        "What is the N+1 query problem",
+        "FetchType.EAGER",
+        "FetchType.LAZY",
+        "Second-level cache"
+      ],
+      "topics": [
+        "N+1 query problem",
+        "JOIN FETCH",
+        "FetchType.EAGER/LAZY và N+1"
+      ],
+      "facts": [
+        {
+          "topic": "Định nghĩa N+1",
+          "summary": "N+1 query problem xảy ra khi framework truy cập dữ liệu phải thực thi thêm N câu SQL phụ để lấy dữ liệu lẽ ra có thể lấy được trong câu truy vấn chính; từng câu phụ đủ nhanh nên không lọt vào slow query log dù tổng thời gian bị ảnh hưởng đáng kể.",
+          "locator": "What is the N+1 query problem"
+        },
+        {
+          "topic": "FetchType.EAGER vẫn có thể gây N+1",
+          "summary": "@ManyToOne/@OneToOne mặc định dùng FetchType.EAGER; nếu quên thêm JOIN FETCH khi chạy JPQL/Criteria, Hibernate vẫn thực thi thêm N SELECT riêng cho từng liên kết vì kế hoạch fetch tường minh của JPQL không tự động được Hibernate chèn JOIN FETCH.",
+          "locator": "FetchType.EAGER"
+        },
+        {
+          "topic": "FetchType.LAZY không tự động tránh N+1",
+          "summary": "Ngay cả khi khai báo FetchType.LAZY, nếu sau đó code truy cập liên kết lazy (ví dụ post.getPost().getTitle()) thì vẫn phát sinh N câu SELECT phụ; cách khắc phục là thêm JOIN FETCH ngay trong câu JPQL ban đầu để gộp về 1 câu truy vấn duy nhất.",
+          "locator": "FetchType.LAZY"
+        },
+        {
+          "topic": "N+1 với second-level cache",
+          "summary": "N+1 cũng có thể xảy ra khi dùng Query Cache: nếu các entity kết quả (như PostComment) chưa có trong second-level cache, Hibernate vẫn phải chạy N câu SELECT riêng để tải từng entity dù danh sách id đã được cache.",
+          "locator": "Second-level cache"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-cf695e39df80",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/jpa-cascade-types",
+    "lessonIds": [
+      "day-19",
+      "day-20",
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/jpa-cascade-types",
+      "contentSha256": "211bec01c094744432a4a385e3f16cb281f514de229844723e562bac7212f6c0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Overview of JPA/Hibernate Cascade Types. | Baeldung",
+      "relevantHeadings": [
+        "2.1. JPA Cascade Type",
+        "2.2. Hibernate Cascade Type",
+        "3.2. CascadeType.PERSIST",
+        "3.4. CascadeType.REMOVE"
+      ],
+      "topics": [
+        "CascadeType enum của JPA",
+        "CascadeType riêng của Hibernate",
+        "Ví dụ PERSIST/REMOVE/LOCK"
+      ],
+      "facts": [
+        {
+          "topic": "CascadeType chuẩn JPA",
+          "summary": "jakarta.persistence.CascadeType định nghĩa 6 giá trị: ALL, PERSIST, MERGE, REMOVE, REFRESH, DETACH; CascadeType.ALL lan truyền mọi thao tác — kể cả thao tác riêng của Hibernate — từ entity cha sang entity con.",
+          "locator": "2.1. JPA Cascade Type / 3.1. CascadeType.ALL"
+        },
+        {
+          "topic": "CascadeType riêng của Hibernate",
+          "summary": "Ngoài các giá trị chuẩn JPA, Hibernate còn hỗ trợ 3 loại trong org.hibernate.annotations.CascadeType: REPLICATE, SAVE_UPDATE, LOCK.",
+          "locator": "2.2. Hibernate Cascade Type"
+        },
+        {
+          "topic": "CascadeType.PERSIST và REMOVE",
+          "summary": "CascadeType.PERSIST lan truyền thao tác persist từ cha sang con — lưu Person sẽ tự lưu luôn Address liên kết; CascadeType.REMOVE (tương đương CascadeType.DELETE riêng của Hibernate) lan truyền việc xóa — xóa Person sẽ tự xóa Address liên kết.",
+          "locator": "3.2. CascadeType.PERSIST / 3.4. CascadeType.REMOVE"
+        },
+        {
+          "topic": "CascadeType.LOCK",
+          "summary": "CascadeType.LOCK không khóa dữ liệu như tên gọi mà thực chất gắn lại (reattach) entity cha và entity con đã bị detach vào persistence context.",
+          "locator": "3.6. CascadeType.LOCK"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d1d09e3813e4",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/spring-security-csrf",
+    "lessonIds": [
+      "day-23"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-security-csrf",
+      "contentSha256": "2eae613baccf9c364b58f3b793bd3db0bf8dac4f16fd89dd1494322113d53b03"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "A Guide to CSRF Protection in Spring Security | Baeldung",
+      "relevantHeadings": [
+        "2. Two Simple CSRF Attacks",
+        "3.1. Spring Security Configuration",
+        "4. Stateless Spring API",
+        "4.2. Front-end Configuration"
+      ],
+      "topics": [
+        "Kịch bản tấn công CSRF",
+        "Bật/tắt CSRF trong Spring Security",
+        "CSRF cho API stateless"
+      ],
+      "facts": [
+        {
+          "topic": "Hai kiểu tấn công CSRF cơ bản",
+          "summary": "Tấn công CSRF qua GET có thể tự kích hoạt bằng thẻ <a> (cần click) hoặc <img src=...> (tự chạy khi trang tải, không cần click); tấn công qua POST cần một <form> ẩn tự submit bằng JavaScript (document.forms[0].submit()) vì <a>/<img> không gửi được POST.",
+          "locator": "2.1. GET Examples / 2.2. POST Example"
+        },
+        {
+          "topic": "CSRF bật mặc định từ Spring Security 4.x",
+          "summary": "Từ Spring Security 4.x, bảo vệ CSRF được bật mặc định và thêm token vào thuộc tính request _csrf; có thể tắt tường minh bằng http.csrf(AbstractHttpConfigurer::disable).",
+          "locator": "3.1. Spring Security Configuration"
+        },
+        {
+          "topic": "Khi nào cần/không cần CSRF cho API stateless",
+          "summary": "Nếu API stateless dùng xác thực token (như JWT) thì không cần và nên tắt CSRF; nhưng nếu API stateless vẫn dùng session cookie để xác thực thì vẫn cần bật CSRF, cấu hình qua CookieCsrfTokenRepository.withHttpOnlyFalse() để gửi cookie XSRF-TOKEN cho front-end.",
+          "locator": "4. Stateless Spring API / 4.1. Back-end Configuration"
+        },
+        {
+          "topic": "Phía client gửi token qua header",
+          "summary": "Front-end đọc cookie XSRF-TOKEN từ document.cookie rồi gửi lại trong header X-XSRF-TOKEN cho mọi request làm thay đổi trạng thái (POST, PUT, DELETE, PATCH).",
+          "locator": "4.2. Front-end Configuration"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d20f2a5470d7",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/jpa-hibernate-associations",
+    "lessonIds": [
+      "day-19"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/jpa-hibernate-associations",
+      "contentSha256": "22514401f38592ff9fd426950bc82aa9eb61c0e2453de1c19b884d39dbfeaea5"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Understanding JPA/Hibernate Associations | Baeldung",
+      "relevantHeadings": [
+        "2. Unidirectional Associations",
+        "3. Bidirectional Associations",
+        "4. Unidirectional vs. Bidirectional Association"
+      ],
+      "topics": [
+        "Quan hệ một chiều",
+        "Quan hệ hai chiều & mappedBy",
+        "So sánh ưu nhược điểm"
+      ],
+      "facts": [
+        {
+          "topic": "Quan hệ một chiều (unidirectional)",
+          "summary": "Quan hệ một chiều chỉ một entity giữ tham chiếu tới entity kia, khai báo qua @OneToMany/@ManyToOne/@OneToOne/@ManyToMany kèm @JoinColumn (hoặc @JoinTable cho many-to-many) mà không có mappedBy ở phía đối diện.",
+          "locator": "2. Unidirectional Associations"
+        },
+        {
+          "topic": "Quan hệ hai chiều dùng mappedBy",
+          "summary": "Quan hệ hai chiều dùng thuộc tính mappedBy trên phía không sở hữu để chỉ ra field ở entity kia là chủ sở hữu quan hệ (owning side) — ví dụ Department.employees dùng mappedBy = \"department\" trỏ tới field department trong Employee.",
+          "locator": "3.1. One-To-Many Bidirectional Association"
+        },
+        {
+          "topic": "Many-to-many hai chiều",
+          "summary": "Trong quan hệ many-to-many hai chiều, phía sở hữu khai báo @ManyToMany kèm @JoinTable(joinColumns, inverseJoinColumns) để định nghĩa bảng trung gian, còn phía còn lại chỉ cần @ManyToMany(mappedBy = \"...\").",
+          "locator": "3.2. Many-To-Many Bidirectional Association"
+        },
+        {
+          "topic": "Đánh đổi giữa hai kiểu quan hệ",
+          "summary": "Bài viết tổng kết: quan hệ một chiều đơn giản, ít lỗi hơn nhưng khó điều hướng ngược; quan hệ hai chiều dễ điều hướng cả hai phía hơn nhưng thêm độ phức tạp và rủi ro như tham chiếu vòng, cần cân nhắc theo nhu cầu cụ thể của ứng dụng.",
+          "locator": "4. Unidirectional vs. Bidirectional Association"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d5aebfb9d1ed",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html",
+    "lessonIds": [
+      "day-22"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html",
+      "contentSha256": "1c80b41c5257b396f6053c0f4286dc29440775fc55d0f312af4cc70bb9622ff0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Password Storage :: Spring Security",
+      "relevantHeadings": [
+        "Password Storage History",
+        "DelegatingPasswordEncoder",
+        "Password Storage Format",
+        "Getting Started Experience"
+      ],
+      "topics": [
+        "Lịch sử lưu trữ mật khẩu",
+        "DelegatingPasswordEncoder",
+        "Định dạng {id}encodedPassword"
+      ],
+      "facts": [
+        {
+          "topic": "Lịch sử tiến hóa cách lưu mật khẩu",
+          "summary": "Lưu mật khẩu tiến hóa từ plaintext, sang hash một chiều không salt (dễ bị Rainbow Table), sang hash có salt ngẫu nhiên cho từng user, tới nay khuyến nghị dùng hàm one-way thích ứng (adaptive) như bcrypt/PBKDF2/scrypt/argon2 với work factor tinh chỉnh để mất khoảng 1 giây xác thực.",
+          "locator": "Password Storage History"
+        },
+        {
+          "topic": "DelegatingPasswordEncoder là mặc định",
+          "summary": "Từ Spring Security 5.0, PasswordEncoder mặc định là DelegatingPasswordEncoder (tạo bằng PasswordEncoderFactories.createDelegatingPasswordEncoder()) thay vì NoOpPasswordEncoder cũ hoặc thẳng BCryptPasswordEncoder, để vừa mã hóa mật khẩu mới theo khuyến nghị hiện tại vừa vẫn xác thực được các định dạng cũ.",
+          "locator": "DelegatingPasswordEncoder"
+        },
+        {
+          "topic": "Định dạng lưu trữ {id}encodedPassword",
+          "summary": "Mật khẩu lưu theo định dạng {id}encodedPassword, ví dụ {bcrypt}$2a$10$...; id nằm trong {} ở đầu chuỗi dùng để tra encoder phù hợp khi so khớp (ví dụ {noop}, {pbkdf2}, {scrypt}, {sha256}); nếu id là null, mặc định ném IllegalArgumentException khi matches().",
+          "locator": "Password Storage Format / Password Matching"
+        },
+        {
+          "topic": "User.withDefaultPasswordEncoder() chỉ dùng cho demo",
+          "summary": "User.withDefaultPasswordEncoder() là tiện ích giúp hash nhanh mật khẩu cho demo/sample, tài liệu nêu rõ không dành cho production.",
+          "locator": "Getting Started Experience"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f301a3d0645a",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html",
+    "lessonIds": [
+      "day-22"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html",
+      "contentSha256": "3146c810589c26e231ab7aa0c7b15cd1dbc573126fd096894f697f84d30d108f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Session Management :: Spring Security",
+      "relevantHeadings": [
+        "Configuring Persistence for Stateless Authentication",
+        "Understanding Require Explicit Save",
+        "Configuring Concurrent Session Control",
+        "Understanding Session Fixation Attack Protection"
+      ],
+      "topics": [
+        "SessionCreationPolicy.STATELESS",
+        "requireExplicitSave",
+        "Concurrent session control",
+        "Session fixation protection"
+      ],
+      "facts": [
+        {
+          "topic": "SessionCreationPolicy.STATELESS",
+          "summary": "Cấu hình sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) khiến Spring Security dùng NullSecurityContextRepository và không lưu request vào session — phù hợp cho xác thực không trạng thái như JWT.",
+          "locator": "Configuring Persistence for Stateless Authentication"
+        },
+        {
+          "topic": "requireExplicitSave trong Spring Security 6",
+          "summary": "Ở Spring Security 5, SecurityContext được tự động lưu qua SecurityContextPersistenceFilter; sang Spring Security 6, SecurityContextHolderFilter mặc định chỉ đọc context, ứng dụng phải chủ động gọi securityContextRepository.saveContext(...) nếu muốn context được lưu lại giữa các request.",
+          "locator": "Understanding Require Explicit Save"
+        },
+        {
+          "topic": "Giới hạn số phiên đăng nhập đồng thời",
+          "summary": "Thêm HttpSessionEventPublisher bean và cấu hình sessionManagement().maximumSessions(1) sẽ khiến lần đăng nhập thứ hai vô hiệu hóa phiên đầu tiên; thêm .maxSessionsPreventsLogin(true) sẽ đảo ngược hành vi — chặn luôn lần đăng nhập thứ hai thay vì hủy phiên cũ.",
+          "locator": "Configuring Concurrent Session Control"
+        },
+        {
+          "topic": "Bảo vệ tấn công session fixation",
+          "summary": "Spring Security tự bảo vệ session fixation bằng cách đổi session ID khi đăng nhập, có 3 chiến lược cấu hình: changeSessionId (mặc định từ Servlet 3.1+, dùng HttpServletRequest#changeSessionId()), newSession (tạo session sạch, không copy dữ liệu cũ), migrateSession (tạo session mới nhưng copy toàn bộ attribute cũ sang, mặc định ở Servlet 3.0 trở xuống).",
+          "locator": "Understanding Session Fixation Attack Protection"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-fa00cc21947b",
+    "batch": "data-security",
+    "requestedUrl": "https://www.baeldung.com/spring-security-method-security",
+    "lessonIds": [
+      "day-23"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-security-method-security",
+      "contentSha256": "09d59993e2620ba127882fcaf609e25c76fb7072ca057187a48d359e8f381440"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Introduction to Spring Method Security | Baeldung",
+      "relevantHeadings": [
+        "2. Enabling Method Security",
+        "3.3. Using @PreAuthorize and @PostAuthorize Annotations",
+        "4. Important Considerations",
+        "5.2. Testing Username and Roles"
+      ],
+      "topics": [
+        "Bật Method Security",
+        "@PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter",
+        "Giới hạn AOP proxy",
+        "Test với @WithMockUser"
+      ],
+      "facts": [
+        {
+          "topic": "Bật Method Security",
+          "summary": "@EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true, jsr250Enabled=true) lần lượt bật các annotation @PreAuthorize/@PostAuthorize, @Secured, và @RolesAllowed (chuẩn JSR-250).",
+          "locator": "2. Enabling Method Security"
+        },
+        {
+          "topic": "@PreAuthorize và @PostAuthorize",
+          "summary": "@PreAuthorize kiểm tra biểu thức SpEL trước khi vào method (ví dụ hasRole('ROLE_VIEWER'), có thể tham chiếu tham số qua #username); @PostAuthorize kiểm tra sau khi method chạy xong và có thể tham chiếu kết quả trả về qua returnObject để quyết định có cho phép hay không.",
+          "locator": "3.3. Using @PreAuthorize and @PostAuthorize Annotations"
+        },
+        {
+          "topic": "@PreFilter và @PostFilter",
+          "summary": "@PreFilter lọc một collection tham số trước khi method thực thi (dùng filterObject đại diện phần tử hiện tại, filterTarget khi có nhiều tham số collection); @PostFilter lọc collection trả về theo cùng cơ chế filterObject.",
+          "locator": "3.4. Using @PreFilter and @PostFilter Annotations"
+        },
+        {
+          "topic": "Hạn chế do AOP proxy",
+          "summary": "Vì Method Security mặc định dựa trên Spring AOP proxy, nếu một method đã bảo mật (method A) được gọi từ một method khác trong cùng class, bảo mật của A sẽ bị bỏ qua hoàn toàn; điều này cũng áp dụng cho private method.",
+          "locator": "4. Important Considerations"
+        },
+        {
+          "topic": "Test bằng @WithMockUser",
+          "summary": "@WithMockUser(username, roles) thiết lập user giả đã xác thực cho test, Spring Security tự thêm tiền tố ROLE_ nên không cần khai báo tiền tố này trong roles; dùng authorities thay vì roles nếu không muốn có tiền tố ROLE_.",
+          "locator": "5.2. Testing Username and Roles"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
