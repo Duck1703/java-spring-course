@@ -193,14 +193,8 @@ _FETCH_STATE = threading.local()
 
 
 def fetch_resource(resource: dict, cache_dir: Path, checked_at: str) -> dict:
-    cache_dir = Path(cache_dir)
-    cache_dir.mkdir(parents=True, exist_ok=True)
     resource_id = str(resource.get("resourceId", ""))
     requested_url = str(resource.get("requestedUrl", ""))
-    cache_stem = _cache_stem(resource_id)
-    text_path = cache_dir / f"{cache_stem}.txt"
-    metadata_path = cache_dir / f"{cache_stem}.meta.json"
-    text_path.unlink(missing_ok=True)
     result = {
         "attempted": True,
         "checkedAt": checked_at,
@@ -215,6 +209,21 @@ def fetch_resource(resource: dict, cache_dir: Path, checked_at: str) -> dict:
         "error": None,
     }
     headers = {}
+    metadata_path = None
+
+    try:
+        cache_dir = Path(cache_dir)
+        cache_stem = _cache_stem(resource_id)
+        text_path = cache_dir / f"{cache_stem}.txt"
+        metadata_path = cache_dir / f"{cache_stem}.meta.json"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        text_path.unlink(missing_ok=True)
+    except Exception as error:
+        result["status"] = "content_unreadable"
+        _record_local_error(result, error)
+        return _finish_fetch_result(
+            metadata_path, resource_id, requested_url, headers, result
+        )
 
     try:
         _validate_http_url(requested_url)
@@ -232,17 +241,15 @@ def fetch_resource(resource: dict, cache_dir: Path, checked_at: str) -> dict:
         except (URLError, TimeoutError, ssl.SSLError, OSError) as error:
             result["status"] = "network_error"
             result["error"] = _format_error(error)
-            _write_metadata(
+            return _finish_fetch_result(
                 metadata_path, resource_id, requested_url, headers, result
             )
-            return result
         except Exception as error:
             result["status"] = "network_error"
             result["error"] = _format_error(error)
-            _write_metadata(
+            return _finish_fetch_result(
                 metadata_path, resource_id, requested_url, headers, result
             )
-            return result
 
         with closing(response):
             status_code = response.getcode()
@@ -287,8 +294,28 @@ def fetch_resource(resource: dict, cache_dir: Path, checked_at: str) -> dict:
         result["status"] = "network_error"
         result["error"] = _format_error(error)
 
-    _write_metadata(metadata_path, resource_id, requested_url, headers, result)
+    return _finish_fetch_result(
+        metadata_path, resource_id, requested_url, headers, result
+    )
+
+
+def _finish_fetch_result(
+    metadata_path, resource_id, requested_url, headers, result
+):
+    if metadata_path is not None:
+        try:
+            _write_metadata(
+                metadata_path, resource_id, requested_url, headers, result
+            )
+        except Exception as error:
+            _record_local_error(result, error)
     return result
+
+
+def _record_local_error(result, error):
+    result["error"] = _join_errors(result["error"], error)
+    if result["status"] in {"ok", "redirected"}:
+        result["status"] = "content_unreadable"
 
 
 def main(argv=None) -> int:

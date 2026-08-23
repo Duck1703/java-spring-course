@@ -14,6 +14,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
+from tools import check_sources
 from tools.check_sources import fetch_resource, main
 
 
@@ -304,6 +305,81 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("đã đọc", markdown)
         self.assertIn("attempted=1", output.getvalue())
         self.assertEqual([path for path, _ in server.server.requests], ["/ok"])
+
+    def test_local_metadata_failure_isolated_to_one_resource(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            urls = [f"{server.base_url}/ok", f"{server.base_url}/pace/succeeds"]
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            markdown_path = root / "catalog.md"
+            cache_dir = root / "cache"
+            _write_json(catalog_path, _catalog_without_lessons(urls))
+            _write_json(manifest_path, _manifest_for_urls(urls))
+            write_metadata = check_sources._write_metadata
+
+            def fail_one_metadata_write(
+                path, resource_id, requested_url, headers, result
+            ):
+                if resource_id == "res-0":
+                    raise OSError("metadata disk unavailable")
+                return write_metadata(
+                    path, resource_id, requested_url, headers, result
+                )
+
+            output = io.StringIO()
+            with (
+                patch(
+                    "tools.check_sources._write_metadata",
+                    side_effect=fail_one_metadata_write,
+                ),
+                contextlib.redirect_stdout(output),
+            ):
+                exit_code = main(
+                    [
+                        "--catalog",
+                        str(catalog_path),
+                        "--manifest",
+                        str(manifest_path),
+                        "--markdown",
+                        str(markdown_path),
+                        "--cache-dir",
+                        str(cache_dir),
+                        "--max-workers",
+                        "2",
+                        "--per-host-delay",
+                        "0",
+                    ]
+                )
+
+            updated_catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            updated_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            markdown_exists = markdown_path.is_file()
+            metadata_paths = sorted(path.name for path in cache_dir.glob("*.meta.json"))
+            failed_cache_text = updated_manifest["resources"][0]["check"]["cacheText"]
+            failed_cache_text_exists = Path(failed_cache_text).is_file()
+
+        failed_check, successful_check = [
+            resource["check"] for resource in updated_manifest["resources"]
+        ]
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(failed_check["status"], "content_unreadable")
+        self.assertTrue(failed_check["attempted"])
+        self.assertEqual(failed_check["httpStatus"], 200)
+        self.assertEqual(failed_check["finalUrl"], urls[0])
+        self.assertEqual(failed_check["contentType"], "text/html; charset=utf-8")
+        self.assertGreater(failed_check["contentBytes"], 0)
+        self.assertIsNotNone(failed_check["contentSha256"])
+        self.assertTrue(failed_cache_text_exists)
+        self.assertEqual(failed_check["error"], "OSError: metadata disk unavailable")
+        self.assertEqual(successful_check["status"], "ok")
+        self.assertEqual(
+            [resource["check"] for resource in updated_catalog["resources"]],
+            [failed_check, successful_check],
+        )
+        self.assertTrue(markdown_exists)
+        self.assertEqual(metadata_paths, ["res-1.meta.json"])
+        self.assertIn("PASS attempted=2", output.getvalue())
 
     def test_same_host_requests_are_serialized_and_paced(self):
         with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
