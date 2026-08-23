@@ -1,0 +1,722 @@
+[
+  {
+    "resourceId": "res-02399daadb94",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring",
+    "lessonIds": [
+      "day-14"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/inversion-control-and-dependency-injection-in-spring",
+      "contentSha256": "2d5181785b3a9eab706f2586f340a1b76839c23fd4d06b7483262e48372562c5"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Intro to Inversion of Control and Dependency Injection with Spring | Baeldung",
+      "relevantHeadings": [
+        "2. What Is Inversion of Control?",
+        "3. What Is Dependency Injection?",
+        "5. Constructor-Based Dependency Injection",
+        "6. Setter-Based Dependency Injection",
+        "7. Field-Based Dependency Injection",
+        "8. Autowiring Dependencies"
+      ],
+      "topics": [
+        "Inversion of Control",
+        "Dependency Injection",
+        "Spring IoC container",
+        "autowiring"
+      ],
+      "facts": [
+        {
+          "topic": "IoC là gì",
+          "summary": "Inversion of Control là nguyên lý chuyển quyền kiểm soát việc tạo/luồng chương trình từ code tự viết sang một container/framework; framework gọi ngược lại code của mình thay vì code tự gọi thư viện.",
+          "locator": "§2. What Is Inversion of Control?"
+        },
+        {
+          "topic": "Constructor-based DI",
+          "summary": "Với constructor injection, Spring container gọi constructor có tham số, mỗi tham số ứng với một dependency; Spring resolves theo type trước, rồi theo tên thuộc tính, cuối cùng theo index để phân biệt.",
+          "locator": "§5. Constructor-Based Dependency Injection"
+        },
+        {
+          "topic": "Setter-based DI",
+          "summary": "Với setter injection, container gọi constructor không tham số rồi gọi các setter để gán dependency; tài liệu Spring khuyến nghị constructor injection cho dependency bắt buộc, setter injection cho dependency tùy chọn.",
+          "locator": "§6. Setter-Based Dependency Injection"
+        },
+        {
+          "topic": "Field-based DI và nhược điểm",
+          "summary": "Field injection dùng @Autowired trực tiếp trên field, dùng reflection để gán giá trị; không được khuyến nghị vì reflection tốn chi phí hơn và dễ khiến lớp gánh quá nhiều dependency, vi phạm Single Responsibility Principle.",
+          "locator": "§7. Field-Based Dependency Injection"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-06dd51e41e25",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-response-entity",
+    "lessonIds": [
+      "day-16"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-response-entity",
+      "contentSha256": "bff80fdfae0aca37a4ac6971bfc54a656c00a15d13d8403dcc22dbeee0cfd0fc"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Using Spring ResponseEntity to Manipulate the HTTP Response | Baeldung",
+      "relevantHeadings": [
+        "2. ResponseEntity",
+        "3. Alternatives",
+        "3.1. @ResponseBody",
+        "3.2. @ResponseStatus"
+      ],
+      "topics": [
+        "ResponseEntity",
+        "HTTP response",
+        "Spring MVC"
+      ],
+      "facts": [
+        {
+          "topic": "ResponseEntity là gì",
+          "summary": "ResponseEntity đại diện cho toàn bộ HTTP response gồm status code, headers và body; controller trả về ResponseEntity để Spring tự động dựng response tương ứng, kiểu generic nên body có thể là bất kỳ kiểu nào.",
+          "locator": "§2. ResponseEntity"
+        },
+        {
+          "topic": "Builder tĩnh của ResponseEntity",
+          "summary": "ResponseEntity cung cấp các phương thức tĩnh tiện dụng như ok(), badRequest(), notFound(), status(HttpStatus) kết hợp .body(T) để dựng response ngắn gọn thay vì gọi constructor trực tiếp.",
+          "locator": "§2. ResponseEntity — static builder methods"
+        },
+        {
+          "topic": "Đặt header tùy chỉnh",
+          "summary": "Có thể gắn header tùy chỉnh bằng cách tạo HttpHeaders rồi truyền vào constructor ResponseEntity, hoặc dùng chuỗi gọi ResponseEntity.ok().header(name, value).body(...).",
+          "locator": "§2. ResponseEntity — customHeader example"
+        },
+        {
+          "topic": "Khi nào không cần ResponseEntity",
+          "summary": "Bài viết khuyến nghị không lạm dụng ResponseEntity: dùng @ResponseBody khi chỉ cần trả dữ liệu, dùng @ResponseStatus khi chỉ cần đặt mã trạng thái tùy biến cho response thành công hoặc exception handler.",
+          "locator": "§3. Alternatives; §3.1 @ResponseBody; §3.2 @ResponseStatus"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-1f904f56cc5a",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-bean-validation",
+    "lessonIds": [
+      "day-17"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-bean-validation",
+      "contentSha256": "1cebbeee447551eed34f3b2451d819cc765f81a9af51f671735671f7887a27b3"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Validation in Spring Boot | Baeldung",
+      "relevantHeadings": [
+        "3. A Simple Domain Class",
+        "4. Implementing a REST Controller",
+        "5. The @ExceptionHandler Annotation"
+      ],
+      "topics": [
+        "Bean Validation",
+        "Hibernate Validator",
+        "@Valid",
+        "@ExceptionHandler"
+      ],
+      "facts": [
+        {
+          "topic": "Ràng buộc trên entity bằng Bean Validation",
+          "summary": "Các trường của entity JPA được gắn constraint như @NotBlank(message=...) để yêu cầu giá trị không rỗng sau khi trim; Hibernate Validator là cài đặt tham chiếu chuẩn Bean Validation mà Spring Boot dùng mặc định.",
+          "locator": "§3. A Simple Domain Class"
+        },
+        {
+          "topic": "@Valid trong REST controller",
+          "summary": "Khi tham số @RequestBody của phương thức controller được gắn @Valid, Spring Boot tự bootstrap Hibernate Validator để kiểm tra; nếu đối tượng không hợp lệ, Spring Boot ném MethodArgumentNotValidException.",
+          "locator": "§4. Implementing a REST Controller"
+        },
+        {
+          "topic": "Xử lý lỗi validate bằng @ExceptionHandler",
+          "summary": "Một phương thức gắn @ExceptionHandler(MethodArgumentNotValidException.class) cùng @ResponseStatus(BAD_REQUEST) duyệt ex.getBindingResult().getAllErrors() để gom tên trường và thông điệp lỗi vào Map trả về client dạng JSON.",
+          "locator": "§5. The @ExceptionHandler Annotation"
+        },
+        {
+          "topic": "Dependency cần thiết từ Boot 2.3",
+          "summary": "Từ Spring Boot 2.3, phải khai báo tường minh dependency spring-boot-starter-validation (ngoài spring-boot-starter-web) thì Bean Validation mới hoạt động được.",
+          "locator": "§2. The Maven Dependencies"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-2aefb097db80",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html",
+    "lessonIds": [
+      "day-16",
+      "day-18"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-requestmapping.html",
+      "contentSha256": "14ed43cab97dbc92d5ceed40ba54d224d16d5baae7d62e14d959d358d40adb9a"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Mapping Requests :: Spring Framework (docs.spring.io — Annotated Controllers)",
+      "relevantHeadings": [
+        "@RequestMapping",
+        "URI patterns",
+        "Pattern Comparison",
+        "Consumable Media Types",
+        "Producible Media Types",
+        "API Version",
+        "HTTP HEAD, OPTIONS"
+      ],
+      "topics": [
+        "@RequestMapping",
+        "URI pattern matching",
+        "content negotiation",
+        "API versioning"
+      ],
+      "facts": [
+        {
+          "topic": "@RequestMapping và các shortcut theo HTTP method",
+          "summary": "@RequestMapping có thể đặt ở cấp class (mapping dùng chung) hoặc method (endpoint cụ thể); các annotation rút gọn @GetMapping/@PostMapping/@PutMapping/@DeleteMapping/@PatchMapping được cung cấp vì phần lớn method nên gắn với một HTTP method cụ thể thay vì khớp mọi method như @RequestMapping mặc định.",
+          "locator": "§@RequestMapping"
+        },
+        {
+          "topic": "Cú pháp URI pattern",
+          "summary": "Spring MVC dùng PathPattern (đã pre-parse) để khớp URL; hỗ trợ ký tự đại diện ? (một ký tự), * (không hoặc nhiều ký tự trong một segment), ** (không hoặc nhiều segment) và {name} để bắt biến path segment, {name:regex} để bắt biến theo biểu thức chính quy.",
+          "locator": "§URI patterns — bảng Pattern/Description/Example"
+        },
+        {
+          "topic": "@PathVariable và kiểu {*path}",
+          "summary": "Biến URI khai báo bằng {name} được truy cập qua @PathVariable, tự động chuyển kiểu (int, long, Date...) hoặc ném TypeMismatchException; cú pháp {*path} tương tự ** nhưng còn lưu lại các segment khớp vào biến path.",
+          "locator": "§URI patterns — Captured URI variables; bảng {*path}"
+        },
+        {
+          "topic": "Thu hẹp mapping theo consumes/produces",
+          "summary": "Thuộc tính consumes thu hẹp mapping theo Content-Type của request, produces thu hẹp theo Accept header/kiểu nội dung mà method trả về; cả hai hỗ trợ phủ định (ví dụ !text/plain) và khi khai báo ở method sẽ override (không cộng dồn) giá trị khai báo ở class.",
+          "locator": "§Consumable Media Types; §Producible Media Types"
+        },
+        {
+          "topic": "API Version trên @RequestMapping",
+          "summary": "Thuộc tính version của @RequestMapping hỗ trợ phiên bản cố định (\"1.2\"), phiên bản nền (\"1.2+\" khớp từ 1.2 trở lên) hoặc bỏ trống (khớp mọi phiên bản nhưng bị các mapping có version cụ thể hơn ưu tiên hơn); nếu không có mapping nào khớp phiên bản request, kết quả là NotAcceptableApiVersionException (HTTP 400).",
+          "locator": "§API Version"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-56487c83dc65",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-boot",
+    "lessonIds": [
+      "day-13"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot",
+      "contentSha256": "4ecbbed8d1273fbbe2a0097ccb582bb01c24ac41a44f183c455efc235e6f4728"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Learn Spring Boot Series | Baeldung",
+      "relevantHeadings": [
+        "Learn Spring Boot Series"
+      ],
+      "topics": [
+        "Spring Boot series overview"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc trang tổng hợp Learn Spring Boot Series",
+          "summary": "Đây là trang mục lục liệt kê liên kết tới các bài viết Spring Boot theo từng cụm chủ đề: Basics, Properties, Customization, Testing, Under the Hood, Persistence, DevOps Tools, và Integration With Other Libraries — không phải một bài viết sâu độc lập mà là danh sách link tới các bài con.",
+          "locator": "Learn Spring Boot Series — mục lục các cụm chủ đề"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-7bf1b25b2e6b",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/configuration-properties-in-spring-boot",
+    "lessonIds": [
+      "day-15"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/configuration-properties-in-spring-boot",
+      "contentSha256": "6fe345081e822f4e40cfc6eb288fdf9cac7187829829922361eb5ed1818777f5"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to @ConfigurationProperties in Spring Boot | Baeldung",
+      "relevantHeadings": [
+        "3. Simple Properties",
+        "4. Nested Properties",
+        "6. Property Validation",
+        "8. Immutable @ConfigurationProperties Binding",
+        "9. Java 16 Records"
+      ],
+      "topics": [
+        "@ConfigurationProperties",
+        "relaxed binding",
+        "property validation",
+        "constructor binding"
+      ],
+      "facts": [
+        {
+          "topic": "@ConfigurationProperties với prefix chung",
+          "summary": "Đánh dấu một POJO bằng @Configuration @ConfigurationProperties(prefix = \"mail\") để Spring tự gán mọi property có tiền tố mail vào các field cùng tên nhờ chuẩn Java bean setter; nếu không dùng @Configuration thì phải khai báo @EnableConfigurationProperties(ConfigProperties.class) ở lớp ứng dụng chính.",
+          "locator": "§3. Simple Properties"
+        },
+        {
+          "topic": "Nested properties: List, Map, Class",
+          "summary": "@ConfigurationProperties hỗ trợ property lồng nhau dưới dạng List (mail.defaultRecipients[0]=...), Map (mail.additionalHeaders.redelivery=true) và đối tượng lồng (mail.credentials.username=...) ánh xạ vào field kiểu List/Map/class con tương ứng.",
+          "locator": "§4. Nested Properties"
+        },
+        {
+          "topic": "Validate property bằng JSR-380",
+          "summary": "Có thể gắn constraint như @NotBlank, @Length(min,max), @Min/@Max, @Pattern lên field của lớp @ConfigurationProperties; nếu validate thất bại, ứng dụng sẽ không khởi động được và ném IllegalStateException.",
+          "locator": "§6. Property Validation"
+        },
+        {
+          "topic": "Constructor binding và Java record bất biến",
+          "summary": "Từ Spring Boot 2.2, @ConstructorBinding cho phép bind property qua constructor thay vì setter, tạo lớp cấu hình bất biến (final field, không setter); từ Spring Boot 2.6, một Java record với một constructor duy nhất có thể dùng trực tiếp làm @ConfigurationProperties mà không cần thêm @ConstructorBinding.",
+          "locator": "§8. Immutable @ConfigurationProperties Binding; §9. Java 16 Records"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-7f4116f00d7f",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-mvc-custom-validator",
+    "lessonIds": [
+      "day-17",
+      "day-18"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-mvc-custom-validator",
+      "contentSha256": "c53105b271cc25c730ab80de004fbbbd1ea7cd90d14a1d17d5680fd7c05b9fc0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring MVC Custom Validation | Baeldung",
+      "relevantHeadings": [
+        "4. The New Annotation",
+        "5. Creating a Validator",
+        "9. Custom Class Level Validation"
+      ],
+      "topics": [
+        "custom validator",
+        "ConstraintValidator",
+        "class-level validation"
+      ],
+      "facts": [
+        {
+          "topic": "Định nghĩa annotation validate tùy chỉnh",
+          "summary": "Một constraint tùy chỉnh được định nghĩa bằng @interface gắn @Constraint(validatedBy = ...Validator.class), kèm các thuộc tính chuẩn message()/groups()/payload() theo quy ước Bean Validation.",
+          "locator": "§4. The New Annotation"
+        },
+        {
+          "topic": "Cài đặt logic validate bằng ConstraintValidator",
+          "summary": "Lớp validator implement ConstraintValidator<Annotation, KiểuDữLiệu> và override isValid(value, context) để trả về true/false theo quy tắc tự định nghĩa, ví dụ kiểm tra số điện thoại chỉ gồm chữ số và đủ độ dài.",
+          "locator": "§5. Creating a Validator"
+        },
+        {
+          "topic": "Validate ở cấp class cho nhiều field",
+          "summary": "Một annotation gắn ở @Target(TYPE) như FieldsValueMatch cho phép so sánh giá trị của hai field trong cùng lớp (ví dụ password và verifyPassword phải khớp nhau), dùng BeanWrapperImpl để đọc giá trị field theo tên trong isValid().",
+          "locator": "§9. Custom Class Level Validation; §9.2 Creating the Validator"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-8a73cd80ad49",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-return-errors-problemdetail",
+    "lessonIds": [
+      "day-17",
+      "day-18"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-return-errors-problemdetail",
+      "contentSha256": "29577890f4ca37694390426e2f348b840938a5670484119f6243817296b6e189"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Returning Errors Using ProblemDetail in Spring Boot | Baeldung",
+      "relevantHeadings": [
+        "4. ProblemDetail Specification",
+        "5.1. Enabling ProblemDetail Using Application Property",
+        "5.2. Implementing ProblemDetail in Exception Handler"
+      ],
+      "topics": [
+        "ProblemDetail",
+        "RFC 7807",
+        "RestControllerAdvice"
+      ],
+      "facts": [
+        {
+          "topic": "Đặc tả ProblemDetail",
+          "summary": "ProblemDetail là một phần của chuẩn RFC 7807, định nghĩa cấu trúc phản hồi lỗi thống nhất gồm các trường type, title, status, detail, instance — giúp client hiểu và xử lý lỗi nhất quán giữa nhiều API.",
+          "locator": "§4. ProblemDetail Specification"
+        },
+        {
+          "topic": "Bật ProblemDetail qua property",
+          "summary": "Đặt spring.mvc.problemdetails.enabled=true (ứng dụng servlet/MVC) hoặc spring.webflux.problemdetails.enabled=true (ứng dụng reactive) để Spring Boot tự trả lỗi theo định dạng ProblemDetail mà không cần code thêm.",
+          "locator": "§5.1. Enabling ProblemDetail Using Application Property"
+        },
+        {
+          "topic": "Trả ProblemDetail trong exception handler toàn cục",
+          "summary": "Một class @RestControllerAdvice kế thừa ResponseEntityExceptionHandler có thể định nghĩa method @ExceptionHandler trả về ProblemDetail dựng bằng ProblemDetail.forStatusAndDetail(status, message), có thể gọi thêm setInstance(URI) để chỉ rõ ngữ cảnh lỗi.",
+          "locator": "§5.2. Implementing ProblemDetail in Exception Handler"
+        },
+        {
+          "topic": "So với cách xử lý lỗi truyền thống",
+          "summary": "Trước khi có ProblemDetail, các dự án thường tự định nghĩa cấu trúc response lỗi riêng bằng custom exception handler/response entity, dẫn tới thiếu nhất quán giữa các API và nhiều code lặp lại.",
+          "locator": "§3. Traditional Error Handling Approaches"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-aee8bfb64b8c",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://docs.spring.io/spring-boot/reference/features/external-config.html",
+    "lessonIds": [
+      "day-15"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/reference/features/external-config.html",
+      "contentSha256": "6fa9d1d896f41f86dc3019edd3d7f6cdaabc7ff1e76f9806875821132df29c14"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Externalized Configuration :: Spring Boot (docs.spring.io)",
+      "relevantHeadings": [
+        "Activation Properties",
+        "Working With YAML",
+        "Type-safe Configuration Properties",
+        "Relaxed Binding",
+        "Binding From Environment Variables",
+        "Merging Complex Types",
+        "Converting Durations",
+        "Converting Data Sizes"
+      ],
+      "topics": [
+        "externalized configuration",
+        "relaxed binding",
+        "constructor binding",
+        "profile activation",
+        "type conversion"
+      ],
+      "facts": [
+        {
+          "topic": "Kích hoạt tài liệu YAML theo profile",
+          "summary": "Một properties/YAML document nhiều phần (ngăn bằng --- trong file .properties hoặc thuộc tính riêng trong YAML) có thể chỉ kích hoạt khi điều kiện spring.config.activate.on-profile hoặc spring.config.activate.on-cloud-platform khớp, cho phép override property theo profile hoặc nền tảng cloud.",
+          "locator": "§Activation Properties"
+        },
+        {
+          "topic": "Quy tắc relaxed binding",
+          "summary": "Spring Boot chấp nhận nhiều biến thể tên property khi bind vào @ConfigurationProperties: kebab-case (first-name), camelCase (firstName), underscore (first_name) trong file properties/YAML, và UPPER_CASE với dấu gạch dưới khi đọc từ biến môi trường hệ thống.",
+          "locator": "§Relaxed Binding"
+        },
+        {
+          "topic": "Constructor binding và record cho property bất biến",
+          "summary": "Một lớp @ConfigurationProperties có đúng một constructor tham số hoá được coi là dùng constructor binding tự động (không cần @ConstructorBinding); giá trị mặc định cho tham số constructor khai báo bằng @DefaultValue, ví dụ @DefaultValue(\"USER\") cho một List<String> roles.",
+          "locator": "§Type-safe Configuration Properties — Constructor Binding; §@DefaultValue and Binding"
+        },
+        {
+          "topic": "Chuyển đổi Duration và DataSize theo định dạng ngắn gọn",
+          "summary": "Property kiểu Duration chấp nhận số nguyên thuần (đơn vị mặc định mili-giây), định dạng ISO-8601, hoặc dạng ngắn gọn ghép giá trị+đơn vị như 10s; tương tự property kiểu DataSize chấp nhận số nguyên (đơn vị mặc định byte) hoặc dạng ghép như 10MB.",
+          "locator": "§Converting Durations; §Converting Data Sizes"
+        },
+        {
+          "topic": "Hợp nhất List/Map khi cấu hình nằm ở nhiều nguồn",
+          "summary": "Khi một List được khai báo lại ở property source có độ ưu tiên cao hơn (ví dụ theo profile), toàn bộ list bị thay thế hoàn toàn chứ không được gộp thêm phần tử; ngược lại với Map, các key được hợp nhất — key trùng lấy giá trị từ nguồn ưu tiên cao hơn, key không trùng vẫn được giữ lại.",
+          "locator": "§Merging Complex Types"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-b6fc716e051f",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://docs.spring.io/spring-boot/reference/using/auto-configuration.html",
+    "lessonIds": [
+      "day-14"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/reference/using/auto-configuration.html",
+      "contentSha256": "c4cfd34d034b3e8f9c94f04c1e8ec4b467b224dc9669674bae90c45db959d292"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Auto-configuration :: Spring Boot (docs.spring.io)",
+      "relevantHeadings": [
+        "Auto-configuration",
+        "Gradually Replacing Auto-configuration",
+        "Disabling Specific Auto-configuration Classes",
+        "Auto-configuration Packages"
+      ],
+      "topics": [
+        "auto-configuration",
+        "@EnableAutoConfiguration",
+        "@SpringBootApplication"
+      ],
+      "facts": [
+        {
+          "topic": "Auto-configuration hoạt động theo classpath",
+          "summary": "Spring Boot tự động cấu hình ứng dụng dựa trên các jar dependency có mặt trên classpath, ví dụ nếu có HSQLDB và chưa cấu hình DataSource bean thủ công thì Spring Boot tự cấu hình một database trong bộ nhớ; tính năng này phải được bật rõ ràng bằng @EnableAutoConfiguration hoặc @SpringBootApplication.",
+          "locator": "§Auto-configuration"
+        },
+        {
+          "topic": "Auto-configuration không xâm lấn (non-invasive)",
+          "summary": "Auto-configuration lùi lại (back away) ngay khi ứng dụng tự định nghĩa bean của riêng mình cho cùng vai trò, ví dụ nếu tự khai báo DataSource bean thì cấu hình database nhúng mặc định sẽ không còn được áp dụng nữa.",
+          "locator": "§Gradually Replacing Auto-configuration"
+        },
+        {
+          "topic": "Tắt một auto-configuration class cụ thể",
+          "summary": "Có thể loại trừ một auto-configuration class không mong muốn bằng thuộc tính exclude của @SpringBootApplication/@EnableAutoConfiguration (hoặc excludeName nếu class không có trên classpath), hoặc qua property spring.autoconfigure.exclude.",
+          "locator": "§Disabling Specific Auto-configuration Classes"
+        },
+        {
+          "topic": "Xem báo cáo auto-configuration đang áp dụng",
+          "summary": "Chạy ứng dụng với cờ --debug sẽ bật log debug cho một nhóm logger lõi và in ra console một conditions report cho biết auto-configuration nào đang được áp dụng và lý do.",
+          "locator": "§Gradually Replacing Auto-configuration — đoạn về --debug"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-bb04db80cab2",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://docs.spring.io/spring-framework/reference/core/beans/introduction.html",
+    "lessonIds": [
+      "day-13",
+      "day-15"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-framework/reference/core/beans/introduction.html",
+      "contentSha256": "3f3f361a1c9e6a98ab1a7f62d375ce2113526f8433cf08c8c9ae8cb4c38573e8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Introduction to the Spring IoC Container and Beans :: Spring Framework (docs.spring.io)",
+      "relevantHeadings": [
+        "Introduction to the Spring IoC Container and Beans"
+      ],
+      "topics": [
+        "IoC container",
+        "BeanFactory",
+        "ApplicationContext",
+        "bean definition"
+      ],
+      "facts": [
+        {
+          "topic": "Dependency Injection theo định nghĩa của Spring Framework",
+          "summary": "Tài liệu định nghĩa DI là một dạng chuyên biệt của IoC, trong đó đối tượng khai báo dependency của nó chỉ qua constructor argument, tham số của factory method, hoặc property được set sau khi đối tượng được khởi tạo; container tiêm các dependency này khi tạo bean.",
+          "locator": "Introduction to the Spring IoC Container and Beans — đoạn mở đầu"
+        },
+        {
+          "topic": "BeanFactory và ApplicationContext",
+          "summary": "org.springframework.beans và org.springframework.context là nền tảng của IoC container; BeanFactory cung cấp cơ chế cấu hình cơ bản, còn ApplicationContext là sub-interface của BeanFactory bổ sung tích hợp AOP, xử lý message resource (i18n), publish event, và các context chuyên biệt như WebApplicationContext.",
+          "locator": "Introduction to the Spring IoC Container and Beans — đoạn về BeanFactory/ApplicationContext"
+        },
+        {
+          "topic": "Bean là gì",
+          "summary": "Trong Spring, bean là đối tượng được khởi tạo, lắp ráp (assemble) và quản lý bởi Spring IoC container; bean cùng các dependency giữa chúng được phản ánh trong configuration metadata mà container sử dụng.",
+          "locator": "Introduction to the Spring IoC Container and Beans — đoạn cuối"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-bf1095022eae",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html",
+    "lessonIds": [
+      "day-13",
+      "day-14"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-framework/reference/core/beans/factory-scopes.html",
+      "contentSha256": "b92a38b33928937a39899a6b656cad047836ebeb7abffda76d8de6ef51bbd9fd"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Bean Scopes :: Spring Framework (docs.spring.io)",
+      "relevantHeadings": [
+        "Bean Scopes",
+        "The Singleton Scope",
+        "The Prototype Scope",
+        "Request, Session, Application, and WebSocket Scopes",
+        "Scoped Beans as Dependencies",
+        "Custom Scopes"
+      ],
+      "topics": [
+        "bean scope",
+        "singleton",
+        "prototype",
+        "scoped proxy",
+        "custom scope"
+      ],
+      "facts": [
+        {
+          "topic": "Sáu scope Spring hỗ trợ",
+          "summary": "Spring Framework hỗ trợ 6 scope: singleton (mặc định, một instance cho toàn container), prototype (mỗi lần request là một instance mới), và bốn scope chỉ dùng được trong web-aware ApplicationContext: request, session, application, websocket; ngoài ra có thể tạo custom scope.",
+          "locator": "§Bean Scopes — bảng các scope"
+        },
+        {
+          "topic": "Singleton scope khác singleton pattern GoF",
+          "summary": "Singleton của Spring là per-container và per-bean (một bean definition trong một container tạo đúng một instance), khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader; singleton là scope mặc định của Spring.",
+          "locator": "§The Singleton Scope"
+        },
+        {
+          "topic": "Prototype scope và trách nhiệm dọn dẹp",
+          "summary": "Với prototype scope, container tạo instance mới cho mỗi lần request bean nhưng không quản lý toàn bộ vòng đời: callback khởi tạo vẫn được gọi nhưng destruction callback đã cấu hình không được gọi, client code phải tự dọn dẹp tài nguyên của bean prototype.",
+          "locator": "§The Prototype Scope"
+        },
+        {
+          "topic": "Annotation cho scope web-aware",
+          "summary": "Có thể gán bean vào scope request/session/application bằng annotation @RequestScope, @SessionScope, @ApplicationScope tương ứng thay vì khai báo XML scope=\"request\"/\"session\"/\"application\"; các scope này chỉ hợp lệ trong web-aware ApplicationContext, nếu dùng ngoài ngữ cảnh đó sẽ ném IllegalStateException.",
+          "locator": "§Request, Session, Application, and WebSocket Scopes"
+        },
+        {
+          "topic": "Scoped proxy để tiêm bean ngắn hạn vào bean singleton",
+          "summary": "Khi tiêm một bean scope ngắn hơn (như request-scoped) vào bean scope dài hơn (singleton), cần dùng <aop:scoped-proxy/> để Spring tạo một proxy: proxy giữ cùng interface công khai nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method, tránh việc singleton chỉ giữ mãi một instance được tiêm lúc khởi tạo.",
+          "locator": "§Scoped Beans as Dependencies"
+        },
+        {
+          "topic": "Tạo custom scope",
+          "summary": "Để tạo scope tùy chỉnh, cần implement interface org.springframework.beans.factory.config.Scope (get/remove/registerDestructionCallback/getConversationId) rồi đăng ký với container qua ConfigurableBeanFactory.registerScope(scopeName, scope), có thể đăng ký chương trình hoặc khai báo qua CustomScopeConfigurer.",
+          "locator": "§Custom Scopes — Creating a Custom Scope; Using a Custom Scope"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d8a874d76b06",
+    "batch": "spring-core-web",
+    "requestedUrl": "https://www.baeldung.com/spring-requestmapping",
+    "lessonIds": [
+      "day-16"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-requestmapping",
+      "contentSha256": "755d27be49ee7bfba2ca5eab2ba1a5d661ebec81cd94de80d52cda11228eb260"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring RequestMapping | Baeldung",
+      "relevantHeadings": [
+        "2.1. @RequestMapping — by Path",
+        "3.2. @RequestMapping Consumes and Produces",
+        "4. RequestMapping With Path Variables",
+        "5. RequestMapping With Request Parameters",
+        "6.4. Ambiguous Mapping Error",
+        "7. New Request Mapping Shortcuts"
+      ],
+      "topics": [
+        "@RequestMapping",
+        "@PathVariable",
+        "@RequestParam",
+        "ambiguous mapping"
+      ],
+      "facts": [
+        {
+          "topic": "Mapping cơ bản theo path và HTTP method",
+          "summary": "@RequestMapping(value, method) ánh xạ một URI và HTTP method cụ thể tới một controller method; nếu không chỉ định method thì mapping khớp với mọi HTTP method gửi tới path đó.",
+          "locator": "§2.1. @RequestMapping — by Path; §2.2 the HTTP Method"
+        },
+        {
+          "topic": "Thu hẹp mapping bằng consumes/produces",
+          "summary": "Từ Spring 3.1, @RequestMapping có thuộc tính produces/consumes để thu hẹp theo Accept/Content-Type; cách khai báo cũ dùng headers=\"Accept=...\" tự động được chuyển đổi tương đương sang produces, và Spring không cho phép cả hai cách cùng tồn tại trên một mapping trùng nhau (gây lỗi ambiguous).",
+          "locator": "§3.2. @RequestMapping Consumes and Produces"
+        },
+        {
+          "topic": "@PathVariable đơn, nhiều biến và ràng buộc regex",
+          "summary": "@PathVariable bắt một hoặc nhiều phần của URI (ví dụ /foos/{fooid}/bar/{barid}), tự động chuyển kiểu; có thể ràng buộc biến bằng regex ngay trong path pattern như {numericId:[\\\\d]+} để chỉ khớp giá trị số.",
+          "locator": "§4. RequestMapping With Path Variables"
+        },
+        {
+          "topic": "@RequestParam và params attribute",
+          "summary": "@RequestParam(\"id\") trích giá trị query parameter trực tiếp; ngoài ra @RequestMapping có thể khai báo thêm params=\"id\" hoặc params={\"id\",\"second\"} để chỉ khớp khi request có (các) parameter đó, request khớp nhiều điều kiện nhất sẽ được chọn.",
+          "locator": "§5. RequestMapping With Request Parameters"
+        },
+        {
+          "topic": "Lỗi Ambiguous Mapping",
+          "summary": "Khi hai method có cùng HTTP method, URL, parameters, headers và media type, Spring ném IllegalStateException báo ambiguous mapping lúc khởi động; có thể khắc phục bằng cách phân biệt qua produces/consumes khác nhau hoặc đổi URL của một trong hai method.",
+          "locator": "§6.4. Ambiguous Mapping Error"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
