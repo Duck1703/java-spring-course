@@ -5,13 +5,467 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Khóa học Java 17 và Spring Boot 3.x theo lộ trình thực hành.">
   <title>Java Spring Boot Course</title>
-  <style id="app-styles"></style>
+  <style id="app-styles">
+    /* ============================================================
+       Design tokens — Java Spring Boot Course
+       Palette: cold paper canvas, ink text; Java orange and Spring
+       green are semantic group accents only. Code blocks stay dark
+       in both themes (the signature reading surface).
+       ============================================================ */
+    :root {
+      --java: #f89820;
+      --java-soft: rgba(248, 152, 32, .14);
+      --spring: #6db33f;
+      --spring-soft: rgba(109, 179, 63, .14);
+      --completion: #64748b;
+      --completion-soft: rgba(100, 116, 139, .14);
+      --ink: #172033;
+      --muted: #667085;
+      --canvas: #f5f7f8;
+      --surface: #ffffff;
+      --surface-raised: #ffffff;
+      --line: #dfe4e8;
+      --code-bg: #111827;
+      --code-ink: #e5edf7;
+      --focus: #2563eb;
+      --header-h: 4rem;
+      --sidebar-w: 19rem;
+      --content-max: 48rem;
+      --radius-sm: .5rem;
+      --radius-md: .875rem;
+      --shadow-float: 0 18px 50px rgb(15 23 42 / .12);
+      color-scheme: light;
+    }
+    html[data-theme="dark"] {
+      --java-soft: rgba(248, 152, 32, .18);
+      --spring-soft: rgba(109, 179, 63, .18);
+      --completion-soft: rgba(100, 116, 139, .22);
+      --ink: #edf2f7;
+      --muted: #a8b3c2;
+      --canvas: #0d1117;
+      --surface: #121922;
+      --surface-raised: #17202b;
+      --line: #2a3543;
+      --code-bg: #080c12;
+      --code-ink: #e6edf3;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 1rem;
+      line-height: 1.65;
+      background: var(--canvas);
+      color: var(--ink);
+    }
+    code, pre, kbd {
+      font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+    }
+
+    /* Focus visibility */
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 200;
+      background: var(--surface-raised);
+      color: var(--ink);
+      padding: .6rem 1rem;
+      border-radius: 0 0 var(--radius-sm) 0;
+      border: 1px solid var(--line);
+    }
+    .skip-link:focus { left: 0; }
+
+    /* ============ Header ============ */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      height: var(--header-h);
+      padding-inline: 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .menu-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: -.01em;
+      white-space: nowrap;
+    }
+    /* Brand mark: two stacked blocks — Java orange over Spring green —
+       a literal nod to the layered platform stack. */
+    .brand-mark {
+      width: 1.35rem;
+      height: 1.35rem;
+      flex-shrink: 0;
+    }
+    .brand-mark span { display: block; height: 50%; }
+    .brand-mark .mark-top { background: var(--java); border-radius: 3px 3px 0 0; }
+    .brand-mark .mark-bottom { background: var(--spring); border-radius: 0 0 3px 3px; }
+    .header-search { margin-left: auto; position: relative; }
+    .header-search label {
+      position: absolute;
+      left: -9999px;
+    }
+    .header-search input {
+      width: min(16rem, 42vw);
+      padding: .45rem .75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--canvas);
+      color: var(--ink);
+      font: inherit;
+      font-size: .875rem;
+    }
+    #header-progress { display: flex; align-items: center; gap: .5rem; }
+    .progress-meter {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .8125rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .progress-meter meter {
+      width: 6rem;
+      height: .5rem;
+      accent-color: var(--spring);
+    }
+    .theme-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    /* ============ Frame ============ */
+    .app-frame {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 120rem;
+      margin-inline: auto;
+    }
+
+    /* Sidebar / curriculum rail */
+    .course-sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+    }
+    #curriculum-nav { padding: .75rem .75rem 2rem; }
+    .group-label {
+      font-size: .6875rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 1.25rem .5rem .35rem;
+    }
+    .module-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      width: 100%;
+      padding: .5rem .625rem;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 600;
+      font-size: .875rem;
+      text-align: left;
+      cursor: pointer;
+    }
+    .module-toggle:hover { background: var(--canvas); }
+    .module-toggle .chevron { transition: transform .15s ease; }
+    .module-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+    .lesson-list { list-style: none; margin: .15rem 0 .35rem; padding: 0; }
+    .lesson-link {
+      display: flex;
+      align-items: baseline;
+      gap: .5rem;
+      padding: .35rem .625rem .35rem 1.4rem;
+      border-radius: var(--radius-sm);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: .8438rem;
+      line-height: 1.4;
+    }
+    .lesson-link:hover { background: var(--canvas); }
+    .lesson-link[aria-current="page"] {
+      background: var(--canvas);
+      font-weight: 600;
+      box-shadow: inset 3px 0 0 var(--accent, var(--focus));
+    }
+    .lesson-state {
+      flex-shrink: 0;
+      font-size: .75rem;
+      line-height: 1;
+    }
+    .lesson-state[data-done="true"] { color: var(--spring); }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      margin: -1px; padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Drawer backdrop */
+    .drawer-backdrop {
+      position: fixed;
+      inset: var(--header-h) 0 0 0;
+      background: rgb(15 23 42 / .45);
+      z-index: 90;
+      border: 0;
+      padding: 0;
+    }
+
+    main#main-content { outline: none; }
+    #route-view { padding-block: 1.5rem 4rem; }
+
+    /* ============ Responsive ============ */
+    @media (min-width: 64rem) {
+      .menu-button { display: none; }
+      .drawer-backdrop { display: none !important; }
+      .app-frame { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+      .course-sidebar {
+        position: sticky;
+        top: var(--header-h);
+        height: calc(100dvh - var(--header-h));
+        overflow-y: auto;
+      }
+      .lesson-shell { padding-inline: clamp(1.5rem, 4vw, 3rem); }
+    }
+    @media (max-width: 63.999rem) {
+      .course-sidebar {
+        position: fixed;
+        top: var(--header-h);
+        bottom: 0;
+        left: 0;
+        width: min(20rem, 85vw);
+        z-index: 95;
+        overflow-y: auto;
+        transform: translateX(-105%);
+        transition: transform .2s ease;
+        box-shadow: var(--shadow-float);
+      }
+      body.drawer-open .course-sidebar { transform: translateX(0); }
+      body.drawer-open { overflow: hidden; }
+      .lesson-shell { padding-inline: clamp(1rem, 4vw, 2rem); }
+    }
+    @media (max-width: 30rem) {
+      .progress-meter .progress-text-long { display: none; }
+      .header-search input { width: 9rem; }
+      .brand .brand-name-long { display: none; }
+    }
+
+    pre { max-width: 100%; overflow-x: auto; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    @media print {
+      .app-header, .course-sidebar, .drawer-backdrop, #toast-region { display: none !important; }
+      .app-frame { display: block; }
+      .lesson-shell { max-width: none; padding: 0; }
+      .ref-url { display: inline !important; }
+    }
+
+    /* Toast */
+    #toast-region {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      align-items: center;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--ink);
+      color: var(--canvas);
+      padding: .55rem 1rem;
+      border-radius: 999px;
+      font-size: .8438rem;
+      box-shadow: var(--shadow-float);
+    }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Bỏ qua đến nội dung</a>
   <div id="app" aria-live="off"></div>
   <div id="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
   <script id="course-data" type="application/json">{}</script>
-  <script id="app-script"></script>
+  <script id="app-script">
+    /* ============================================================
+       Shell rendering (Site Task 2). Stable DOM hooks:
+       header[data-testid=header], course-sidebar, curriculum-nav,
+       main-content, route-view, drawer-backdrop, header-search,
+       header-progress. Later tasks fill these.
+       ============================================================ */
+    (function () {
+      "use strict";
+
+      function el(tag, attrs) {
+        const node = document.createElement(tag);
+        if (attrs) {
+          for (const [key, value] of Object.entries(attrs)) {
+            if (value != null) node.setAttribute(key, value);
+          }
+        }
+        return node;
+      }
+
+      function renderApp() {
+        const app = document.getElementById("app");
+        app.textContent = "";
+
+        const header = el("header", { class: "app-header", "data-testid": "header" });
+        const menuButton = el("button", {
+          class: "menu-button",
+          "aria-controls": "course-sidebar",
+          "aria-expanded": "false",
+          "data-action": "open-drawer",
+        });
+        menuButton.textContent = "☰";
+        menuButton.append(el("span", { class: "visually-hidden" }));
+        menuButton.querySelector(".visually-hidden").textContent =
+          "Mở nội dung khóa học";
+
+        const brand = el("a", { href: "#dashboard", class: "brand" });
+        const mark = el("span", { class: "brand-mark", "aria-hidden": "true" });
+        mark.append(
+          Object.assign(el("span", { class: "mark-top" })),
+          Object.assign(el("span", { class: "mark-bottom" })),
+        );
+        brand.append(mark, document.createTextNode("Java Spring Boot Course"));
+        brand.lastChild.className = "brand-name-long";
+
+        const searchWrap = el("div", { id: "header-search" });
+        const searchLabel = el("label", { for: "site-search" });
+        searchLabel.textContent = "Tìm bài học";
+        searchLabel.className = "visually-hidden";
+        const searchInput = el("input", {
+          id: "site-search",
+          type: "search",
+          placeholder: "Tìm bài học…",
+          autocomplete: "off",
+        });
+        searchWrap.append(searchLabel, searchInput);
+
+        const progress = el("div", { id: "header-progress" });
+        progress.append(renderProgressMeter(0, 40));
+
+        const themeButton = el("button", {
+          class: "theme-button",
+          id: "theme-toggle",
+          "aria-label": "Chuyển giao diện sáng/tối",
+          "data-action": "toggle-theme",
+        });
+        themeButton.textContent = "◐";
+
+        header.append(menuButton, brand, searchWrap, progress, themeButton);
+
+        const frame = el("div", { class: "app-frame" });
+        const sidebar = el("aside", {
+          id: "course-sidebar",
+          class: "course-sidebar",
+          "aria-label": "Nội dung khóa học",
+        });
+        const nav = el("nav", { id: "curriculum-nav", "aria-label": "Lộ trình học" });
+        sidebar.append(nav);
+
+        const main = el("main", { id: "main-content", tabindex: "-1" });
+        const routeView = el("section", { id: "route-view" });
+        main.append(routeView);
+
+        frame.append(sidebar, main);
+
+        const backdrop = el("button", {
+          class: "drawer-backdrop",
+          "data-action": "close-drawer",
+          hidden: "",
+        });
+        backdrop.append(el("span", { class: "visually-hidden" }));
+        backdrop.querySelector(".visually-hidden").textContent = "Đóng nội dung khóa học";
+
+        app.append(header, frame, backdrop);
+      }
+
+      function renderProgressMeter(completed, total) {
+        const wrap = el("div", { class: "progress-meter" });
+        const meter = el("meter", {
+          min: "0",
+          max: String(total || 1),
+          value: String(completed),
+        });
+        meter.id = "progress-bar";
+        const text = el("span", { class: "progress-text-long", "aria-hidden": "true" });
+        text.textContent = `${completed}/${total} bài`;
+        wrap.append(meter, text);
+        return wrap;
+      }
+
+      renderApp();
+
+      /* Placeholder curriculum so the rail is visible before Task 3 wires
+         real data. Replaced by renderSidebar() in Task 3. */
+      const nav = document.getElementById("curriculum-nav");
+      if (nav && !nav.childNodes.length) {
+        const p = el("p", { style: "padding:.5rem;color:var(--muted);font-size:.875rem;" });
+        p.textContent = "Đang tải nội dung khóa học…";
+        nav.append(p);
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -325,14 +325,14 @@ def main(argv=None) -> int:
     )
 
     output = Path(args.output)
-    if output.exists():
-        html = output.read_text(encoding="utf-8")
-    else:
-        shell = Path(__file__).resolve().parents[1] / "index.template.html"
-        if not shell.exists():
-            print(f"ERROR output {output} does not exist and no index.template.html found", file=sys.stderr)
-            return 2
-        html = shell.read_text(encoding="utf-8")
+    # Always rebuild from the template: index.html is a build artifact whose
+    # course-data payload changes on every run, so reading it back would
+    # accumulate stale state and mask template edits.
+    shell = Path(__file__).resolve().parents[1] / "index.template.html"
+    if not shell.exists():
+        print("ERROR index.template.html not found", file=sys.stderr)
+        return 2
+    html = shell.read_text(encoding="utf-8")
 
     try:
         built = embed_course_data(html, model)
