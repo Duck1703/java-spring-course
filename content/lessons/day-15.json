@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "id": "day-15",
+  "catalogRef": {
+    "unitId": "unit-05",
+    "group": "spring",
+    "title": "- Assignment 5: Multi-module Notification Service",
+    "objectives": [
+      "LO5"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      27
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 27,
+        "text": "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
+      }
+    ],
+    "resourceIds": [
+      "res-7bf1b25b2e6b",
+      "res-aee8bfb64b8c",
+      "res-bb04db80cab2"
+    ]
+  },
+  "unitId": "unit-05",
+  "group": "spring",
+  "kind": "project",
+  "title": "- Assignment 5: Multi-module Notification Service",
+  "summary": "Assignment 5 - Multi-module Notification Service: interface NotificationService voi 3 implementation (Email/Sms/Push), chon implementation bang @Qualifier/@Profile, cau hinh tung sender bang @ConfigurationProperties (record + constructor binding + Bean Validation), Factory pattern chon sender theo NotificationType, va retry logic khi gui that bai.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO5"
+  ],
+  "prerequisites": [
+    "Da hoc Day 13-14 (IoC container, bean scope, DI types, @Autowired resolution, @Configuration/@Bean)."
+  ],
+  "outcomes": [
+    "Dinh nghia duoc lop @ConfigurationProperties bat bien (record + constructor binding) co validate bang Bean Validation.",
+    "Chon dung giua @Qualifier va @Profile de lua implementation phu hop ngu canh.",
+    "Ap dung Factory pattern de chon sender theo loai thong bao ma khong dung chuoi if/else.",
+    "Thiet ke duoc retry logic co gioi han so lan thu khi gui that bai."
+  ],
+  "sections": [
+    {
+      "id": "day15-sec-brief",
+      "title": "De bai Assignment 5",
+      "blocks": [
+        {
+          "id": "day15-blk-1",
+          "type": "deliverable",
+          "text": "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day15-sec-configprops",
+      "title": "@ConfigurationProperties cho tung cau hinh",
+      "blocks": [
+        {
+          "id": "day15-blk-2",
+          "type": "paragraph",
+          "text": "Danh dau mot lop @ConfigurationProperties(prefix = \"...\") de Spring tu gan moi property co tien to tuong ung vao cac field/tham so cung ten nho chuan Java bean setter (hoac constructor binding voi record). @ConfigurationProperties ho tro property long nhau duoi dang List, Map va doi tuong long, giup gom nhom cau hinh SMTP/Twilio/Firebase thanh cac lop rieng biet thay vi doc tung property le bang @Value.",
+          "citations": [
+            "day15-src-1",
+            "day15-src-2"
+          ]
+        },
+        {
+          "id": "day15-blk-3",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.validation.constraints.Min;\nimport jakarta.validation.constraints.NotBlank;\nimport org.springframework.boot.context.properties.ConfigurationProperties;\n\n@ConfigurationProperties(prefix = \"notification.smtp\")\nrecord SmtpProperties(\n        @NotBlank String host,\n        @Min(1) int port,\n        @NotBlank String username,\n        @NotBlank String password) {\n}\n",
+          "compile": false,
+          "citations": [
+            "day15-src-1",
+            "day15-src-4"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day15-blk-4",
+          "type": "important",
+          "text": "Nen dung constructor binding (mot Java record voi mot constructor duy nhat co the dung truc tiep lam @ConfigurationProperties tu Spring Boot 2.6 tro len, khong can them @ConstructorBinding) de tao lop cau hinh bat bien (final field, khong setter) cho SmtpProperties/TwilioProperties/FirebaseProperties. Co the gan them constraint nhu @NotBlank, @Min/@Max ngay tren field/tham so; neu validate that bai, ung dung se khong khoi dong duoc va nem IllegalStateException.",
+          "citations": [
+            "day15-src-3",
+            "day15-src-4",
+            "day15-src-7"
+          ]
+        },
+        {
+          "id": "day15-blk-5",
+          "type": "note",
+          "text": "Spring Boot chap nhan nhieu bien the ten property khi bind: kebab-case (smtp.user-name), camelCase (smtp.userName), underscore (smtp.user_name) trong file properties/YAML, va UPPER_CASE voi dau gach duoi khi doc tu bien moi truong he thong (relaxed binding) - huu ich khi cau hinh Twilio/Firebase tu bien moi truong trong container.",
+          "citations": [
+            "day15-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day15-sec-qualifier-profile",
+      "title": "@Qualifier / @Profile de chon implementation",
+      "blocks": [
+        {
+          "id": "day15-blk-6",
+          "type": "paragraph",
+          "text": "Voi 3 implementation cung interface NotificationService (EmailSender, SmsSender, PushSender), Spring can biet chon bean nao khi tiem: DI la mot dang chuyen biet cua IoC, trong do container tiem dependency qua constructor argument dua tren cau hinh metadata (nhu ten bean khai bao trong @Component/@Qualifier).",
+          "citations": [
+            "day15-src-8"
+          ]
+        },
+        {
+          "id": "day15-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "interface NotificationService {\n    void send(String recipient, String message);\n}\n\nimport org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Component;\n\n@Component(\"emailSender\")\nclass EmailSender implements NotificationService {\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[email] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component(\"smsSender\")\nclass SmsSender implements NotificationService {\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[sms] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\nclass NotificationClient {\n\n    private final NotificationService emailSender;\n\n    // @Qualifier chon dung bean khi co nhieu implementation cua cung mot\n    // interface - Spring resolve theo type truoc (nhu hoc o Day 14), roi\n    // dung ten @Qualifier de phan biet giua cac ung vien cung type.\n    NotificationClient(@Qualifier(\"emailSender\") NotificationService emailSender) {\n        this.emailSender = emailSender;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day15-src-8"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day15-blk-8",
+          "type": "note",
+          "text": "Ngoai @Qualifier (chon theo ten bean tuong minh), co the dung @Profile(\"twilio\")/@Profile(\"firebase\") tren tung implementation de Spring chi dang ky bean tuong ung khi profile do dang active - huu ich khi muon doi nha cung cap SMS/Push theo moi truong (dev dung fake sender, prod dung Twilio/Firebase that) ma khong sua code goi.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day15-sec-factory",
+      "title": "Factory Pattern chon sender theo NotificationType",
+      "blocks": [
+        {
+          "id": "day15-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "enum NotificationType { EMAIL, SMS, PUSH }\n\nimport java.util.Map;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass NotificationSenderFactory {\n\n    private final Map<NotificationType, NotificationService> senders;\n\n    // Spring tiem toan bo cac bean NotificationService vao Map, key la\n    // ten bean; Factory tu anh xa ten bean sang NotificationType de chon\n    // dung sender ma khong can chuoi if/else theo type.\n    NotificationSenderFactory(Map<String, NotificationService> beansByName) {\n        this.senders = Map.of(\n                NotificationType.EMAIL, beansByName.get(\"emailSender\"),\n                NotificationType.SMS, beansByName.get(\"smsSender\"));\n    }\n\n    NotificationService senderFor(NotificationType type) {\n        NotificationService sender = senders.get(type);\n        if (sender == null) {\n            throw new IllegalArgumentException(\"Khong co sender cho: \" + type);\n        }\n        return sender;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day15-src-8"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day15-blk-10",
+          "type": "note",
+          "text": "Factory nhan Map<String, NotificationService> (Spring tu tiem toan bo bean cung interface vao Map, key la ten bean) roi tu anh xa sang NotificationType, tranh chuoi if/else lien tiep va de mo rong khi them loai thong bao moi.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day15-sec-retry",
+      "title": "Retry logic khi gui that bai",
+      "blocks": [
+        {
+          "id": "day15-blk-11",
+          "type": "note",
+          "text": "Yeu cau retry logic khi send that bai khong co resource nao trong resourceIds cua Day 15 mo ta chi tiet (xem authoring.limitations). Cach lam pho bien: boc loi gui trong vong lap thu lai toi da N lan voi backoff (vi du delay tang dan giua cac lan thu), hoac dung @Retryable cua Spring Retry (thu vien rieng, khong nam trong resourceIds da doc) neu duoc phep them dependency; neu vuot qua so lan thu, ghi log/nem exception nghiep vu de tang gui that bai o cap cao hon xu ly.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dat property SMTP/Twilio/Firebase rai rac bang nhieu @Value thay vi gom vao lop @ConfigurationProperties rieng cho tung nha cung cap.",
+    "Quen validate property cau hinh (vi du accountSid rong) khien loi chi xuat hien luc goi API thay vi luc khoi dong ung dung.",
+    "Retry vo han lan khong co gioi han, khien request treo khi nha cung cap thong bao that bai lien tuc."
+  ],
+  "practices": [
+    {
+      "id": "day15-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Tu Spring Boot 2.6, cach nao duoc dung truc tiep lam lop @ConfigurationProperties bat bien ma khong can them @ConstructorBinding?",
+      "choices": [
+        {
+          "id": "day15-prac-1-a",
+          "text": "Mot Java record voi mot constructor duy nhat"
+        },
+        {
+          "id": "day15-prac-1-b",
+          "text": "Mot interface voi default method"
+        },
+        {
+          "id": "day15-prac-1-c",
+          "text": "Mot enum voi field tinh"
+        },
+        {
+          "id": "day15-prac-1-d",
+          "text": "Mot lop abstract voi constructor protected"
+        }
+      ],
+      "correctChoiceIds": [
+        "day15-prac-1-a"
+      ],
+      "hint": "Doc lai phan Constructor binding va Java record trong bai.",
+      "solution": "day15-prac-1-a",
+      "explanation": "Tai lieu xac nhan tu Spring Boot 2.6, mot Java record voi mot constructor duy nhat co the dung truc tiep lam @ConfigurationProperties ma khong can them @ConstructorBinding, tao ra lop cau hinh bat bien.",
+      "rubric": "Chon dung 'Java record' thay vi cac kieu khong ho tro constructor binding tu dong.",
+      "sourceUsage": [
+        "day15-src-4",
+        "day15-src-7"
+      ]
+    },
+    {
+      "id": "day15-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot record TwilioProperties voi @ConfigurationProperties(prefix = \"notification.twilio\") gom accountSid, authToken, fromNumber, moi field bat buoc khong duoc rong.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Ap dung lai mau SmtpProperties trong bai, doi field va prefix.",
+      "solution": "@ConfigurationProperties(prefix = \"notification.twilio\")\nrecord TwilioProperties(\n        @NotBlank String accountSid,\n        @NotBlank String authToken,\n        @NotBlank String fromNumber) {\n}",
+      "explanation": "Dung dung prefix theo yeu cau va @NotBlank cho ca 3 field.",
+      "rubric": "Danh gia dung: la record, co @ConfigurationProperties voi prefix chinh xac, ca 3 field deu @NotBlank.",
+      "sourceUsage": [
+        "day15-src-1",
+        "day15-src-3"
+      ]
+    },
+    {
+      "id": "day15-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Neu muon moi truong dev dung mot FakePushSender (khong goi Firebase that) con moi truong prod dung FirebasePushSender that, nen dung co che nao cua Spring va vi sao?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghi ve annotation gan bean voi mot moi truong cu the.",
+      "solution": "Nen dung @Profile: gan @Profile(\"dev\") cho FakePushSender va @Profile(\"prod\") cho FirebasePushSender - Spring chi dang ky bean tuong ung voi profile dang active, tranh phai sua code goi hay dung if/else theo moi truong.",
+      "explanation": "Lien ket voi noi dung @Profile chon implementation da hoc trong bai.",
+      "rubric": "Danh gia hoc vien neu dung @Profile va giai thich duoc loi ich (khong sua code goi, tach theo moi truong).",
+      "sourceUsage": []
+    },
+    {
+      "id": "day15-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Trong ham khoi tao cua NotificationSenderFactory, vi sao Factory nhan Map<String, NotificationService> thay vi tung sender rieng le qua tung tham so constructor?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai code NotificationSenderFactory trong bai.",
+      "solution": "Vi Spring tu dong tiem toan bo bean cung interface NotificationService vao mot Map voi key la ten bean, giup Factory khong can liet ke tung tham so rieng cho tung loai sender va de dang mo rong khi them loai thong bao moi (chi can them mot bean @Component moi, khong can sua constructor cua Factory).",
+      "explanation": "Giai thich loi ich mo rong (extensibility) khi dung Map thay vi tham so rieng le.",
+      "rubric": "Danh gia hoc vien neu dung co che tiem Map va loi ich mo rong.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 27,
+      "text": "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type."
+    }
+  ],
+  "enhancedExercises": [
+    "Them mot NotificationType moi (vi du SLACK) va mot implementation tuong ung ma khong sua NotificationSenderFactory ngoai phan khoi tao Map.",
+    "Viet test kiem tra @ConfigurationProperties validate that bai (accountSid rong) khien context khoi dong that bai."
+  ],
+  "references": [
+    {
+      "id": "day15-ref-1",
+      "type": "external",
+      "resourceId": "res-7bf1b25b2e6b",
+      "citationId": "day15-src-1"
+    },
+    {
+      "id": "day15-ref-2",
+      "type": "external",
+      "resourceId": "res-aee8bfb64b8c",
+      "citationId": "day15-src-5"
+    },
+    {
+      "id": "day15-ref-3",
+      "type": "internal",
+      "description": "Ke thua mau DI/@Qualifier tu Day 14 va bean scope tu Day 13 khi thiet ke NotificationClient."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day15-src-1",
+      "resourceId": "res-7bf1b25b2e6b",
+      "locator": "§3. Simple Properties",
+      "topic": "@ConfigurationProperties voi prefix chung"
+    },
+    {
+      "id": "day15-src-2",
+      "resourceId": "res-7bf1b25b2e6b",
+      "locator": "§4. Nested Properties",
+      "topic": "Nested properties: List, Map, Class"
+    },
+    {
+      "id": "day15-src-3",
+      "resourceId": "res-7bf1b25b2e6b",
+      "locator": "§6. Property Validation",
+      "topic": "Validate property bang JSR-380"
+    },
+    {
+      "id": "day15-src-4",
+      "resourceId": "res-7bf1b25b2e6b",
+      "locator": "§8. Immutable @ConfigurationProperties Binding; §9. Java 16 Records",
+      "topic": "Constructor binding va Java record bat bien"
+    },
+    {
+      "id": "day15-src-5",
+      "resourceId": "res-aee8bfb64b8c",
+      "locator": "§Activation Properties",
+      "topic": "Kich hoat tai lieu YAML theo profile"
+    },
+    {
+      "id": "day15-src-6",
+      "resourceId": "res-aee8bfb64b8c",
+      "locator": "§Relaxed Binding",
+      "topic": "Quy tac relaxed binding"
+    },
+    {
+      "id": "day15-src-7",
+      "resourceId": "res-aee8bfb64b8c",
+      "locator": "§Type-safe Configuration Properties — Constructor Binding; §@DefaultValue and Binding",
+      "topic": "Constructor binding va record cho property bat bien"
+    },
+    {
+      "id": "day15-src-8",
+      "resourceId": "res-bb04db80cab2",
+      "locator": "Introduction to the Spring IoC Container and Beans — đoạn mở đầu",
+      "topic": "Dependency Injection theo dinh nghia cua Spring Framework"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Retry logic khi gui that bai: khong co resource nao trong resourceIds cua Day 15 mo ta chu de nay - trinh bay bang kien thuc chuan (retry co gioi han + backoff) trong khoi note khong yeu cau trich dan, khong bia dat citation cho Spring Retry (thu vien ngoai pham vi cac resource da doc).",
+      "@Profile de chon implementation: khong tim thay fact nao trong resourceIds cua Day 15 mo ta truc tiep co che @Profile-annotated-bean selection - fact 'Kich hoat tai lieu YAML theo profile' (res-aee8bfb64b8c) chi noi ve activation cua property source theo profile (spring.config.activate.on-profile), la mot claim khac va hep hon @Profile chon bean nen khong duoc dung lam citation cho khoi note ve @Profile chon implementation (day15-blk-8) de tranh keo cang citation.",
+      "PushSender/Firebase cu the: khong co resource nao trong resourceIds cua Day 15 mo ta Firebase Cloud Messaging API - vi du chi minh hoa kien truc chon implementation, khong di sau vao API cua tung nha cung cap.",
+      "Factory pattern (NotificationSenderFactory, day15-blk-9): khong co resource nao trong resourceIds cua Day 15 mo ta rieng ky thuat Spring tu tiem Map<String, T> gom toan bo bean cung interface - khoi code nay duoc trich dan lai bang c8 (dinh nghia DI cua Spring Framework: container tiem dependency qua constructor argument dua tren cau hinh metadata, o day la ten bean lam key cua Map) vi day van la mot bieu hien cu the cua nguyen tac constructor injection da trich dan cho day15-blk-7, khong phai mot khang dinh ky thuat moi can nguon rieng; ban than mau Factory (dung Map de tranh if/else) la kien thuc thiet ke pho bien, khong rieng cua Spring."
+    ]
+  }
+}

@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "id": "day-17",
+  "catalogRef": {
+    "unitId": "unit-06",
+    "group": "spring",
+    "title": "Validation & Exception Handling",
+    "objectives": [
+      "LO6"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      30,
+      31
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-1f904f56cc5a",
+      "res-7f4116f00d7f",
+      "res-8a73cd80ad49"
+    ]
+  },
+  "unitId": "unit-06",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Validation & Exception Handling",
+  "summary": "Bean Validation voi @Valid/jakarta.validation.constraints, xu ly MethodArgumentNotValidException; dinh nghia custom validator (@Constraint + ConstraintValidator, ke ca validate cap class); @RestControllerAdvice va ProblemDetail (RFC 7807) de chuan hoa response loi, kem ghi chu ve ten goi RFC 9457 sau nay.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO6"
+  ],
+  "prerequisites": [
+    "Da hoc Day 16 (controller, @RequestBody, ResponseEntity) - validation va exception handling ap dung truc tiep len cac controller da xay dung."
+  ],
+  "outcomes": [
+    "Gan dung constraint Bean Validation va dung @Valid tren @RequestBody.",
+    "Viet duoc custom validator (annotation + ConstraintValidator), ke ca validate cap class.",
+    "Xu ly loi tap trung bang @RestControllerAdvice thay vi try/catch rai rac tung controller.",
+    "Tra ve ProblemDetail chuan hoa theo RFC 7807 cho cac loi API."
+  ],
+  "sections": [
+    {
+      "id": "day17-sec-brief",
+      "title": "De bai va pham vi bai hoc",
+      "blocks": [
+        {
+          "id": "day17-blk-1",
+          "type": "deliverable",
+          "text": "Guides/Review",
+          "citations": []
+        },
+        {
+          "id": "day17-blk-2",
+          "type": "note",
+          "text": "Bai hoc ve Bean Validation (jakarta.validation), custom validator, xu ly loi tap trung bang @RestControllerAdvice, va ProblemDetail (dinh dang loi chuan hoa). Lich hoc ngay nay ghi 'Guides/Review' - hoc vien on tap va thuc hanh lai vi du.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day17-sec-bean-validation",
+      "title": "Bean Validation voi @Valid",
+      "blocks": [
+        {
+          "id": "day17-blk-3",
+          "type": "paragraph",
+          "text": "Cac truong cua doi tuong request duoc gan constraint nhu @NotBlank(message=...) de yeu cau gia tri khong rong sau khi trim; Hibernate Validator la cai dat tham chieu chuan Bean Validation ma Spring Boot dung mac dinh. Tu Spring Boot 2.3, phai khai bao tuong minh dependency spring-boot-starter-validation (ngoai spring-boot-starter-web) thi Bean Validation moi hoat dong duoc.",
+          "citations": [
+            "day17-src-1",
+            "day17-src-4"
+          ]
+        },
+        {
+          "id": "day17-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.validation.constraints.Email;\nimport jakarta.validation.constraints.NotBlank;\n\nrecord CreateUserRequest(\n        @NotBlank(message = \"username khong duoc de trong\") String username,\n        @Email(message = \"email khong hop le\") String email) {\n}\n\nimport jakarta.validation.Valid;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/users\")\nclass UserController {\n\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    UserView create(@Valid @RequestBody CreateUserRequest request) {\n        return new UserView(request.username(), request.email());\n    }\n}\n\nrecord UserView(String username, String email) {\n}\n",
+          "compile": false,
+          "citations": [
+            "day17-src-1",
+            "day17-src-2"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day17-blk-5",
+          "type": "paragraph",
+          "text": "Khi tham so @RequestBody cua phuong thuc controller duoc gan @Valid, Spring Boot tu bootstrap Hibernate Validator de kiem tra; neu doi tuong khong hop le, Spring Boot nem MethodArgumentNotValidException. Mot phuong thuc gan @ExceptionHandler(MethodArgumentNotValidException.class) cung @ResponseStatus(BAD_REQUEST) co the duyet ex.getBindingResult().getAllErrors() de gom ten truong va thong diep loi vao Map tra ve client dang JSON.",
+          "citations": [
+            "day17-src-2",
+            "day17-src-3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day17-sec-custom-validator",
+      "title": "Custom Validator",
+      "blocks": [
+        {
+          "id": "day17-blk-6",
+          "type": "paragraph",
+          "text": "Mot constraint tuy chinh duoc dinh nghia bang @interface gan @Constraint(validatedBy = ...Validator.class), kem cac thuoc tinh chuan message()/groups()/payload() theo quy uoc Bean Validation. Lop validator implement ConstraintValidator<Annotation, KieuDuLieu> va override isValid(value, context) de tra ve true/false theo quy tac tu dinh nghia.",
+          "citations": [
+            "day17-src-5",
+            "day17-src-6"
+          ]
+        },
+        {
+          "id": "day17-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\n@Constraint(validatedBy = PhoneNumberValidator.class)\n@interface ValidPhoneNumber {\n    String message() default \"so dien thoai khong hop le\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\n\nclass PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumber, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        return value != null && value.matches(\"\\\\d{9,11}\");\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day17-src-5",
+            "day17-src-6"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day17-blk-8",
+          "type": "note",
+          "text": "Mot annotation gan o @Target(TYPE) nhu FieldsValueMatch cho phep so sanh gia tri cua hai field trong cung lop (vi du password va verifyPassword phai khop nhau), dung BeanWrapperImpl de doc gia tri field theo ten trong isValid() - huu ich khi mot constraint can xet nhieu field cung luc thay vi tung field rieng le.",
+          "citations": [
+            "day17-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day17-sec-problem-detail",
+      "title": "@RestControllerAdvice va ProblemDetail (RFC 7807)",
+      "blocks": [
+        {
+          "id": "day17-blk-9",
+          "type": "paragraph",
+          "text": "ProblemDetail la mot phan cua chuan RFC 7807, dinh nghia cau truc phan hoi loi thong nhat gom cac truong type, title, status, detail, instance - giup client hieu va xu ly loi nhat quan giua nhieu API. Truoc khi co ProblemDetail, cac du an thuong tu dinh nghia cau truc response loi rieng bang custom exception handler/response entity, dan toi thieu nhat quan giua cac API va nhieu code lap lai.",
+          "citations": [
+            "day17-src-8",
+            "day17-src-11"
+          ]
+        },
+        {
+          "id": "day17-blk-10",
+          "type": "note",
+          "text": "Muc syllabus ghi 'ProblemDetail (RFC 9457)'; tuy nhien nguon tai lieu da doc cho Day 17 mo ta ProblemDetail theo RFC 7807 (chua co fact nao trong resourceIds cua Day 17 nhac RFC 9457) - bai nay trich dan dung theo noi dung nguon (RFC 7807). Ghi chu them (khong can trich dan vi day khong phai mot khang dinh ky thuat can nguon rieng - chi la boi canh dat ten chuan): RFC 9457 la ban cap nhat sau nay thay the/obsolete RFC 7807 cho cung dac ta ProblemDetail.",
+          "citations": []
+        },
+        {
+          "id": "day17-blk-11",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\n\n@RestControllerAdvice\nclass GlobalExceptionHandler {\n\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleValidation(MethodArgumentNotValidException ex) {\n        ProblemDetail problem = ProblemDetail.forStatusAndDetail(\n                HttpStatus.BAD_REQUEST, \"Du lieu request khong hop le\");\n        problem.setTitle(\"Validation failed\");\n        return problem;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day17-src-10"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day17-blk-12",
+          "type": "important",
+          "text": "Co the dat spring.mvc.problemdetails.enabled=true (ung dung servlet/MVC) hoac spring.webflux.problemdetails.enabled=true (ung dung reactive) de Spring Boot tu tra loi theo dinh dang ProblemDetail ma khong can code them; khi tu viet, mot class @RestControllerAdvice ke thua ResponseEntityExceptionHandler co the dinh nghia method @ExceptionHandler tra ve ProblemDetail dung bang ProblemDetail.forStatusAndDetail(status, message), co the goi them setInstance(URI) de chi ro ngu canh loi.",
+          "citations": [
+            "day17-src-9",
+            "day17-src-10"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Quen dependency spring-boot-starter-validation nen @Valid khong co tac dung.",
+    "Xu ly loi validate rai rac trong tung controller thay vi gom vao @RestControllerAdvice.",
+    "Tu dinh nghia cau truc JSON loi rieng cho moi API thay vi dung ProblemDetail chuan hoa."
+  ],
+  "practices": [
+    {
+      "id": "day17-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Tu Spring Boot 2.3, dependency nao phai duoc khai bao tuong minh de Bean Validation hoat dong (ngoai spring-boot-starter-web)?",
+      "choices": [
+        {
+          "id": "day17-prac-1-a",
+          "text": "spring-boot-starter-validation"
+        },
+        {
+          "id": "day17-prac-1-b",
+          "text": "spring-boot-starter-actuator"
+        },
+        {
+          "id": "day17-prac-1-c",
+          "text": "spring-boot-starter-security"
+        },
+        {
+          "id": "day17-prac-1-d",
+          "text": "spring-boot-starter-aop"
+        }
+      ],
+      "correctChoiceIds": [
+        "day17-prac-1-a"
+      ],
+      "hint": "Doc lai fact ve 'Dependency can thiet tu Boot 2.3' trong bai.",
+      "solution": "day17-prac-1-a",
+      "explanation": "Tai lieu xac nhan tu Spring Boot 2.3, phai khai bao tuong minh spring-boot-starter-validation thi Bean Validation moi hoat dong.",
+      "rubric": "Chon dung ten starter, khong nham voi cac starter khac khong lien quan validation.",
+      "sourceUsage": [
+        "day17-src-4"
+      ]
+    },
+    {
+      "id": "day17-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Sua CreateUserRequest de them field age (int) voi rang buoc gia tri toi thieu la 18 tuoi.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung @Min(18) cua jakarta.validation.constraints tren tham so age.",
+      "solution": "record CreateUserRequest(\n        @NotBlank String username,\n        @Email String email,\n        @jakarta.validation.constraints.Min(18) int age) {\n}",
+      "explanation": "Ap dung dung annotation @Min(18) tu jakarta.validation.constraints, giu nguyen 2 field co san.",
+      "rubric": "Danh gia dung: them field age kieu int voi @Min(18), khong lam mat @NotBlank/@Email o hai field cu.",
+      "sourceUsage": [
+        "day17-src-1"
+      ]
+    },
+    {
+      "id": "day17-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vi sao nen tra loi bang ProblemDetail thay vi tu dinh nghia mot cau truc JSON loi rieng cho tung API?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan so sanh voi cach xu ly loi truyen thong trong bai.",
+      "solution": "Vi truoc khi co ProblemDetail, cac du an thuong tu dinh nghia cau truc response loi rieng, dan toi thieu nhat quan giua cac API va nhieu code lap lai; ProblemDetail chuan hoa cau truc (type, title, status, detail, instance) theo RFC 7807, giup client xu ly loi nhat quan giua nhieu API khac nhau.",
+      "explanation": "Neu dung ly do nhat quan/tai su dung, dua vao so sanh voi cach lam truyen thong.",
+      "rubric": "Danh gia hoc vien neu dung van de cua cach lam truyen thong (thieu nhat quan, lap code) ma ProblemDetail giai quyet.",
+      "sourceUsage": [
+        "day17-src-8",
+        "day17-src-11"
+      ]
+    },
+    {
+      "id": "day17-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Mot constraint can so sanh hai field password va verifyPassword trong cung mot lop. Nen gan @Target o dau va can ky thuat gi de doc gia tri field theo ten trong isValid()?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan Validate o cap class trong bai.",
+      "solution": "Gan @Target(TYPE) tren annotation (ap dung cho ca lop, khong phai tung field rieng le); trong isValid(), dung BeanWrapperImpl de doc gia tri tung field theo ten roi so sanh, thay vi validator chi nhan duoc gia tri cua mot field don le.",
+      "explanation": "Nho lai vi du FieldsValueMatch va ky thuat BeanWrapperImpl trong bai.",
+      "rubric": "Danh gia dung ca hai y: @Target(TYPE) va BeanWrapperImpl.",
+      "sourceUsage": [
+        "day17-src-7"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viet mot @Constraint cap class FieldsValueMatch cho password/verifyPassword va ap dung vao CreateUserRequest.",
+    "Bat spring.mvc.problemdetails.enabled=true va so sanh response loi mac dinh voi ProblemDetail tu viet trong GlobalExceptionHandler."
+  ],
+  "references": [
+    {
+      "id": "day17-ref-1",
+      "type": "external",
+      "resourceId": "res-1f904f56cc5a",
+      "citationId": "day17-src-1"
+    },
+    {
+      "id": "day17-ref-2",
+      "type": "external",
+      "resourceId": "res-8a73cd80ad49",
+      "citationId": "day17-src-8"
+    },
+    {
+      "id": "day17-ref-3",
+      "type": "internal",
+      "description": "Ap dung validation/exception handling truc tiep len cac controller da xay dung o Day 16."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day17-src-1",
+      "resourceId": "res-1f904f56cc5a",
+      "locator": "§3. A Simple Domain Class",
+      "topic": "Rang buoc tren entity bang Bean Validation"
+    },
+    {
+      "id": "day17-src-2",
+      "resourceId": "res-1f904f56cc5a",
+      "locator": "§4. Implementing a REST Controller",
+      "topic": "@Valid trong REST controller"
+    },
+    {
+      "id": "day17-src-3",
+      "resourceId": "res-1f904f56cc5a",
+      "locator": "§5. The @ExceptionHandler Annotation",
+      "topic": "Xu ly loi validate bang @ExceptionHandler"
+    },
+    {
+      "id": "day17-src-4",
+      "resourceId": "res-1f904f56cc5a",
+      "locator": "§2. The Maven Dependencies",
+      "topic": "Dependency can thiet tu Boot 2.3"
+    },
+    {
+      "id": "day17-src-5",
+      "resourceId": "res-7f4116f00d7f",
+      "locator": "§4. The New Annotation",
+      "topic": "Dinh nghia annotation validate tuy chinh"
+    },
+    {
+      "id": "day17-src-6",
+      "resourceId": "res-7f4116f00d7f",
+      "locator": "§5. Creating a Validator",
+      "topic": "Cai dat logic validate bang ConstraintValidator"
+    },
+    {
+      "id": "day17-src-7",
+      "resourceId": "res-7f4116f00d7f",
+      "locator": "§9. Custom Class Level Validation; §9.2 Creating the Validator",
+      "topic": "Validate o cap class cho nhieu field"
+    },
+    {
+      "id": "day17-src-8",
+      "resourceId": "res-8a73cd80ad49",
+      "locator": "§4. ProblemDetail Specification",
+      "topic": "Dac ta ProblemDetail"
+    },
+    {
+      "id": "day17-src-9",
+      "resourceId": "res-8a73cd80ad49",
+      "locator": "§5.1. Enabling ProblemDetail Using Application Property",
+      "topic": "Bat ProblemDetail qua property"
+    },
+    {
+      "id": "day17-src-10",
+      "resourceId": "res-8a73cd80ad49",
+      "locator": "§5.2. Implementing ProblemDetail in Exception Handler",
+      "topic": "Tra ProblemDetail trong exception handler toan cuc"
+    },
+    {
+      "id": "day17-src-11",
+      "resourceId": "res-8a73cd80ad49",
+      "locator": "§3. Traditional Error Handling Approaches",
+      "topic": "So voi cach xu ly loi truyen thong"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Business Exception hierarchy: khong co resource nao trong resourceIds cua Day 17 mo ta chi tiet cach thiet ke phan cap exception nghiep vu rieng (vi du ResourceNotFoundException/DuplicateResourceException) - chu de nay duoc minh hoa ap dung cu the hon o Day 18 (Lab 6) qua GlobalExceptionHandler xu ly loi nghiep vu cua Task."
+    ]
+  }
+}

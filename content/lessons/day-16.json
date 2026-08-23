@@ -1,0 +1,371 @@
+{
+  "schemaVersion": 1,
+  "id": "day-16",
+  "catalogRef": {
+    "unitId": "unit-06",
+    "group": "spring",
+    "title": "Controller & Request/Response",
+    "objectives": [
+      "LO6"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      28,
+      29
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 29,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-2aefb097db80",
+      "res-d8a874d76b06",
+      "res-06dd51e41e25"
+    ]
+  },
+  "unitId": "unit-06",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Controller & Request/Response",
+  "summary": "Xay dung REST controller voi @RestController/@RequestMapping va cac shortcut theo HTTP method; cu phap URI pattern va @PathVariable; @RequestParam va params attribute; loi Ambiguous Mapping; ResponseEntity va cac builder tinh; content negotiation qua consumes/produces; khi nao dung @ResponseBody/@ResponseStatus thay vi ResponseEntity.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO6"
+  ],
+  "prerequisites": [
+    "Da hoc Day 13-15 (IoC, DI, @Configuration/@Bean, @ConfigurationProperties) - controller cung la bean duoc Spring quan ly."
+  ],
+  "outcomes": [
+    "Khai bao dung mapping bang @RequestMapping va cac shortcut theo HTTP method.",
+    "Bat va rang buoc kieu bien path/query bang @PathVariable/@RequestParam, tranh loi Ambiguous Mapping.",
+    "Dung ResponseEntity de kiem soat status/headers/body cua response.",
+    "Chon dung giua ResponseEntity, @ResponseBody, @ResponseStatus theo tung tinh huong."
+  ],
+  "sections": [
+    {
+      "id": "day16-sec-brief",
+      "title": "De bai va pham vi bai hoc",
+      "blocks": [
+        {
+          "id": "day16-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day16-blk-2",
+          "type": "note",
+          "text": "Bai mo dau Unit 6 (Spring MVC/REST): xay dung controller voi @RestController, khai bao mapping bang @RequestMapping va cac shortcut theo HTTP method, xu ly tham so tu path/query, dung ResponseEntity de kiem soat toan bo HTTP response, va content negotiation qua consumes/produces. Lich hoc ngay nay ghi 'Assignment' nhung khong co de bai chi tiet rieng - hoc vien on tap va thuc hanh lai vi du trong bai.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day16-sec-mapping",
+      "title": "@RequestMapping va cac shortcut",
+      "blocks": [
+        {
+          "id": "day16-blk-3",
+          "type": "paragraph",
+          "text": "@RequestMapping co the dat o cap class (mapping dung chung, vi du prefix /api/products) hoac method (endpoint cu the); cac annotation rut gon @GetMapping/@PostMapping/@PutMapping/@DeleteMapping/@PatchMapping duoc cung cap vi phan lon method nen gan voi mot HTTP method cu the thay vi khop moi method nhu @RequestMapping mac dinh. Neu khong chi dinh method, mapping se khop voi moi HTTP method gui toi path do.",
+          "citations": [
+            "day16-src-1",
+            "day16-src-5"
+          ]
+        },
+        {
+          "id": "day16-blk-4",
+          "type": "table",
+          "columns": [
+            "Ky hieu",
+            "Y nghia"
+          ],
+          "rows": [
+            [
+              "?",
+              "Khop dung mot ky tu bat ky trong mot segment"
+            ],
+            [
+              "*",
+              "Khop khong hoac nhieu ky tu trong mot segment"
+            ],
+            [
+              "**",
+              "Khop khong hoac nhieu segment"
+            ],
+            [
+              "{name}",
+              "Bat bien path segment, truy cap qua @PathVariable"
+            ],
+            [
+              "{name:regex}",
+              "Bat bien path segment theo bieu thuc chinh quy, vi du {id:[\\d]+} chi khop gia tri so"
+            ]
+          ],
+          "citations": [
+            "day16-src-2",
+            "day16-src-3",
+            "day16-src-5"
+          ]
+        },
+        {
+          "id": "day16-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/products\")\nclass ProductController {\n\n    private final ProductRepository repository;\n\n    ProductController(ProductRepository repository) {\n        this.repository = repository;\n    }\n\n    // {id:[\\d]+} rang buoc bien path chi khop gia tri so.\n    @GetMapping(\"/{id:[\\\\d]+}\")\n    ResponseEntity<Product> findById(@PathVariable long id) {\n        return repository.findById(id)\n                .map(ResponseEntity::ok)\n                .orElseGet(() -> ResponseEntity.notFound().build());\n    }\n\n    @GetMapping(produces = \"application/json\")\n    ResponseEntity<java.util.List<Product>> search(\n            @RequestParam(required = false) String category) {\n        var results = category == null\n                ? repository.findAll()\n                : repository.findByCategory(category);\n        return ResponseEntity.ok(results);\n    }\n\n    @PostMapping(consumes = \"application/json\")\n    ResponseEntity<Product> create(@RequestBody Product product) {\n        Product saved = repository.save(product);\n        return ResponseEntity.status(201).body(saved);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day16-src-1",
+            "day16-src-3",
+            "day16-src-4"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        }
+      ]
+    },
+    {
+      "id": "day16-sec-params",
+      "title": "Xu ly tham so: @PathVariable va @RequestParam",
+      "blocks": [
+        {
+          "id": "day16-blk-6",
+          "type": "paragraph",
+          "text": "@PathVariable bat mot hoac nhieu phan cua URI (vi du /foos/{fooid}/bar/{barid}) va tu dong chuyen kieu (int, long, Date, ...), nem TypeMismatchException neu khong chuyen duoc; @RequestParam(\"id\") trich gia tri query parameter truc tiep. @RequestMapping cung co the khai bao them params=\"id\" hoac params={\"id\",\"second\"} de chi khop khi request co (cac) parameter do; request khop nhieu dieu kien nhat se duoc chon.",
+          "citations": [
+            "day16-src-5",
+            "day16-src-6"
+          ]
+        },
+        {
+          "id": "day16-blk-7",
+          "type": "warning",
+          "text": "Khi hai method co cung HTTP method, URL, parameters, headers va media type, Spring nem IllegalStateException bao ambiguous mapping ngay luc khoi dong ung dung (khong phai luc goi request) - khac phuc bang cach phan biet qua produces/consumes khac nhau hoac doi URL cua mot trong hai method.",
+          "citations": [
+            "day16-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day16-sec-response",
+      "title": "ResponseEntity va content negotiation",
+      "blocks": [
+        {
+          "id": "day16-blk-8",
+          "type": "paragraph",
+          "text": "ResponseEntity dai dien cho toan bo HTTP response gom status code, headers va body; controller tra ve ResponseEntity de Spring tu dong dung response tuong ung, kieu generic nen body co the la bat ky kieu nao. ResponseEntity cung cap cac phuong thuc tinh tien dung nhu ok(), badRequest(), notFound(), status(HttpStatus) ket hop .body(T) de dung response ngan gon thay vi goi constructor truc tiep.",
+          "citations": [
+            "day16-src-8",
+            "day16-src-9"
+          ]
+        },
+        {
+          "id": "day16-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\nclass OrderQueryController {\n\n    // @ResponseStatus phu hop khi chi can dat ma trang thai co dinh cho\n    // response thanh cong, khong can dung ca ResponseEntity.\n    @GetMapping(\"/api/orders/{id}/status\")\n    @ResponseStatus(HttpStatus.OK)\n    @ResponseBody\n    String status(@PathVariable String id) {\n        return \"PENDING\";\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day16-src-10"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day16-blk-10",
+          "type": "note",
+          "text": "Khong nen lam dung ResponseEntity cho moi truong hop: dung @ResponseBody khi chi can tra du lieu (khong can kiem soat status code/headers), dung @ResponseStatus khi chi can dat ma trang thai tuy bien cho response thanh cong hoac exception handler. Thuoc tinh consumes thu hep mapping theo Content-Type cua request, produces thu hep theo Accept header/kieu noi dung tra ve; ca hai ho tro phu dinh (vi du !text/plain) va khi khai bao o method se override (khong cong don) gia tri khai bao o class.",
+          "citations": [
+            "day16-src-4",
+            "day16-src-10"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Khai bao hai method mapping trung hoan toan (cung method/URL/params/headers/media type), gay IllegalStateException luc khoi dong.",
+    "Dung @PathVariable ma khong rang buoc kieu, nhan TypeMismatchException khi client gui gia tri sai kieu.",
+    "Lam dung ResponseEntity cho moi endpoint don gian thay vi @ResponseBody/@ResponseStatus."
+  ],
+  "practices": [
+    {
+      "id": "day16-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Pattern URI nao chi khop dung mot bien path segment duoc dung kieu so (vi du chi chap nhan /products/42, khong chap nhan /products/abc)?",
+      "choices": [
+        {
+          "id": "day16-prac-1-a",
+          "text": "/products/{id:[\\d]+}"
+        },
+        {
+          "id": "day16-prac-1-b",
+          "text": "/products/*"
+        },
+        {
+          "id": "day16-prac-1-c",
+          "text": "/products/**"
+        },
+        {
+          "id": "day16-prac-1-d",
+          "text": "/products/?"
+        }
+      ],
+      "correctChoiceIds": [
+        "day16-prac-1-a"
+      ],
+      "hint": "Doc lai bang cu phap URI pattern trong bai.",
+      "solution": "day16-prac-1-a",
+      "explanation": "{name:regex} bat bien path segment theo bieu thuc chinh quy; {id:[\\d]+} chi khop gia tri gom toan chu so, cac lua chon con lai (*, **, ?) chi khop ky tu/segment bat ky, khong rang buoc kieu du lieu.",
+      "rubric": "Chon dung cu phap {name:regex}, phan biet voi cac wildcard * ** ? khong rang buoc kieu.",
+      "sourceUsage": [
+        "day16-src-2",
+        "day16-src-3"
+      ]
+    },
+    {
+      "id": "day16-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot method controller GET /api/products/{id} tra ve ResponseEntity<Product>: 200 kem body neu tim thay, 404 rong neu khong.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung repository.findById(id) tra ve Optional roi map/orElseGet nhu vi du trong bai.",
+      "solution": "@GetMapping(\"/{id}\")\nResponseEntity<Product> findById(@PathVariable long id) {\n    return repository.findById(id)\n            .map(ResponseEntity::ok)\n            .orElseGet(() -> ResponseEntity.notFound().build());\n}",
+      "explanation": "Ap dung lai mau map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build()) tu vi du trong bai.",
+      "rubric": "Danh gia dung: co @PathVariable, tra 200 kem body khi tim thay, 404 rong khi khong tim thay.",
+      "sourceUsage": [
+        "day16-src-8",
+        "day16-src-9"
+      ]
+    },
+    {
+      "id": "day16-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Hai method controller cung nhan GET /api/items, khong khac gi ve params/headers/media type. Dieu gi xay ra luc khoi dong ung dung va cach khac phuc?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan canh bao ve Ambiguous Mapping trong bai.",
+      "solution": "Spring nem IllegalStateException bao ambiguous mapping ngay luc khoi dong ung dung. Khac phuc bang cach phan biet hai method qua produces/consumes khac nhau, hoac doi URL cua mot trong hai method de chung khong con trung nhau hoan toan.",
+      "explanation": "Nho lai loi ambiguous mapping xay ra luc khoi dong, khong phai luc goi request.",
+      "rubric": "Danh gia hoc vien neu dung thoi diem loi xay ra va it nhat mot cach khac phuc hop ly.",
+      "sourceUsage": [
+        "day16-src-7"
+      ]
+    },
+    {
+      "id": "day16-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Khi nao nen dung @ResponseStatus + @ResponseBody thay vi ResponseEntity cho mot endpoint?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan 'Khong nen lam dung ResponseEntity' trong bai.",
+      "solution": "Nen dung khi endpoint chi can tra du lieu voi mot ma trang thai co dinh, khong can kiem soat dong (per-request) status code hay headers tuy bien - dung @ResponseBody de tra du lieu va @ResponseStatus de dat ma trang thai co dinh cho response thanh cong.",
+      "explanation": "Lien ket voi khuyen nghi khong lam dung ResponseEntity da neu trong bai.",
+      "rubric": "Danh gia hoc vien neu dung dieu kien: status co dinh, khong can dieu chinh dong theo tung request.",
+      "sourceUsage": [
+        "day16-src-10"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 29,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Them consumes/produces cho ProductController.create de chi chap nhan application/json va tra loi 415 voi Content-Type khac.",
+    "Viet test goi hai endpoint gay ambiguous mapping co chu y va sua bang produces khac nhau."
+  ],
+  "references": [
+    {
+      "id": "day16-ref-1",
+      "type": "external",
+      "resourceId": "res-2aefb097db80",
+      "citationId": "day16-src-1"
+    },
+    {
+      "id": "day16-ref-2",
+      "type": "external",
+      "resourceId": "res-06dd51e41e25",
+      "citationId": "day16-src-8"
+    },
+    {
+      "id": "day16-ref-3",
+      "type": "internal",
+      "description": "Controller trong bai la bean duoc Spring quan ly nhu da hoc o Day 13-15."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day16-src-1",
+      "resourceId": "res-2aefb097db80",
+      "locator": "§@RequestMapping",
+      "topic": "RequestMapping va cac shortcut theo HTTP method"
+    },
+    {
+      "id": "day16-src-2",
+      "resourceId": "res-2aefb097db80",
+      "locator": "§URI patterns — bảng Pattern/Description/Example",
+      "topic": "Cu phap URI pattern"
+    },
+    {
+      "id": "day16-src-3",
+      "resourceId": "res-2aefb097db80",
+      "locator": "§URI patterns — Captured URI variables; bảng {*path}",
+      "topic": "@PathVariable va kieu {*path}"
+    },
+    {
+      "id": "day16-src-4",
+      "resourceId": "res-2aefb097db80",
+      "locator": "§Consumable Media Types; §Producible Media Types",
+      "topic": "Thu hep mapping theo consumes/produces"
+    },
+    {
+      "id": "day16-src-5",
+      "resourceId": "res-d8a874d76b06",
+      "locator": "§4. RequestMapping With Path Variables",
+      "topic": "@PathVariable don, nhieu bien va rang buoc regex"
+    },
+    {
+      "id": "day16-src-6",
+      "resourceId": "res-d8a874d76b06",
+      "locator": "§5. RequestMapping With Request Parameters",
+      "topic": "@RequestParam va params attribute"
+    },
+    {
+      "id": "day16-src-7",
+      "resourceId": "res-d8a874d76b06",
+      "locator": "§6.4. Ambiguous Mapping Error",
+      "topic": "Loi Ambiguous Mapping"
+    },
+    {
+      "id": "day16-src-8",
+      "resourceId": "res-06dd51e41e25",
+      "locator": "§2. ResponseEntity",
+      "topic": "ResponseEntity la gi"
+    },
+    {
+      "id": "day16-src-9",
+      "resourceId": "res-06dd51e41e25",
+      "locator": "§2. ResponseEntity — static builder methods",
+      "topic": "Builder tinh cua ResponseEntity"
+    },
+    {
+      "id": "day16-src-10",
+      "resourceId": "res-06dd51e41e25",
+      "locator": "§3. Alternatives; §3.1 @ResponseBody; §3.2 @ResponseStatus",
+      "topic": "Khi nao khong can ResponseEntity"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": []
+  }
+}

@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "id": "day-14",
+  "catalogRef": {
+    "unitId": "unit-05",
+    "group": "spring",
+    "title": "Dependency Injection & Configuration",
+    "objectives": [
+      "LO5"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      25,
+      26
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-bf1095022eae",
+      "res-02399daadb94",
+      "res-b6fc716e051f"
+    ]
+  },
+  "unitId": "unit-05",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Dependency Injection & Configuration",
+  "summary": "Ba kieu Dependency Injection (constructor/setter/field) va thu tu @Autowired resolve dependency; @Configuration/@Bean phoi hop voi auto-configuration cua Spring Boot (classpath-based, non-invasive, exclude, --debug conditions report); on lai lien he DI-scope; gioi thieu @ConfigurationProperties va Profiles cho Day 15.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO5"
+  ],
+  "prerequisites": [
+    "Da hoc Day 13 (IoC container, bean, bean scope, bean lifecycle, stereotype annotations)."
+  ],
+  "outcomes": [
+    "Phan biet dung 3 kieu Dependency Injection va chon kieu phu hop theo tinh bat buoc/tuy chon cua dependency.",
+    "Giai thich duoc thu tu Spring resolve dependency (type, ten, index).",
+    "Mo ta duoc quan he giua @Bean tu viet va auto-configuration cua Spring Boot (non-invasive/back-away).",
+    "Biet cach loai tru mot auto-configuration class va xem conditions report bang --debug."
+  ],
+  "sections": [
+    {
+      "id": "day14-sec-brief",
+      "title": "De bai va pham vi bai hoc",
+      "blocks": [
+        {
+          "id": "day14-blk-1",
+          "type": "deliverable",
+          "text": "Guides/Review",
+          "citations": []
+        },
+        {
+          "id": "day14-blk-2",
+          "type": "note",
+          "text": "Bai hoc noi tiep Day 13, di sau vao 3 kieu Dependency Injection va co che @Autowired resolve dependency, cach @Configuration/@Bean phoi hop voi auto-configuration cua Spring Boot, va gioi thieu @ConfigurationProperties/Profiles (se hoc chi tiet o Day 15 cung Assignment 5). Lich hoc ngay nay ghi 'Guides/Review' - hoc vien on tap ly thuyet va thuc hanh lai vi du.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day14-sec-di-types",
+      "title": "Ba kieu Dependency Injection",
+      "blocks": [
+        {
+          "id": "day14-blk-3",
+          "type": "paragraph",
+          "text": "Inversion of Control la nguyen ly chuyen quyen kiem soat viec tao/luong chuong trinh tu code tu viet sang mot container/framework; framework goi nguoc lai code cua minh thay vi code tu goi thu vien. Spring ho tro 3 kieu Dependency Injection: constructor injection (container goi constructor co tham so, moi tham so ung voi mot dependency), setter injection (container goi constructor khong tham so roi goi cac setter de gan dependency), va field injection (dung @Autowired truc tiep tren field, dung reflection de gan gia tri).",
+          "citations": [
+            "day14-src-1",
+            "day14-src-2",
+            "day14-src-3",
+            "day14-src-4"
+          ]
+        },
+        {
+          "id": "day14-blk-4",
+          "type": "table",
+          "columns": [
+            "Kieu DI",
+            "Co che",
+            "Khuyen nghi"
+          ],
+          "rows": [
+            [
+              "Constructor injection",
+              "Container goi constructor co tham so tuong ung dependency",
+              "Khuyen nghi cho dependency bat buoc"
+            ],
+            [
+              "Setter injection",
+              "Container goi constructor khong tham so roi goi setter",
+              "Khuyen nghi cho dependency tuy chon"
+            ],
+            [
+              "Field injection",
+              "Dung @Autowired truc tiep tren field qua reflection",
+              "Khong khuyen nghi: reflection ton chi phi hon, de khien lop ganh qua nhieu dependency, vi pham Single Responsibility Principle"
+            ]
+          ],
+          "citations": [
+            "day14-src-2",
+            "day14-src-3",
+            "day14-src-4"
+          ]
+        },
+        {
+          "id": "day14-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "interface PricingPolicy {\n    double priceFor(int quantity);\n}\n\nclass DiscountPricingPolicy implements PricingPolicy {\n    private static final double UNIT_PRICE = 10.0;\n\n    @Override\n    public double priceFor(int quantity) {\n        double total = quantity * UNIT_PRICE;\n        return quantity >= 10 ? total * 0.9 : total;\n    }\n}\n\nimport org.springframework.stereotype.Service;\n\n@Service\nclass OrderService {\n\n    private final PricingPolicy pricingPolicy;\n\n    // Constructor injection: Spring resolve theo type truoc; neu co nhieu\n    // bean cung type thi theo ten tham so; cuoi cung theo index de phan biet.\n    OrderService(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day14-src-2"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day14-blk-6",
+          "type": "note",
+          "text": "Ve thu tu resolve dependency: voi constructor injection, Spring resolve theo type truoc; neu co nhieu bean cung type, Spring xet tiep theo ten thuoc tinh (thuong ket hop voi @Qualifier); cuoi cung moi xet theo index de phan biet cac tham so cung type.",
+          "citations": [
+            "day14-src-2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day14-sec-configuration-bean",
+      "title": "@Configuration, @Bean va Auto-configuration",
+      "blocks": [
+        {
+          "id": "day14-blk-7",
+          "type": "paragraph",
+          "text": "Nhu da thay o Day 13, mot class @Configuration khai bao method @Bean de dang ky bean thu cong voi container. Spring Boot bo sung them auto-configuration: ung dung tu dong cau hinh dua tren cac jar dependency co mat tren classpath (vi du neu co HSQLDB va chua cau hinh DataSource bean thu cong thi Spring Boot tu cau hinh mot database trong bo nho); tinh nang nay phai duoc bat ro rang bang @EnableAutoConfiguration hoac @SpringBootApplication.",
+          "citations": [
+            "day14-src-5"
+          ]
+        },
+        {
+          "id": "day14-blk-8",
+          "type": "important",
+          "text": "Auto-configuration khong xam lan (non-invasive): no lui lai (back away) ngay khi ung dung tu dinh nghia bean cua rieng minh cho cung vai tro - vi du neu tu khai bao mot @Bean DataSource trong @Configuration class thi cau hinh database nhung mac dinh cua Spring Boot se khong con duoc ap dung nua. Day la ly do @Bean tu viet luon duoc uu tien hon auto-configuration mac dinh.",
+          "citations": [
+            "day14-src-6"
+          ]
+        },
+        {
+          "id": "day14-blk-9",
+          "type": "note",
+          "text": "Co the loai tru mot auto-configuration class khong mong muon bang thuoc tinh exclude cua @SpringBootApplication/@EnableAutoConfiguration (hoac excludeName neu class khong co tren classpath), hoac qua property spring.autoconfigure.exclude. De xem auto-configuration nao dang duoc ap dung va ly do, chay ung dung voi co --debug: Spring Boot se in ra console mot conditions report.",
+          "citations": [
+            "day14-src-7",
+            "day14-src-8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day14-sec-scope-recap",
+      "title": "DI va Bean Scope (on lai)",
+      "blocks": [
+        {
+          "id": "day14-blk-10",
+          "type": "note",
+          "text": "DI va bean scope lien quan chat che: khi mot dependency co scope ngan hon (vi du request-scoped) can duoc tiem vao mot bean scope dai hon (singleton, la truong hop pho bien nhat khi dung constructor injection), phai dung scoped proxy - Spring tao mot proxy giu cung interface cong khai nhung lay doi tuong that tu scope tuong ung tai thoi diem goi method, thay vi giu mai instance duoc tiem luc khoi tao. Chi tiet ve cac scope da hoc o Day 13.",
+          "citations": [
+            "day14-src-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day14-sec-configprops-profiles",
+      "title": "@ConfigurationProperties va Profiles (gioi thieu)",
+      "blocks": [
+        {
+          "id": "day14-blk-11",
+          "type": "note",
+          "text": "Chu de @ConfigurationProperties (gom property lien quan vao mot POJO co kieu, thay vi doc tung property rieng le bang @Value) va Profiles (kich hoat cau hinh khac nhau theo moi truong: dev/test/prod) khong co resource nao trong resourceIds cua rieng Day 14 mo ta chi tiet (xem authoring.limitations) - hai chu de nay se duoc hoc sau, co trich dan day du, trong Day 15 cung voi Assignment 5 Multi-module Notification Service.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Lam dung field injection cho moi dependency, khien lop kho test va ganh qua nhieu trach nhiem.",
+    "Tuong nham auto-configuration va @Bean tu viet xung dot, thay vi hieu dung co che back-away.",
+    "Khong biet dung --debug de chan doan vi sao mot auto-configuration khong duoc ap dung nhu mong doi."
+  ],
+  "practices": [
+    {
+      "id": "day14-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vi sao field injection (dung @Autowired truc tiep tren field) khong duoc khuyen nghi so voi constructor injection?",
+      "choices": [
+        {
+          "id": "day14-prac-1-a",
+          "text": "Vi field injection dung reflection ton chi phi hon va de khien lop ganh qua nhieu dependency, vi pham Single Responsibility Principle"
+        },
+        {
+          "id": "day14-prac-1-b",
+          "text": "Vi field injection khong the dung voi @Service"
+        },
+        {
+          "id": "day14-prac-1-c",
+          "text": "Vi field injection chi hoat dong voi bean scope prototype"
+        },
+        {
+          "id": "day14-prac-1-d",
+          "text": "Vi field injection yeu cau moi field phai la final"
+        }
+      ],
+      "correctChoiceIds": [
+        "day14-prac-1-a"
+      ],
+      "hint": "Doc lai bang so sanh 3 kieu DI trong bai.",
+      "solution": "day14-prac-1-a",
+      "explanation": "Tai lieu xac dinh field injection dung reflection de gan gia tri, ton chi phi hon cach goi truc tiep, va de khien lop ganh qua nhieu dependency ma khong bi phat hien (vi khong co constructor/setter rang buoc), vi pham Single Responsibility Principle.",
+      "rubric": "Chon dung ly do lien quan reflection/SRP, khong nham voi cac ly do khong co trong tai lieu.",
+      "sourceUsage": [
+        "day14-src-4"
+      ]
+    },
+    {
+      "id": "day14-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Chuyen doi OrderService trong bai tu constructor injection sang setter injection cho dependency PricingPolicy.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Bo constructor tham so, them setter co @Autowired.",
+      "solution": "class OrderService {\n    private PricingPolicy pricingPolicy;\n\n    @Autowired\n    void setPricingPolicy(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}",
+      "explanation": "Ap dung dung mo hinh setter injection: constructor khong tham so, setter co @Autowired de container goi sau khi khoi tao.",
+      "rubric": "Danh gia dung: field khong con final, co setter voi @Autowired, khong con constructor nhan PricingPolicy.",
+      "sourceUsage": [
+        "day14-src-3"
+      ]
+    },
+    {
+      "id": "day14-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Ung dung dinh nghia mot @Bean DataSource cua rieng minh trong mot @Configuration class. Dieu gi se xay ra voi cau hinh database nhung mac dinh cua Spring Boot auto-configuration?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghi ve tinh chat non-invasive cua auto-configuration.",
+      "solution": "Auto-configuration se lui lai (back away): vi ung dung da tu dinh nghia bean DataSource cho cung vai tro, cau hinh database nhung mac dinh se khong con duoc ap dung nua - bean tu viet duoc uu tien hon.",
+      "explanation": "Lien ket voi tinh chat non-invasive/back-away da hoc trong bai.",
+      "rubric": "Danh gia hoc vien noi dung duoc co che back-away, khong nham lan voi loi hoac xung dot bean.",
+      "sourceUsage": [
+        "day14-src-6"
+      ]
+    },
+    {
+      "id": "day14-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Khi debug mot ung dung Spring Boot va muon biet chinh xac auto-configuration nao dang duoc ap dung va ly do, nen lam gi?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan Auto-configuration trong bai.",
+      "solution": "Chay ung dung voi co --debug de bat log debug cho mot nhom logger loi va in ra console mot conditions report cho biet auto-configuration nao dang duoc ap dung va ly do (hoac vi sao mot auto-configuration bi bo qua).",
+      "explanation": "Nho lai co --debug da neu trong bai.",
+      "rubric": "Danh gia hoc vien nhac dung co --debug va muc dich conditions report.",
+      "sourceUsage": [
+        "day14-src-8"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viet lai OrderService bang ca 3 kieu DI (constructor/setter/field) va so sanh kha nang viet unit test cho tung kieu.",
+    "Thu exclude mot auto-configuration class that (vi du DataSourceAutoConfiguration) va chay voi --debug de doc conditions report."
+  ],
+  "references": [
+    {
+      "id": "day14-ref-1",
+      "type": "external",
+      "resourceId": "res-02399daadb94",
+      "citationId": "day14-src-2"
+    },
+    {
+      "id": "day14-ref-2",
+      "type": "external",
+      "resourceId": "res-b6fc716e051f",
+      "citationId": "day14-src-5"
+    },
+    {
+      "id": "day14-ref-3",
+      "type": "internal",
+      "description": "Chuan bi nen tang DI/@Configuration truoc khi hoc @ConfigurationProperties va Profiles chi tiet o Day 15 (Assignment 5)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day14-src-1",
+      "resourceId": "res-02399daadb94",
+      "locator": "§2. What Is Inversion of Control?",
+      "topic": "IoC la gi"
+    },
+    {
+      "id": "day14-src-2",
+      "resourceId": "res-02399daadb94",
+      "locator": "§5. Constructor-Based Dependency Injection",
+      "topic": "Constructor-based DI"
+    },
+    {
+      "id": "day14-src-3",
+      "resourceId": "res-02399daadb94",
+      "locator": "§6. Setter-Based Dependency Injection",
+      "topic": "Setter-based DI"
+    },
+    {
+      "id": "day14-src-4",
+      "resourceId": "res-02399daadb94",
+      "locator": "§7. Field-Based Dependency Injection",
+      "topic": "Field-based DI va nhuoc diem"
+    },
+    {
+      "id": "day14-src-5",
+      "resourceId": "res-b6fc716e051f",
+      "locator": "§Auto-configuration",
+      "topic": "Auto-configuration hoat dong theo classpath"
+    },
+    {
+      "id": "day14-src-6",
+      "resourceId": "res-b6fc716e051f",
+      "locator": "§Gradually Replacing Auto-configuration",
+      "topic": "Auto-configuration khong xam lan (non-invasive)"
+    },
+    {
+      "id": "day14-src-7",
+      "resourceId": "res-b6fc716e051f",
+      "locator": "§Disabling Specific Auto-configuration Classes",
+      "topic": "Tat mot auto-configuration class cu the"
+    },
+    {
+      "id": "day14-src-8",
+      "resourceId": "res-b6fc716e051f",
+      "locator": "§Gradually Replacing Auto-configuration — đoạn về --debug",
+      "topic": "Xem bao cao auto-configuration dang ap dung"
+    },
+    {
+      "id": "day14-src-9",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§Scoped Beans as Dependencies",
+      "topic": "Scoped proxy de tiem bean ngan han vao bean singleton"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "@ConfigurationProperties: khong co resource nao trong resourceIds cua rieng Day 14 mo ta chu de nay - resource lien quan (res-7bf1b25b2e6b) chi thuoc resourceIds cua Day 15, se duoc trich dan day du o do.",
+      "Profiles (kich hoat cau hinh theo moi truong): tuong tu, resource lien quan (res-aee8bfb64b8c) chi thuoc resourceIds cua Day 15 - trinh bay o Day 14 bang note khong trich dan, gioi thieu se hoc chi tiet o Day 15.",
+      "Auto-configuration khong nam trong outline chinh thuc cua Day 14 ('DI Types/@Autowired resolution/@Configuration & @Bean/@ConfigurationProperties/Profiles') nhung la resource duy nhat trong resourceIds cua Day 14 lien quan truc tiep den @Configuration/@Bean - da dung de lam ro quan he @Bean tu viet voi auto-configuration thay vi bo trong."
+    ]
+  }
+}

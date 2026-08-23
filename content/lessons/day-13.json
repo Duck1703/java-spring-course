@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "id": "day-13",
+  "catalogRef": {
+    "unitId": "unit-05",
+    "group": "spring",
+    "title": "Spring Boot Fundamentals & Bean Lifecycle",
+    "objectives": [
+      "LO5"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      23,
+      24
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 24,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-bb04db80cab2",
+      "res-bf1095022eae",
+      "res-56487c83dc65"
+    ]
+  },
+  "unitId": "unit-05",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Spring Boot Fundamentals & Bean Lifecycle",
+  "summary": "Nen tang Spring Boot va IoC container: kien truc Spring Boot o muc tong quan, BeanFactory/ApplicationContext, khai niem bean, 6 bean scope (singleton/prototype/request/session/application/websocket), scoped proxy, bean lifecycle callback (@PostConstruct/@PreDestroy) va cac stereotype annotation (@Component/@Service/@Repository/@Controller).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO5"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Unit 3-4 (Java OOP, generics, collections, exception, stream, concurrency) - Spring xay dung tren nen OOP va DI thuan Java."
+  ],
+  "outcomes": [
+    "Giai thich duoc IoC/DI theo dinh nghia Spring va vai tro cua BeanFactory/ApplicationContext.",
+    "Phan biet dung 6 bean scope va biet khi nao can scoped proxy.",
+    "Mo ta duoc thu tu callback khoi tao/huy trong bean lifecycle.",
+    "Nhan dien dung stereotype annotation phu hop cho tung tang kien truc."
+  ],
+  "sections": [
+    {
+      "id": "day13-sec-brief",
+      "title": "De bai va pham vi bai hoc",
+      "blocks": [
+        {
+          "id": "day13-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day13-blk-2",
+          "type": "note",
+          "text": "Bai hoc mo dau don vi Spring: kien truc Spring Boot o muc tong quan, IoC container, bean scope, bean lifecycle va cac stereotype annotation dung de danh dau bean. Assignment cua ngay nay khong co de bai chi tiet rieng (chi ghi 'Assignment' trong lich hoc) - hoc vien on tap va thuc hanh lai cac vi du trong bai.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day13-sec-architecture",
+      "title": "Spring Boot Architecture (tong quan)",
+      "blocks": [
+        {
+          "id": "day13-blk-3",
+          "type": "note",
+          "text": "Kien truc chi tiet cua Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) khong co resource nao trong resourceIds cua rieng Day 13 mo ta truc tiep - resource duy nhat lien quan (Learn Spring Boot Series) chi la trang muc luc lien ket toi cac bai con, khong phai bai viet sau ve kien truc (xem authoring.limitations). Noi dung duoi day trinh bay o muc gioi thieu bang kien thuc chuan cua Spring Boot: ung dung Spring Boot dong goi mot embedded server (Tomcat mac dinh), tu dong cau hinh bean dua tren classpath (auto-configuration - se hoc chi tiet o Day 14), va cung cap cac starter dependency (spring-boot-starter-web, ...) de gom nhom cac thu vien lien quan.",
+          "citations": []
+        },
+        {
+          "id": "day13-blk-4",
+          "type": "note",
+          "text": "Trang Learn Spring Boot Series cua Baeldung la mot muc luc tong hop, phan theo cac cum chu de: Basics, Properties, Customization, Testing, Under the Hood, Persistence, DevOps Tools, va Integration With Other Libraries - la diem bat dau tot de tra cuu sau hon ve tung khia canh cua Spring Boot.",
+          "citations": [
+            "day13-src-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day13-sec-ioc",
+      "title": "IoC Container: BeanFactory, ApplicationContext, Bean",
+      "blocks": [
+        {
+          "id": "day13-blk-5",
+          "type": "paragraph",
+          "text": "Spring dinh nghia Dependency Injection la mot dang chuyen biet cua Inversion of Control, trong do doi tuong khai bao dependency cua no chi qua constructor argument, tham so cua factory method, hoac property duoc set sau khi doi tuong duoc khoi tao; container tiem cac dependency nay khi tao bean. Hai goi org.springframework.beans va org.springframework.context la nen tang cua IoC container: BeanFactory cung cap co che cau hinh co ban, con ApplicationContext la sub-interface cua BeanFactory bo sung tich hop AOP, xu ly message resource (i18n), publish event, va cac context chuyen biet nhu WebApplicationContext. Mot bean la doi tuong duoc khoi tao, lap rap (assemble) va quan ly boi Spring IoC container.",
+          "citations": [
+            "day13-src-1",
+            "day13-src-2",
+            "day13-src-3"
+          ]
+        },
+        {
+          "id": "day13-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.context.annotation.AnnotationConfigApplicationContext;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\n\n@Configuration\nclass AppConfig {\n\n    @Bean\n    GreetingService greetingService() {\n        return new GreetingService(\"Xin chao\");\n    }\n}\n\nclass GreetingService {\n    private final String prefix;\n\n    GreetingService(String prefix) {\n        this.prefix = prefix;\n    }\n\n    String greet(String name) {\n        return prefix + \", \" + name;\n    }\n}\n\nclass BeanLookupDemo {\n    public static void main(String[] args) {\n        var context = new AnnotationConfigApplicationContext(AppConfig.class);\n        GreetingService service = context.getBean(GreetingService.class);\n        System.out.println(service.greet(\"Spring\"));\n        context.close();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day13-src-1",
+            "day13-src-2",
+            "day13-src-3"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        }
+      ]
+    },
+    {
+      "id": "day13-sec-scopes",
+      "title": "Bean Scopes",
+      "blocks": [
+        {
+          "id": "day13-blk-7",
+          "type": "paragraph",
+          "text": "Spring Framework ho tro 6 scope: singleton (mac dinh, mot instance cho toan container), prototype (moi lan request la mot instance moi), va bon scope chi dung duoc trong web-aware ApplicationContext: request, session, application, websocket; ngoai ra co the tao custom scope. Singleton cua Spring la per-container va per-bean (mot bean definition trong mot container tao dung mot instance), khac voi singleton pattern GoF von hard-code mot instance duy nhat cho moi ClassLoader.",
+          "citations": [
+            "day13-src-4",
+            "day13-src-5"
+          ]
+        },
+        {
+          "id": "day13-blk-8",
+          "type": "table",
+          "columns": [
+            "Scope",
+            "Mo ta"
+          ],
+          "rows": [
+            [
+              "singleton",
+              "Mac dinh; mot instance duy nhat cho toan container, dung chung cho moi lan request bean"
+            ],
+            [
+              "prototype",
+              "Container tao instance moi cho moi lan request bean; container khong quan ly destruction callback"
+            ],
+            [
+              "request",
+              "Mot instance cho moi HTTP request; chi hop le trong web-aware ApplicationContext"
+            ],
+            [
+              "session",
+              "Mot instance cho moi HTTP session; chi hop le trong web-aware ApplicationContext"
+            ],
+            [
+              "application",
+              "Mot instance cho vong doi ServletContext; chi hop le trong web-aware ApplicationContext"
+            ],
+            [
+              "websocket",
+              "Mot instance cho vong doi WebSocket session; chi hop le trong web-aware ApplicationContext"
+            ]
+          ],
+          "citations": [
+            "day13-src-4"
+          ]
+        },
+        {
+          "id": "day13-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.beans.factory.config.ConfigurableBeanFactory;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.context.annotation.Scope;\n\n@Configuration\nclass ReportConfig {\n\n    @Bean\n    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)\n    ReportBuilder reportBuilder() {\n        return new ReportBuilder();\n    }\n}\n\nclass ReportBuilder {\n    private final StringBuilder content = new StringBuilder();\n\n    ReportBuilder append(String line) {\n        content.append(line).append('\\n');\n        return this;\n    }\n\n    String build() {\n        return content.toString();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day13-src-5",
+            "day13-src-6"
+          ],
+          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+        },
+        {
+          "id": "day13-blk-10",
+          "type": "note",
+          "text": "Voi prototype scope, container tao instance moi cho moi lan request bean nhung khong quan ly toan bo vong doi: callback khoi tao van duoc goi nhung destruction callback da cau hinh khong duoc goi, client code phai tu don dep tai nguyen cua bean prototype. Co the gan bean vao scope request/session/application bang annotation @RequestScope, @SessionScope, @ApplicationScope; cac scope nay chi hop le trong web-aware ApplicationContext, neu dung ngoai ngu canh do se nem IllegalStateException.",
+          "citations": [
+            "day13-src-6",
+            "day13-src-7"
+          ]
+        },
+        {
+          "id": "day13-blk-11",
+          "type": "note",
+          "text": "Khi tiem mot bean scope ngan hon (nhu request-scoped) vao bean scope dai hon (singleton), can dung scoped proxy de Spring tao mot proxy: proxy giu cung interface cong khai nhung lay doi tuong that tu scope tuong ung tai thoi diem goi method, tranh viec singleton chi giu mai mot instance duoc tiem luc khoi tao.",
+          "citations": [
+            "day13-src-8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day13-sec-lifecycle",
+      "title": "Bean Lifecycle (gioi thieu)",
+      "blocks": [
+        {
+          "id": "day13-blk-12",
+          "type": "note",
+          "text": "Chu de bean lifecycle (thu tu goi cac callback khoi tao/huy) khong co resource nao trong resourceIds cua rieng Day 13 mo ta (xem authoring.limitations). Kien thuc chuan cua Spring: mot bean co the khai bao callback khoi tao bang annotation `@PostConstruct` (goi sau khi moi dependency da duoc tiem) hoac bang cach implement interface `InitializingBean` (override `afterPropertiesSet()`); tuong tu, callback huy dung `@PreDestroy` hoac implement `DisposableBean` (override `destroy()`). Voi bean scope singleton, container goi callback huy khi container dong; voi prototype, nhu da neu o phan scope, container khong tu goi callback huy.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day13-sec-stereotypes",
+      "title": "Stereotype Annotations (gioi thieu)",
+      "blocks": [
+        {
+          "id": "day13-blk-13",
+          "type": "note",
+          "text": "Chu de cac stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`) khong co resource nao trong resourceIds cua rieng Day 13 mo ta (xem authoring.limitations). Kien thuc chuan cua Spring: `@Component` la annotation goc, danh dau mot class de component scanning tu dong dang ky no thanh bean; `@Service`, `@Repository`, `@Controller` la cac annotation chuyen biet hoa cua `@Component` cho tung tang kien truc (nghiep vu, truy cap du lieu, dieu khien web) - ve mat co che chung deu la mot bean nhu nhau, diem khac biet la ngu nghia va mot so xu ly them (vi du `@Repository` tu dong dich exception tang persistence).",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Tiem truc tiep mot request/session-scoped bean vao singleton bean ma khong dung scoped proxy.",
+    "Nham lan singleton cua Spring (per-container/per-bean) voi singleton pattern GoF (mot instance cho ca ung dung).",
+    "Ky vong container tu goi destruction callback cho bean scope prototype giong nhu singleton."
+  ],
+  "practices": [
+    {
+      "id": "day13-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Singleton scope cua Spring khac gi so voi Singleton Pattern kinh dien (GoF)?",
+      "choices": [
+        {
+          "id": "day13-prac-1-a",
+          "text": "Singleton cua Spring la per-container va per-bean definition, khong phai mot instance duy nhat cho toan JVM/ClassLoader nhu GoF"
+        },
+        {
+          "id": "day13-prac-1-b",
+          "text": "Singleton cua Spring luon thread-safe con GoF thi khong"
+        },
+        {
+          "id": "day13-prac-1-c",
+          "text": "Singleton cua Spring khong the co constructor"
+        },
+        {
+          "id": "day13-prac-1-d",
+          "text": "Singleton cua Spring va GoF hoan toan giong nhau"
+        }
+      ],
+      "correctChoiceIds": [
+        "day13-prac-1-a"
+      ],
+      "hint": "Doc lai dinh nghia scope trong tai lieu Spring Bean Scopes.",
+      "solution": "day13-prac-1-a",
+      "explanation": "Tai lieu Spring xac dinh singleton scope la per-container va per-bean: mot bean definition trong mot container Spring tao dung mot instance, khac voi singleton pattern GoF von hard-code mot instance duy nhat cho moi ClassLoader.",
+      "rubric": "Chon dung diem khac biet ve pham vi (container/bean) thay vi nham lan voi thread-safety hay cu phap.",
+      "sourceUsage": [
+        "day13-src-5"
+      ]
+    },
+    {
+      "id": "day13-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot @Configuration class dinh nghia mot @Bean scope prototype ten la 'taskBuilder' tra ve mot doi tuong TaskBuilder tuy y.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) tren method @Bean.",
+      "solution": "@Configuration\nclass TaskConfig {\n    @Bean\n    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)\n    TaskBuilder taskBuilder() {\n        return new TaskBuilder();\n    }\n}",
+      "explanation": "Ap dung lai mau @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) da hoc trong bai vao mot bean moi.",
+      "rubric": "Danh gia dung: co @Configuration tren class, @Bean tren method, va @Scope voi hang so SCOPE_PROTOTYPE (hoac chuoi \"prototype\").",
+      "sourceUsage": [
+        "day13-src-6"
+      ]
+    },
+    {
+      "id": "day13-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vi sao khong nen tiem truc tiep mot request-scoped bean vao mot singleton bean ma khong dung scoped proxy?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghi ve thoi diem container tao va tiem singleton bean - chi mot lan duy nhat.",
+      "solution": "Vi singleton bean chi duoc container tao va tiem dependency dung mot lan luc khoi dong; neu tiem truc tiep instance request-scoped hien tai vao lucdo, singleton se giu mai instance cua request dau tien thay vi lay instance dung cho tung request sau nay. Scoped proxy giai quyet van de nay bang cach tiem mot proxy giu nguyen interface nhung lay doi tuong that tu scope tuong ung tai thoi diem goi method.",
+      "explanation": "Giai thich vong doi khoi tao singleton chi dien ra mot lan.",
+      "rubric": "Danh gia hoc vien noi dung duoc ly do lien quan toi thoi diem khoi tao/tiem cua singleton bean.",
+      "sourceUsage": [
+        "day13-src-8"
+      ]
+    },
+    {
+      "id": "day13-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Neu mot bean can chay logic don dep tai nguyen (dong ket noi, xoa file tam) khi container dong, nen dung callback nao va vi sao khong nen dung scope prototype cho bean nay?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lai phan Bean Lifecycle va phan Prototype scope trong bai.",
+      "solution": "Nen dung @PreDestroy (hoac implement DisposableBean) va khai bao bean o scope singleton (mac dinh); container chi tu goi destruction callback voi bean singleton. Neu dung scope prototype, container tao instance moi cho moi lan request nhung khong quan ly toan bo vong doi - destruction callback se khong duoc container tu goi, client code phai tu don dep tai nguyen.",
+      "explanation": "Lien ket callback huy voi scope da hoc: chi singleton duoc container tu goi callback huy.",
+      "rubric": "Danh gia hoc vien ket noi dung kien thuc bean lifecycle voi kien thuc prototype scope da hoc trong cung bai.",
+      "sourceUsage": [
+        "day13-src-6"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 24,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viet mot custom scope don gian (implement org.springframework.beans.factory.config.Scope) va dang ky bang ConfigurableBeanFactory.registerScope().",
+    "Thu nghiem @PostConstruct/@PreDestroy tren mot bean singleton va quan sat thu tu goi so voi constructor."
+  ],
+  "references": [
+    {
+      "id": "day13-ref-1",
+      "type": "external",
+      "resourceId": "res-bb04db80cab2",
+      "citationId": "day13-src-1"
+    },
+    {
+      "id": "day13-ref-2",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day13-src-4"
+    },
+    {
+      "id": "day13-ref-3",
+      "type": "internal",
+      "description": "Chuan bi nen tang IoC/bean truoc khi hoc sau ve DI va cau hinh (@Configuration/@Bean/@ConfigurationProperties) o Day 14-15."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day13-src-1",
+      "resourceId": "res-bb04db80cab2",
+      "locator": "Introduction to the Spring IoC Container and Beans — đoạn mở đầu",
+      "topic": "Dependency Injection theo định nghĩa của Spring Framework"
+    },
+    {
+      "id": "day13-src-2",
+      "resourceId": "res-bb04db80cab2",
+      "locator": "Introduction to the Spring IoC Container and Beans — đoạn về BeanFactory/ApplicationContext",
+      "topic": "BeanFactory và ApplicationContext"
+    },
+    {
+      "id": "day13-src-3",
+      "resourceId": "res-bb04db80cab2",
+      "locator": "Introduction to the Spring IoC Container and Beans — đoạn cuối",
+      "topic": "Bean là gì"
+    },
+    {
+      "id": "day13-src-4",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§Bean Scopes — bảng các scope",
+      "topic": "Sáu scope Spring hỗ trợ"
+    },
+    {
+      "id": "day13-src-5",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§The Singleton Scope",
+      "topic": "Singleton scope khác singleton pattern GoF"
+    },
+    {
+      "id": "day13-src-6",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§The Prototype Scope",
+      "topic": "Prototype scope và trách nhiệm dọn dẹp"
+    },
+    {
+      "id": "day13-src-7",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§Request, Session, Application, and WebSocket Scopes",
+      "topic": "Annotation cho scope web-aware"
+    },
+    {
+      "id": "day13-src-8",
+      "resourceId": "res-bf1095022eae",
+      "locator": "§Scoped Beans as Dependencies",
+      "topic": "Scoped proxy để tiêm bean ngắn hạn vào bean singleton"
+    },
+    {
+      "id": "day13-src-9",
+      "resourceId": "res-56487c83dc65",
+      "locator": "Learn Spring Boot Series — mục lục các cụm chủ đề",
+      "topic": "Cấu trúc trang tổng hợp Learn Spring Boot Series"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Spring Boot Architecture (kien truc tong quan): resource duy nhat lien quan trong resourceIds cua Day 13 (Learn Spring Boot Series) chi la trang muc luc lien ket toi cac bai con, khong mo ta kien truc cu the - trinh bay o muc gioi thieu bang kien thuc chuan, khong gan citation cho cac khang dinh ky thuat cu the.",
+      "Bean lifecycle (thu tu callback khoi tao/huy): khong co resource nao trong resourceIds cua Day 13 mo ta chu de nay - trinh bay bang kien thuc chuan cua Spring trong khoi note khong yeu cau trich dan.",
+      "Stereotype annotations (@Component/@Service/@Repository/@Controller): khong co resource nao trong resourceIds cua Day 13 mo ta chu de nay - trinh bay bang kien thuc chuan cua Spring trong khoi note khong yeu cau trich dan."
+    ]
+  }
+}
