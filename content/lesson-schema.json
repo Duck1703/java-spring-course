@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "$comment": "Reference schema for content/lessons/*.json. tools/validate_lessons.py is the authoritative validator (the standard library has no JSON Schema engine); this file enumerates required keys, allowed keys per object kind, enum values, and cardinality so the validator and any human reader agree on the shape. Every object kind below is closed: keys outside 'properties' are rejected.",
+  "definitions": {
+    "lesson": {
+      "required": [
+        "schemaVersion", "id", "catalogRef", "unitId", "group", "kind",
+        "title", "summary", "durationMinutes", "objectives", "prerequisites",
+        "outcomes", "sections", "commonMistakes", "practices",
+        "syllabusAssignments", "enhancedExercises", "references",
+        "sourceUsage", "authoring"
+      ],
+      "properties": {
+        "schemaVersion": "integer, must equal 1",
+        "id": "string, must match a course-catalog.json lesson id exactly once",
+        "catalogRef": "object (see catalogRef), mirrors the catalog record this lesson authors",
+        "unitId": "string, must equal catalogRef.unitId",
+        "group": "enum java|spring|completion, must equal catalogRef.group",
+        "kind": "enum theory|lab|project|exam|ojt|evaluation",
+        "title": "string, must equal catalogRef.title",
+        "summary": "string, nonempty",
+        "durationMinutes": "number, must equal catalogRef.durationMinutes",
+        "objectives": "array<string>, must deep-equal catalogRef.objectives",
+        "prerequisites": "array<string>",
+        "outcomes": "array<string>, nonempty",
+        "sections": "array<section>, nonempty",
+        "commonMistakes": "array<string>",
+        "practices": "array<practice>, length 2..4",
+        "syllabusAssignments": "array<assignment>, must deep-equal catalogRef.syllabusAssignments",
+        "enhancedExercises": "array<string>",
+        "references": "array<reference>",
+        "sourceUsage": "array<sourceUsageEntry>",
+        "authoring": "object (see authoring)"
+      }
+    },
+    "catalogRef": {
+      "required": ["unitId", "group", "title", "objectives", "durationMinutes", "sourceRows", "syllabusAssignments", "resourceIds"],
+      "properties": {
+        "unitId": "string",
+        "group": "enum java|spring|completion",
+        "title": "string",
+        "objectives": "array<string>",
+        "durationMinutes": "number",
+        "sourceRows": "array<integer>",
+        "syllabusAssignments": "array<assignment>",
+        "resourceIds": "array<string>, res-* ids the catalog links to this lesson; a citation's resourceId must appear here"
+      }
+    },
+    "assignment": {
+      "required": ["row", "text"],
+      "properties": {
+        "row": "integer",
+        "text": "string"
+      }
+    },
+    "section": {
+      "required": ["id", "title", "blocks"],
+      "properties": {
+        "id": "string, unique across the whole lesson corpus",
+        "title": "string, nonempty",
+        "blocks": "array<block>, nonempty"
+      }
+    },
+    "block": {
+      "required": ["id", "type", "citations"],
+      "properties": {
+        "id": "string, unique across the whole lesson corpus",
+        "type": "enum paragraph|note|important|warning|code|table|deliverable|template",
+        "citations": "array<string>, sourceUsage entry ids cited by this block",
+        "text": "string, required (nonempty) for type paragraph|note|important|warning|deliverable|template",
+        "language": "string, required for type code (use 'text' for prose-only migration explanations exempt from baseline lint)",
+        "code": "string, required (nonempty) for type code",
+        "compile": "boolean, required for type code; true only allowed when language == 'java'",
+        "partialReason": "string, required (nonempty) for type code when compile is false",
+        "columns": "array<string>, required for type table",
+        "rows": "array<array<string>>, required for type table"
+      }
+    },
+    "practice": {
+      "required": [
+        "id", "type", "interaction", "prompt", "choices", "correctChoiceIds",
+        "hint", "solution", "explanation", "rubric", "sourceUsage"
+      ],
+      "properties": {
+        "id": "string, unique across the whole lesson corpus",
+        "type": "enum concept|predict-output|coding|applied",
+        "interaction": "enum self-check|multiple-choice",
+        "prompt": "string, nonempty",
+        "choices": "array<choice>; must be empty for self-check; >=2 required for multiple-choice",
+        "correctChoiceIds": "array<string>; must be empty for self-check; >=1 valid choice id required for multiple-choice",
+        "hint": "string, nonempty",
+        "solution": "string, nonempty",
+        "explanation": "string, nonempty",
+        "rubric": "string, nonempty",
+        "sourceUsage": "array<string>, sourceUsage entry ids this practice draws on"
+      }
+    },
+    "choice": {
+      "required": ["id", "text"],
+      "properties": {
+        "id": "string, unique within the owning practice",
+        "text": "string, nonempty"
+      }
+    },
+    "sourceUsageEntry": {
+      "required": ["id", "resourceId", "locator", "topic"],
+      "properties": {
+        "id": "string, unique across the whole lesson corpus",
+        "resourceId": "string, res-* id linked to this lesson in course-catalog.json with read.status == read",
+        "locator": "string, must match a fact locator recorded in the resource's source note",
+        "topic": "string, nonempty"
+      }
+    },
+    "reference": {
+      "required": ["id", "type"],
+      "properties": {
+        "id": "string, unique across the whole lesson corpus",
+        "type": "enum external|internal",
+        "resourceId": "string, required for type external; must match a sourceUsage.resourceId in this lesson",
+        "citationId": "string, required for type external; must match a sourceUsage.id in this lesson",
+        "description": "string, required (nonempty) for type internal; internal references never masquerade as external sourceUsage"
+      }
+    },
+    "authoring": {
+      "required": ["baseline", "reviewStatus", "limitations"],
+      "properties": {
+        "baseline": "string, nonempty (e.g. 'Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta')",
+        "reviewStatus": "enum draft|reviewed",
+        "limitations": "array<string>; required nonempty when the lesson has no readable linked source (e.g. day-38, day-39-64, day-65-66)"
+      }
+    }
+  }
+}
