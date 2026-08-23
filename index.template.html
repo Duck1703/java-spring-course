@@ -25,6 +25,12 @@
       --surface: #ffffff;
       --surface-raised: #ffffff;
       --line: #dfe4e8;
+      --line-strong: #c6ced6;
+      --ok: #15803d;
+      --info: #2563eb;
+      --danger: #dc2626;
+      --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+      --code-head: rgba(127, 127, 127, .09);
       --code-bg: #111827;
       --code-ink: #e5edf7;
       --focus: #2563eb;
@@ -46,6 +52,11 @@
       --surface: #121922;
       --surface-raised: #17202b;
       --line: #2a3543;
+      --line-strong: #43505f;
+      --ok: #4ade80;
+      --info: #60a5fa;
+      --danger: #f87171;
+      --code-head: rgba(127, 127, 127, .14);
       --code-bg: #080c12;
       --code-ink: #e6edf3;
       color-scheme: dark;
@@ -338,6 +349,284 @@
       font-size: .8438rem;
       box-shadow: var(--shadow-float);
     }
+
+    /* Lesson body (Site Task 4) */
+    .lesson-breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .375rem;
+      align-items: center;
+      font-size: .8125rem;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+    .lesson-breadcrumb a { color: var(--muted); text-decoration: none; }
+    .lesson-breadcrumb a:hover { color: var(--accent, var(--spring)); text-decoration: underline; }
+    .lesson-header { margin-bottom: 2rem; }
+    .lesson-title {
+      font-size: 1.75rem;
+      line-height: 1.25;
+      margin: 0 0 .625rem;
+      letter-spacing: -0.01em;
+    }
+    .lesson-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+      font-size: .8125rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .chip {
+      display: inline-block;
+      padding: .1875rem .5625rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-size: .75rem;
+      color: var(--ink);
+      background: var(--surface);
+    }
+    .lesson-summary {
+      border-left: 3px solid var(--accent, var(--spring));
+      padding: .75rem 1rem;
+      background: var(--surface);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: .9375rem;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    .lesson-columns { display: grid; gap: 1.5rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
+    @media (min-width: 48rem) { .lesson-columns.twocol { grid-template-columns: 1fr 1fr; } }
+    .lesson-column h2 {
+      font-size: .8125rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin: 0 0 .5rem;
+    }
+    .lesson-column ul { margin: 0; padding-left: 1.125rem; font-size: .875rem; line-height: 1.65; }
+    .section-block { margin-bottom: 2.5rem; }
+    .section-heading {
+      font-size: 1.25rem;
+      margin: 0 0 1rem;
+      padding-bottom: .375rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .prose > p { margin: 0 0 1rem; line-height: 1.7; }
+    .callout {
+      border-left: 3px solid var(--muted);
+      background: var(--surface);
+      padding: .75rem 1rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin: 0 0 1rem;
+      font-size: .9063rem;
+      line-height: 1.65;
+    }
+    .callout--note { border-left-color: var(--info); }
+    .callout--important { border-left-color: var(--java); }
+    .callout--warning { border-left-color: var(--danger); }
+    .code-sample { margin: 0 0 1rem; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+    .code-sample figcaption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: .5rem;
+      padding: .4375rem .75rem;
+      background: var(--code-head, rgba(127,127,127,.08));
+      border-bottom: 1px solid var(--line);
+      font-size: .7813rem;
+      color: var(--muted);
+    }
+    .code-sample pre {
+      margin: 0;
+      padding: .875rem 1rem;
+      overflow-x: auto;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      font-size: .8438rem;
+      line-height: 1.55;
+      tab-size: 2;
+    }
+    .copy-btn {
+      flex-shrink: 0;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: .75rem;
+      padding: .1875rem .5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    .copy-btn:hover { border-color: var(--spring); color: var(--spring); }
+    .data-table-wrap { overflow-x: auto; margin: 0 0 1rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .8438rem; line-height: 1.55; }
+    .data-table caption { text-align: left; font-weight: 600; padding: 0 0 .5rem; color: var(--muted); font-size: .8125rem; }
+    .data-table th, .data-table td { border: 1px solid var(--line); padding: .4375rem .625rem; text-align: left; vertical-align: top; }
+    .data-table th { background: var(--surface); }
+    .citation-link {
+      font-size: .6875rem;
+      vertical-align: super;
+      text-decoration: none;
+      margin-left: .0625rem;
+      color: var(--accent, var(--spring));
+      font-family: var(--mono);
+    }
+    .authoring-warning {
+      border: 1px dashed var(--danger);
+      color: var(--danger);
+      background: transparent;
+      padding: .625rem .875rem;
+      border-radius: var(--radius-sm);
+      font-size: .8438rem;
+      margin: 0 0 1rem;
+    }
+    /* Practice cards */
+    .practice-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      margin: 0 0 1rem;
+      overflow: hidden;
+    }
+    .practice-head { padding: .875rem 1rem .5rem; }
+    .practice-kind {
+      display: inline-block;
+      font-size: .6875rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--accent, var(--spring));
+      font-weight: 700;
+      margin-bottom: .375rem;
+    }
+    .practice-prompt { margin: 0; font-size: .9375rem; line-height: 1.6; font-weight: 500; }
+    .practice-body { padding: 0 1rem 1rem; }
+    .practice-starter pre {
+      margin: 0 0 .75rem;
+      padding: .75rem 1rem;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: var(--radius-sm);
+      font-size: .8125rem;
+      overflow-x: auto;
+    }
+    .practice-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .625rem; }
+    .disclosure-btn {
+      border: 1px solid var(--line-strong);
+      background: var(--canvas);
+      color: var(--ink);
+      font-size: .8125rem;
+      padding: .375rem .75rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    .disclosure-btn[aria-expanded="true"] { background: var(--surface-strong, var(--line)); }
+    .disclosure-panel { margin-top: .625rem; font-size: .875rem; line-height: 1.65; }
+    .disclosure-panel[hidden] { display: none; }
+    .choice-list { list-style: none; margin: 0 0 .625rem; padding: 0; display: grid; gap: .375rem; }
+    .choice-item label {
+      display: flex;
+      gap: .5rem;
+      align-items: baseline;
+      padding: .4375rem .625rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: .875rem;
+      line-height: 1.5;
+    }
+    .choice-item input { accent-color: var(--spring); }
+    .choice-item.is-correct label { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+    .choice-item.is-wrong label { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+    .check-feedback { margin: .625rem 0 0; font-size: .875rem; line-height: 1.6; padding: .5625rem .75rem; border-radius: var(--radius-sm); }
+    .check-feedback.ok { background: color-mix(in srgb, var(--ok) 12%, transparent); border: 1px solid var(--ok); }
+    .check-feedback.wrong { background: color-mix(in srgb, var(--danger) 10%, transparent); border: 1px solid var(--danger); }
+    /* Assignments */
+    .assignments-block { margin: 2.5rem 0; }
+    .assignments-block h2 { font-size: 1.125rem; margin: 0 0 .75rem; }
+    .assignment-item {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--java);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      background: var(--surface);
+      padding: .75rem 1rem;
+      margin-bottom: .625rem;
+      font-size: .875rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+    .assignment-origin {
+      display: inline-block;
+      font-size: .6875rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .375rem;
+    }
+    /* References */
+    .references-block h2 { font-size: 1.125rem; margin: 0 0 .75rem; }
+    .ref-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      padding: .75rem 1rem;
+      margin-bottom: .625rem;
+      font-size: .875rem;
+      scroll-margin-top: 5rem;
+    }
+    .ref-card-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .25rem; }
+    .ref-num { color: var(--accent, var(--spring)); font-weight: 700; font-family: var(--mono); font-size: .8125rem; }
+    .ref-card a { color: var(--spring); word-break: break-all; }
+    .badge-read {
+      display: inline-block;
+      font-size: .6875rem;
+      padding: .125rem .5rem;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--ok) 15%, transparent);
+      color: var(--ok);
+      border: 1px solid var(--ok);
+      font-weight: 600;
+    }
+    .badge-domain { font-size: .6875rem; color: var(--muted); }
+    .ref-locators { margin: .375rem 0 0; padding-left: 1.125rem; color: var(--muted); font-size: .7813rem; }
+    details.ref-unavailable { margin-top: 1rem; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); padding: .625rem .875rem; }
+    details.ref-unavailable summary { cursor: pointer; font-size: .875rem; font-weight: 600; color: var(--muted); }
+    details.ref-unavailable .ref-card { border-style: dashed; }
+    /* Lesson footer nav */
+    .lesson-nav {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: .625rem;
+      align-items: stretch;
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+    }
+    .lesson-nav a, .lesson-nav button {
+      font-size: .8438rem;
+      padding: .5625rem .75rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .lesson-nav a:hover, .lesson-nav button:hover { border-color: var(--spring); }
+    .lesson-nav .nav-next { text-align: right; }
+    .lesson-nav .nav-complete {
+      white-space: nowrap;
+      min-width: 7rem;
+      text-align: center;
+    }
+    .lesson-nav .nav-complete[aria-pressed="true"] {
+      background: var(--ok);
+      border-color: var(--ok);
+      color: #fff;
+    }
+    .nav-label { display: block; font-size: .6875rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -442,10 +731,32 @@
       });
     }
 
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+
+    function safeExternalUrl(value) {
+      if (typeof value !== "string") return null;
+      try {
+        const parsed = new URL(value);
+        return SAFE_URL_PROTOCOLS.has(parsed.protocol) ? parsed.href : null;
+      } catch {
+        return null;
+      }
+    }
+
     /* Exposed for node:vm tests and self-test mode. */
     globalThis.CourseCore = Object.freeze({
       normalizeSearch, parseRoute, calculateProgress, nextLessonId,
       sanitizeState, searchLessons, defaultState, STATE_VERSION,
+      escapeHtml, safeExternalUrl,
     });
     /* COURSE_CORE_END */
 
@@ -608,36 +919,511 @@
         container.appendChild(ug);
       }
 
-      /* ---- lesson stub (filled in Task 4) --------------------------- */
+      /* ---- lesson renderer (Site Task 4) ------------------------------ */
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text != null) node.textContent = text;
+        return node;
+      }
+
+      var GROUP_LABELS = { java: "Java", spring: "Spring Boot", completion: "Hoàn thành" };
+      var PRACTICE_KIND_LABELS = {
+        "concept": "Khái niệm",
+        "predict-output": "Dự đoán kết quả",
+        "coding": "Luyện code",
+        "applied": "Vận dụng"
+      };
+      var CALLOUT_CLASS = { note: "callout--note", important: "callout--important", warning: "callout--warning" };
+      var ALLOWED_BLOCK_TYPES = ["paragraph", "note", "important", "warning", "code", "table"];
+      var currentLessonId = null;
+
+      function lessonIdSlug(id) {
+        return String(id).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      }
+
+      /* Citations -> numbered superscript links pointing at the reference cards. */
+      function appendCitations(parent, citations, refIndexById) {
+        if (!citations || !citations.length) return;
+        citations.forEach(function(cid, i) {
+          var key = String(cid).toLowerCase();
+          var idx = refIndexById.get(key);
+          var a = el("a", "citation-link", "[" + (idx != null ? idx : "?") + "]");
+          a.href = "#ref-" + lessonIdSlug(currentLessonId) + "-" + (idx != null ? idx : key);
+          a.setAttribute("aria-label", "Nguồn tham chiếu " + (idx != null ? idx : cid));
+          parent.appendChild(a);
+          if (i < citations.length - 1) parent.appendChild(document.createTextNode(" "));
+        });
+      }
+
+      function proseParagraph(text, citations, refIndexById) {
+        var p = el("p");
+        p.appendChild(document.createTextNode(text == null ? "" : String(text)));
+        appendCitations(p, citations, refIndexById);
+        return p;
+      }
+
+      function renderBlock(container, block, refIndexById) {
+        var type = block.type;
+        if (ALLOWED_BLOCK_TYPES.indexOf(type) === -1) {
+          container.appendChild(el("div", "authoring-warning",
+            "[Cảnh báo biên soạn] Khối nội dung không hỗ trợ: \"" + type + "\" — đã ẩn để tránh hiển thị sai."));
+          return;
+        }
+        if (type === "code") {
+          var fig = el("figure", "code-sample");
+          var cap = el("figcaption");
+          cap.appendChild(el("span", null, block.language ? block.language.toUpperCase() + (block.compile === false && block.partialReason ? " — không biên dịch độc lập" : "") : ""));
+          var copyBtn = el("button", "copy-btn", "Sao chép mã");
+          copyBtn.type = "button";
+          copyBtn.setAttribute("data-action", "copy-code");
+          copyBtn.setAttribute("aria-label", "Sao chép mã mẫu vào clipboard");
+          copyBtn.addEventListener("click", function() {
+            copyText(block.code || "").then(function() { showToast("Đã sao chép mã"); },
+              function() { showToast("Không thể sao chép tự động — hãy chọn mã và sao chép thủ công."); });
+          });
+          cap.appendChild(copyBtn);
+          fig.appendChild(cap);
+          var pre = el("pre");
+          pre.appendChild(el("code", null, block.code || ""));
+          fig.appendChild(pre);
+          container.appendChild(fig);
+          return;
+        }
+        if (type === "table") {
+          var wrap = el("div", "data-table-wrap");
+          var table = el("table", "data-table");
+          var cols = block.columns || [];
+          table.appendChild(el("caption", null, cols.join(" · ")));
+          var thead = el("thead");
+          var hr = el("tr");
+          cols.forEach(function(c) { hr.appendChild(el("th", null, c)); });
+          thead.appendChild(hr);
+          table.appendChild(thead);
+          var tbody = el("tbody");
+          (block.rows || []).forEach(function(row) {
+            var tr = el("tr");
+            row.forEach(function(cell, ci) {
+              var td = el(ci < cols.length - 1 ? "td" : "td");
+              td.appendChild(document.createTextNode(cell == null ? "" : String(cell)));
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          wrap.appendChild(table);
+          container.appendChild(wrap);
+          return;
+        }
+        if (type === "note" || type === "important" || type === "warning") {
+          var aside = el("aside", "callout " + (CALLOUT_CLASS[type] || ""));
+          aside.setAttribute("role", type === "warning" ? "alert" : "note");
+          var labelSpan = el("strong", null, (type === "note" ? "Ghi chú: " : type === "important" ? "Quan trọng: " : "Lưu ý: "));
+          aside.appendChild(labelSpan);
+          aside.appendChild(document.createTextNode(block.text == null ? "" : String(block.text)));
+          appendCitations(aside, block.citations, refIndexById);
+          container.appendChild(aside);
+          return;
+        }
+        /* paragraph */
+        container.appendChild(proseParagraph(block.text, block.citations, refIndexById));
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text).then(function() { return "clipboard"; });
+        }
+        return new Promise(function(resolve, reject) {
+          var area = Object.assign(document.createElement("textarea"), { value: text });
+          area.setAttribute("readonly", "");
+          area.style.position = "fixed";
+          area.style.opacity = "0";
+          document.body.appendChild(area);
+          area.select();
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+          area.remove();
+          if (!ok) reject(new Error("copy unavailable")); else resolve("fallback");
+        });
+      }
+
+      function showToast(message) {
+        var region = document.getElementById("toast-region");
+        if (!region) return;
+        var t = el("div", "toast", message);
+        region.appendChild(t);
+        setTimeout(function() { t.remove(); }, 2600);
+      }
+
+      function renderLessonHeader(container, lesson, refIndexById) {
+        var crumb = el("nav", "lesson-breadcrumb");
+        crumb.setAttribute("aria-label", "Đường dẫn bài học");
+        var g = el("a", null, GROUP_LABELS[lesson.group] || lesson.group);
+        g.href = "#dashboard";
+        crumb.appendChild(g);
+        crumb.appendChild(el("span", null, "/"));
+        var unit = courseData.units.find(function(x){ return x.id === lesson.unitId; });
+        var u = el("a", null, "Unit " + lesson.unitNumber + ": " + (lesson.unitTitle || ""));
+        if (unit && unit.lessonIds && unit.lessonIds.length) u.href = "#lesson/" + unit.lessonIds[0];
+        crumb.appendChild(u);
+        crumb.appendChild(el("span", null, "/"));
+        crumb.appendChild(el("span", null, lesson.title));
+        container.appendChild(crumb);
+
+        var header = el("header", "lesson-header");
+        header.appendChild(el("h1", "lesson-title", lesson.title));
+        var meta = el("div", "lesson-meta");
+        meta.appendChild(el("span", "chip", GROUP_LABELS[lesson.group] || lesson.group));
+        if (lesson.durationMinutes) meta.appendChild(el("span", "chip", "~" + lesson.durationMinutes + " phút"));
+        header.appendChild(meta);
+        if (lesson.summary) {
+          var s = el("div", "lesson-summary");
+          s.setAttribute("role", "note");
+          s.textContent = lesson.summary;
+          header.appendChild(s);
+        }
+        container.appendChild(header);
+
+        /* Prerequisites / outcomes columns */
+        var hasCols = (lesson.prerequisites && lesson.prerequisites.length) ||
+                      (lesson.outcomes && lesson.outcomes.length);
+        if (hasCols) {
+          var cols = el("div", "lesson-columns" + ((lesson.prerequisites && lesson.prerequisites.length) ? " twocol" : ""));
+          if (lesson.prerequisites && lesson.prerequisites.length) {
+            var c0 = el("div", "lesson-column");
+            c0.appendChild(el("h2", null, "Yêu cầu trước khi học"));
+            var ul0 = el("ul");
+            lesson.prerequisites.forEach(function(item) { ul0.appendChild(el("li", null, item)); });
+            c0.appendChild(ul0);
+            cols.appendChild(c0);
+          }
+          if (lesson.outcomes && lesson.outcomes.length) {
+            var c1 = el("div", "lesson-column");
+            c1.appendChild(el("h2", null, "Sau bài này bạn sẽ"));
+            var ul1 = el("ul");
+            lesson.outcomes.forEach(function(item) { ul1.appendChild(el("li", null, item)); });
+            c1.appendChild(ul1);
+            cols.appendChild(c1);
+          }
+          container.appendChild(cols);
+        }
+      }
+
+      function renderSections(container, lesson, refIndexById) {
+        (lesson.sections || []).forEach(function(section) {
+          var sec = el("section", "section-block");
+          if (section.id) sec.id = section.id;
+          sec.appendChild(el("h2", "section-heading", section.title || ""));
+          (section.blocks || []).forEach(function(block) { renderBlock(sec, block, refIndexById); });
+          container.appendChild(sec);
+        });
+      }
+
+
+      /* ---- practice cards --------------------------------------------- */
+      function disclosureButton(label, panelId) {
+        var b = el("button", "disclosure-btn", label);
+        b.type = "button";
+        b.setAttribute("aria-expanded", "false");
+        b.setAttribute("aria-controls", panelId);
+        return b;
+      }
+
+      function wireDisclosure(btn, panel) {
+        btn.addEventListener("click", function() {
+          var open = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", open ? "false" : "true");
+          panel.hidden = open;
+        });
+      }
+
+      function renderPractice(container, practice) {
+        var card = el("article", "practice-card");
+        card.id = "practice-" + practice.id;
+        var head = el("div", "practice-head");
+        var kindLabel = PRACTICE_KIND_LABELS[practice.type] || practice.type;
+        if (practice.interaction === "multiple-choice") kindLabel += " · trắc nghiệm";
+        head.appendChild(el("div", "practice-kind", kindLabel));
+        head.appendChild(el("p", "practice-prompt", practice.prompt || ""));
+        card.appendChild(head);
+
+        var body = el("div", "practice-body");
+        if (practice.starterCode) {
+          var starter = el("div", "practice-starter");
+          var pre = el("pre");
+          pre.appendChild(el("code", null, practice.starterCode));
+          starter.appendChild(pre);
+          body.appendChild(starter);
+        }
+
+        var mc = practice.interaction === "multiple-choice";
+
+        if (mc && practice.choices && practice.choices.length) {
+          var isMulti = (practice.correctChoiceIds || []).length > 1;
+          var fieldset = el("fieldset");
+          fieldset.style.cssText = "margin:0 0 .625rem;padding:0;border:none;";
+          var legend = el("legend", "visually-hidden", isMulti ? "Chọn nhiều đáp án" : "Chọn một đáp án");
+          fieldset.appendChild(legend);
+          var list = el("ul", "choice-list");
+          practice.choices.forEach(function(choice) {
+            var li = el("li", "choice-item");
+            li.setAttribute("data-choice-id", choice.id);
+            var input = document.createElement("input");
+            input.type = isMulti ? "checkbox" : "radio";
+            input.name = "choice-" + practice.id;
+            input.value = choice.id;
+            input.id = choice.id;
+            var label = el("label");
+            label.htmlFor = choice.id;
+            label.appendChild(input);
+            label.appendChild(el("span", null, choice.text));
+            li.appendChild(label);
+            list.appendChild(li);
+          });
+          fieldset.appendChild(list);
+          body.appendChild(fieldset);
+
+          var checkBtn = el("button", "disclosure-btn", "Kiểm tra đáp án");
+          checkBtn.type = "button";
+          checkBtn.setAttribute("data-action", "check-practice");
+          checkBtn.setAttribute("data-practice-id", practice.id);
+          body.appendChild(checkBtn);
+
+          var fb = el("div", "check-feedback");
+          fb.id = "feedback-" + practice.id;
+          fb.hidden = true;
+          body.appendChild(fb);
+
+          checkBtn.addEventListener("click", function() {
+            var picked = Array.prototype.slice.call(
+              body.querySelectorAll('input[name="choice-' + practice.id + '"]:checked')
+            ).map(function(inp) { return inp.value; });
+            if (!picked.length) { showToast("Hãy chọn ít nhất một đáp án trước khi kiểm tra."); return; }
+            var correct = new Set(practice.correctChoiceIds || []);
+            var allCorrect = picked.length === correct.size && picked.every(function(id){ return correct.has(id); });
+            /* mark per-choice correctness */
+            body.querySelectorAll(".choice-item").forEach(function(li) {
+              var cid = li.getAttribute("data-choice-id");
+              li.classList.remove("is-correct", "is-wrong");
+              if (correct.has(cid)) li.classList.add("is-correct");
+              else if (picked.indexOf(cid) !== -1) li.classList.add("is-wrong");
+            });
+            fb.className = "check-feedback " + (allCorrect ? "ok" : "wrong");
+            fb.textContent = (allCorrect ? "Chính xác! " : "Chưa đúng. ") + (practice.explanation || "");
+            fb.hidden = false;
+            /* persist attempted state */
+            state.practice[practice.id] = { attempted: true };
+            saveState();
+          });
+        }
+
+        var actions = el("div", "practice-actions");
+        if (practice.hint) {
+          var hintPanelId = "hint-" + practice.id;
+          var hintBtn = disclosureButton("Gợi ý", hintPanelId);
+          var hintPanel = el("div", "disclosure-panel");
+          hintPanel.id = hintPanelId;
+          hintPanel.hidden = true;
+          hintPanel.textContent = practice.hint;
+          actions.appendChild(hintBtn);
+          wireDisclosure(hintBtn, hintPanel);
+        }
+        if (practice.solution || (mc && practice.explanation)) {
+          var solPanelId = "sol-" + practice.id;
+          var solBtn = disclosureButton(mc ? "Xem giải thích" : "Xem lời giải", solPanelId);
+          var solPanel = el("div", "disclosure-panel");
+          solPanel.id = solPanelId;
+          solPanel.hidden = true;
+          var solutionText = mc
+            ? ((practice.correctChoiceIds || []).join(", ") + (practice.explanation ? " — " + practice.explanation : ""))
+            : [practice.solution, practice.explanation].filter(Boolean).join("\n\n");
+          solPanel.textContent = solutionText;
+          actions.appendChild(solBtn);
+          wireDisclosure(solBtn, solPanel);
+        }
+        if (actions.childNodes.length) { body.appendChild(actions); }
+        /* panels live inside body so they flow under the prompt */
+        card.appendChild(body);
+        container.appendChild(card);
+      }
+
+      function renderPractices(container, lesson) {
+        if (!lesson.practices || !lesson.practices.length) return;
+        var blockEl = el("section", "section-block");
+        blockEl.appendChild(el("h2", "section-heading", "Luyện tập"));
+        lesson.practices.forEach(function(p) { renderPractice(blockEl, p); });
+        container.appendChild(blockEl);
+      }
+
+
+      /* ---- assignments (syllabus original vs enrichment) --------------- */
+      function renderAssignments(container, lesson) {
+        var syllabus = lesson.syllabusAssignments || [];
+        var enhanced = lesson.enhancedExercises || [];
+        if (!syllabus.length && !enhanced.length) return;
+        var blockEl = el("section", "assignments-block");
+        if (syllabus.length) {
+          blockEl.appendChild(el("h2", null, "Bài tập trong syllabus"));
+          syllabus.forEach(function(a) {
+            var item = el("div", "assignment-item");
+            item.appendChild(el("span", "assignment-origin", "Nội dung gốc · dòng " + a.row));
+            item.appendChild(document.createTextNode("\n" + (a.text || "")));
+            blockEl.appendChild(item);
+          });
+        }
+        if (enhanced.length) {
+          blockEl.appendChild(el("h2", null, "Luyện tập bổ sung"));
+          enhanced.forEach(function(text) {
+            var item = el("div", "assignment-item");
+            item.style.borderLeftColor = "var(--spring)";
+            item.appendChild(el("span", "assignment-origin", "Bổ sung"));
+            item.appendChild(document.createTextNode("\n" + text));
+            blockEl.appendChild(item);
+          });
+        }
+        container.appendChild(blockEl);
+      }
+
+      /* ---- references with transparent read status ---------------------- */
+      function renderReferences(container, lesson, refIndexById, refCards) {
+        if (!lesson.references || !lesson.references.length) return;
+        var blockEl = el("section", "references-block");
+        blockEl.id = "references-" + lessonIdSlug(lesson.id);
+        blockEl.appendChild(el("h2", null, "Nguồn tham chiếu"));
+
+        lesson.references.forEach(function(ref, i) {
+          var num = i + 1;
+          refIndexById.set(String(ref.citationId || ref.id).toLowerCase(), num);
+          var card = el("article", "ref-card");
+          card.id = "ref-" + lessonIdSlug(lesson.id) + "-" + num;
+          var headRow = el("div", "ref-card-head");
+          headRow.appendChild(el("span", "ref-num", "[" + num + "]"));
+          headRow.appendChild(el("strong", null, ref.label || ref.pageTitle || ref.resourceId));
+          headRow.appendChild(el("span", "badge-domain", ref.url ? new URL(ref.url).hostname : ""));
+          if (ref.readStatus === "read") headRow.appendChild(el("span", "badge-read", "đã đọc"));
+          card.appendChild(headRow);
+          if (ref.pageTitle) {
+            card.appendChild(el("div", null, "Trang: " + ref.pageTitle));
+          }
+          if (ref.url) {
+            var linkP = el("p");
+            var a = el("a", "ref-url", ref.safeUrl || ref.url);
+            a.href = CourseCore.safeExternalUrl(ref.url) || "#";
+            if (a.href !== "#") {
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+            }
+            linkP.appendChild(a);
+            card.appendChild(linkP);
+          }
+          /* section backlink */
+          var back = el("a", null, "↑ Về đầu bài học");
+          back.href = "#lesson/" + lesson.id;
+          back.style.cssText = "font-size:.75rem;color:var(--muted);text-decoration:none;display:inline-block;margin-top:.375rem;";
+          back.addEventListener("click", function(ev) {
+            ev.preventDefault();
+            window.location.hash = "#lesson/" + lesson.id;
+            setTimeout(function() { document.getElementById("main-content").focus(); }, 50);
+          });
+          card.appendChild(back);
+          blockEl.appendChild(card);
+          refCards.push({ ref: ref, num: num });
+        });
+
+        /* Supplied but inaccessible resources — separate disclosure. */
+        var unavailable = (lesson.references || []).filter(function(r) { return r.readStatus !== "read"; });
+        if (unavailable.length) {
+          var details = el("details", "ref-unavailable");
+          details.appendChild(el("summary", null,
+            "Nguồn được cung cấp nhưng không truy cập được (" + unavailable.length + ")"));
+          unavailable.forEach(function(ref) {
+            var card = el("article", "ref-card");
+            card.appendChild(el("strong", null, ref.label || ref.resourceId));
+            card.appendChild(el("div", null, "Trạng thái kiểm tra: " + (ref.checkStatus || "không rõ")));
+            if (ref.limitation) card.appendChild(el("div", null, "Giới hạn: " + ref.limitation));
+            details.appendChild(card);
+          });
+          blockEl.appendChild(details);
+        }
+        container.appendChild(blockEl);
+      }
+
+      /* ---- footer navigation -------------------------------------------- */
+      function renderLessonNav(container, lesson) {
+        var prevId = CourseCore.nextLessonId(courseData.lessons, lesson.id, -1);
+        var nextId = CourseCore.nextLessonId(courseData.lessons, lesson.id, 1);
+        var nav = el("nav", "lesson-nav");
+        nav.setAttribute("aria-label", "Điều hướng bài học");
+
+        if (prevId) {
+          var prevLesson = lessonsById.get(prevId);
+          var prevA = el("a", "nav-prev");
+          prevA.href = "#lesson/" + prevId;
+          prevA.innerHTML = '<span class="nav-label">← Bài trước</span><span>' +
+            CourseCore.escapeHtml(prevLesson ? prevLesson.title : prevId) + "</span>";
+          nav.appendChild(prevA);
+        } else {
+          nav.appendChild(el("span"));
+        }
+
+        var done = state.completed.indexOf(lesson.id) !== -1;
+        var toggleBtn = el("button", "nav-complete", done ? "✓ Đã hoàn thành" : "Đánh dấu hoàn thành");
+        toggleBtn.type = "button";
+        toggleBtn.setAttribute("data-action", "toggle-completion");
+        toggleBtn.setAttribute("data-lesson-id", lesson.id);
+        toggleBtn.setAttribute("aria-pressed", done ? "true" : "false");
+        nav.appendChild(toggleBtn);
+
+        if (nextId) {
+          var nextLesson = lessonsById.get(nextId);
+          var nextA = el("a", "nav-next");
+          nextA.href = "#lesson/" + nextId;
+          nextA.innerHTML = '<span class="nav-label">Bài sau →</span><span>' +
+            CourseCore.escapeHtml(nextLesson ? nextLesson.title : nextId) + "</span>";
+          nav.appendChild(nextA);
+        } else {
+          nav.appendChild(el("span"));
+        }
+        container.appendChild(nav);
+      }
+
+      /* ---- main lesson view ------------------------------------------------ */
+      function renderFullLesson(container, lesson) {
+        currentLessonId = lesson.id;
+        var refIndexById = new Map();
+        var refCards = [];
+
+        renderLessonHeader(container, lesson, refIndexById);
+        renderSections(container, lesson, refIndexById);
+        renderPractices(container, lesson);
+        renderAssignments(container, lesson);
+        renderReferences(container, lesson, refIndexById, refCards);
+        renderLessonNav(container, lesson);
+        container.setAttribute("tabindex", "-1");
+      }
+
+      /* ---- route entry for lessons ---------------------------------------- */
       function renderLessonView(container, lessonId) {
         var lesson = lessonsById.get(lessonId);
         if (!lesson) {
-          container.innerHTML = '<h1 style="margin:2rem 0;">Khong tim thay bai hoc</h1><p>Bai hoc ' + lessonId + ' khong ton tai.</p><a href="#dashboard" style="color:var(--spring);">Ve dashboard</a>';
+          container.innerHTML = '<h1 style="margin:2rem 0;">Không tìm thấy bài học</h1><p>Bài học "' +
+            CourseCore.escapeHtml(lessonId) + '" không tồn tại.</p><a href="#dashboard" style="color:var(--spring);">Về dashboard</a>';
           return;
         }
         state.lastLessonId = lessonId;
         saveState();
         if (lesson.kind === 'pending') {
-          container.innerHTML = '<div style="padding:3rem 0;text-align:center;"><h1>' + lesson.title + '</h1><p style="color:var(--muted);margin-top:1rem;">Bai hoc dang duoc chuan bi...</p></div>';
+          container.innerHTML = '<div style="padding:3rem 0;text-align:center;"><h1>' +
+            CourseCore.escapeHtml(lesson.title) + '</h1>' +
+            '<p style="color:var(--muted);margin-top:1rem;">Bài học này đang được biên soạn — nội dung sẽ được bổ sung trong giai đoạn tiếp theo.</p>' +
+            '<p><a href="#dashboard" style="color:var(--spring);">← Về tổng quan</a></p></div>';
           return;
         }
-        /* Full lesson rendering delegated to Task 4. For now render header + summary only. */
-        var h1 = document.createElement('h1');
-        h1.textContent = lesson.title;
-        h1.style.fontSize = '1.625rem';
-        h1.style.marginBottom = '.5rem';
-        container.appendChild(h1);
-        if (lesson.summary) {
-          var s = document.createElement('div');
-          s.style.cssText = 'background:var(--surface);border-left:3px solid var(--spring);padding:.75rem 1rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:.9375rem;line-height:1.65;color:var(--muted);margin-bottom:1.5rem;';
-          s.textContent = lesson.summary;
-          container.appendChild(s);
-        }
+        renderFullLesson(container, lesson);
       }
 
-      /* ---- resources stub (filled in Task 6) ------------------------- */
       function renderResourcesView(container) {
-        container.innerHTML = '<h1 style="margin:2rem 0;">Nguon tai lieu</h1><p style="color:var(--muted);">Dang xay dung...</p>';
+        container.innerHTML = '<h1 style="margin:2rem 0;">Nguồn tài liệu</h1><p style="color:var(--muted);">Đang xây dựng…</p>';
       }
 
       /* ---- search panel ---------------------------------------------- */

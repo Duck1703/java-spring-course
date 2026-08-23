@@ -14,7 +14,7 @@ function loadCore() {
   const scriptStart = html.lastIndexOf("<script", start);
   const scriptEnd = html.indexOf("</script>", end);
   const block = html.slice(start, end);
-  const context = { console };
+  const context = { console, URL };
   vm.createContext(context);
   vm.runInContext(block + "\nglobalThis.CourseCore = CourseCore;", context);
   // Wrap every member so object results are cloned into the host realm;
@@ -115,4 +115,19 @@ test("searchLessons matches title/summary/outcome/unit text normalized", () => {
   const hits2 = core.searchLessons(lessons, units, "JVM");
   assert.deepEqual(hits2, [lessons[0]]);
   assert.deepEqual(core.searchLessons(lessons, units, ""), []);
+});
+
+test("escapeHtml neutralizes markup and quotes", () => {
+  assert.equal(core.escapeHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;');
+  assert.equal(core.escapeHtml('a & b "c" \'d\''), 'a &amp; b &quot;c&quot; &#39;d&#39;');
+  assert.equal(core.escapeHtml(null), "");
+});
+
+test("safeExternalUrl allows only absolute http(s)/mailto", () => {
+  assert.equal(core.safeExternalUrl('javascript:alert(1)'), null);
+  assert.equal(core.safeExternalUrl('data:text/html,<script>x</script>'), null);
+  assert.equal(core.safeExternalUrl('https://docs.spring.io/a'), 'https://docs.spring.io/a');
+  assert.equal(core.safeExternalUrl('http://example.com/x?y=1'), 'http://example.com/x?y=1');
+  assert.equal(core.safeExternalUrl('not a url'), null);
+  assert.equal(core.safeExternalUrl(null), null);
 });
