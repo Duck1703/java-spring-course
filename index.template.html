@@ -304,6 +304,11 @@
       body.drawer-open { overflow: hidden; }
       .lesson-shell { padding-inline: clamp(1rem, 4vw, 2rem); }
     }
+    /* Desktop never shows drawer state even if body class lingers */
+    @media (min-width: 64rem) {
+      body.drawer-open { overflow: auto; }
+      body.drawer-open .drawer-backdrop { display: none; }
+    }
     @media (max-width: 30rem) {
       .progress-meter .progress-text-long { display: none; }
       .header-search input { width: 9rem; }
@@ -627,7 +632,57 @@
       color: #fff;
     }
     .nav-label { display: block; font-size: .6875rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+
+    /* Dashboard settings (Site Task 5) */
+    .settings-block { margin-top: 2.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+    .settings-block details { margin-bottom: .625rem; }
+    .settings-block summary {
+      cursor: pointer;
+      font-size: .9063rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .settings-actions { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem 0 0; }
+    .settings-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .375rem;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: .8125rem;
+      padding: .4375rem .8125rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+    .settings-btn:hover { border-color: var(--spring); color: var(--spring); }
+    .settings-btn--danger:hover { border-color: var(--danger); color: var(--danger); }
+    .import-preview {
+      margin-top: .625rem;
+      padding: .625rem .75rem;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-sm);
+      font-size: .8125rem;
+      line-height: 1.6;
+    }
+    .import-preview[hidden] { display: none; }
   </style>
+  <script>
+    /* Theme bootstrap: runs before first paint to avoid a light/dark flash. */
+    (function() {
+      try {
+        var raw = localStorage.getItem("java-spring-course");
+        var theme = raw ? (JSON.parse(raw).theme || "system") : "system";
+        var resolved = theme === "dark" ? "dark"
+          : theme === "light" ? "light"
+          : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", resolved);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme",
+          window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      }
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Bỏ qua đến nội dung</a>
@@ -777,13 +832,21 @@
       const unitsById = new Map(courseData.units.map(function(u){return [u.id,u];}));
 
       /* ---- state ----------------------------------------------------- */
+      var STORAGE_KEY = 'java-spring-course';
       var state = CourseCore.defaultState();
       var LESSON_IDS = new Set(courseData.lessons.map(function(l){return l.id;}));
       var UNIT_IDS = new Set(courseData.units.map(function(u){return u.id;}));
+      var PRACTICE_IDS = new Set(courseData.lessons.reduce(function(acc, l) {
+        (l.practices || []).forEach(function(p) { acc.push(p.id); });
+        return acc;
+      }, []));
       function loadState() {
-        try { var raw = localStorage.getItem('java-spring-course'); return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, new Set()) : null; } catch(e) { return null; }
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, PRACTICE_IDS) : null;
+        } catch(e) { return null; }
       }
-      function saveState() { try { localStorage.setItem('java-spring-course', JSON.stringify(state)); } catch(e) {} }
+      function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
       var loaded = loadState();
       if (loaded) state = loaded;
 
@@ -917,6 +980,124 @@
           ug.appendChild(uc);
         });
         container.appendChild(ug);
+        renderSettingsBlock(container);
+      }
+
+      /* ---- settings: export / import / reset (Site Task 5) -------------- */
+      var APP_SCHEMA = { app: "java-spring-course", schemaVersion: 1 };
+
+      function downloadProgress() {
+        var payload = {
+          app: APP_SCHEMA.app,
+          schemaVersion: APP_SCHEMA.schemaVersion,
+          exportedAt: new Date().toISOString(),
+          state: state,
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = el("a");
+        a.href = url;
+        a.download = "java-spring-course-tien-do.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        showToast("Đã tải tệp tiến độ");
+      }
+
+      function importProgressText(text, previewEl, confirmBtn) {
+        var parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch (e) {
+          previewEl.hidden = false;
+          previewEl.textContent = "Tệp không phải JSON hợp lệ.";
+          return;
+        }
+        if (!parsed || parsed.app !== APP_SCHEMA.app || parsed.schemaVersion !== APP_SCHEMA.schemaVersion) {
+          previewEl.hidden = false;
+          previewEl.textContent = "Tệp không đúng định dạng tiến độ của khóa học (app/schemaVersion không khớp).";
+          return;
+        }
+        var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS);
+        previewEl.hidden = false;
+        previewEl.textContent = "Sẵn sàng nhập: " + cleaned.completed.length + "/" + courseData.lessons.length +
+          " bài đã hoàn thành. Nhấn “Xác nhận nhập” để thay thế tiến độ hiện tại.";
+        confirmBtn.hidden = false;
+        confirmBtn.onclick = function() {
+          state = cleaned;
+          saveState();
+          applyTheme(state.theme);
+          updateProgress();
+          renderSidebar();
+          routeRender();
+          previewEl.textContent = "Đã nhập tiến độ thành công.";
+          confirmBtn.hidden = true;
+          showToast("Tiến độ đã được nhập");
+        };
+      }
+
+      function renderSettingsBlock(container) {
+        var block = el("div", "settings-block");
+        var details = el("details");
+        details.appendChild(el("summary", null, "Cài đặt dữ liệu học tập"));
+        var actions = el("div", "settings-actions");
+
+        var exportBtn = el("button", "settings-btn", "Tải tiến độ (.json)");
+        exportBtn.type = "button";
+        exportBtn.setAttribute("data-action", "export-progress");
+        exportBtn.addEventListener("click", downloadProgress);
+        actions.appendChild(exportBtn);
+
+        var importLabel = el("label", "settings-btn", "Nhập tiến độ (.json)");
+        var fileInput = el("input");
+        fileInput.type = "file";
+        fileInput.accept = ".json,application/json";
+        fileInput.style.display = "none";
+        importLabel.appendChild(fileInput);
+        actions.appendChild(importLabel);
+
+        var resetBtn = el("button", "settings-btn settings-btn--danger", "Đặt lại tiến độ");
+        resetBtn.type = "button";
+        resetBtn.setAttribute("data-action", "reset-progress");
+        actions.appendChild(resetBtn);
+
+        var preview = el("div", "import-preview");
+        preview.hidden = true;
+        var confirmBtn = el("button", "settings-btn", "Xác nhận nhập");
+        confirmBtn.type = "button";
+        confirmBtn.hidden = true;
+
+        fileInput.addEventListener("change", function() {
+          var file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function() { importProgressText(String(reader.result), preview, confirmBtn); };
+          reader.onerror = function() {
+            preview.hidden = false;
+            preview.textContent = "Không đọc được tệp đã chọn.";
+          };
+          reader.readAsText(file);
+          fileInput.value = "";
+        });
+
+        resetBtn.addEventListener("click", function() {
+          if (!window.confirm("Đặt lại toàn bộ tiến độ? Hành động này xóa trạng thái hoàn thành, bài đang học và cài đặt giao diện đã lưu trên máy bạn.")) return;
+          state = CourseCore.defaultState();
+          try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+          saveState();
+          applyTheme(state.theme);
+          updateProgress();
+          renderSidebar();
+          routeRender();
+          showToast("Đã đặt lại tiến độ");
+        });
+
+        details.appendChild(actions);
+        details.appendChild(preview);
+        details.appendChild(confirmBtn);
+        block.appendChild(details);
+        container.appendChild(block);
       }
 
       /* ---- lesson renderer (Site Task 4) ------------------------------ */
@@ -1457,21 +1638,86 @@
         searchInput.onblur = function(){ setTimeout(function(){ searchPanel.style.display = 'none'; }, 200); };
       }
 
-      /* ---- drawer ---------------------------------------------------- */
+      /* ---- drawer with focus trap -------------------------------------- */
+      var lastFocusedBeforeDrawer = null;
+
+      function drawerFocusables() {
+        var sidebar = document.getElementById('course-sidebar');
+        if (!sidebar) return [];
+        return Array.prototype.filter.call(
+          sidebar.querySelectorAll('a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'),
+          function(node) { return node.offsetParent !== null || node.getClientRects().length > 0; }
+        );
+      }
+
       function openDrawer() {
-        document.body.classList.add('drawer-open');
         var btn = document.querySelector('[data-action="open-drawer"]');
+        lastFocusedBeforeDrawer = document.activeElement;
+        document.body.classList.add('drawer-open');
         if (btn) btn.setAttribute('aria-expanded', 'true');
         var backdrop = document.querySelector('.drawer-backdrop');
         if (backdrop) backdrop.hidden = false;
+        /* Focus the current lesson link if present, else first focusable */
+        var targetLink = document.querySelector('.lesson-link[aria-current="page"]') || drawerFocusables()[0];
+        if (targetLink) { targetLink.focus(); return; }
+        /* Sidebar may not be rendered yet — focus the sidebar itself */
+        var sidebar = document.getElementById('course-sidebar');
+        if (sidebar) { sidebar.setAttribute('tabindex', '-1'); sidebar.focus(); }
       }
+
       function closeDrawer() {
+        var wasOpen = document.body.classList.contains('drawer-open');
         document.body.classList.remove('drawer-open');
         var btn = document.querySelector('[data-action="open-drawer"]');
         if (btn) btn.setAttribute('aria-expanded', 'false');
         var backdrop = document.querySelector('.drawer-backdrop');
         if (backdrop) backdrop.hidden = true;
+        if (wasOpen && lastFocusedBeforeDrawer && lastFocusedBeforeDrawer.isConnected) {
+          lastFocusedBeforeDrawer.focus();
+          lastFocusedBeforeDrawer = null;
+        } else if (wasOpen && btn) {
+          btn.focus();
+        }
       }
+
+      /* Tab cycling inside the open drawer */
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { closeDrawer(); return; }
+        if (e.key !== 'Tab' || !document.body.classList.contains('drawer-open')) return;
+        var focusables = drawerFocusables();
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        var active = document.activeElement;
+        var inSidebar = active && (active.closest ? active.closest('#course-sidebar') : false);
+        if (!inSidebar) {
+          e.preventDefault();
+          first.focus();
+          return;
+        }
+        if (e.shiftKey && (active === first || !inSidebar)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+
+      /* Clear drawer state when resizing up to desktop */
+      var desktopQuery = window.matchMedia('(min-width: 64rem)');
+      function handleBreakpointChange(e) {
+        if (e.matches) {
+          document.body.classList.remove('drawer-open');
+          var btn = document.querySelector('[data-action="open-drawer"]');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+          var backdrop = document.querySelector('.drawer-backdrop');
+          if (backdrop) backdrop.hidden = true;
+        }
+      }
+      if (desktopQuery.addEventListener) desktopQuery.addEventListener('change', handleBreakpointChange);
+      else if (desktopQuery.addListener) desktopQuery.addListener(handleBreakpointChange);
+
       document.addEventListener('click', function(e) {
         var target = e.target.closest('[data-action]');
         if (!target) return;
@@ -1479,24 +1725,37 @@
         if (action === 'open-drawer') openDrawer();
         if (action === 'close-drawer') closeDrawer();
       });
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeDrawer();
-      });
 
       /* ---- theme ----------------------------------------------------- */
+      var THEME_ORDER = ['system', 'light', 'dark'];
+      var THEME_LABELS = { system: 'Giao diện: theo hệ thống', light: 'Giao diện: sáng', dark: 'Giao diện: tối' };
+      function resolveTheme(theme) {
+        if (theme !== 'light' && theme !== 'dark') {
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        return theme;
+      }
       function applyTheme(theme) {
-        var resolved = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
-        document.documentElement.setAttribute('data-theme', resolved);
+        document.documentElement.setAttribute('data-theme', resolveTheme(theme));
       }
       applyTheme(state.theme);
+      /* Follow system changes while in system mode */
+      var schemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      function onSchemeChange() { if (state.theme === 'system') applyTheme('system'); }
+      if (schemeQuery.addEventListener) schemeQuery.addEventListener('change', onSchemeChange);
+      else if (schemeQuery.addListener) schemeQuery.addListener(onSchemeChange);
       var themeBtn = document.getElementById('theme-toggle');
       if (themeBtn) {
+        function syncThemeButton() {
+          themeBtn.setAttribute('aria-label', THEME_LABELS[state.theme] || state.theme);
+          themeBtn.textContent = state.theme === 'dark' ? '☾' : state.theme === 'light' ? '☀' : '◐';
+        }
+        syncThemeButton();
         themeBtn.onclick = function() {
-          var order = ['system', 'light', 'dark'];
-          state.theme = order[(order.indexOf(state.theme) + 1) % 3];
+          state.theme = THEME_ORDER[(THEME_ORDER.indexOf(state.theme) + 1) % 3];
           applyTheme(state.theme);
           saveState();
-          themeBtn.setAttribute('aria-label', 'Giao dien: ' + state.theme);
+          syncThemeButton();
         };
       }
 
