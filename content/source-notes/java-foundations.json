@@ -1,0 +1,843 @@
+[
+  {
+    "resourceId": "res-10672cc3a9fa",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-method-overloading-riding",
+    "lessonIds": [
+      "day-05"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-method-overloading-riding",
+      "contentSha256": "d42aef7e438f78a96acb4cafd0bb5a307ded33d7d58f36b470a4af3c7c0d2f97"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-1cec64c5e683",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-string-pool",
+    "lessonIds": [
+      "day-01",
+      "day-03"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-string-pool",
+      "contentSha256": "130c6c3bd46103794c50365bdee208de4129d812fd7dbd1f3f90fb092c0b53c8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to Java String Pool | Baeldung",
+      "relevantHeadings": [
+        "2. String Interning",
+        "3. Strings Allocated Using the Constructor",
+        "5. Manual Interning",
+        "6. Garbage Collection"
+      ],
+      "topics": [
+        "String Pool",
+        "String immutability",
+        "interning"
+      ],
+      "facts": [
+        {
+          "topic": "String Pool",
+          "summary": "JVM lưu mỗi String literal một lần duy nhất trong vùng String Pool; khi gán chuỗi mới bằng literal, JVM tìm trong pool trước khi cấp phát bộ nhớ mới (interning).",
+          "locator": "§2. String Interning"
+        },
+        {
+          "topic": "new String() vs literal",
+          "summary": "Dùng toán tử new tạo một đối tượng String mới trên heap, khác vùng nhớ với chuỗi interned nên so sánh == trả về false dù nội dung giống nhau.",
+          "locator": "§3. Strings Allocated Using the Constructor"
+        },
+        {
+          "topic": "Interning thủ công",
+          "summary": "Có thể gọi phương thức intern() trên một String tạo bằng new để đưa nó vào String Pool và lấy lại tham chiếu chung.",
+          "locator": "§5. Manual Interning"
+        },
+        {
+          "topic": "Vị trí lưu trữ Pool qua các phiên bản Java",
+          "summary": "Trước Java 7 pool nằm trong PermGen (không GC được); từ Java 7 pool chuyển sang Heap nên được Garbage Collector dọn dẹp, giảm nguy cơ OutOfMemoryError.",
+          "locator": "§6. Garbage Collection"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-284db3d782e6",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html",
+    "lessonIds": [
+      "day-02"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/specs/jls/se17/html/jls-14.html",
+      "contentSha256": "2e9f5cb17a7b090f94d4c3ea553e6297a75660efce8d232564fd4e145091f182"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Chapter 14. Blocks, Statements, and Patterns (Java Language Specification, SE 17)",
+      "relevantHeadings": [
+        "14.11. The switch Statement",
+        "14.11.1. Switch Blocks",
+        "14.11.3. Execution of a switch Statement",
+        "14.30. Patterns"
+      ],
+      "topics": [
+        "switch statement",
+        "switch expression",
+        "pattern matching"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc switch block",
+          "summary": "switch block gồm hai kiểu cú pháp: switch rule dùng mũi tên -> (dẫn tới biểu thức, block hoặc throw) hoặc switch labeled statement group dùng dấu hai chấm theo kiểu cũ có fall-through.",
+          "locator": "§14.11.1 Switch Blocks"
+        },
+        {
+          "topic": "Kiểu dữ liệu hợp lệ cho switch",
+          "summary": "Biểu thức chọn của switch phải thuộc kiểu char, byte, short, int hoặc các lớp bọc tương ứng, String, hoặc kiểu enum.",
+          "locator": "§14.11 The switch Statement"
+        },
+        {
+          "topic": "Fall-through",
+          "summary": "Với cú pháp nhãn case dùng dấu hai chấm, nếu không có break thì thực thi sẽ rơi tiếp xuống các case sau cho tới khi gặp break hoặc hết block.",
+          "locator": "§14.11.3 Execution of a switch Statement, Example 14.11.3-1"
+        },
+        {
+          "topic": "Pattern matching cơ bản",
+          "summary": "Một type pattern kiểm tra giá trị có phải instance của kiểu chỉ định hay không; nếu khớp, biến pattern được khởi tạo giá trị đó để dùng tiếp trong biểu thức.",
+          "locator": "§14.30.1 Kinds of Patterns; §14.30.2 Pattern Matching"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-28fe8d3fda30",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html",
+    "lessonIds": [
+      "day-02"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/switch.html",
+      "contentSha256": "6b951b20733bb9563755c94f0b280074c552f2283adc17a0bd9ebdd32c94530a"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "The switch Statement (The Java Tutorials > Learning the Java Language > Language Basics)",
+      "relevantHeadings": [
+        "The switch Statement",
+        "Using Strings in switch Statements"
+      ],
+      "topics": [
+        "switch statement",
+        "break",
+        "fall-through"
+      ],
+      "facts": [
+        {
+          "topic": "switch hoạt động trên kiểu nào",
+          "summary": "switch làm việc với các kiểu nguyên thủy byte, short, char, int cùng lớp bọc tương ứng, kiểu enum và String.",
+          "locator": "The switch Statement"
+        },
+        {
+          "topic": "Vai trò của break",
+          "summary": "Mỗi lệnh break kết thúc switch hiện tại; nếu thiếu break thì các lệnh trong case tiếp theo vẫn thực thi tuần tự cho tới khi gặp break (fall-through).",
+          "locator": "The switch Statement — đoạn giải thích break"
+        },
+        {
+          "topic": "switch trên String",
+          "summary": "Từ Java SE 7, biểu thức switch có thể là một String, so khớp bằng phương thức String.equals(), ví dụ chuyển tên tháng thành số tháng.",
+          "locator": "Using Strings in switch Statements"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-36a8d5deef22",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-polymorphism",
+    "lessonIds": [
+      "day-05",
+      "day-06"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-polymorphism",
+      "contentSha256": "ad99fe9ccc79a21115bdfab2130f9fcb82be996294f1030c50e1dfa74a8cdeaa"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Polymorphism in Java | Baeldung",
+      "relevantHeadings": [
+        "2. Static Polymorphism",
+        "3. Dynamic Polymorphism",
+        "5.1. Type Identification During Downcasting"
+      ],
+      "topics": [
+        "polymorphism",
+        "method overriding",
+        "downcasting"
+      ],
+      "facts": [
+        {
+          "topic": "Polymorphism tĩnh và động",
+          "summary": "Bài viết phân biệt polymorphism tĩnh (compile-time, ví dụ overloading) giải quyết lúc biên dịch, và polymorphism động (runtime) được JVM giải quyết khi gọi phương thức đã override trên subclass.",
+          "locator": "§2 Static Polymorphism; §3 Dynamic Polymorphism"
+        },
+        {
+          "topic": "Method overriding qua ví dụ GenericFile/ImageFile",
+          "summary": "Khi ImageFile override getFileInfo() của GenericFile rồi được gán cho biến kiểu GenericFile, JVM vẫn gọi đúng phương thức của ImageFile lúc runtime nhờ giữ tham chiếu tới kiểu thực sự của đối tượng.",
+          "locator": "§3 Dynamic Polymorphism"
+        },
+        {
+          "topic": "Upcast/downcast và ClassCastException",
+          "summary": "Ép kiểu từ lớp cha xuống lớp con mà đối tượng thực sự không phải kiểu đó sẽ ném ClassCastException lúc runtime; nên dùng instanceof để kiểm tra trước khi ép kiểu.",
+          "locator": "§5.1 Type Identification During Downcasting"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-4f42c781654a",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-constructors",
+    "lessonIds": [
+      "day-04"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-constructors",
+      "contentSha256": "cda07f3a9203a5cc0790c5a69099d5d7e358a9a1fee3fc2bc5a3d02d1dbab9a8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "A Guide to Constructors in Java | Baeldung",
+      "relevantHeadings": [
+        "3. A No-Argument Constructor",
+        "4. A Parameterized Constructor",
+        "6. A Chained Constructor"
+      ],
+      "topics": [
+        "constructors",
+        "this()",
+        "encapsulation"
+      ],
+      "facts": [
+        {
+          "topic": "Constructor mặc định",
+          "summary": "Nếu lớp không khai báo constructor nào, trình biên dịch tự thêm một constructor không tham số gán giá trị mặc định (null, 0, false...) cho các trường.",
+          "locator": "§3. A No-Argument Constructor"
+        },
+        {
+          "topic": "Constructor có tham số",
+          "summary": "Constructor có tham số cho phép khởi tạo trạng thái ban đầu của đối tượng ngay khi tạo, giúp duy trì tính đóng gói thay vì gán giá trị sau khi tạo xong.",
+          "locator": "§4. A Parameterized Constructor"
+        },
+        {
+          "topic": "Gọi constructor khác bằng this()",
+          "summary": "Một constructor có thể gọi constructor khác trong cùng lớp bằng từ khóa this(...), gọi là chained constructor; lời gọi this()/super() luôn phải là câu lệnh đầu tiên.",
+          "locator": "§6. A Chained Constructor"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-563d80135c91",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-access-modifiers",
+    "lessonIds": [
+      "day-04"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-access-modifiers",
+      "contentSha256": "c41b26f1c1e9be105af7a0c5fff751a317c6f6c506bf21c85276e5bf31e88217"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Access Modifiers in Java | Baeldung",
+      "relevantHeadings": [
+        "1. Overview",
+        "6. Comparison",
+        "7. Canonical Order of Modifiers"
+      ],
+      "topics": [
+        "access modifiers",
+        "encapsulation"
+      ],
+      "facts": [
+        {
+          "topic": "Bốn mức truy cập",
+          "summary": "Java có 4 access modifier: public (mọi nơi), protected (cùng package + lớp con dù khác package), default/package-private (chỉ cùng package), và private (chỉ trong cùng lớp).",
+          "locator": "§1 Overview; §6 Comparison table"
+        },
+        {
+          "topic": "Lớp top-level chỉ dùng public/default",
+          "summary": "Một lớp top-level chỉ được khai báo public hoặc default; protected/private chỉ áp dụng cho thành viên bên trong lớp (field, method, constructor, nested class).",
+          "locator": "§1 Overview"
+        },
+        {
+          "topic": "Thứ tự chính tắc của modifier",
+          "summary": "JLS khuyến nghị thứ tự: annotation trước, rồi access modifier, sau đó static/abstract, cuối cùng final và các từ khóa khác khi khai báo field/method/class.",
+          "locator": "§7 Canonical Order of Modifiers"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-62d9985bbc6f",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-string-immutability",
+    "lessonIds": [
+      "day-01",
+      "day-03"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-string-immutability",
+      "contentSha256": "33e35ada3ef9970237f2a19e17410dae405baffc667aeac1d9ad5308d529542f"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-740a979a150e",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/for.html",
+    "lessonIds": [
+      "day-02"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/for.html",
+      "contentSha256": "a275c08d69e32e19e956cd40d49102c67307e2b606474677c8e675bceadf849f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "The for Statement (The Java Tutorials > Learning the Java Language > Language Basics)",
+      "relevantHeadings": [
+        "The for Statement",
+        "The enhanced for statement"
+      ],
+      "topics": [
+        "for loop",
+        "enhanced for"
+      ],
+      "facts": [
+        {
+          "topic": "Cú pháp for cơ bản",
+          "summary": "Vòng lặp for cơ bản gồm 3 phần: khởi tạo (chạy một lần), điều kiện dừng (kiểm tra trước mỗi vòng) và biểu thức tăng/giảm (chạy sau mỗi vòng lặp).",
+          "locator": "The for Statement — cú pháp chung"
+        },
+        {
+          "topic": "Enhanced for",
+          "summary": "Dạng for nâng cao (for-each) dùng để duyệt mảng hoặc Collection mà không cần chỉ số, được khuyến nghị dùng khi có thể vì code ngắn gọn, dễ đọc hơn.",
+          "locator": "The for Statement — Enhanced for"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-82c961b7a92a",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html",
+    "lessonIds": [
+      "day-02",
+      "day-03"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/flow.html",
+      "contentSha256": "f8bd2ba536c9c1cd6f986826041c0b92707867bd72fbb060b67b8a7967952dfb"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Control Flow Statements (The Java Tutorials > Learning the Java Language > Language Basics)",
+      "relevantHeadings": [
+        "Control Flow Statements"
+      ],
+      "topics": [
+        "control flow"
+      ],
+      "facts": [
+        {
+          "topic": "Ba nhóm câu lệnh điều khiển luồng",
+          "summary": "Java chia câu lệnh điều khiển luồng thành ba nhóm: quyết định (if-then, if-then-else, switch), lặp (for, while, do-while) và rẽ nhánh (break, continue, return).",
+          "locator": "Control Flow Statements — đoạn tổng quan"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-9458879c2540",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-encapsulation",
+    "lessonIds": [
+      "day-04"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-encapsulation",
+      "contentSha256": "16e33371ee0a1ece74942e279ad83faac7d3eca494cb7650d5532f8ca1807fd8"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-99801d0b7043",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/jvm-vs-jre-vs-jdk",
+    "lessonIds": [
+      "day-01"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/jvm-vs-jre-vs-jdk",
+      "contentSha256": "b5f941f108c4833086ff7e4fba098cd197032e584104fe492fea474ba2ceb846"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Difference Between JVM, JRE, and JDK | Baeldung",
+      "relevantHeadings": [
+        "2. JVM",
+        "2.2. Run-Time Data Areas",
+        "3. JRE",
+        "4. JDK"
+      ],
+      "topics": [
+        "JVM",
+        "JRE",
+        "JDK"
+      ],
+      "facts": [
+        {
+          "topic": "JVM là gì",
+          "summary": "JVM là máy ảo trừu tượng thực thi bytecode: nạp lớp, lưu thông tin lớp vào vùng nhớ, rồi thực thi bytecode do trình biên dịch Java sinh ra.",
+          "locator": "§2. JVM"
+        },
+        {
+          "topic": "Các vùng dữ liệu runtime của JVM",
+          "summary": "JVM định nghĩa nhiều vùng runtime gồm Method Area, Heap (chia Eden/Survivor/Tenured), Stack theo từng thread, PC Register và Native Method Stack.",
+          "locator": "§2.2. Run-Time Data Areas"
+        },
+        {
+          "topic": "JRE gồm những gì",
+          "summary": "JRE là bộ phần mềm để chạy ứng dụng Java, gồm một cài đặt JVM cùng các lớp lõi (bootstrap, extension classes) và file cấu hình cần thiết để thực thi chương trình.",
+          "locator": "§3. JRE"
+        },
+        {
+          "topic": "JDK gồm những gì",
+          "summary": "JDK gồm JRE cộng bộ công cụ phát triển như javac (biên dịch), java (chạy ứng dụng), javadoc (sinh tài liệu) để viết, biên dịch và debug chương trình Java.",
+          "locator": "§4. JDK"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-9d76570d9362",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html",
+    "lessonIds": [
+      "day-01"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/data/autoboxing.html",
+      "contentSha256": "deeab7f877c6d1f860216643a7e751650961c12df4b97dc9f810250e3c4233a2"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Autoboxing and Unboxing (The Java Tutorials > Learning the Java Language > Numbers and Strings)",
+      "relevantHeadings": [
+        "Autoboxing and Unboxing"
+      ],
+      "topics": [
+        "autoboxing",
+        "unboxing",
+        "wrapper classes"
+      ],
+      "facts": [
+        {
+          "topic": "Autoboxing là gì",
+          "summary": "Autoboxing là việc trình biên dịch tự động chuyển giá trị kiểu nguyên thủy (int) thành đối tượng lớp bọc tương ứng (Integer) khi cần, ví dụ khi thêm phần tử vào List<Integer>.",
+          "locator": "Autoboxing and Unboxing — đoạn mở đầu"
+        },
+        {
+          "topic": "Unboxing là gì",
+          "summary": "Unboxing là chiều ngược lại: chuyển đối tượng lớp bọc (Integer) về giá trị nguyên thủy (int) khi truyền cho tham số hoặc gán cho biến kiểu nguyên thủy.",
+          "locator": "Autoboxing and Unboxing — đoạn giải thích unboxing"
+        },
+        {
+          "topic": "Bảng ánh xạ kiểu nguyên thủy - lớp bọc",
+          "summary": "Tài liệu liệt kê đủ 8 cặp kiểu nguyên thủy và lớp bọc: boolean-Boolean, byte-Byte, char-Character, float-Float, int-Integer, long-Long, short-Short, double-Double.",
+          "locator": "Bảng cuối trang: Primitive type / Wrapper class"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-aad15fef0599",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-inheritance",
+    "lessonIds": [
+      "day-05",
+      "day-06"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-inheritance",
+      "contentSha256": "9738f30d080b46686d63ca8f5339f15614dd6dbe80a086b4eb16a3a969b53235"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to Inheritance in Java | Baeldung",
+      "relevantHeadings": [
+        "3.1. Extending a Class",
+        "4.1. Implementing Multiple Interfaces",
+        "6.1. Hidden Instance Members"
+      ],
+      "topics": [
+        "inheritance",
+        "extends",
+        "interfaces"
+      ],
+      "facts": [
+        {
+          "topic": "Kế thừa lớp bằng extends",
+          "summary": "Một lớp kế thừa lớp khác bằng từ khóa extends và có thể bổ sung thành viên mới; Java chỉ hỗ trợ đơn kế thừa với lớp.",
+          "locator": "§3.1 Extending a Class"
+        },
+        {
+          "topic": "Thành viên nào được kế thừa",
+          "summary": "Lớp con kế thừa các thành viên non-static protected và public của lớp cha; thành viên private và static không được kế thừa.",
+          "locator": "§3.1 Extending a Class"
+        },
+        {
+          "topic": "Đa kế thừa qua interface",
+          "summary": "Một lớp chỉ kế thừa một lớp cha nhưng có thể implement nhiều interface; nếu hai interface có default method trùng chữ ký, lớp implement bắt buộc phải override lại.",
+          "locator": "§4.1 Implementing Multiple Interfaces; §4.2 Issues With Multiple Inheritance"
+        },
+        {
+          "topic": "this và super khi trùng tên thành viên",
+          "summary": "Khi lớp con và lớp cha khai báo biến/phương thức cùng tên, dùng super.tên để truy cập thành viên lớp cha, this.tên để truy cập thành viên lớp con hiện tại.",
+          "locator": "§6.1 Hidden Instance Members"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-acff7fd27edc",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html",
+    "lessonIds": [
+      "day-01"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html",
+      "contentSha256": "ffbb1d397e08180bb7e55c350f422e76b1d10daad6dcdeb7a9978310edc6fcec"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Chapter 2. The Structure of the Java Virtual Machine (Java Virtual Machine Specification, SE 17)",
+      "relevantHeadings": [
+        "2.2. Data Types",
+        "2.5. Run-Time Data Areas",
+        "2.6. Frames",
+        "2.3.4. The boolean Type"
+      ],
+      "topics": [
+        "JVM architecture",
+        "run-time data areas",
+        "frames"
+      ],
+      "facts": [
+        {
+          "topic": "Hai loại giá trị JVM thao tác",
+          "summary": "JVM thao tác trên hai loại kiểu: kiểu nguyên thủy (numeric, boolean, returnAddress) và kiểu tham chiếu (reference); giá trị tham chiếu được xem như con trỏ tới đối tượng.",
+          "locator": "§2.2 Data Types"
+        },
+        {
+          "topic": "Các vùng dữ liệu runtime",
+          "summary": "JVM định nghĩa các vùng runtime gồm pc register theo từng thread, JVM stack lưu frame, heap dùng chung để cấp phát instance/array, method area chứa constant pool, và native method stack.",
+          "locator": "§2.5 Run-Time Data Areas"
+        },
+        {
+          "topic": "Frame và local variable/operand stack",
+          "summary": "Mỗi lần gọi phương thức tạo một frame mới chứa mảng local variable riêng và một operand stack kiểu LIFO dùng để lưu kết quả tạm và truyền tham số giữa các lệnh bytecode.",
+          "locator": "§2.6 Frames; §2.6.1 Local Variables; §2.6.2 Operand Stacks"
+        },
+        {
+          "topic": "Kiểu boolean trong JVM chỉ được hỗ trợ hạn chế",
+          "summary": "JVM không có lệnh bytecode riêng cho boolean; biểu thức boolean trong Java được biên dịch dùng giá trị kiểu int của JVM, ngoại trừ mảng boolean có lệnh baload/bastore riêng.",
+          "locator": "§2.3.4 The boolean Type"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ae202f300a2b",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/javaOO/index.html",
+    "lessonIds": [
+      "day-04",
+      "day-06"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/javaOO/index.html",
+      "contentSha256": "0d934ff359a5405ae78a41931aaddffebce8be0c706d7ba624ff9e47251273c3"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Lesson: Classes and Objects (The Java Tutorials > Learning the Java Language)",
+      "relevantHeadings": [
+        "Lesson: Classes and Objects"
+      ],
+      "topics": [
+        "classes",
+        "objects",
+        "nested classes"
+      ],
+      "facts": [
+        {
+          "topic": "Nội dung bài học Classes and Objects",
+          "summary": "Trang mục lục liệt kê các phần con: Classes (cấu trúc lớp, field/method/constructor), Objects (tạo và dùng đối tượng), More on Classes (this, static vs instance member, access control), Nested Classes, và Enum Types.",
+          "locator": "Lesson: Classes and Objects — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-b5dd43254a15",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-abstract-class",
+    "lessonIds": [
+      "day-05",
+      "day-06"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-abstract-class",
+      "contentSha256": "f7fe7d8aa424a9f7bde7c69f129e18b08bca60365510b6f4d08959059d0f010c"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Abstract Classes in Java | Baeldung",
+      "relevantHeadings": [
+        "2. Key Concepts for Abstract Classes",
+        "3. When to Use Abstract Classes"
+      ],
+      "topics": [
+        "abstract class",
+        "abstract method"
+      ],
+      "facts": [
+        {
+          "topic": "Định nghĩa abstract class",
+          "summary": "Một lớp được khai báo abstract bằng từ khóa abstract; lớp abstract không thể khởi tạo trực tiếp (new) nhưng có thể được kế thừa.",
+          "locator": "§2 Key Concepts for Abstract Classes"
+        },
+        {
+          "topic": "Ràng buộc với abstract method",
+          "summary": "Nếu một lớp khai báo ít nhất một abstract method, bản thân lớp đó cũng phải abstract; lớp con phải cài đặt toàn bộ abstract method hoặc chính nó cũng phải là abstract.",
+          "locator": "§2 Key Concepts for Abstract Classes"
+        },
+        {
+          "topic": "Khi nào nên dùng abstract class",
+          "summary": "Nên dùng abstract class khi muốn dùng chung code giữa các lớp con liên quan, hoặc muốn định nghĩa một phần API để lớp con mở rộng, tận dụng cả kế thừa lẫn đa hình.",
+          "locator": "§3 When to Use Abstract Classes"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-df903793f0b9",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html",
+    "lessonIds": [
+      "day-02",
+      "day-03"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html",
+      "contentSha256": "9709587abf09e5cafabaaa6954fc51c9373cd6e3b9560dc0388b47321510d5a0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Operators (The Java Tutorials > Learning the Java Language > Language Basics)",
+      "relevantHeadings": [
+        "Operators"
+      ],
+      "topics": [
+        "operators",
+        "precedence"
+      ],
+      "facts": [
+        {
+          "topic": "Bảng độ ưu tiên toán tử",
+          "summary": "Trang liệt kê bảng độ ưu tiên toán tử Java, từ postfix (++/--) cao nhất, qua nhân chia, cộng trừ, so sánh, logic, tới toán tử gán (=, +=...) thấp nhất.",
+          "locator": "Operators — bảng Operators Precedence"
+        },
+        {
+          "topic": "Thứ tự đánh giá",
+          "summary": "Hầu hết toán tử hai ngôi được đánh giá từ trái sang phải, riêng các toán tử gán được đánh giá từ phải sang trái.",
+          "locator": "Operators — đoạn giải thích ngay dưới bảng"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f31ffcf74f40",
+    "batch": "java-foundations",
+    "requestedUrl": "https://www.baeldung.com/java-records",
+    "lessonIds": [
+      "day-04"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-records",
+      "contentSha256": "3675a4235fa71e551e843e66a5a5db3931cdf871678a5e1f1ff371ad62e1e016"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f7cc3f86702d",
+    "batch": "java-foundations",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/data/index.html",
+    "lessonIds": [
+      "day-01"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/data/index.html",
+      "contentSha256": "a4492c58a3354085b7584c03b25b61871b706b815fa6e21ced4f211ba7989502"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Lesson: Numbers and Strings (The Java Tutorials > Learning the Java Language)",
+      "relevantHeadings": [
+        "Lesson: Numbers and Strings"
+      ],
+      "topics": [
+        "numbers",
+        "strings"
+      ],
+      "facts": [
+        {
+          "topic": "Nội dung bài học Numbers and Strings",
+          "summary": "Trang mục lục giới thiệu hai phần: Numbers (lớp Number và lớp con, khi nào dùng wrapper thay kiểu nguyên thủy, autoboxing/unboxing) và Strings (String là đối tượng bất biến, so sánh với StringBuilder).",
+          "locator": "Lesson: Numbers and Strings — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
