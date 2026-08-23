@@ -1,0 +1,1303 @@
+[
+  {
+    "resourceId": "res-033c4bfa05f5",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-async",
+    "lessonIds": [
+      "day-27",
+      "day-35"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-async",
+      "contentSha256": "f963fcda7316d1fc7c1a59f422eeef5d899d0f1deb67fcd99c838e2a3d4598d1"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "How To Do @Async in Spring (Baeldung)",
+      "relevantHeadings": [
+        "1. Overview",
+        "3. The Basics",
+        "4. Executor",
+        "5. Exception Handling"
+      ],
+      "topics": [
+        "@Async",
+        "@EnableAsync",
+        "CompletableFuture",
+        "custom Executor"
+      ],
+      "facts": [
+        {
+          "topic": "Kich hoat @Async",
+          "summary": "De dung @Async, class cau hinh phai gan @EnableAsync; phuong thuc duoc danh dau @Async se chay tren luong khac, goi tu ben ngoai class (Spring AOP proxy) moi co hieu luc.",
+          "locator": "muc 2-3, vi du @EnableAsync + method annotation"
+        },
+        {
+          "topic": "Kieu tra ve bat dong bo",
+          "summary": "Phuong thuc @Async nen tra ve void hoac Future/CompletableFuture; vi du dung CompletableFuture.completedFuture(result) de client goi .get() lay ket qua sau.",
+          "locator": "muc 3, vi du asynchronousMethodWithReturnType"
+        },
+        {
+          "topic": "Ghi de Executor mac dinh",
+          "summary": "Mac dinh Spring dung SimpleAsyncTaskExecutor (tao thread moi moi lan goi); co the tuy chinh bang bean implements AsyncConfigurer, tra ve ThreadPoolTaskExecutor voi corePoolSize/maxPoolSize/queueCapacity rieng.",
+          "locator": "muc 4, vi du AsyncConfig implements AsyncConfigurer"
+        },
+        {
+          "topic": "Xu ly exception cho method void",
+          "summary": "Vi phuong thuc @Async tra ve void khong the nem exception ve caller, can implement AsyncUncaughtExceptionHandler va dang ky qua getAsyncUncaughtExceptionHandler() de log/xu ly loi.",
+          "locator": "muc 5, vi du CustomAsyncExceptionHandler"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-1c6109c5ec54",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-redis-cache",
+    "lessonIds": [
+      "day-25",
+      "day-27"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-redis-cache",
+      "contentSha256": "9e1bb2ca8e080c000e92be3e4c51511f7241cc30644415849e29a7b2a9c95c3b"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring Boot Cache With Redis (Baeldung)",
+      "relevantHeadings": [
+        "1. Overview",
+        "3. Enabling Caching",
+        "4. Basic Cache Configuration"
+      ],
+      "topics": [
+        "Spring Boot cache abstraction",
+        "Redis cache",
+        "RedisCacheConfiguration"
+      ],
+      "facts": [
+        {
+          "topic": "Bat cache voi Redis",
+          "summary": "Chi can dua spring-boot-starter-data-redis va spring-boot-starter-cache vao classpath cung @EnableCaching, Spring Boot tu dong cau hinh RedisCacheManager ket noi Redis mac dinh tai localhost:6379.",
+          "locator": "muc 2-3, dependencies + @EnableCaching"
+        },
+        {
+          "topic": "Danh dau method duoc cache",
+          "summary": "Dung @Cacheable(value = \"...\") tren method truy van du lieu; lan goi sau voi cung tham so se lay tu Redis thay vi thuc thi lai method.",
+          "locator": "muc 3, vi du @Cacheable(\"addresses\")"
+        },
+        {
+          "topic": "Tuy chinh RedisCacheConfiguration",
+          "summary": "Co the tao bean RedisCacheConfiguration voi entryTtl(Duration) va serializer rieng cho key/value, roi truyen vao RedisCacheManagerBuilderCustomizer de ap dung cho tung cache name cu the.",
+          "locator": "muc 4, vi du RedisCacheManagerBuilderCustomizer"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-31a2e0685799",
+    "batch": "production",
+    "requestedUrl": "https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html",
+    "lessonIds": [
+      "day-28"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html",
+      "contentSha256": "0987c2b56cad0adbb85ebda68773c7255b93c65077964be9bb365c66817545d9"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Testing Spring Boot Applications (docs.spring.io)",
+      "relevantHeadings": [
+        "Testing Spring Boot Applications",
+        "Detecting Web Application Type",
+        "Auto-configured Tests",
+        "Auto-configured JSON Tests",
+        "Auto-configured Spring MVC Tests",
+        "Auto-configured Data JPA Tests"
+      ],
+      "topics": [
+        "@SpringBootTest",
+        "MockMvc",
+        "@WebMvcTest",
+        "@JsonTest",
+        "@DataJpaTest"
+      ],
+      "facts": [
+        {
+          "topic": "Cac che do webEnvironment cua @SpringBootTest",
+          "summary": "@SpringBootTest ho tro 4 gia tri webEnvironment: MOCK (mac dinh, servlet moi phong doan), RANDOM_PORT va DEFINED_PORT (khoi dong server that), NONE (khong web); RANDOM_PORT/DEFINED_PORT tao WebServerApplicationContext that.",
+          "locator": "phan Detecting Web Application Type"
+        },
+        {
+          "topic": "MockMvc va WebTestClient trong test server that",
+          "summary": "Voi RANDOM_PORT/DEFINED_PORT, co the tiem @LocalServerPort de lay port thuc te; MockMvcTester/WebTestClient/RestTestClient duoc auto-config de goi API qua HTTP that thay vi mock servlet.",
+          "locator": "phan Running Server Tests with a Mock Environment / @LocalServerPort"
+        },
+        {
+          "topic": "@MockitoBean / @MockitoSpyBean",
+          "summary": "Trong test co the dung @MockitoBean de thay the bean that bang mock, hoac @MockitoSpyBean de wrap bean that bang spy, giup cach ly layer dang test khoi cac dependency khac.",
+          "locator": "phan Mocking and Spying Beans"
+        },
+        {
+          "topic": "@JsonTest",
+          "summary": "@JsonTest chi khoi tao cac bean can thiet cho serialization JSON (JacksonTester, GsonTester, JsonbTester, BasicJsonTester), giup test nhanh logic (de)serialize DTO ma khong load toan bo context.",
+          "locator": "phan Auto-configured JSON Tests"
+        },
+        {
+          "topic": "@WebMvcTest va @DataJpaTest",
+          "summary": "@WebMvcTest chi quet cac bean lien quan Spring MVC (@Controller, @ControllerAdvice...) va auto-config MockMvc; @DataJpaTest cau hinh H2 in-memory, TestEntityManager va mac dinh rollback transaction sau moi test.",
+          "locator": "phan Auto-configured Spring MVC Tests / Auto-configured Data JPA Tests"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-347895e9400e",
+    "batch": "production",
+    "requestedUrl": "https://spring.io/guides/gs/caching",
+    "lessonIds": [
+      "day-25"
+    ],
+    "access": {
+      "status": "redirected",
+      "httpStatus": 200,
+      "finalUrl": "https://spring.io/guides/gs/caching/",
+      "contentSha256": "d21c645e5a911cb41237791066f2954c241d0dcf19bca0fcd9bd9c72d1ec3634"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Caching Data with Spring (spring.io guide, redirected)",
+      "relevantHeadings": [
+        "Caching Data with Spring",
+        "Add a Simple Book Repository",
+        "Enable Caching"
+      ],
+      "topics": [
+        "@Cacheable",
+        "@EnableCaching",
+        "ConcurrentHashMap fallback"
+      ],
+      "facts": [
+        {
+          "topic": "Repository gia lap do tre",
+          "summary": "Huong dan xay BookRepository voi SimpleBookRepository goi simulateSlowService() (Thread.sleep 3s) truoc khi tra ve Book, mo phong mot thao tac cham can cache.",
+          "locator": "phan Add a Simple Book Repository"
+        },
+        {
+          "topic": "Danh dau method can cache",
+          "summary": "Gan @Cacheable(\"books\") len method getByIsbn cua SimpleBookRepository; lan goi dau tien cham (co simulateSlowService), cac lan sau voi cung isbn tra ve ngay tu cache.",
+          "locator": "phan Add a Simple Book Repository, method getByIsbn"
+        },
+        {
+          "topic": "Bat cache o class Application",
+          "summary": "Them @EnableCaching vao class @SpringBootApplication de kich hoat co che cache annotation-driven cho toan bo ung dung.",
+          "locator": "phan Enable Caching"
+        },
+        {
+          "topic": "Cache mac dinh khi khong co provider ngoai",
+          "summary": "Neu khong khai bao CacheManager rieng, Spring Boot tu dong dung ConcurrentHashMap lam bo nho cache mac dinh (tuong thich JSR-107) khi @EnableCaching duoc bat.",
+          "locator": "phan Enable Caching, ghi chu ve CacheManager mac dinh"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-3807593857d1",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/integration-testing-in-spring",
+    "lessonIds": [
+      "day-28"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/integration-testing-in-spring",
+      "contentSha256": "10619100c17dff511ce68dbbfcc792d9c6ff1d989873ccc92ebbe2a520ba2710"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Integration Testing in Spring (Baeldung)",
+      "relevantHeadings": [
+        "1. Overview",
+        "3. Setting Up the Test Class",
+        "5. Testing Requests and Responses",
+        "9. Limitations of MockMvc",
+        "10. Full Integration Testing with RestAssured"
+      ],
+      "topics": [
+        "SpringExtension",
+        "@WebAppConfiguration",
+        "MockMvc",
+        "RestAssured"
+      ],
+      "facts": [
+        {
+          "topic": "Thiet lap test class MockMvc",
+          "summary": "Test class dung @ExtendWith(SpringExtension.class), @ContextConfiguration tro toi cau hinh Spring va @WebAppConfiguration; MockMvc duoc build tu WebApplicationContext qua MockMvcBuilders.webAppContextSetup(context).build().",
+          "locator": "muc 3, vi du setup MockMvc"
+        },
+        {
+          "topic": "Kiem tra view, response, path variable, query param",
+          "summary": "Cac vi du dung MockMvc.perform(get(...)) ket hop andExpect(status()/view()/content()/jsonPath()) de kiem tra ten view tra ve, noi dung response body, gia tri path variable va query parameter.",
+          "locator": "muc 5, cac vi du testRequestParam/testPathVariable"
+        },
+        {
+          "topic": "Han che cua MockMvc",
+          "summary": "MockMvc khong thuc su mo ket noi mang (chi mo phong DispatcherServlet) nen khong ho tro theo redirect HTTP that hoac kiem tra hanh vi tang layer network/container thuc su.",
+          "locator": "muc 9, Limitations of MockMvc"
+        },
+        {
+          "topic": "RestAssured voi server that",
+          "summary": "De test end-to-end qua HTTP that, bai viet de xuat dung @SpringBootTest(webEnvironment = RANDOM_PORT) ket hop thu vien RestAssured goi request toi localhost:{port} thay vi MockMvc.",
+          "locator": "muc 10, Full Integration Testing with RestAssured"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-4b45b7c76586",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-resilience4j",
+    "lessonIds": [
+      "day-27"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-resilience4j",
+      "contentSha256": "95455346cfbab70c88ad9e536017d4d020b9c54072db25aad759a3f2c957ae33"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to Resilience4j With Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "2. Circuit Breaker",
+        "3. Retry",
+        "4. Time Limiter",
+        "5. Bulkhead",
+        "6. Rate Limiter",
+        "8. Actuator"
+      ],
+      "topics": [
+        "Resilience4j",
+        "Circuit Breaker",
+        "Retry",
+        "Bulkhead",
+        "Rate Limiter"
+      ],
+      "facts": [
+        {
+          "topic": "Circuit Breaker",
+          "summary": "@CircuitBreaker(name=..., fallbackMethod=...) mo mach khi ty le loi vuot failure-rate-threshold cau hinh trong application.yml; khi mach mo, cac request tiep theo nem CallNotPermittedException va tra ve HTTP 503.",
+          "locator": "muc 2, cau hinh circuitbreaker + fallback"
+        },
+        {
+          "topic": "Retry",
+          "summary": "@Retry(name=..., fallbackMethod=...) tu dong thu lai method that bai theo max-attempts va wait-duration cau hinh; sau khi het luot thu, fallbackMethod duoc goi thay vi nem loi ra ngoai.",
+          "locator": "muc 3, cau hinh retry"
+        },
+        {
+          "topic": "Time Limiter",
+          "summary": "@TimeLimiter gioi han thoi gian thuc thi mot CompletableFuture bang timeout-duration; qua thoi han se nem TimeoutException, thuong duoc map sang HTTP 408.",
+          "locator": "muc 4, cau hinh timelimiter"
+        },
+        {
+          "topic": "Bulkhead va Rate Limiter",
+          "summary": "@Bulkhead gioi han so loi goi dong thoi qua max-concurrent-calls (vuot qua nem BulkheadFullException, HTTP 429); @RateLimiter gioi han so loi goi trong moi chu ky qua limit-for-period (vuot qua nem RequestNotPermitted, HTTP 429 TOO_MANY_REQUESTS).",
+          "locator": "muc 5-6, cau hinh bulkhead va ratelimiter"
+        },
+        {
+          "topic": "Giam sat qua Actuator",
+          "summary": "Resilience4j expose cac endpoint Actuator nhu /actuator/retries va /actuator/retryevents de theo doi trang thai va lich su cua cac co che resilience trong ung dung dang chay.",
+          "locator": "muc 8, Actuator endpoints"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-6543ba492a80",
+    "batch": "production",
+    "requestedUrl": "https://spring.io/guides/gs/uploading-files",
+    "lessonIds": [
+      "day-26"
+    ],
+    "access": {
+      "status": "redirected",
+      "httpStatus": 200,
+      "finalUrl": "https://spring.io/guides/gs/uploading-files/",
+      "contentSha256": "08674a5e45ff512a386bb8e81594c81f175e5970685833d9ef3ce0a73cb08715"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Uploading Files (spring.io guide, redirected)",
+      "relevantHeadings": [
+        "Create a File Upload Controller",
+        "Creating an HTML Template",
+        "Tuning File Upload Limits",
+        "Testing Your Application"
+      ],
+      "topics": [
+        "FileUploadController",
+        "StorageService",
+        "MultipartFile",
+        "MockMvc test"
+      ],
+      "facts": [
+        {
+          "topic": "Controller upload/download file",
+          "summary": "FileUploadController co GET / (liet ke file da upload), GET /files/{filename} (tai file ve qua ResponseEntity<Resource> voi header Content-Disposition), va POST / (nhan MultipartFile va goi storageService.store).",
+          "locator": "phan Create a File Upload Controller"
+        },
+        {
+          "topic": "Kiem tra bao mat khi luu file",
+          "summary": "FileSystemStorageService.store() chuan hoa duong dan dich (normalize + toAbsolutePath) va kiem tra no van nam trong rootLocation, nem StorageException neu phat hien co gang ghi file ra ngoai thu muc goc (chong path traversal).",
+          "locator": "phan Create a File Upload Controller, class FileSystemStorageService"
+        },
+        {
+          "topic": "Form upload Thymeleaf",
+          "summary": "Template uploadForm.html dung form multipart/form-data voi input type=file, hien thong bao flash-scoped o dau trang va danh sach link toi cac file da upload.",
+          "locator": "phan Creating an HTML Template"
+        },
+        {
+          "topic": "Gioi han dung luong upload",
+          "summary": "Co the gioi han qua thuoc tinh spring.servlet.multipart.max-file-size va spring.servlet.multipart.max-request-size (vi du 128KB) trong application.properties.",
+          "locator": "phan Tuning File Upload Limits"
+        },
+        {
+          "topic": "Test bang MockMvc + MockMultipartFile",
+          "summary": "Test vi du dung @SpringBootTest + @AutoConfigureMockMvc, @MockitoBean cho StorageService, va mvc.perform(multipart(\"/\").file(multipartFile)) de kiem tra luong upload thanh cong va truong hop file khong ton tai tra 404.",
+          "locator": "phan Testing Your Application"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-710573bd4385",
+    "batch": "production",
+    "requestedUrl": "https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html",
+    "lessonIds": [
+      "day-25"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html",
+      "contentSha256": "4968a38e648781aec31b4a411b581c89c6497e656da2b7bc31bfdb61c34acf2e"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Redis Cache reference (Spring Data Redis, docs.spring.io)",
+      "relevantHeadings": [
+        "Redis Cache",
+        "Redis Cache Expiration",
+        "Time-To-Live (TTL) Expiration",
+        "Time-To-Idle (TTI) Expiration"
+      ],
+      "topics": [
+        "RedisCacheManager",
+        "RedisCacheConfiguration",
+        "TTL/TTI expiration"
+      ],
+      "facts": [
+        {
+          "topic": "Tao RedisCacheManager",
+          "summary": "RedisCacheManager.create(connectionFactory) tao cache manager nhanh voi cau hinh mac dinh; RedisCacheManager.builder(...) cho phep tuy chinh cacheDefaults, transactionAware() va withInitialCacheConfigurations cho tung cache rieng.",
+          "locator": "phan Redis Cache, vi du RedisCacheManager.builder"
+        },
+        {
+          "topic": "RedisCacheConfiguration",
+          "summary": "RedisCacheConfiguration.defaultCacheConfig() ho tro entryTtl(Duration), disableCachingNullValues(), prefixCacheNameWith(...) va computePrefixWith(...) de kiem soat key expiration va prefix cua key trong Redis.",
+          "locator": "phan Redis Cache, vi du RedisCacheConfiguration"
+        },
+        {
+          "topic": "Chien luoc xoa cache: KEYS vs SCAN",
+          "summary": "Mac dinh RedisCacheWriter dung lenh KEYS+DEL de xoa cache (co the cham voi keyspace lon); co the doi sang BatchStrategies.scan(batchSize) de dung SCAN, nhung Jedis chi ho tro SCAN o che do non-cluster.",
+          "locator": "phan Redis Cache, doan ve BatchStrategy"
+        },
+        {
+          "topic": "TTL va TTI expiration",
+          "summary": "TTL (entryTtl) duoc reset khi ghi/cap nhat entry; TTI (enableTimeToIdle()) can Redis tu 6.2.0 tro len vi Spring Data Redis dung lenh GETEX de reset TTL moi lan doc, tao hieu ung 'gan giong' time-to-idle.",
+          "locator": "phan Time-To-Live (TTL) Expiration / Time-To-Idle (TTI) Expiration"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-74d398e3d23c",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-file-upload",
+    "lessonIds": [
+      "day-26",
+      "day-27",
+      "day-34"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-file-upload",
+      "contentSha256": "efbf173151eebb26c416609a3ee588759460ad0fc54bba781b554590fb2934de"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "File Upload with Spring MVC (Baeldung)",
+      "relevantHeadings": [
+        "2. Configurations With Servlet 3.0",
+        "3. Uploading a File",
+        "4. Uploading Multiple Files",
+        "6. Spring Boot File Upload"
+      ],
+      "topics": [
+        "MultipartConfigElement",
+        "MultipartFile",
+        "multipart properties"
+      ],
+      "facts": [
+        {
+          "topic": "Cau hinh multipart Servlet 3.0",
+          "summary": "Voi ung dung khong dung Spring Boot, can khai bao MultipartConfigElement khi dang ky DispatcherServlet va bean StandardServletMultipartResolver de kich hoat multipart parsing.",
+          "locator": "muc 2, vi du MainWebAppInitializer + multipartResolver bean"
+        },
+        {
+          "topic": "Upload mot file",
+          "summary": "Form HTML dung enctype=\"multipart/form-data\" voi input type=\"file\"; controller nhan file qua @RequestParam(\"file\") MultipartFile, sau do doc originalFilename/contentType tu doi tuong nay.",
+          "locator": "muc 3, vi du submit(@RequestParam(\"file\") MultipartFile file...)"
+        },
+        {
+          "topic": "Upload nhieu file",
+          "summary": "De upload nhieu file cung luc, dat nhieu input type=\"file\" cung ten trong form, roi nhan trong controller qua @RequestParam(\"files\") MultipartFile[] files.",
+          "locator": "muc 4, vi du MultipartFile[] files"
+        },
+        {
+          "topic": "Cau hinh multipart trong Spring Boot",
+          "summary": "Voi Spring Boot khong can khai bao servlet thu cong (chi can spring-boot-starter-web); gioi han dung luong qua spring.servlet.multipart.max-file-size/max-request-size, bat/tat qua multipart.enabled, va dat thu muc tam qua multipart.location.",
+          "locator": "muc 6, Spring Boot File Upload"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-79cbefdda273",
+    "batch": "production",
+    "requestedUrl": "http://springdoc.org/",
+    "lessonIds": [
+      "day-29",
+      "day-30",
+      "day-36"
+    ],
+    "access": {
+      "status": "redirected",
+      "httpStatus": 200,
+      "finalUrl": "https://springdoc.org/",
+      "contentSha256": "e3fcd4e4a0cbe8983a9cefe68147964095495eca7f98089a1257de19c52799e8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "springdoc-openapi (springdoc.org, redirected)",
+      "relevantHeadings": [
+        "springdoc-openapi",
+        "Getting Started",
+        "Actuator support",
+        "Disable springdoc-openapi endpoints",
+        "Include and Exclude endpoints"
+      ],
+      "topics": [
+        "OpenAPI 3",
+        "swagger-ui",
+        "springdoc-openapi-starter-webmvc-ui",
+        "Actuator integration"
+      ],
+      "facts": [
+        {
+          "topic": "Dependency co ban",
+          "summary": "De sinh tai lieu OpenAPI 3 cho ung dung Spring MVC, chi can them dependency springdoc-openapi-starter-webmvc-ui vao pom.xml (thu vien ho tro Spring Boot, Java 17, Jakarta EE 9, Swagger UI, JSR-303).",
+          "locator": "phan Getting Started, dependency Maven"
+        },
+        {
+          "topic": "Duong dan mac dinh",
+          "summary": "Mac dinh swagger-ui duoc phuc vu tai /swagger-ui.html va dac ta OpenAPI dang JSON tai /v3/api-docs (co the doi sang YAML voi /v3/api-docs.yaml); duong dan swagger-ui co the doi qua thuoc tinh springdoc.swagger-ui.path.",
+          "locator": "phan Getting Started, duong dan mac dinh"
+        },
+        {
+          "topic": "Tich hop Actuator",
+          "summary": "Co the phoi hop voi Spring Boot Actuator bang springdoc.show-actuator=true va springdoc.use-management-port=true, khi do endpoint OpenAPI/swagger-ui duoc dua vao duoi /actuator/openapi va /actuator/swagger-ui.",
+          "locator": "phan Actuator support"
+        },
+        {
+          "topic": "Tat/loc endpoint",
+          "summary": "Co the tat han endpoint bang springdoc.api-docs.enabled=false hoac springdoc.swagger-ui.enabled=false; loc pham vi quet bang springdoc.packagesToScan va springdoc.pathsToMatch.",
+          "locator": "phan Disable springdoc-openapi endpoints / Include and Exclude endpoints"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-84fc38d27c0a",
+    "batch": "production",
+    "requestedUrl": "https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/",
+    "lessonIds": [
+      "day-29",
+      "day-30"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/",
+      "contentSha256": "1e59f574d2b15a6b1ef336821b9767f8708a0cb3e57fbf736b678676531ed5e8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Getting started with Testcontainers in a Java Spring Boot Project (testcontainers.com guide)",
+      "relevantHeadings": [
+        "Create JPA entity",
+        "Create REST API endpoint",
+        "Write test for API endpoint",
+        "Run tests"
+      ],
+      "topics": [
+        "PostgreSQLContainer",
+        "@DynamicPropertySource",
+        "RestAssured",
+        "@SpringBootTest RANDOM_PORT"
+      ],
+      "facts": [
+        {
+          "topic": "Ung dung mau",
+          "summary": "Huong dan xay Spring Boot app voi Spring Data JPA + Postgres: entity Customer, CustomerRepository extends JpaRepository, va CustomerController voi endpoint GET /api/customers tra ve repo.findAll().",
+          "locator": "phan Create JPA entity / Create REST API endpoint"
+        },
+        {
+          "topic": "Khoi tao PostgreSQLContainer",
+          "summary": "Test khai bao static PostgreSQLContainer<?> postgres dung image postgres:16-alpine, khoi dong trong @BeforeAll va dung trong @AfterAll, dam bao container chi start mot lan cho ca class.",
+          "locator": "phan Write test for API endpoint, vi du PostgreSQLContainer"
+        },
+        {
+          "topic": "Ket noi dong voi @DynamicPropertySource",
+          "summary": "@DynamicPropertySource dang ky spring.datasource.url/username/password lay truc tiep tu postgres.getJdbcUrl()/getUsername()/getPassword(), giup Spring context tro dung vao container dang chay.",
+          "locator": "phan Write test for API endpoint, method configureProperties"
+        },
+        {
+          "topic": "Goi API qua RestAssured voi random port",
+          "summary": "Dung @SpringBootTest(webEnvironment = RANDOM_PORT) cung @LocalServerPort de lay port thuc, roi dat RestAssured.baseURI truoc khi goi given().get(\"/api/customers\").then().statusCode(200) kiem tra ket qua tra ve.",
+          "locator": "phan Write test for API endpoint, method shouldGetAllCustomers"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-8d5e61cc0a53",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/docker-compose-support-spring-boot",
+    "lessonIds": [
+      "day-30",
+      "day-35"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/docker-compose-support-spring-boot",
+      "contentSha256": "34db9d05b104fbf0e64ca0f35c1c16fe546f779539e0c089f7cbf67c831d6cb2"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Docker Compose Support in Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "2. What Does Spring Boot 3 Docker Compose Support Provide?",
+        "6. Docker Compose Support Features"
+      ],
+      "topics": [
+        "spring-boot-docker-compose",
+        "Service Connections",
+        "ConnectionDetails"
+      ],
+      "facts": [
+        {
+          "topic": "Quan ly vong doi container tu dong",
+          "summary": "Dependency spring-boot-docker-compose cho phep Spring Boot tu dong chay 'docker compose up' khi ung dung khoi dong va 'docker compose down' khi ung dung dung, dua tren file docker-compose.yml co san trong project.",
+          "locator": "muc 2, gioi thieu Docker Compose Support"
+        },
+        {
+          "topic": "Service Connections",
+          "summary": "Framework tu dong phat hien cac service pho bien (MongoDB, Redis, ElasticSearch...) trong docker-compose.yml va tao ConnectionDetails bean tuong ung, giup bo qua cau hinh datasource/property thu cong.",
+          "locator": "muc 6.1, Service Connections"
+        },
+        {
+          "topic": "Anh Docker tuy chinh",
+          "summary": "Voi image tuy chinh khong duoc nhan dien tu dong, co the gan nhan label org.springframework.boot.service-connection: mongo vao service trong docker-compose.yml de bao Spring Boot dung loai connection nao.",
+          "locator": "muc 6.2, Custom Images"
+        },
+        {
+          "topic": "Cho container san sang va Docker Compose profile",
+          "summary": "Spring Boot tu dong cho container 'ready' truoc khi tiep tuc khoi dong ung dung (dua vao healthcheck); co the kich hoat profile Docker Compose cu the qua thuoc tinh spring.docker.compose.profiles.active.",
+          "locator": "muc 6.3-6.4, Waiting for Container Readiness / Activating Docker Compose Profiles"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-93813d9b62f4",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-structured-logging",
+    "lessonIds": [
+      "day-29"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-structured-logging",
+      "contentSha256": "33d61e412f13aa8c69627785e27b4e06469d499d9ebfae7a6a45cc470dfd5a9e"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Structured Logging in Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "3. Spring Boot Default Log",
+        "4. Configuration",
+        "4.1. Elastic Common Schema",
+        "4.4. Additional Information",
+        "4.5. Custom Log Format"
+      ],
+      "topics": [
+        "structured logging",
+        "ECS",
+        "GELF",
+        "Logstash format",
+        "MDC"
+      ],
+      "facts": [
+        {
+          "topic": "Structured logging tu Spring Boot 3.4.0",
+          "summary": "Tu Spring Boot 3.4.0, co the bat structured logging (dinh dang JSON de log-aggregation tool doc duoc) truc tiep qua thuoc tinh logging.structured.format.console ma khong can them thu vien ngoai.",
+          "locator": "muc 3-4, gioi thieu structured logging"
+        },
+        {
+          "topic": "Cac dinh dang ho tro san",
+          "summary": "Co 3 dinh dang JSON dung san: ecs (Elastic Common Schema, tich hop Elasticsearch/Kibana), gelf (Graylog Extended Log Format) va logstash; chi can dat gia tri tuong ung cho logging.structured.format.console.",
+          "locator": "muc 4.1-4.3, ECS/GELF/Logstash"
+        },
+        {
+          "topic": "Them truong tuy chinh qua MDC",
+          "summary": "Dung Mapped Diagnostic Context (MDC.put/remove) hoac fluent logging API (LOGGER.atInfo().addKeyValue(...)) de gan them cac cap key-value nhu userId vao moi dong log structured.",
+          "locator": "muc 4.4, vi du MDC + fluent API"
+        },
+        {
+          "topic": "Dinh dang tuy chinh",
+          "summary": "Co the tu viet dinh dang rieng bang cach implement StructuredLogFormatter<ILoggingEvent> va khai bao fully-qualified class name trong logging.structured.format.console, huu ich khi cac dinh dang co san khong phu hop.",
+          "locator": "muc 4.5, Custom Log Format"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-97fce5fda99a",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-scheduled-tasks",
+    "lessonIds": [
+      "day-27"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-scheduled-tasks",
+      "contentSha256": "78e20e072c4997698b7a621785dcc66d941f5a3cdf4f3cad7fb44d20c1973aeb"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "The @Scheduled Annotation in Spring (Baeldung)",
+      "relevantHeadings": [
+        "2. Enable Support for Scheduling",
+        "3. Schedule a Task at Fixed Delay",
+        "4. Schedule a Task at a Fixed Rate",
+        "7. Schedule a Task Using Cron Expressions",
+        "11. Running Tasks in Parallel"
+      ],
+      "topics": [
+        "@EnableScheduling",
+        "@Scheduled",
+        "fixedDelay",
+        "fixedRate",
+        "cron"
+      ],
+      "facts": [
+        {
+          "topic": "Bat scheduling",
+          "summary": "De dung @Scheduled, class cau hinh phai gan @EnableScheduling; method duoc lich phai co kieu tra ve void va khong nhan tham so.",
+          "locator": "muc 2, @EnableScheduling"
+        },
+        {
+          "topic": "fixedDelay vs fixedRate",
+          "summary": "fixedDelay dam bao khoang cach co dinh giua thoi diem KET THUC lan chay truoc va BAT DAU lan chay sau (phu hop task phu thuoc); fixedRate chay theo chu ky co dinh khong quan tam lan truoc da xong hay chua, nhung mac dinh cac task khong chay song song.",
+          "locator": "muc 3-5, fixedDelay/fixedRate va so sanh"
+        },
+        {
+          "topic": "Cron expression",
+          "summary": "@Scheduled(cron = \"...\") cho phep lich phuc tap hon; mac dinh dung timezone cua server, co the doi bang thuoc tinh zone (vi du zone = \"Europe/Paris\").",
+          "locator": "muc 7, cron expression + zone"
+        },
+        {
+          "topic": "Chay task song song",
+          "summary": "Mac dinh Spring dung mot scheduler don luong nen cac @Scheduled method cho nhau; de chay song song can cung cap TaskScheduler tuy chinh (ThreadPoolTaskScheduler) hoac voi Spring Boot chi can dat spring.task.scheduling.pool.size.",
+          "locator": "muc 11, Running Tasks in Parallel"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ae66be8c9f5f",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-testing",
+    "lessonIds": [
+      "day-28",
+      "day-30",
+      "day-36"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-testing",
+      "contentSha256": "01aa62a03124589f3b9496f5836f9812b5ecdf03d3d6c415d5f0cfcddf6dbf2f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Testing in Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "4. Integration Testing With @SpringBootTest",
+        "6. Mocking With @MockBean",
+        "7. Integration Testing With @DataJpaTest",
+        "8. Unit Testing With @WebMvcTest",
+        "9. Auto-Configured Tests"
+      ],
+      "topics": [
+        "@SpringBootTest",
+        "@MockBean",
+        "@DataJpaTest",
+        "@WebMvcTest"
+      ],
+      "facts": [
+        {
+          "topic": "@SpringBootTest voi webEnvironment.MOCK",
+          "summary": "@SpringBootTest(webEnvironment = WebEnvironment.MOCK) khoi dong toan bo ApplicationContext trong moi truong servlet gia lap, ket hop @AutoConfigureMockMvc va @TestPropertySource de tro toi file properties rieng cho test.",
+          "locator": "muc 4, vi du EmployeeRestControllerIntegrationTest"
+        },
+        {
+          "topic": "Mock dependency voi @MockBean",
+          "summary": "@MockBean tao mock cho mot bean (vi du EmployeeRepository) va thay the no trong context, cho phep test rieng Service layer ma khong can persistence layer that; ket hop voi @TestConfiguration de khai bao bean can test.",
+          "locator": "muc 6, vi du @MockBean EmployeeRepository"
+        },
+        {
+          "topic": "@DataJpaTest",
+          "summary": "@DataJpaTest tu dong cau hinh H2 in-memory, Hibernate/Spring Data/DataSource, bat SQL logging va cung cap TestEntityManager de chuan bi du lieu truoc khi goi repository can test.",
+          "locator": "muc 7, Integration Testing With @DataJpaTest"
+        },
+        {
+          "topic": "@WebMvcTest",
+          "summary": "@WebMvcTest(Controller.class) chi bootstrap mot controller cu the, auto-config MockMvc va thuong di kem @MockBean cho Service layer de test rieng tang Controller ma khong khoi dong toan bo context.",
+          "locator": "muc 8, Unit Testing With @WebMvcTest"
+        },
+        {
+          "topic": "Bang cac annotation auto-configured khac",
+          "summary": "Bai viet liet ke them cac annotation test chuyen biet: @WebFluxTest (controller WebFlux), @JdbcTest, @DataMongoTest, @DataRedisTest, @RestClientTest, @JsonTest — moi loai chi load phan context can thiet cho tang tuong ung.",
+          "locator": "muc 9, bang Auto-Configured Tests"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-b8b29a249f37",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-5-webclient",
+    "lessonIds": [
+      "day-26",
+      "day-27"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-5-webclient",
+      "contentSha256": "27284e9c520f736678de7d0fc6862bfdbf7d073023418b82f339da1685527353"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring WebClient (Baeldung)",
+      "relevantHeadings": [
+        "2. What Is the WebClient?",
+        "4. Working with the WebClient",
+        "5. Working with the WebTestClient"
+      ],
+      "topics": [
+        "WebClient",
+        "reactive HTTP client",
+        "WebTestClient"
+      ],
+      "facts": [
+        {
+          "topic": "WebClient la gi",
+          "summary": "WebClient la client HTTP reactive, khong chan luong (non-blocking), thuoc module Spring Web Reactive, du dinh thay the RestTemplate; van co the dung dong bo bang cach block() ket qua neu can, du khong khuyen khich tren reactive stack.",
+          "locator": "muc 2, What Is the WebClient?"
+        },
+        {
+          "topic": "Tao instance va cau hinh timeout",
+          "summary": "Co 3 cach tao WebClient: create() mac dinh, create(baseUrl), hoac builder() day du tuy chinh; timeout mac dinh 30s co the tuy chinh qua HttpClient voi CONNECT_TIMEOUT_MILLIS, ReadTimeoutHandler/WriteTimeoutHandler va responseTimeout.",
+          "locator": "muc 4.1-4.2, tao WebClient va timeout"
+        },
+        {
+          "topic": "Chuoi goi request",
+          "summary": "Mot request duoc xay dung qua chuoi: chon HTTP method (get/post/...), dinh nghia URI, dat body (bodyValue hoac BodyInserters), dat header/cookie, roi ket thuc bang retrieve() (lay body truc tiep) hoac exchangeToMono/Flux (truy cap ca status/header).",
+          "locator": "muc 4.3-4.7, chuoi method/uri/body/header/retrieve"
+        },
+        {
+          "topic": "WebTestClient",
+          "summary": "WebTestClient co API tuong tu WebClient danh cho test, co the bind vao server that (bindToServer), router function, web handler, application context, hoac mot controller cu the, ket thuc bang expectStatus()/expectBody().",
+          "locator": "muc 5, Working with the WebTestClient"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-bccebfeaf062",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/junit-5",
+    "lessonIds": [
+      "day-28"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/junit-5",
+      "contentSha256": "1977d7d3c55ddfe1034a598f41c3b8da1f9b3d759965c5adbe9c59b47ba6b65d"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "A Guide to JUnit 5+ (Baeldung)",
+      "relevantHeadings": [
+        "3. Architecture",
+        "4. Basic Annotations",
+        "5. Assertions and Assumptions",
+        "6. Exception Testing",
+        "8. Dynamic Tests"
+      ],
+      "topics": [
+        "JUnit Platform/Jupiter/Vintage",
+        "assertions",
+        "assertThrows",
+        "dynamic tests"
+      ],
+      "facts": [
+        {
+          "topic": "3 module chinh cua JUnit 5+",
+          "summary": "JUnit 5+ gom JUnit Platform (chay framework test tren JVM, dinh nghia TestEngine API), JUnit Jupiter (model lap trinh/annotation moi) va JUnit Vintage (chay lai test JUnit 3/4 cu tren nen tang moi).",
+          "locator": "muc 3, Architecture"
+        },
+        {
+          "topic": "Annotation vong doi moi",
+          "summary": "@BeforeAll/@AfterAll (thay @BeforeClass/@AfterClass, phai la static method), @BeforeEach/@AfterEach (thay @Before/@After), cung @DisplayName va @Disabled (thay @Ignore) de dat ten hien thi va vo hieu hoa test.",
+          "locator": "muc 4, Basic Annotations"
+        },
+        {
+          "topic": "Assertion va assumption voi lambda",
+          "summary": "Assertions chuyen sang org.junit.jupiter.api.Assertions, ho tro thong bao loi dang lambda (lazy evaluation) va assertAll() de gom nhieu assertion, bao cao het loi thay vi dung o loi dau tien; assumeTrue/assumeFalse bo qua test neu dieu kien khong dung.",
+          "locator": "muc 5, Assertions and Assumptions"
+        },
+        {
+          "topic": "Kiem tra exception va dynamic test",
+          "summary": "assertThrows(ExceptionClass, executable) vua xac nhan loai exception nem ra vua cho phep kiem tra chi tiet message; @TestFactory cho phep sinh cac DynamicTest tai runtime tu mot Stream/Collection thay vi so luong test co dinh luc bien dich.",
+          "locator": "muc 6 va 8, Exception Testing / Dynamic Tests"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-be79b4f73d01",
+    "batch": "production",
+    "requestedUrl": "https://docs.spring.io/spring-boot/reference/testing/testcontainers.html",
+    "lessonIds": [
+      "day-29",
+      "day-36"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-boot/reference/testing/testcontainers.html",
+      "contentSha256": "b8adea664f34631aaa22116981bc7489cd1ebbe0fe80bc3bbc10cb0cf67b3b59"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Testcontainers reference (Spring Boot, docs.spring.io)",
+      "relevantHeadings": [
+        "Testcontainers",
+        "Using Spring Beans",
+        "Using the JUnit Extension",
+        "Service Connections",
+        "Dynamic Properties"
+      ],
+      "topics": [
+        "@Testcontainers",
+        "@Container",
+        "@ServiceConnection",
+        "@DynamicPropertySource",
+        "spring-boot-testcontainers"
+      ],
+      "facts": [
+        {
+          "topic": "Quan ly container bang Spring Bean",
+          "summary": "Container Testcontainers co the duoc quan ly bang Spring nhu bean: khai bao @Bean tra ve container (vi du MongoDBContainer) trong @TestConfiguration, sau do @Import cau hinh vao test class; bean container duoc khoi dong truoc cac bean khac va dung sau cung, dam bao vong doi dung.",
+          "locator": "phan Using Spring Beans, vi du @Bean MongoDBContainer"
+        },
+        {
+          "topic": "Quan ly container bang JUnit Extension",
+          "summary": "Dung @Testcontainers tren test class + @Container tren static field de quan ly container bang Testcontainers JUnit extension; luu y: container duoc dung sau test class (static field) co the gay van de neu ApplicationContext duoc cache va reuse bang TestContext Framework.",
+          "locator": "phan Using the JUnit Extension, vi du @Testcontainers @SpringBootTest"
+        },
+        {
+          "topic": "Service Connection tu dong",
+          "summary": "Gan @ServiceConnection len @Container field de Spring Boot tu dong tao ConnectionDetails bean (vi du Neo4jConnectionDetails, JdbcConnectionDetails) va override cau hinh datasource; can dependency spring-boot-testcontainers.",
+          "locator": "phan Service Connections, vi du @Container @ServiceConnection Neo4jContainer"
+        },
+        {
+          "topic": "Cac loai ConnectionDetails ho tro san",
+          "summary": "spring-boot-testcontainers cung cap factory cho nhieu loai: JdbcConnectionDetails/R2dbcConnectionDetails (PostgreSQLContainer, MySQLContainer...), MongoConnectionDetails, RedisConnectionDetails, KafkaConnectionDetails, ElasticsearchConnectionDetails, Neo4jConnectionDetails, v.v.",
+          "locator": "phan Service Connections, bang Connection Details Matched on"
+        },
+        {
+          "topic": "@DynamicPropertySource",
+          "summary": "Thay the service connection, co the dung @DynamicPropertySource static method de dang ky dynamic property (spring.datasource.url, spring.neo4j.uri...) lay truc tiep tu container.getJdbcUrl()/getBoltUrl(), linh hoat hon khi can cau hinh tuy chinh.",
+          "locator": "phan Dynamic Properties, vi du neo4jProperties(DynamicPropertyRegistry registry)"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-e3236d24d45f",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-docker-images",
+    "lessonIds": [
+      "day-30",
+      "day-35",
+      "day-36"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-docker-images",
+      "contentSha256": "f93d55d21e6a12dcc537422748fe8a49653e1527f9c084213a8a40a4c2ec3034"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Creating Docker Images with Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "2. Traditional Docker Builds",
+        "3. Buildpacks",
+        "4. Layered Jars"
+      ],
+      "topics": [
+        "buildpacks",
+        "layered jars",
+        "spring-boot:build-image"
+      ],
+      "facts": [
+        {
+          "topic": "Han che cua fat jar truyen thong",
+          "summary": "Dockerfile truyen thong dong goi toan bo fat jar vao mot layer duy nhat, nen chi thay doi mot dong code cung buoc rebuild lai toan bo layer, lam mat loi ich caching cua Docker.",
+          "locator": "muc 2, Traditional Docker Builds"
+        },
+        {
+          "topic": "Buildpacks",
+          "summary": "Lenh ./mvnw spring-boot:build-image dung Cloud Native Buildpacks (Paketo) de tu dong phat hien day la ung dung Spring Boot va tao image nhieu layer ma khong can Dockerfile; cac lan build sau tai su dung layer chua doi nen nhanh hon dang ke.",
+          "locator": "muc 3, Buildpacks"
+        },
+        {
+          "topic": "Layered jar - 4 layer mac dinh",
+          "summary": "Bat layers trong plugin spring-boot-maven-plugin (<layers><enabled>true</enabled></layers>) tao jar co file layers.idx chia thanh 4 layer: dependencies, snapshot-dependencies, resources va application, phan tach theo tan suat thay doi.",
+          "locator": "muc 4, Layered Jars + 4 layer mac dinh"
+        },
+        {
+          "topic": "Dung layertools trong Dockerfile",
+          "summary": "Dockerfile multi-stage dung lenh java -Djarmode=layertools -jar app.jar extract de tach cac layer, roi COPY tung layer rieng vao image cuoi cung, giup rebuild nhanh khi chi code ung dung thay doi.",
+          "locator": "muc 4.3, Creating the Docker Image"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-e95ba2d69401",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-cache-tutorial",
+    "lessonIds": [
+      "day-25",
+      "day-27",
+      "day-34"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-cache-tutorial",
+      "contentSha256": "701f5912093e2fa4ea19dc547cc36814c8c7af6deb759a4e5088688cba576583"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "A Guide To Caching in Spring (Baeldung)",
+      "relevantHeadings": [
+        "3. Enable Caching",
+        "4.1. @Cacheable",
+        "4.2. @CacheEvict",
+        "4.3. @CachePut",
+        "5. Conditional Caching"
+      ],
+      "topics": [
+        "@EnableCaching",
+        "@Cacheable",
+        "@CacheEvict",
+        "@CachePut",
+        "SpEL condition/unless"
+      ],
+      "facts": [
+        {
+          "topic": "Bat cache va CacheManager mac dinh",
+          "summary": "Trong Spring Boot, chi can co starter cache tren classpath cung @EnableCaching la du de dang ky ConcurrentMapCacheManager mac dinh; co the tuy chinh qua bean CacheManagerCustomizer.",
+          "locator": "muc 3, Enable Caching"
+        },
+        {
+          "topic": "@Cacheable vs @CachePut",
+          "summary": "@Cacheable kiem tra cache truoc, neu co du lieu thi BO QUA khong goi method; @CachePut LUON goi method roi cap nhat ket qua vao cache, phu hop khi can dam bao du lieu cache moi nhat sau moi lan ghi.",
+          "locator": "muc 4.1 va 4.3, @Cacheable va @CachePut"
+        },
+        {
+          "topic": "@CacheEvict",
+          "summary": "@CacheEvict(value=..., allEntries=true) xoa toan bo entry trong mot cache, thuong dung khi du liceu goc thay doi lon va can lam moi cache thay vi de no phinh to voi du lieu cu.",
+          "locator": "muc 4.2, @CacheEvict"
+        },
+        {
+          "topic": "Cache co dieu kien",
+          "summary": "Tham so condition (SpEL, danh gia truoc khi goi method, dua tren input) va unless (SpEL, danh gia sau khi co ket qua, dua tren output nhu #result) cho phep chi cache khi thoa dieu kien cu the, ap dung duoc cho ca @Cacheable/@CachePut/@CacheEvict.",
+          "locator": "muc 5, Conditional Caching"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ea68bcb99823",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/java-csv",
+    "lessonIds": [
+      "day-26",
+      "day-35"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-csv",
+      "contentSha256": "bf7fc1548eb64520f3167cbe71639a36a41c138aec661267db6c0e525b0bd0c6"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "How to Write to a CSV File in Java (Baeldung)",
+      "relevantHeadings": [
+        "2. Writing With PrintWriter",
+        "2.2. Handling Special Characters",
+        "3. Third-Party Libraries"
+      ],
+      "topics": [
+        "PrintWriter",
+        "CSV escaping",
+        "Apache Commons CSV",
+        "OpenCSV"
+      ],
+      "facts": [
+        {
+          "topic": "Ghi CSV bang PrintWriter thuan Java",
+          "summary": "Ham convertToCSV nhan mang String[] cho mot dong du lieu, escape tung phan tu roi noi bang dau phay (Collectors.joining(\",\")); moi dong duoc ghi ra file qua PrintWriter.println.",
+          "locator": "muc 2.1, Writing the CSV"
+        },
+        {
+          "topic": "Xu ly ky tu dac biet",
+          "summary": "Method escapeSpecialCharacters thay xuong dong bang khoang trang; neu truong chua dau phay hoac dau nhay kep thi bao quanh ca truong bang dau nhay kep va nhan doi moi dau nhay kep ben trong (\"\" thay cho \").",
+          "locator": "muc 2.2, escapeSpecialCharacters"
+        },
+        {
+          "topic": "Thu vien CSV ben thu ba",
+          "summary": "Bai viet liet ke cac lua chon thay the khi can xu ly CSV phuc tap hon: Apache Commons CSV, OpenCSV, Flatpack, CSVeed va FastCSV, thay vi tu viet logic escape thu cong.",
+          "locator": "muc 3, Third-Party Libraries"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f6c8ab355f09",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-circuit-breaker-vs-retry",
+    "lessonIds": [
+      "day-26"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-circuit-breaker-vs-retry",
+      "contentSha256": "8e2e6a3e54b54b158ba54e1e4f1764b1ebec54feece0d49a5cea071d587022e3"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Difference Between Circuit Breaker and Retry in Spring Boot (Baeldung)",
+      "relevantHeadings": [
+        "2. What Is Retry?",
+        "3. What Is a Circuit Breaker Pattern?",
+        "4. Key Differences: Retry vs. Circuit Breaker",
+        "5. When to Use Each Pattern"
+      ],
+      "topics": [
+        "Retry pattern",
+        "Circuit Breaker pattern",
+        "Resilience4j"
+      ],
+      "facts": [
+        {
+          "topic": "Ban chat Retry",
+          "summary": "Retry gia dinh loi la tam thoi (transient), thuc thi lai thao tac that bai mot so lan gioi han, thuong ket hop backoff strategy (vi du exponential backoff) de tranh lam qua tai he thong dang gap su co.",
+          "locator": "muc 2, What Is Retry?"
+        },
+        {
+          "topic": "Ban chat Circuit Breaker va 3 trang thai",
+          "summary": "Circuit Breaker co 3 trang thai: Closed (hoat dong binh thuong), Open (chan toan bo request khi ty le loi vuot nguong trong sliding window), Half-Open (cho mot so request thu nghiem xem he thong da hoi phuc chua).",
+          "locator": "muc 3, What Is a Circuit Breaker Pattern? + 3 trang thai"
+        },
+        {
+          "topic": "Khac biet cot loi",
+          "summary": "Retry la stateless va gia dinh loi tam thoi, phu hop van de mang gian doan ngan han; Circuit Breaker co trang thai (Closed/Open/Half-Open) va gia dinh loi mang tinh he thong, giup ngan chan cascading failure lan ra toan bo he thong.",
+          "locator": "muc 4, bang so sanh Retry vs Circuit Breaker"
+        },
+        {
+          "topic": "Ket hop ca hai trong Spring Boot",
+          "summary": "Trong thuc te hai co che thuong duoc dung cung nhau (Retry chi thu lai khi mach dang Closed/Half-Open); Spring Boot ho tro qua Spring Cloud Circuit Breaker (truu tuong hoa nhieu implementation nhu Resilience4j) va Spring Retry, deu auto-config theo dependency tren classpath.",
+          "locator": "muc 7, Spring Boot Integration"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-fa57300ac53c",
+    "batch": "production",
+    "requestedUrl": "https://www.baeldung.com/spring-boot-actuators",
+    "lessonIds": [
+      "day-29"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/spring-boot-actuators",
+      "contentSha256": "ff1e48e1bd13de90d08de0e439420c797a6c685bcf87907831853800a099cb9c"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Spring Boot Actuator (Baeldung)",
+      "relevantHeadings": [
+        "2. What Is an Actuator?",
+        "3.2. Important Changes",
+        "3.3. Predefined Endpoints",
+        "3.5. Health Indicators",
+        "3.11. Enable All Endpoints"
+      ],
+      "topics": [
+        "Actuator endpoints",
+        "/health",
+        "/info",
+        "management.endpoints.web.exposure"
+      ],
+      "facts": [
+        {
+          "topic": "Actuator la gi",
+          "summary": "Spring Boot Actuator cung cap cac tinh nang san sang cho production (monitoring, metrics, thong tin trang thai ung dung) qua HTTP endpoint hoac JMX bean, chi can them dependency spring-boot-starter-actuator.",
+          "locator": "muc 2, What Is an Actuator?"
+        },
+        {
+          "topic": "Endpoint mac dinh chi expose /health va /info",
+          "summary": "Khac ban cu, hau het endpoint deu duoc BAT san nhung chi /health va /info duoc EXPOSE qua web mac dinh; muon expose toan bo can dat management.endpoints.web.exposure.include=*.",
+          "locator": "muc 3.2 va 3.11, Important Changes / Enable All Endpoints"
+        },
+        {
+          "topic": "Cac endpoint pho bien",
+          "summary": "Bai liet ke nhieu endpoint san co nhu /beans (danh sach bean), /env (bien moi truong), /metrics (chi so ung dung), /loggers (xem/doi log level runtime), /scheduledtasks (thong tin scheduled task), /shutdown (tat ung dung tu xa, mac dinh disable).",
+          "locator": "muc 3.3, Predefined Endpoints"
+        },
+        {
+          "topic": "Health indicator va health group",
+          "summary": "Co the viet HealthIndicator/ReactiveHealthIndicator tuy chinh de kiem tra suc khoe dependency ngoai; nhieu indicator co the gop thanh health group (management.endpoint.health.group.<ten>.include=...) de xem tong hop qua /actuator/health/<ten>.",
+          "locator": "muc 3.5-3.6, Health Indicators / Health Groups"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
