@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "id": "day-01",
+  "catalogRef": {
+    "unitId": "unit-01",
+    "group": "java",
+    "title": "JVM, JRE, JDK & Data Types",
+    "objectives": [
+      "LO1"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      3,
+      4
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 4,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-acff7fd27edc",
+      "res-99801d0b7043",
+      "res-f7cc3f86702d",
+      "res-1cec64c5e683",
+      "res-62d9985bbc6f",
+      "res-9d76570d9362"
+    ]
+  },
+  "unitId": "unit-01",
+  "group": "java",
+  "kind": "theory",
+  "title": "JVM, JRE, JDK & Data Types",
+  "summary": "Bài học nền tảng giải thích kiến trúc JVM, phân biệt JRE/JDK, và đi sâu vào kiểu nguyên thủy/wrapper cùng String Pool — những khái niệm chi phối cách chương trình Java thực sự chạy trong bộ nhớ.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO1"
+  ],
+  "prerequisites": [
+    "Đã cài JDK 17 và biết biên dịch/chạy chương trình Java từ dòng lệnh (javac, java).",
+    "Biết đọc cú pháp Java cơ bản: khai báo biến, phương thức main."
+  ],
+  "outcomes": [
+    "Giải thích được vai trò của JVM, JRE, JDK và phân biệt rõ ba khái niệm này.",
+    "Mô tả được các vùng dữ liệu runtime chính của JVM (method area, heap, stack, pc register) và vai trò của frame trong JVM Stack.",
+    "Phân biệt kiểu nguyên thủy và lớp bọc, giải thích autoboxing/unboxing và rủi ro NullPointerException liên quan.",
+    "Giải thích String Pool, tính bất biến của String và biết khi nào nên dùng == so với equals()."
+  ],
+  "sections": [
+    {
+      "id": "day01-sec-intro",
+      "title": "Vì sao phải hiểu JVM trước khi học sâu Java",
+      "blocks": [
+        {
+          "id": "day01-blk-1",
+          "type": "paragraph",
+          "text": "Mọi chương trình Java, dù chạy trên server Spring Boot hay một ứng dụng console đơn giản, đều được thực thi bởi Java Virtual Machine (JVM) chứ không chạy trực tiếp trên hệ điều hành. Hiểu JVM giúp bạn giải thích được vì sao Java 'viết một lần, chạy mọi nơi', vì sao chương trình có thể bị OutOfMemoryError, và vì sao các kiểu dữ liệu trong Java hoạt động theo đúng cách mà chúng hoạt động.",
+          "citations": []
+        },
+        {
+          "id": "day01-blk-2",
+          "type": "paragraph",
+          "text": "JVM là một máy ảo trừu tượng: nó nạp (load) các lớp đã biên dịch, lưu thông tin lớp vào vùng nhớ riêng, rồi thực thi bytecode do trình biên dịch javac sinh ra. Nói cách khác, mã nguồn .java được biên dịch thành .class (bytecode) trung lập nền tảng, và JVM trên từng hệ điều hành chịu trách nhiệm dịch bytecode đó thành lệnh máy thực sự.",
+          "citations": [
+            "day01-src-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day01-sec-runtime-areas",
+      "title": "Kiến trúc JVM: các vùng dữ liệu runtime",
+      "blocks": [
+        {
+          "id": "day01-blk-3",
+          "type": "paragraph",
+          "text": "Khi chạy, JVM chia bộ nhớ quản lý thành nhiều vùng dữ liệu runtime khác nhau, mỗi vùng có vòng đời và mục đích riêng: một số vùng dùng chung cho toàn bộ ứng dụng, một số vùng thuộc riêng từng thread.",
+          "citations": [
+            "day01-src-2",
+            "day01-src-3"
+          ]
+        },
+        {
+          "id": "day01-blk-4",
+          "type": "table",
+          "columns": [
+            "Vùng nhớ",
+            "Phạm vi",
+            "Vai trò chính"
+          ],
+          "rows": [
+            [
+              "Method Area",
+              "Toàn JVM (dùng chung)",
+              "Lưu thông tin lớp đã nạp, hằng số, constant pool"
+            ],
+            [
+              "Heap",
+              "Toàn JVM (dùng chung)",
+              "Cấp phát instance đối tượng và mảng (array)"
+            ],
+            [
+              "JVM Stack",
+              "Theo từng thread",
+              "Lưu các frame — mỗi lời gọi phương thức một frame"
+            ],
+            [
+              "PC Register",
+              "Theo từng thread",
+              "Lưu địa chỉ lệnh bytecode đang thực thi của thread"
+            ],
+            [
+              "Native Method Stack",
+              "Theo từng thread",
+              "Hỗ trợ các phương thức native (mã ngoài JVM)"
+            ]
+          ],
+          "citations": [
+            "day01-src-2",
+            "day01-src-3"
+          ]
+        },
+        {
+          "id": "day01-blk-5",
+          "type": "paragraph",
+          "text": "Mỗi lần một phương thức được gọi, JVM tạo một frame mới và đẩy vào JVM Stack của thread gọi. Frame chứa một mảng biến cục bộ (local variables) riêng cho lời gọi đó, và một operand stack kiểu LIFO (vào sau ra trước) dùng để lưu kết quả tạm thời cũng như truyền tham số giữa các lệnh bytecode bên trong phương thức.",
+          "citations": [
+            "day01-src-4"
+          ]
+        },
+        {
+          "id": "day01-blk-6",
+          "type": "important",
+          "text": "JVM không có lệnh bytecode dành riêng cho kiểu boolean: biểu thức boolean trong mã Java được trình biên dịch dịch thành các lệnh thao tác trên giá trị kiểu int của JVM (true/false biểu diễn tương tự 1/0), ngoại trừ mảng boolean[] có hai lệnh riêng baload/bastore. Đây là lý do một số công cụ phân tích bytecode hiển thị boolean như int.",
+          "citations": [
+            "day01-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day01-sec-jre-jdk",
+      "title": "JRE và JDK khác nhau ra sao",
+      "blocks": [
+        {
+          "id": "day01-blk-7",
+          "type": "paragraph",
+          "text": "JRE (Java Runtime Environment) là bộ phần mềm tối thiểu để chạy một ứng dụng Java: nó gồm một cài đặt JVM cùng các lớp lõi bắt buộc (bootstrap classes, extension classes) và các file cấu hình cần thiết để thực thi chương trình đã biên dịch sẵn.",
+          "citations": [
+            "day01-src-6"
+          ]
+        },
+        {
+          "id": "day01-blk-8",
+          "type": "paragraph",
+          "text": "JDK (Java Development Kit) bao gồm toàn bộ JRE cộng thêm bộ công cụ phát triển: javac để biên dịch mã nguồn thành bytecode, java để chạy ứng dụng, javadoc để sinh tài liệu từ comment trong code. Muốn viết, biên dịch và debug chương trình Java, bạn cần JDK chứ không chỉ JRE.",
+          "citations": [
+            "day01-src-7"
+          ]
+        },
+        {
+          "id": "day01-blk-9",
+          "type": "table",
+          "columns": [
+            "Thành phần",
+            "JRE",
+            "JDK"
+          ],
+          "rows": [
+            [
+              "Cài đặt JVM",
+              "Có",
+              "Có"
+            ],
+            [
+              "Lớp lõi (bootstrap/extension classes)",
+              "Có",
+              "Có"
+            ],
+            [
+              "Trình biên dịch javac",
+              "Không",
+              "Có"
+            ],
+            [
+              "Công cụ sinh tài liệu javadoc",
+              "Không",
+              "Có"
+            ],
+            [
+              "Mục đích chính",
+              "Chạy ứng dụng đã biên dịch",
+              "Viết, biên dịch, debug ứng dụng"
+            ]
+          ],
+          "citations": [
+            "day01-src-6",
+            "day01-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day01-sec-types",
+      "title": "Kiểu nguyên thủy, lớp bọc (wrapper) và autoboxing/unboxing",
+      "blocks": [
+        {
+          "id": "day01-blk-10",
+          "type": "paragraph",
+          "text": "Java có 8 kiểu nguyên thủy (primitive) và mỗi kiểu có một lớp bọc (wrapper class) tương ứng để dùng khi cần một đối tượng thay vì giá trị thô — ví dụ khi thêm phần tử vào List<Integer>, các Collection trong Java chỉ chấp nhận kiểu tham chiếu (object), không chấp nhận kiểu nguyên thủy.",
+          "citations": [
+            "day01-src-8"
+          ]
+        },
+        {
+          "id": "day01-blk-11",
+          "type": "table",
+          "columns": [
+            "Kiểu nguyên thủy",
+            "Lớp bọc (wrapper)"
+          ],
+          "rows": [
+            [
+              "boolean",
+              "Boolean"
+            ],
+            [
+              "byte",
+              "Byte"
+            ],
+            [
+              "char",
+              "Character"
+            ],
+            [
+              "float",
+              "Float"
+            ],
+            [
+              "int",
+              "Integer"
+            ],
+            [
+              "long",
+              "Long"
+            ],
+            [
+              "short",
+              "Short"
+            ],
+            [
+              "double",
+              "Double"
+            ]
+          ],
+          "citations": [
+            "day01-src-10"
+          ]
+        },
+        {
+          "id": "day01-blk-12",
+          "type": "paragraph",
+          "text": "Autoboxing là việc trình biên dịch tự động chuyển một giá trị nguyên thủy (ví dụ int) thành đối tượng lớp bọc tương ứng (Integer) khi ngữ cảnh yêu cầu một đối tượng. Unboxing là chiều ngược lại: chuyển đối tượng lớp bọc về giá trị nguyên thủy khi gán cho biến nguyên thủy hoặc truyền cho tham số kiểu nguyên thủy.",
+          "citations": [
+            "day01-src-8",
+            "day01-src-9"
+          ]
+        },
+        {
+          "id": "day01-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\nclass AutoboxingDemo {\n    public static void main(String[] args) {\n        List<Integer> scores = new ArrayList<>();\n        scores.add(90);          // autoboxing: int -> Integer\n        scores.add(85);\n\n        int first = scores.get(0); // unboxing: Integer -> int\n        System.out.println(\"first = \" + first);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day01-src-8",
+            "day01-src-9"
+          ]
+        },
+        {
+          "id": "day01-blk-14",
+          "type": "warning",
+          "text": "Unboxing một tham chiếu Integer đang null (ví dụ giá trị trả về từ Map.get(key) khi key không tồn tại) sẽ ném NullPointerException ngay tại thời điểm JVM cố gắng lấy ra giá trị int nguyên thủy — vì unboxing thực chất là JVM tự sinh lời gọi intValue() trên đối tượng, gọi phương thức trên tham chiếu null luôn ném lỗi.",
+          "citations": [
+            "day01-src-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day01-sec-string",
+      "title": "String, String Pool và tính bất biến",
+      "blocks": [
+        {
+          "id": "day01-blk-15",
+          "type": "paragraph",
+          "text": "String trong Java là một đối tượng bất biến (immutable): một khi đã tạo, nội dung ký tự bên trong không thể thay đổi; mọi phương thức trông như 'sửa' chuỗi (ví dụ concat, replace) thực chất trả về một đối tượng String mới.",
+          "citations": [
+            "day01-src-11"
+          ]
+        },
+        {
+          "id": "day01-blk-16",
+          "type": "paragraph",
+          "text": "Để tiết kiệm bộ nhớ, JVM duy trì một vùng gọi là String Pool: mỗi String literal chỉ được lưu một lần duy nhất trong pool. Khi mã nguồn gán một chuỗi mới bằng literal, JVM tìm trong pool trước — nếu đã tồn tại một chuỗi giống hệt, tham chiếu tới chuỗi có sẵn được tái sử dụng thay vì cấp phát bộ nhớ mới (interning).",
+          "citations": [
+            "day01-src-12"
+          ]
+        },
+        {
+          "id": "day01-blk-17",
+          "type": "paragraph",
+          "text": "Ngược lại, dùng toán tử new String(\"...\") luôn tạo một đối tượng String mới trên heap, nằm ngoài String Pool — dù nội dung ký tự giống hệt một chuỗi literal đã có, so sánh bằng == giữa hai tham chiếu này vẫn trả về false vì chúng trỏ tới hai vùng nhớ khác nhau.",
+          "citations": [
+            "day01-src-13"
+          ]
+        },
+        {
+          "id": "day01-blk-18",
+          "type": "important",
+          "text": "Có thể gọi phương thức intern() trên một String được tạo bằng new để đưa nội dung của nó vào String Pool (nếu chưa có) và lấy về tham chiếu dùng chung trong pool; sau intern(), so sánh == với một literal cùng nội dung mới trả về true.",
+          "citations": [
+            "day01-src-14"
+          ]
+        },
+        {
+          "id": "day01-blk-19",
+          "type": "note",
+          "text": "Trước Java 7, String Pool nằm trong vùng PermGen và không được Garbage Collector dọn dẹp, dễ gây OutOfMemoryError nếu interning quá nhiều chuỗi. Từ Java 7 trở đi, pool được chuyển sang Heap nên các chuỗi interned có thể được GC thu hồi như đối tượng bình thường.",
+          "citations": [
+            "day01-src-15"
+          ]
+        },
+        {
+          "id": "day01-blk-20",
+          "type": "code",
+          "language": "java",
+          "code": "class StringPoolDemo {\n    public static void main(String[] args) {\n        String a = \"hello\";\n        String b = \"hello\";           // lấy lại tham chiếu trong pool\n        String c = new String(\"hello\"); // đối tượng mới trên heap\n\n        System.out.println(a == b);        // true: cùng tham chiếu pool\n        System.out.println(a == c);        // false: khác vùng nhớ\n        System.out.println(a.equals(c));   // true: so sánh nội dung\n        System.out.println(a == c.intern()); // true: c.intern() trả tham chiếu pool\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day01-src-12",
+            "day01-src-13",
+            "day01-src-14"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day01-sec-arrays",
+      "title": "Mảng (array) và varargs — cú pháp cần biết",
+      "blocks": [
+        {
+          "id": "day01-blk-21",
+          "type": "paragraph",
+          "text": "Mảng trong Java là một đối tượng có kích thước cố định, lưu các phần tử cùng kiểu liên tiếp trong bộ nhớ, khai báo bằng cặp ngoặc vuông, ví dụ int[] numbers = {1, 2, 3}; hoặc String[] names = new String[5];. Vì mảng cũng là đối tượng nên nó được cấp phát trên Heap giống mọi instance khác, và biến mảng chỉ là một tham chiếu tới vùng nhớ đó.",
+          "citations": []
+        },
+        {
+          "id": "day01-blk-22",
+          "type": "paragraph",
+          "text": "Varargs (viết tắt của variable arguments) cho phép một phương thức nhận số lượng tham số cùng kiểu không cố định, khai báo bằng dấu ba chấm, ví dụ int sum(int... numbers). Bên trong phương thức, tham số varargs được xử lý như một mảng bình thường (numbers.length, numbers[0]...); một phương thức chỉ được khai báo tối đa một tham số varargs và nó luôn phải là tham số cuối cùng.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "So sánh hai chuỗi bằng == thay vì equals(), dẫn tới kết quả sai khi một trong hai chuỗi được tạo bằng new String().",
+    "Unbox một Integer đang null (ví dụ lấy từ Map.get() với key không tồn tại) gây NullPointerException ngay tại phép gán.",
+    "Cài JRE rồi thắc mắc vì sao máy không có lệnh javac để biên dịch — nhầm lẫn JRE (chạy) với JDK (viết + biên dịch + chạy)."
+  ],
+  "practices": [
+    {
+      "id": "day01-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Mỗi lần một phương thức được gọi, JVM tạo một frame mới và đẩy frame đó vào vùng nhớ nào?",
+      "choices": [
+        {
+          "id": "day01-prac-1-a",
+          "text": "Heap"
+        },
+        {
+          "id": "day01-prac-1-b",
+          "text": "JVM Stack của thread đang gọi phương thức"
+        },
+        {
+          "id": "day01-prac-1-c",
+          "text": "Method Area"
+        },
+        {
+          "id": "day01-prac-1-d",
+          "text": "Native Method Stack"
+        }
+      ],
+      "correctChoiceIds": [
+        "day01-prac-1-b"
+      ],
+      "hint": "Nghĩ tới vòng đời của frame: nó chỉ tồn tại trong lúc phương thức đang chạy và thuộc riêng một thread.",
+      "solution": "JVM Stack — mỗi lời gọi phương thức tạo một frame mới, chứa local variables và operand stack riêng, được đẩy vào JVM Stack của đúng thread gọi nó và gỡ ra khi phương thức kết thúc.",
+      "explanation": "Đáp án đúng là JVM Stack vì frame gắn liền với một lời gọi phương thức cụ thể và có vòng đời ngắn theo thread. Heap dùng để cấp phát instance/mảng dùng chung toàn JVM, không phải nơi lưu frame. Method Area lưu thông tin lớp đã nạp (constant pool, metadata), không lưu frame runtime. Native Method Stack chỉ phục vụ các phương thức native, không phải phương thức Java thông thường.",
+      "rubric": "Chọn đúng JVM Stack và giải thích được vì sao ba lựa chọn còn lại sai.",
+      "sourceUsage": [
+        "day01-src-2",
+        "day01-src-4"
+      ]
+    },
+    {
+      "id": "day01-prac-2",
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "Cho đoạn code:\nString a = \"java\";\nString b = new String(\"java\");\nSystem.out.println(a == b);\nSystem.out.println(a.equals(b));\nKết quả in ra lần lượt là gì?",
+      "choices": [
+        {
+          "id": "day01-prac-2-a",
+          "text": "true rồi true"
+        },
+        {
+          "id": "day01-prac-2-b",
+          "text": "false rồi true"
+        },
+        {
+          "id": "day01-prac-2-c",
+          "text": "true rồi false"
+        },
+        {
+          "id": "day01-prac-2-d",
+          "text": "false rồi false"
+        }
+      ],
+      "correctChoiceIds": [
+        "day01-prac-2-b"
+      ],
+      "hint": "== so sánh tham chiếu (địa chỉ vùng nhớ), equals() so sánh nội dung ký tự.",
+      "solution": "false rồi true — a trỏ vào String Pool, b trỏ vào một đối tượng mới trên heap do new String() tạo ra nên == cho false; nhưng nội dung ký tự giống hệt nhau nên equals() cho true.",
+      "explanation": "a được gán bằng literal nên nằm trong String Pool. b được tạo bằng new String(\"java\") nên luôn là một đối tượng mới nằm ngoài pool, dù nội dung giống hệt a. Vì vậy == (so sánh tham chiếu) trả về false. equals() so sánh nội dung ký tự từng phần tử, và nội dung của a và b hoàn toàn giống nhau nên trả về true.",
+      "rubric": "Chọn đúng false/true và giải thích được sự khác biệt giữa == (tham chiếu) và equals() (nội dung).",
+      "sourceUsage": [
+        "day01-src-12",
+        "day01-src-13"
+      ]
+    },
+    {
+      "id": "day01-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Bằng lời của bạn, hãy giải thích cho một người mới học vì sao cài JRE là không đủ để viết và biên dịch chương trình Java, và JDK giải quyết vấn đề đó như thế nào.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nhớ lại vai trò của javac trong việc biến .java thành .class.",
+      "solution": "JRE chỉ gồm JVM cùng các lớp lõi và cấu hình cần thiết để CHẠY một chương trình .class đã biên dịch sẵn — nó không có javac nên không thể biên dịch mã nguồn .java. JDK bao gồm toàn bộ JRE cộng thêm javac (biên dịch), java (chạy) và javadoc (sinh tài liệu), nên người viết và biên dịch chương trình bắt buộc phải cài JDK.",
+      "explanation": "Câu trả lời tốt cần nêu rõ: JRE thiếu javac nên không biên dịch được, và JDK = JRE + bộ công cụ phát triển.",
+      "rubric": "Đạt yêu cầu nếu nêu đúng JRE thiếu javac và JDK bao gồm JRE cộng công cụ phát triển; không cần thuộc lòng nguyên văn.",
+      "sourceUsage": [
+        "day01-src-6",
+        "day01-src-7"
+      ]
+    },
+    {
+      "id": "day01-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một đoạn Java ngắn minh họa rủi ro NullPointerException khi unbox một Integer đang null (ví dụ lấy từ một Map không có key tương ứng), sau đó giải thích JVM đã thực hiện thao tác gì gây ra lỗi.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Unboxing tương đương JVM tự sinh một lời gọi phương thức intValue() trên đối tượng wrapper — gọi phương thức trên tham chiếu null luôn ném lỗi.",
+      "solution": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class UnboxingNpeDemo {\n    public static void main(String[] args) {\n        Map<String, Integer> ages = new HashMap<>();\n        Integer missing = ages.get(\"khong-ton-tai\"); // trả về null\n        int age = missing; // NullPointerException khi unboxing\n        System.out.println(age);\n    }\n}\nGiải thích: dòng 'int age = missing;' buộc JVM unbox missing thành int, tương đương gọi missing.intValue(); vì missing đang null nên lời gọi phương thức đó ném NullPointerException trước khi phép gán xảy ra.",
+      "explanation": "Lời giải mẫu minh họa đúng tình huống Map.get() trả về null rồi unbox trực tiếp; giải thích unboxing = lời gọi intValue() ẩn của trình biên dịch, gọi trên null nên ném NPE.",
+      "rubric": "Đạt yêu cầu nếu code biên dịch được, thực sự tạo ra tình huống unbox null, và lời giải thích nêu đúng cơ chế intValue() ẩn gây NPE.",
+      "sourceUsage": [
+        "day01-src-9"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 4,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viết đoạn code minh họa sự khác biệt bộ nhớ giữa String tạo bằng literal và bằng new String(): so sánh == trước và sau khi gọi intern().",
+    "Dùng jconsole hoặc VisualVM (nếu có sẵn) để quan sát vùng Heap khi chạy một chương trình tạo nhiều đối tượng String bằng new."
+  ],
+  "references": [
+    {
+      "id": "day01-ref-1",
+      "type": "external",
+      "resourceId": "res-99801d0b7043",
+      "citationId": "day01-src-1"
+    },
+    {
+      "id": "day01-ref-2",
+      "type": "external",
+      "resourceId": "res-acff7fd27edc",
+      "citationId": "day01-src-2"
+    },
+    {
+      "id": "day01-ref-3",
+      "type": "external",
+      "resourceId": "res-9d76570d9362",
+      "citationId": "day01-src-8"
+    },
+    {
+      "id": "day01-ref-4",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day01-src-12"
+    },
+    {
+      "id": "day01-ref-5",
+      "type": "external",
+      "resourceId": "res-f7cc3f86702d",
+      "citationId": "day01-src-11"
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day01-src-1",
+      "resourceId": "res-99801d0b7043",
+      "locator": "§2. JVM",
+      "topic": "JVM là gì"
+    },
+    {
+      "id": "day01-src-2",
+      "resourceId": "res-acff7fd27edc",
+      "locator": "§2.5 Run-Time Data Areas",
+      "topic": "Vùng dữ liệu runtime của JVM (JVMS)"
+    },
+    {
+      "id": "day01-src-3",
+      "resourceId": "res-99801d0b7043",
+      "locator": "§2.2. Run-Time Data Areas",
+      "topic": "Vùng dữ liệu runtime của JVM (tutorial)"
+    },
+    {
+      "id": "day01-src-4",
+      "resourceId": "res-acff7fd27edc",
+      "locator": "§2.6 Frames; §2.6.1 Local Variables; §2.6.2 Operand Stacks",
+      "topic": "Frame, local variable, operand stack"
+    },
+    {
+      "id": "day01-src-5",
+      "resourceId": "res-acff7fd27edc",
+      "locator": "§2.3.4 The boolean Type",
+      "topic": "Kiểu boolean trong JVM"
+    },
+    {
+      "id": "day01-src-6",
+      "resourceId": "res-99801d0b7043",
+      "locator": "§3. JRE",
+      "topic": "JRE gồm những gì"
+    },
+    {
+      "id": "day01-src-7",
+      "resourceId": "res-99801d0b7043",
+      "locator": "§4. JDK",
+      "topic": "JDK gồm những gì"
+    },
+    {
+      "id": "day01-src-8",
+      "resourceId": "res-9d76570d9362",
+      "locator": "Autoboxing and Unboxing — đoạn mở đầu",
+      "topic": "Autoboxing là gì"
+    },
+    {
+      "id": "day01-src-9",
+      "resourceId": "res-9d76570d9362",
+      "locator": "Autoboxing and Unboxing — đoạn giải thích unboxing",
+      "topic": "Unboxing là gì"
+    },
+    {
+      "id": "day01-src-10",
+      "resourceId": "res-9d76570d9362",
+      "locator": "Bảng cuối trang: Primitive type / Wrapper class",
+      "topic": "Bảng ánh xạ kiểu nguyên thủy - lớp bọc"
+    },
+    {
+      "id": "day01-src-11",
+      "resourceId": "res-f7cc3f86702d",
+      "locator": "Lesson: Numbers and Strings — mục lục",
+      "topic": "String là đối tượng bất biến"
+    },
+    {
+      "id": "day01-src-12",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§2. String Interning",
+      "topic": "String Pool"
+    },
+    {
+      "id": "day01-src-13",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§3. Strings Allocated Using the Constructor",
+      "topic": "new String() vs literal"
+    },
+    {
+      "id": "day01-src-14",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§5. Manual Interning",
+      "topic": "Interning thủ công"
+    },
+    {
+      "id": "day01-src-15",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§6. Garbage Collection",
+      "topic": "Vị trí lưu trữ Pool qua các phiên bản Java"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Chủ đề 'Arrays & varargs' trong outline gốc của Day 1 không có nguồn đọc được (readable) nào được gán riêng cho lesson này; phần trình bày trong bài dựa trên cú pháp ngôn ngữ Java 17 chuẩn, không kèm trích dẫn nguồn ngoài, không đưa vào sourceUsage.",
+      "Tài nguyên res-62d9985bbc6f được catalog gán cho Day 1 nhưng trả về HTTP 404 khi truy cập thực tế (Task 2, checkedAt 2026-08-22T16:33:26Z); không có nội dung nào được trích dẫn từ tài nguyên này."
+    ]
+  }
+}

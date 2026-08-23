@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 1,
+  "id": "day-03",
+  "catalogRef": {
+    "unitId": "unit-01",
+    "group": "java",
+    "title": "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization",
+    "objectives": [
+      "LO1"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      7
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 7,
+        "text": "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+      }
+    ],
+    "resourceIds": [
+      "res-1cec64c5e683",
+      "res-62d9985bbc6f",
+      "res-df903793f0b9",
+      "res-82c961b7a92a"
+    ]
+  },
+  "unitId": "unit-01",
+  "group": "java",
+  "kind": "lab",
+  "title": "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization",
+  "summary": "Lab 1: cài đặt StringCalculator phân tích biểu thức cộng/trừ đơn giản từ một chuỗi, áp dụng trực tiếp tính bất biến của String (Day 1) để chọn cách tích lũy số bằng kiểu nguyên thủy thay vì nối chuỗi trong vòng lặp.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO1"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 1 (String, String Pool, tính bất biến) và Day 2 (toán tử, độ ưu tiên, vòng lặp for)."
+  ],
+  "outcomes": [
+    "Implement được một trình phân tích biểu thức cộng/trừ đơn giản từ chuỗi.",
+    "Giải thích và áp dụng được lý do tránh nối String trong vòng lặp, dùng biến nguyên thủy để tích lũy giá trị thay thế.",
+    "Tự thiết kế và kiểm tra được các test case biên ngoài các ví dụ đã cho."
+  ],
+  "sections": [
+    {
+      "id": "day03-sec-brief",
+      "title": "Đề bài Lab 1: StringCalculator",
+      "blocks": [
+        {
+          "id": "day03-blk-1",
+          "type": "deliverable",
+          "text": "Yêu cầu đề bài (nguyên văn từ syllabus, xem thêm mục syllabusAssignments của lesson này): implement StringCalculator áp dụng tính bất biến của String và tối ưu bằng kiểu nguyên thủy. Input: một chuỗi chứa biểu thức số học đơn giản (cộng/trừ). Output: kết quả nguyên (integer).",
+          "citations": []
+        },
+        {
+          "id": "day03-blk-2",
+          "type": "note",
+          "text": "Setup: tạo class StringCalculator với một phương thức public static int calculate(String expression). Viết unit test (JUnit hoặc chương trình main tự kiểm tra) đối chiếu với bảng acceptance examples ở mục dưới trước khi coi bài lab hoàn thành.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day03-sec-immutability",
+      "title": "Vì sao 'primitive optimization' quan trọng khi parse chuỗi",
+      "blocks": [
+        {
+          "id": "day03-blk-3",
+          "type": "paragraph",
+          "text": "String trong Java bất biến: mỗi lần bạn 'nối chuỗi' bằng +, JVM thực chất tạo ra một đối tượng String mới. Nếu StringCalculator dựng dần số bằng cách nối từng ký tự vào một String bên trong vòng lặp, mỗi ký tự đọc được sẽ sinh ra một đối tượng String trung gian mới — lãng phí bộ nhớ và chậm hơn hẳn so với dùng biến int/StringBuilder để tích lũy giá trị.",
+          "citations": [
+            "day03-src-1",
+            "day03-src-2"
+          ]
+        },
+        {
+          "id": "day03-blk-4",
+          "type": "important",
+          "text": "'Primitive optimization' trong đề bài nghĩa là: khi dựng số từ các ký tự chữ số, hãy tích lũy trực tiếp vào một biến int (digit = digit * 10 + (c - '0')) thay vì nối ký tự vào một String rồi Integer.parseInt() ở cuối. Cách này tránh tạo hàng loạt đối tượng String tạm thời không cần thiết trong vòng lặp phân tích chuỗi.",
+          "citations": [
+            "day03-src-1"
+          ]
+        },
+        {
+          "id": "day03-blk-5",
+          "type": "paragraph",
+          "text": "Phép cộng/trừ trong biểu thức được đánh giá theo đúng độ ưu tiên và thứ tự toán tử của Java: + và - cùng một nhóm ưu tiên và được đánh giá từ trái sang phải, vì vậy thuật toán chỉ cần quét chuỗi một lần từ trái sang phải, gặp dấu nào thì áp dụng dấu đó cho số tiếp theo, không cần xử lý ngoặc hay ưu tiên nhân/chia phức tạp.",
+          "citations": [
+            "day03-src-3",
+            "day03-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day03-sec-design",
+      "title": "Thiết kế thuật toán phân tích và mẫu code",
+      "blocks": [
+        {
+          "id": "day03-blk-6",
+          "type": "paragraph",
+          "text": "Thuật toán đề xuất: duyệt qua từng ký tự của chuỗi (một dạng câu lệnh lặp), dùng một biến int currentNumber tích lũy chữ số hiện tại và một biến int sign giữ dấu (+1 hoặc -1) áp dụng cho số sắp hoàn tất; khi gặp ký tự '+' hoặc '-' hoặc hết chuỗi, cộng sign * currentNumber vào tổng rồi reset currentNumber về 0 và cập nhật sign mới.",
+          "citations": [
+            "day03-src-5"
+          ]
+        },
+        {
+          "id": "day03-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "class StringCalculator {\n\n    public static int calculate(String expression) {\n        if (expression == null || expression.isBlank()) {\n            throw new IllegalArgumentException(\"expression must not be blank\");\n        }\n        String trimmed = expression.replaceAll(\"\\\\s+\", \"\");\n        int total = 0;\n        int currentNumber = 0;\n        int sign = 1;\n\n        for (int i = 0; i < trimmed.length(); i++) {\n            char c = trimmed.charAt(i);\n            if (Character.isDigit(c)) {\n                currentNumber = currentNumber * 10 + (c - '0');\n            } else if (c == '+' || c == '-') {\n                total += sign * currentNumber;\n                currentNumber = 0;\n                sign = (c == '+') ? 1 : -1;\n            } else {\n                throw new IllegalArgumentException(\"unexpected character: \" + c);\n            }\n        }\n        total += sign * currentNumber;\n        return total;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(calculate(\"3+5\"));   // 8\n        System.out.println(calculate(\"10-2+1\")); // 9\n        System.out.println(calculate(\"0-3\"));    // -3\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day03-src-1",
+            "day03-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day03-sec-edge-cases",
+      "title": "Edge case cần xử lý và acceptance examples",
+      "blocks": [
+        {
+          "id": "day03-blk-8",
+          "type": "warning",
+          "text": "Chuỗi có thể chứa khoảng trắng ('3 + 5'), số có nhiều chữ số ('10-2'), dấu trừ ở đầu biểu thức ('-3+5'), hoặc chuỗi rỗng/null — tất cả phải được xử lý nhất quán vì đánh giá toán tử +/- luôn thực hiện tuần tự từ trái sang phải, không có toán tử nào được ưu tiên đặc biệt bỏ qua.",
+          "citations": [
+            "day03-src-4"
+          ]
+        },
+        {
+          "id": "day03-blk-9",
+          "type": "table",
+          "columns": [
+            "Input",
+            "Output mong đợi",
+            "Ghi chú"
+          ],
+          "rows": [
+            [
+              "\"3+5\"",
+              "8",
+              "Trường hợp cơ bản"
+            ],
+            [
+              "\"10-2+1\"",
+              "9",
+              "Nhiều toán tử, số nhiều chữ số"
+            ],
+            [
+              "\"7\"",
+              "7",
+              "Không có toán tử nào"
+            ],
+            [
+              "\"0-3\"",
+              "-3",
+              "Kết quả âm"
+            ],
+            [
+              "\"3 + 5 - 2\"",
+              "6",
+              "Có khoảng trắng xen giữa"
+            ],
+            [
+              "\"\" hoặc null",
+              "ném IllegalArgumentException",
+              "Input rỗng/null là lỗi, không phải 0"
+            ]
+          ],
+          "citations": [
+            "day03-src-4"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dựng số bằng cách nối ký tự vào một biến String trong vòng lặp (number += c) thay vì tích lũy bằng biến int, làm mất đúng ý 'primitive optimization' của đề bài.",
+    "Không xử lý dấu trừ ở đầu biểu thức (ví dụ '-3+5'), khiến sign ban đầu luôn mặc định là dương và cho ra kết quả sai.",
+    "Trả về 0 thay vì ném lỗi rõ ràng khi input rỗng hoặc null, khiến lỗi dữ liệu đầu vào bị nuốt âm thầm thay vì được phát hiện sớm."
+  ],
+  "practices": [
+    {
+      "id": "day03-prac-1",
+      "type": "applied",
+      "interaction": "self-check",
+      "prompt": "Hoàn thành lab: implement đầy đủ StringCalculator.calculate(String) áp dụng tính bất biến của String và tối ưu bằng kiểu nguyên thủy, đảm bảo pass toàn bộ các dòng trong bảng acceptance examples ở mục Edge case.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Bắt đầu từ mẫu thiết kế ở phần 'Thiết kế thuật toán phân tích và mẫu code', bổ sung xử lý khoảng trắng và input rỗng/null.",
+      "solution": "Lời giải tham khảo là khối code Java trong block day03-blk-7 (StringCalculator.calculate), đã xử lý số nhiều chữ số, dấu +/-, và ném IllegalArgumentException cho input rỗng/null hoặc ký tự không hợp lệ.",
+      "explanation": "Lời giải cần: (1) không nối String trong vòng lặp để dựng số — dùng biến int tích lũy; (2) xử lý đúng cả 6 dòng trong bảng acceptance examples; (3) ném lỗi rõ ràng cho input rỗng/null thay vì trả về 0.",
+      "rubric": "Đạt yêu cầu nếu code biên dịch, pass toàn bộ acceptance examples, và không dùng String concatenation để tích lũy chữ số trong vòng lặp.",
+      "sourceUsage": [
+        "day03-src-1",
+        "day03-src-4"
+      ]
+    },
+    {
+      "id": "day03-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết thêm hai test case biên (edge case) ngoài bảng acceptance examples đã cho (ví dụ: biểu thức chỉ toàn số 0, hoặc số rất lớn gần giới hạn int) và nêu expected output cho từng test case.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ tới những input hợp lệ nhưng bất thường: toàn số 0, số lớn, nhiều dấu +/- liên tiếp không hợp lệ.",
+      "solution": "Ví dụ: calculate(\"0-0+0\") phải trả về 0; calculate(\"999999999\") (gần Integer.MAX_VALUE) phải trả đúng giá trị đó và không tràn số nếu không cộng thêm; calculate(\"1++2\") nên ném IllegalArgumentException vì hai dấu + liên tiếp không hợp lệ theo thiết kế ở trên.",
+      "explanation": "Lời giải mẫu minh họa test case hợp lệ (toàn số 0, số lớn) và ít nhất một test case phải ném lỗi (chuỗi không hợp lệ), cùng expected output rõ ràng cho từng test.",
+      "rubric": "Đạt yêu cầu nếu đề xuất được ít nhất 2 test case thực sự khác biệt so với bảng acceptance examples và nêu đúng expected output/hành vi lỗi.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day03-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao nên tránh nối chuỗi (String +=) để dựng dần một số nguyên trong vòng lặp phân tích chuỗi của StringCalculator?",
+      "choices": [
+        {
+          "id": "day03-prac-3-a",
+          "text": "Vì cú pháp += không hợp lệ với kiểu String trong Java"
+        },
+        {
+          "id": "day03-prac-3-b",
+          "text": "Vì String bất biến nên mỗi lần nối sẽ tạo một đối tượng String mới, lãng phí bộ nhớ/thời gian so với tích lũy bằng biến int"
+        },
+        {
+          "id": "day03-prac-3-c",
+          "text": "Vì String Pool sẽ tự động chặn không cho tạo chuỗi mới"
+        },
+        {
+          "id": "day03-prac-3-d",
+          "text": "Vì vòng lặp for không cho phép dùng biến String bên trong"
+        }
+      ],
+      "correctChoiceIds": [
+        "day03-prac-3-b"
+      ],
+      "hint": "Liên hệ lại tính bất biến của String đã học ở Day 1/đầu bài lab này.",
+      "solution": "Vì String bất biến nên mỗi lần nối sẽ tạo một đối tượng String mới, lãng phí bộ nhớ/thời gian so với tích lũy bằng biến int.",
+      "explanation": "String += hợp lệ về cú pháp (đáp án A sai). String Pool chỉ tối ưu việc tái sử dụng literal giống hệt nhau, không 'chặn' việc tạo chuỗi mới (đáp án C sai). Vòng lặp for hoàn toàn cho phép dùng biến String (đáp án D sai). Lý do đúng là String bất biến: mỗi phép nối tạo ra một đối tượng String hoàn toàn mới thay vì sửa đối tượng cũ, nên tích lũy bằng biến int nguyên thủy nhanh và tiết kiệm bộ nhớ hơn hẳn trong một vòng lặp chạy nhiều lần.",
+      "rubric": "Chọn đúng đáp án B và giải thích đúng cơ chế bất biến gây lãng phí khi nối chuỗi lặp lại.",
+      "sourceUsage": [
+        "day03-src-1",
+        "day03-src-2"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 7,
+      "text": "- Lab 1: Implement `StringCalculator` applying String immutability and primitive optimization\n  - Input: a string containing a simple arithmetic expression (addition/subtraction)\n  - Output: integer result"
+    }
+  ],
+  "enhancedExercises": [
+    "Stretch goal (tùy chọn, không bắt buộc): mở rộng StringCalculator hỗ trợ thêm phép nhân/chia với đúng độ ưu tiên toán tử (nhân/chia trước cộng/trừ) — không thay đổi yêu cầu gốc của đề bài, chỉ là bài tập nâng cao thêm.",
+    "Viết bộ unit test JUnit đầy đủ cho bảng acceptance examples thay vì kiểm tra thủ công bằng System.out.println trong main."
+  ],
+  "references": [
+    {
+      "id": "day03-ref-1",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day03-src-1"
+    },
+    {
+      "id": "day03-ref-2",
+      "type": "external",
+      "resourceId": "res-df903793f0b9",
+      "citationId": "day03-src-4"
+    },
+    {
+      "id": "day03-ref-3",
+      "type": "external",
+      "resourceId": "res-82c961b7a92a",
+      "citationId": "day03-src-5"
+    },
+    {
+      "id": "day03-ref-4",
+      "type": "internal",
+      "description": "Kế thừa trực tiếp kiến thức String Pool/tính bất biến từ Day 1 (JVM, JRE, JDK & Data Types)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day03-src-1",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§2. String Interning",
+      "topic": "String Pool"
+    },
+    {
+      "id": "day03-src-2",
+      "resourceId": "res-1cec64c5e683",
+      "locator": "§3. Strings Allocated Using the Constructor",
+      "topic": "new String() vs literal"
+    },
+    {
+      "id": "day03-src-3",
+      "resourceId": "res-df903793f0b9",
+      "locator": "Operators — bảng Operators Precedence",
+      "topic": "Bảng độ ưu tiên toán tử"
+    },
+    {
+      "id": "day03-src-4",
+      "resourceId": "res-df903793f0b9",
+      "locator": "Operators — đoạn giải thích ngay dưới bảng",
+      "topic": "Thứ tự đánh giá toán tử (trái sang phải)"
+    },
+    {
+      "id": "day03-src-5",
+      "resourceId": "res-82c961b7a92a",
+      "locator": "Control Flow Statements — đoạn tổng quan",
+      "topic": "Ba nhóm câu lệnh điều khiển luồng"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Tài nguyên res-62d9985bbc6f được catalog gán cho Day 3 nhưng trả về HTTP 404 khi truy cập thực tế (Task 2, checkedAt 2026-08-22T16:33:26Z); không có nội dung nào được trích dẫn từ tài nguyên này."
+    ]
+  }
+}

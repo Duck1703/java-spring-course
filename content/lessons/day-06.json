@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 1,
+  "id": "day-06",
+  "catalogRef": {
+    "unitId": "unit-02",
+    "group": "java",
+    "title": "- Assignment 2: Employee Management System",
+    "objectives": [
+      "LO2"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      12
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 12,
+        "text": "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+      }
+    ],
+    "resourceIds": [
+      "res-ae202f300a2b",
+      "res-aad15fef0599",
+      "res-36a8d5deef22",
+      "res-b5dd43254a15"
+    ]
+  },
+  "unitId": "unit-02",
+  "group": "java",
+  "kind": "project",
+  "title": "- Assignment 2: Employee Management System",
+  "summary": "Assignment 2: xây dựng hệ thống quản lý lương nhân viên (Employee/Developer/Manager/PayrollService/EmployeeDTO) áp dụng abstract class, kế thừa, polymorphism và record — tổng hợp toàn bộ kiến thức Day 4-5.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO2"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 4 (class, constructor, encapsulation) và Day 5 (kế thừa, polymorphism, abstract class)."
+  ],
+  "outcomes": [
+    "Thiết kế đúng một abstract base class với abstract method và các subclass override đầy đủ.",
+    "Dùng polymorphism động để xử lý một danh sách đối tượng đa hình mà không cần if-else theo loại cụ thể.",
+    "Khai báo và sử dụng đúng record cho một DTO bất biến.",
+    "Viết unit test xác nhận đúng hành vi của từng subclass và của tầng service dùng polymorphism."
+  ],
+  "sections": [
+    {
+      "id": "day06-sec-brief",
+      "title": "Đề bài: Employee Management System",
+      "blocks": [
+        {
+          "id": "day06-blk-1",
+          "type": "deliverable",
+          "text": "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type",
+          "citations": []
+        },
+        {
+          "id": "day06-blk-2",
+          "type": "note",
+          "text": "Assignment này tổng hợp trực tiếp các khái niệm đã học ở Day 4 (class, constructor, encapsulation) và Day 5 (kế thừa, polymorphism, abstract class). Đọc lại hai bài đó trước khi bắt đầu nếu chưa nắm chắc extends/abstract/override.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day06-sec-decomposition",
+      "title": "Phân rã thiết kế (guided decomposition)",
+      "blocks": [
+        {
+          "id": "day06-blk-3",
+          "type": "paragraph",
+          "text": "Hệ thống gồm 5 kiểu: Employee (abstract), Developer và Manager (kế thừa Employee), PayrollService (dùng polymorphism để tính lương hàng loạt), và EmployeeDTO (record dùng để trả dữ liệu ra ngoài tầng service). Việc tách abstract base class + hai subclass cụ thể phản ánh đúng cấu trúc class/object đã học: field chung nằm ở lớp cha, hành vi khác biệt nằm ở lớp con.",
+          "citations": [
+            "day06-src-1"
+          ]
+        },
+        {
+          "id": "day06-blk-4",
+          "type": "important",
+          "text": "Employee phải là abstract class với abstract method calculateSalary() không có thân — vì lớp khai báo ít nhất một abstract method thì bản thân lớp đó bắt buộc phải abstract. Developer và Manager bắt buộc phải override đầy đủ calculateSalary(), nếu không bản thân chúng cũng phải là abstract.",
+          "citations": [
+            "day06-src-7",
+            "day06-src-8"
+          ]
+        },
+        {
+          "id": "day06-blk-5",
+          "type": "paragraph",
+          "text": "Developer và Manager kế thừa Employee bằng extends (Java chỉ hỗ trợ đơn kế thừa lớp), thừa hưởng các field protected của Employee (id, name, baseSalary) và chỉ cần khai báo thêm field riêng (overtimeHours/bonusRate cho Developer, teamSize/kpiMultiplier cho Manager). Constructor của lớp con gọi super(id, name, baseSalary) để khởi tạo phần dữ liệu chung ở lớp cha.",
+          "citations": [
+            "day06-src-2",
+            "day06-src-3",
+            "day06-src-4"
+          ]
+        },
+        {
+          "id": "day06-blk-6",
+          "type": "paragraph",
+          "text": "PayrollService không cần biết cụ thể từng nhân viên là Developer hay Manager: chỉ cần lặp qua một List<Employee> và gọi employee.calculateSalary(), JVM sẽ tự gọi đúng phiên bản đã override của từng đối tượng lúc runtime — đây chính là polymorphism động, lý do abstract class + override được chọn thay vì if-else kiểm tra loại nhân viên.",
+          "citations": [
+            "day06-src-5",
+            "day06-src-6"
+          ]
+        },
+        {
+          "id": "day06-blk-7",
+          "type": "note",
+          "text": "EmployeeDTO nên khai báo dưới dạng record (cú pháp Java 17: record EmployeeDTO(String id, String name, double totalSalary) {}) — record tự sinh constructor, getter dạng id()/name()/totalSalary(), equals()/hashCode()/toString(), phù hợp cho một đối tượng bất biến chỉ mang dữ liệu ra khỏi PayrollService, không cần logic nghiệp vụ riêng.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day06-sec-implementation",
+      "title": "Cài đặt tham khảo",
+      "blocks": [
+        {
+          "id": "day06-blk-8",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.List;\n\nabstract class Employee {\n    protected final String id;\n    protected final String name;\n    protected final double baseSalary;\n\n    protected Employee(String id, String name, double baseSalary) {\n        this.id = id;\n        this.name = name;\n        this.baseSalary = baseSalary;\n    }\n\n    public abstract double calculateSalary();\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}\n\nclass Developer extends Employee {\n    private final double overtimeHours;\n    private final double bonusRate;\n\n    public Developer(String id, String name, double baseSalary,\n                      double overtimeHours, double bonusRate) {\n        super(id, name, baseSalary);\n        this.overtimeHours = overtimeHours;\n        this.bonusRate = bonusRate;\n    }\n\n    @Override\n    public double calculateSalary() {\n        return baseSalary + (overtimeHours * bonusRate);\n    }\n}\n\nclass Manager extends Employee {\n    private final int teamSize;\n    private final double kpiMultiplier;\n\n    public Manager(String id, String name, double baseSalary,\n                    int teamSize, double kpiMultiplier) {\n        super(id, name, baseSalary);\n        this.teamSize = teamSize;\n        this.kpiMultiplier = kpiMultiplier;\n    }\n\n    @Override\n    public double calculateSalary() {\n        return (baseSalary + teamSize * 200.0) * kpiMultiplier;\n    }\n}\n\nrecord EmployeeDTO(String id, String name, double totalSalary) {\n}\n\nclass PayrollService {\n    public List<EmployeeDTO> runPayroll(List<Employee> employees) {\n        return employees.stream()\n                .map(e -> new EmployeeDTO(e.getId(), e.getName(), e.calculateSalary()))\n                .toList();\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day06-src-7",
+            "day06-src-8",
+            "day06-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day06-sec-tests",
+      "title": "Test case gợi ý và rubric",
+      "blocks": [
+        {
+          "id": "day06-blk-9",
+          "type": "table",
+          "columns": [
+            "Test case",
+            "Loại nhân viên",
+            "Input",
+            "calculateSalary() mong đợi"
+          ],
+          "rows": [
+            [
+              "TC1",
+              "Developer",
+              "baseSalary=10,000,000; overtimeHours=10; bonusRate=50,000",
+              "10,500,000"
+            ],
+            [
+              "TC2",
+              "Manager",
+              "baseSalary=20,000,000; teamSize=5; kpiMultiplier=1.1",
+              "22,000,000"
+            ],
+            [
+              "TC3",
+              "PayrollService.runPayroll",
+              "List gồm 1 Developer + 1 Manager (TC1+TC2)",
+              "List<EmployeeDTO> có 2 phần tử, đúng totalSalary từng người"
+            ]
+          ],
+          "citations": [
+            "day06-src-5",
+            "day06-src-6"
+          ]
+        },
+        {
+          "id": "day06-blk-10",
+          "type": "warning",
+          "text": "Viết unit test cho từng subclass riêng (DeveloperTest, ManagerTest) để cô lập công thức tính lương, và ít nhất một test cho PayrollService xác nhận polymorphism hoạt động đúng khi danh sách trộn lẫn nhiều loại Employee — không chỉ test với một loại duy nhất, vì lỗi override sai chữ ký sẽ không lộ ra nếu danh sách chỉ có một kiểu.",
+          "citations": [
+            "day06-src-6"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng if (employee instanceof Developer) ... else if (employee instanceof Manager) ... trong PayrollService thay vì để calculateSalary() tự đa hình — làm mất hết lợi ích của polymorphism và phải sửa PayrollService mỗi khi thêm loại nhân viên mới.",
+    "Quên khai báo Employee là abstract hoặc quên override đầy đủ calculateSalary() ở subclass, dẫn tới lỗi biên dịch.",
+    "Chỉ viết test cho từng subclass riêng lẻ mà không có test nào xác nhận PayrollService xử lý đúng danh sách trộn nhiều loại nhân viên."
+  ],
+  "practices": [
+    {
+      "id": "day06-prac-1",
+      "type": "applied",
+      "interaction": "self-check",
+      "prompt": "Cài đặt đầy đủ Employee (abstract), Developer, Manager, PayrollService và EmployeeDTO (record) theo đúng đề bài, kèm ít nhất 3 unit test xác nhận calculateSalary() đúng cho từng loại nhân viên.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Bắt đầu từ Employee abstract với đúng 3 field yêu cầu (id, name, baseSalary) và abstract method calculateSalary(); dùng cài đặt tham khảo trong bài làm khung sườn, sau đó tự viết test.",
+      "solution": "Xem mục 'Cài đặt tham khảo' ở trên; công thức lương trong lời giải mẫu chỉ là ví dụ minh họa, có thể điều chỉnh miễn giữ đúng cấu trúc class/kế thừa/abstract method theo đề bài.",
+      "explanation": "Không có lời giải cố định — đánh giá theo mức độ đúng cấu trúc OOP.",
+      "rubric": "Đạt yêu cầu khi: Employee là abstract với abstract method đúng chữ ký; Developer/Manager override đầy đủ và kế thừa đúng field chung; EmployeeDTO là record; PayrollService dùng polymorphism (không if-else theo loại lớp); có test cho từng subclass và cho PayrollService.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day06-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao Employee bắt buộc phải là abstract class trong thiết kế này?",
+      "choices": [
+        {
+          "id": "day06-prac-2-a",
+          "text": "Vì nó khai báo ít nhất một abstract method (calculateSalary()) không có thân"
+        },
+        {
+          "id": "day06-prac-2-b",
+          "text": "Vì abstract class chạy nhanh hơn class thường"
+        },
+        {
+          "id": "day06-prac-2-c",
+          "text": "Vì Java bắt buộc mọi lớp cha phải là abstract"
+        },
+        {
+          "id": "day06-prac-2-d",
+          "text": "Vì Employee không có field nào"
+        }
+      ],
+      "correctChoiceIds": [
+        "day06-prac-2-a"
+      ],
+      "hint": "Nhớ lại ràng buộc song song giữa abstract method và abstract class đã học ở Day 5.",
+      "solution": "Vì nó khai báo ít nhất một abstract method (calculateSalary()) không có thân.",
+      "explanation": "Employee khai báo calculateSalary() chỉ với chữ ký, không có thân phương thức — theo quy tắc Java, một lớp có ít nhất một abstract method thì bản thân lớp đó bắt buộc phải khai báo abstract, nếu không trình biên dịch sẽ báo lỗi. Đây không liên quan tới hiệu năng (đáp án B sai), không phải mọi lớp cha đều phải abstract (đáp án C sai, chỉ khi có abstract method), và Employee vẫn có 3 field id/name/baseSalary (đáp án D sai).",
+      "rubric": "Chọn đúng đáp án A và giải thích được vì sao B, C, D sai.",
+      "sourceUsage": [
+        "day06-src-7",
+        "day06-src-8"
+      ]
+    },
+    {
+      "id": "day06-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một unit test (JUnit-style, không cần chạy được, chỉ cần đúng cấu trúc) xác nhận PayrollService.runPayroll() trả về đúng totalSalary cho một danh sách trộn lẫn 1 Developer và 1 Manager.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Tạo danh sách List<Employee> gồm cả hai loại, gọi runPayroll(), rồi so sánh từng EmployeeDTO.totalSalary() với giá trị tính tay.",
+      "solution": "@Test\nvoid runPayroll_mixedEmployees_returnsCorrectTotals() {\n    Employee dev = new Developer(\"E1\", \"An\", 10_000_000, 10, 50_000);\n    Employee mgr = new Manager(\"E2\", \"Binh\", 20_000_000, 5, 1.1);\n    PayrollService service = new PayrollService();\n\n    List<EmployeeDTO> result = service.runPayroll(List.of(dev, mgr));\n\n    assertEquals(2, result.size());\n    assertEquals(10_500_000.0, result.get(0).totalSalary());\n    assertEquals(22_000_000.0, result.get(1).totalSalary());\n}",
+      "explanation": "Lời giải mẫu tạo danh sách trộn hai loại Employee, gọi runPayroll() một lần, và assert đúng totalSalary cho từng phần tử — thể hiện đúng việc test polymorphism thay vì test từng subclass riêng lẻ.",
+      "rubric": "Đạt yêu cầu nếu test tạo được danh sách trộn ≥2 loại Employee, gọi đúng API PayrollService, và assert giá trị totalSalary khớp công thức đã cài đặt.",
+      "sourceUsage": [
+        "day06-src-6"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 12,
+      "text": "- Assignment 2: Employee Management System\n  - Base `Employee` abstract (id, name, baseSalary) + method `calculateSalary()` abstract\n  - Subclass: `Developer` (overtimeHours, bonusRate), `Manager` (teamSize, kpiMultiplier)\n  - `PayrollService` calculates total salary using polymorphism\n  - Uses a Record for `EmployeeDTO`\n  - Unit tests verify the correctness of each salary type"
+    }
+  ],
+  "enhancedExercises": [
+    "Thêm một loại nhân viên thứ ba (ví dụ Intern với stipend cố định) chỉ bằng cách thêm một subclass mới của Employee, không sửa PayrollService — minh chứng lợi ích thực sự của polymorphism.",
+    "Thêm phương thức toString() có ý nghĩa cho EmployeeDTO (record đã tự sinh toString() mặc định, thử so sánh với việc override lại)."
+  ],
+  "references": [
+    {
+      "id": "day06-ref-1",
+      "type": "external",
+      "resourceId": "res-ae202f300a2b",
+      "citationId": "day06-src-1"
+    },
+    {
+      "id": "day06-ref-2",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day06-src-2"
+    },
+    {
+      "id": "day06-ref-3",
+      "type": "external",
+      "resourceId": "res-36a8d5deef22",
+      "citationId": "day06-src-5"
+    },
+    {
+      "id": "day06-ref-4",
+      "type": "external",
+      "resourceId": "res-b5dd43254a15",
+      "citationId": "day06-src-7"
+    },
+    {
+      "id": "day06-ref-5",
+      "type": "internal",
+      "description": "Áp dụng trực tiếp kiến thức kế thừa/polymorphism/abstract class đã học ở Day 5 (Inheritance, Polymorphism & Abstract)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day06-src-1",
+      "resourceId": "res-ae202f300a2b",
+      "locator": "Lesson: Classes and Objects — mục lục",
+      "topic": "Nội dung bài học Classes and Objects"
+    },
+    {
+      "id": "day06-src-2",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§3.1 Extending a Class",
+      "topic": "Kế thừa lớp bằng extends"
+    },
+    {
+      "id": "day06-src-3",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§3.1 Extending a Class",
+      "topic": "Thành viên nào được kế thừa"
+    },
+    {
+      "id": "day06-src-4",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§6.1 Hidden Instance Members",
+      "topic": "this và super khi trùng tên thành viên"
+    },
+    {
+      "id": "day06-src-5",
+      "resourceId": "res-36a8d5deef22",
+      "locator": "§2 Static Polymorphism; §3 Dynamic Polymorphism",
+      "topic": "Polymorphism tĩnh và động"
+    },
+    {
+      "id": "day06-src-6",
+      "resourceId": "res-36a8d5deef22",
+      "locator": "§3 Dynamic Polymorphism",
+      "topic": "Method overriding qua ví dụ GenericFile/ImageFile"
+    },
+    {
+      "id": "day06-src-7",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§2 Key Concepts for Abstract Classes",
+      "topic": "Định nghĩa abstract class"
+    },
+    {
+      "id": "day06-src-8",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§2 Key Concepts for Abstract Classes",
+      "topic": "Ràng buộc với abstract method"
+    },
+    {
+      "id": "day06-src-9",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§3 When to Use Abstract Classes",
+      "topic": "Khi nào nên dùng abstract class"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Cú pháp record (dùng cho EmployeeDTO) không có tài nguyên nào được catalog gán cho Day 6 hoặc Day 4-5 trực tiếp mô tả — cú pháp record được giải thích bằng kiến thức chuẩn Java 17 trong section 'Phân rã thiết kế' (khối note không yêu cầu trích dẫn), không gắn citation giả cho nội dung này."
+    ]
+  }
+}

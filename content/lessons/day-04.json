@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "id": "day-04",
+  "catalogRef": {
+    "unitId": "unit-02",
+    "group": "java",
+    "title": "Classes, Objects, Encapsulation",
+    "objectives": [
+      "LO2"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      8,
+      9
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 9,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-ae202f300a2b",
+      "res-4f42c781654a",
+      "res-563d80135c91",
+      "res-9458879c2540",
+      "res-f31ffcf74f40"
+    ]
+  },
+  "unitId": "unit-02",
+  "group": "java",
+  "kind": "theory",
+  "title": "Classes, Objects, Encapsulation",
+  "summary": "Bài học về cấu trúc class/object, các dạng constructor (mặc định, có tham số, chained qua this()), bốn mức access modifier, cách áp dụng chúng để đạt encapsulation, cùng giới thiệu cú pháp record và super.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO2"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Unit 1 (Day 1-3): kiểu dữ liệu, toán tử, điều khiển luồng, và biết viết một class Java đơn giản với phương thức main."
+  ],
+  "outcomes": [
+    "Mô tả được cấu trúc một class Java: field, method, constructor.",
+    "Viết đúng constructor mặc định, constructor có tham số, và chained constructor bằng this().",
+    "Áp dụng đúng 4 mức access modifier và giải thích khác biệt giữa quy tắc cho lớp top-level và cho thành viên bên trong lớp.",
+    "Thiết kế một class áp dụng encapsulation: field private, constructor xác thực dữ liệu, getter/setter có kiểm soát."
+  ],
+  "sections": [
+    {
+      "id": "day04-sec-structure",
+      "title": "Cấu trúc một class trong Java",
+      "blocks": [
+        {
+          "id": "day04-blk-1",
+          "type": "paragraph",
+          "text": "Một class Java thường gồm ba nhóm thành viên: field (trạng thái, biến instance/static), method (hành vi), và constructor (cách khởi tạo đối tượng). Một object là một instance cụ thể được tạo ra từ class đó bằng từ khóa new, mỗi object có vùng nhớ field riêng nhưng dùng chung định nghĩa method.",
+          "citations": [
+            "day04-src-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day04-sec-constructors",
+      "title": "Constructor: mặc định, có tham số, và chained qua this()",
+      "blocks": [
+        {
+          "id": "day04-blk-2",
+          "type": "paragraph",
+          "text": "Nếu một class không khai báo constructor nào, trình biên dịch tự động thêm một constructor không tham số (no-argument constructor) gán giá trị mặc định cho các field (null cho tham chiếu, 0 cho số, false cho boolean).",
+          "citations": [
+            "day04-src-2"
+          ]
+        },
+        {
+          "id": "day04-blk-3",
+          "type": "paragraph",
+          "text": "Constructor có tham số cho phép khởi tạo trạng thái ban đầu của đối tượng ngay khi tạo, thay vì phải gọi thêm các setter sau khi tạo xong — điều này giúp duy trì tính đóng gói (encapsulation) tốt hơn vì đối tượng không bao giờ tồn tại ở trạng thái 'chưa hợp lệ'.",
+          "citations": [
+            "day04-src-3"
+          ]
+        },
+        {
+          "id": "day04-blk-4",
+          "type": "important",
+          "text": "Một constructor có thể gọi một constructor khác trong cùng class bằng this(...), gọi là chained constructor; lời gọi this(...) (hoặc super(...) gọi constructor lớp cha) bắt buộc phải là câu lệnh đầu tiên trong thân constructor.",
+          "citations": [
+            "day04-src-4"
+          ]
+        },
+        {
+          "id": "day04-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "class Book {\n    private final String title;\n    private final String author;\n    private final int totalPages;\n\n    public Book(String title, String author, int totalPages) {\n        this.title = title;\n        this.author = author;\n        this.totalPages = totalPages;\n    }\n\n    // chained constructor: tac gia mac dinh 'Unknown'\n    public Book(String title, int totalPages) {\n        this(title, \"Unknown\", totalPages);\n    }\n\n    public String getTitle() {\n        return title;\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day04-src-3",
+            "day04-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day04-sec-access",
+      "title": "Access modifier và tính đóng gói (encapsulation)",
+      "blocks": [
+        {
+          "id": "day04-blk-6",
+          "type": "paragraph",
+          "text": "Java có bốn mức truy cập: public (mọi nơi truy cập được), protected (cùng package cộng với lớp con dù khác package), default/package-private — không ghi từ khóa nào (chỉ truy cập được trong cùng package), và private (chỉ trong chính class đó).",
+          "citations": [
+            "day04-src-5"
+          ]
+        },
+        {
+          "id": "day04-blk-7",
+          "type": "table",
+          "columns": [
+            "Modifier",
+            "Cùng class",
+            "Cùng package",
+            "Lớp con khác package",
+            "Nơi khác"
+          ],
+          "rows": [
+            [
+              "public",
+              "Có",
+              "Có",
+              "Có",
+              "Có"
+            ],
+            [
+              "protected",
+              "Có",
+              "Có",
+              "Có",
+              "Không"
+            ],
+            [
+              "default (không ghi)",
+              "Có",
+              "Có",
+              "Không",
+              "Không"
+            ],
+            [
+              "private",
+              "Có",
+              "Không",
+              "Không",
+              "Không"
+            ]
+          ],
+          "citations": [
+            "day04-src-5"
+          ]
+        },
+        {
+          "id": "day04-blk-8",
+          "type": "paragraph",
+          "text": "Một lớp top-level chỉ được khai báo public hoặc default; protected và private chỉ áp dụng cho các thành viên bên trong một lớp (field, method, constructor, nested class), không áp dụng cho chính lớp top-level đó.",
+          "citations": [
+            "day04-src-6"
+          ]
+        },
+        {
+          "id": "day04-blk-9",
+          "type": "note",
+          "text": "JLS khuyến nghị thứ tự chính tắc khi viết modifier: annotation trước, rồi access modifier (public/protected/private), sau đó static/abstract, cuối cùng là final và các từ khóa khác — ví dụ @Override public static final int MAX. Thứ tự này không bắt buộc để biên dịch nhưng là quy ước phong cách nên tuân theo.",
+          "citations": [
+            "day04-src-7"
+          ]
+        },
+        {
+          "id": "day04-blk-10",
+          "type": "important",
+          "text": "Encapsulation trong thực hành là: khai báo field private để ngăn truy cập trực tiếp từ bên ngoài, rồi cung cấp constructor/getter (và setter có kiểm tra hợp lệ, nếu cần cho phép thay đổi) ở mức public — như class Book ở trên: title/author/totalPages đều private, chỉ có thể đọc qua getter, không có cách nào gán trực tiếp field từ bên ngoài class.",
+          "citations": [
+            "day04-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day04-sec-records-super",
+      "title": "Records và từ khóa super — cú pháp cần biết",
+      "blocks": [
+        {
+          "id": "day04-blk-11",
+          "type": "paragraph",
+          "text": "record là một dạng class đặc biệt (từ Java 16) dùng để khai báo gọn một 'data carrier' bất biến: record Point(int x, int y) {} tự động sinh constructor, các getter (x(), y()), cùng equals()/hashCode()/toString() dựa trên các field khai báo trong phần header, giúp giảm code lặp lại so với viết một class thông thường chỉ để gói dữ liệu.",
+          "citations": []
+        },
+        {
+          "id": "day04-blk-12",
+          "type": "paragraph",
+          "text": "Từ khóa super dùng để truy cập tường minh thành viên của lớp cha (superclass) từ lớp con: super.tenField hoặc super.tenMethod() gọi đúng phiên bản của lớp cha khi lớp con có thành viên trùng tên; super(...) ở dòng đầu tiên của constructor lớp con gọi constructor tương ứng của lớp cha. Chi tiết về kế thừa và super sẽ được học sâu ở Day 5.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Đặt lời gọi this(...) không phải câu lệnh đầu tiên trong constructor, gây lỗi biên dịch 'call to this must be first statement'.",
+    "Khai báo field public trực tiếp thay vì private + getter/setter, phá vỡ encapsulation vì code bên ngoài có thể gán giá trị bất hợp lệ mà không qua kiểm tra nào.",
+    "Cố khai báo một lớp top-level là protected hoặc private, dẫn tới lỗi biên dịch vì hai modifier này chỉ hợp lệ cho thành viên bên trong lớp."
+  ],
+  "practices": [
+    {
+      "id": "day04-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Trong một constructor, lời gọi this(...) để gọi một constructor khác cùng class phải nằm ở đâu?",
+      "choices": [
+        {
+          "id": "day04-prac-1-a",
+          "text": "Ở bất kỳ vị trí nào trong thân constructor"
+        },
+        {
+          "id": "day04-prac-1-b",
+          "text": "Là câu lệnh đầu tiên trong thân constructor"
+        },
+        {
+          "id": "day04-prac-1-c",
+          "text": "Là câu lệnh cuối cùng trong thân constructor"
+        },
+        {
+          "id": "day04-prac-1-d",
+          "text": "Chỉ được phép trong constructor không tham số"
+        }
+      ],
+      "correctChoiceIds": [
+        "day04-prac-1-b"
+      ],
+      "hint": "Nhớ quy tắc chained constructor đã nêu trong bài.",
+      "solution": "Là câu lệnh đầu tiên trong thân constructor.",
+      "explanation": "Java yêu cầu lời gọi this(...) (hoặc super(...)) luôn là câu lệnh đầu tiên trong constructor, để đảm bảo constructor được gọi chỉ chạy đúng một lần khởi tạo trước khi phần thân còn lại của constructor hiện tại thực thi. Đặt ở vị trí khác, ở cuối, hoặc giới hạn chỉ constructor không tham số đều không đúng với quy tắc này.",
+      "rubric": "Chọn đúng đáp án B và giải thích được vì sao Java bắt buộc vị trí đó.",
+      "sourceUsage": [
+        "day04-src-4"
+      ]
+    },
+    {
+      "id": "day04-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Một lớp top-level (không phải nested class) trong Java được phép khai báo với access modifier nào?",
+      "choices": [
+        {
+          "id": "day04-prac-2-a",
+          "text": "public hoặc default (không ghi modifier)"
+        },
+        {
+          "id": "day04-prac-2-b",
+          "text": "public, protected, hoặc default"
+        },
+        {
+          "id": "day04-prac-2-c",
+          "text": "private hoặc protected"
+        },
+        {
+          "id": "day04-prac-2-d",
+          "text": "Bất kỳ trong 4 mức truy cập"
+        }
+      ],
+      "correctChoiceIds": [
+        "day04-prac-2-a"
+      ],
+      "hint": "Phân biệt rõ quy tắc áp dụng cho lớp top-level và quy tắc áp dụng cho thành viên bên trong lớp.",
+      "solution": "public hoặc default (không ghi modifier).",
+      "explanation": "protected và private chỉ áp dụng cho thành viên bên trong một lớp (field, method, constructor, nested class), không áp dụng cho chính lớp top-level. Vì vậy một lớp top-level chỉ có hai lựa chọn hợp lệ: public (mọi nơi truy cập được) hoặc default/package-private (chỉ cùng package).",
+      "rubric": "Chọn đúng đáp án A và giải thích được vì sao protected/private không áp dụng cho lớp top-level.",
+      "sourceUsage": [
+        "day04-src-6"
+      ]
+    },
+    {
+      "id": "day04-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một class Java khác (ví dụ BankAccount với field private balance) áp dụng encapsulation: field private, một constructor xác thực giá trị khởi tạo hợp lệ (ví dụ balance không âm), và chỉ cung cấp getter (không cung cấp setter trực tiếp cho balance).",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lại ví dụ class Book ở phần Access modifier — field private, constructor gán giá trị, getter public trả về giá trị.",
+      "solution": "public class BankAccount {\n    private final double balance;\n\n    public BankAccount(double initialBalance) {\n        if (initialBalance < 0) {\n            throw new IllegalArgumentException(\"balance khong duoc am\");\n        }\n        this.balance = initialBalance;\n    }\n\n    public double getBalance() {\n        return balance;\n    }\n}",
+      "explanation": "Lời giải mẫu khai báo field private, xác thực dữ liệu ngay trong constructor (ném lỗi nếu không hợp lệ), và chỉ cung cấp getter, không có setter trực tiếp — đúng tinh thần encapsulation.",
+      "rubric": "Đạt yêu cầu nếu field là private, constructor có xác thực dữ liệu đầu vào, và không có setter public cho phép gán trực tiếp giá trị không qua kiểm tra.",
+      "sourceUsage": [
+        "day04-src-5"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 9,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viết lại class Book ở phần Constructor dưới dạng record (record Book(String title, String author, int totalPages) {}) và so sánh số dòng code cùng hành vi equals()/toString() sinh tự động.",
+    "Thêm một constructor chained thứ ba cho BankAccount (constructor không tham số, mặc định balance = 0) và kiểm tra vẫn giữ nguyên tính bất biến."
+  ],
+  "references": [
+    {
+      "id": "day04-ref-1",
+      "type": "external",
+      "resourceId": "res-ae202f300a2b",
+      "citationId": "day04-src-1"
+    },
+    {
+      "id": "day04-ref-2",
+      "type": "external",
+      "resourceId": "res-4f42c781654a",
+      "citationId": "day04-src-4"
+    },
+    {
+      "id": "day04-ref-3",
+      "type": "external",
+      "resourceId": "res-563d80135c91",
+      "citationId": "day04-src-5"
+    },
+    {
+      "id": "day04-ref-4",
+      "type": "internal",
+      "description": "Kế thừa (extends), method overriding và super sẽ được học sâu ở Day 5 (Inheritance, Polymorphism & Abstract)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day04-src-1",
+      "resourceId": "res-ae202f300a2b",
+      "locator": "Lesson: Classes and Objects — mục lục",
+      "topic": "Nội dung bài học Classes and Objects"
+    },
+    {
+      "id": "day04-src-2",
+      "resourceId": "res-4f42c781654a",
+      "locator": "§3. A No-Argument Constructor",
+      "topic": "Constructor mặc định"
+    },
+    {
+      "id": "day04-src-3",
+      "resourceId": "res-4f42c781654a",
+      "locator": "§4. A Parameterized Constructor",
+      "topic": "Constructor có tham số"
+    },
+    {
+      "id": "day04-src-4",
+      "resourceId": "res-4f42c781654a",
+      "locator": "§6. A Chained Constructor",
+      "topic": "Gọi constructor khác bằng this()"
+    },
+    {
+      "id": "day04-src-5",
+      "resourceId": "res-563d80135c91",
+      "locator": "§1 Overview; §6 Comparison table",
+      "topic": "Bốn mức truy cập"
+    },
+    {
+      "id": "day04-src-6",
+      "resourceId": "res-563d80135c91",
+      "locator": "§1 Overview",
+      "topic": "Lớp top-level chỉ dùng public/default"
+    },
+    {
+      "id": "day04-src-7",
+      "resourceId": "res-563d80135c91",
+      "locator": "§7 Canonical Order of Modifiers",
+      "topic": "Thứ tự chính tắc của modifier"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Chủ đề 'Records' trong outline gốc của Day 4 không có nguồn đọc được nào được gán riêng cho lesson này; phần trình bày dựa trên cú pháp ngôn ngữ Java 17 chuẩn (record đã ổn định từ Java 16), không kèm trích dẫn nguồn ngoài, không đưa vào sourceUsage.",
+      "Chủ đề 'super' trong outline gốc của Day 4 chỉ có nguồn phù hợp (res-aad15fef0599) được catalog gán cho Day 5, không được gán cho Day 4; phần giới thiệu ngắn về super ở Day 4 không kèm trích dẫn nguồn ngoài và sẽ được học sâu, có trích dẫn đầy đủ, ở Day 5.",
+      "Hai tài nguyên res-9458879c2540 và res-f31ffcf74f40 được catalog gán cho Day 4 nhưng trả về HTTP 404 khi truy cập thực tế (Task 2, checkedAt 2026-08-22T16:33:26Z); không có nội dung nào được trích dẫn từ hai tài nguyên này."
+    ]
+  }
+}

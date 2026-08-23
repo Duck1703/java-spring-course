@@ -1,0 +1,468 @@
+{
+  "schemaVersion": 1,
+  "id": "day-02",
+  "catalogRef": {
+    "unitId": "unit-01",
+    "group": "java",
+    "title": "Operators & Control Flow",
+    "objectives": [
+      "LO1"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      5,
+      6
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-df903793f0b9",
+      "res-82c961b7a92a",
+      "res-28fe8d3fda30",
+      "res-284db3d782e6",
+      "res-740a979a150e"
+    ]
+  },
+  "unitId": "unit-01",
+  "group": "java",
+  "kind": "theory",
+  "title": "Operators & Control Flow",
+  "summary": "Bài học về toán tử và độ ưu tiên, ba nhóm câu lệnh điều khiển luồng, switch statement/expression/pattern matching theo chuẩn Java 17, vòng lặp for/enhanced-for, và một cái nhìn giới thiệu về Stream.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO1"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 1 (JVM, kiểu dữ liệu, String Pool).",
+    "Biết khai báo biến, viết phương thức main, biên dịch/chạy chương trình Java."
+  ],
+  "outcomes": [
+    "Đọc và giải thích được thứ tự ưu tiên khi một biểu thức chứa nhiều toán tử.",
+    "Phân biệt ba nhóm câu lệnh điều khiển luồng: quyết định, lặp, rẽ nhánh.",
+    "Viết đúng switch statement kiểu cũ và switch expression kiểu Java 17, giải thích được fall-through và cách tránh nó.",
+    "Dùng pattern matching với instanceof để thay thế ép kiểu thủ công.",
+    "Viết vòng lặp for/enhanced-for đúng cú pháp và biết Stream API dùng để làm gì."
+  ],
+  "sections": [
+    {
+      "id": "day02-sec-operators",
+      "title": "Toán tử và thứ tự ưu tiên",
+      "blocks": [
+        {
+          "id": "day02-blk-1",
+          "type": "paragraph",
+          "text": "Java có nhiều nhóm toán tử: số học, so sánh, logic, gán... Khi một biểu thức chứa nhiều toán tử, JVM/trình biên dịch cần một quy tắc rõ ràng để quyết định toán tử nào được áp dụng trước — đó là độ ưu tiên (precedence).",
+          "citations": [
+            "day02-src-1"
+          ]
+        },
+        {
+          "id": "day02-blk-2",
+          "type": "table",
+          "columns": [
+            "Nhóm toán tử",
+            "Ví dụ",
+            "Ưu tiên tương đối"
+          ],
+          "rows": [
+            [
+              "Postfix",
+              "expr++, expr--",
+              "Cao nhất"
+            ],
+            [
+              "Unary",
+              "++expr, --expr, +expr, -expr, !",
+              "Cao"
+            ],
+            [
+              "Nhân chia, phần dư",
+              "*, /, %",
+              "Trung bình-cao"
+            ],
+            [
+              "Cộng trừ",
+              "+, -",
+              "Trung bình"
+            ],
+            [
+              "So sánh quan hệ",
+              "<, >, <=, >=, instanceof",
+              "Trung bình-thấp"
+            ],
+            [
+              "Logic (AND/OR)",
+              "&&, ||",
+              "Thấp"
+            ],
+            [
+              "Gán",
+              "=, +=, -=, *=, /=",
+              "Thấp nhất"
+            ]
+          ],
+          "citations": [
+            "day02-src-1"
+          ]
+        },
+        {
+          "id": "day02-blk-3",
+          "type": "paragraph",
+          "text": "Hầu hết toán tử hai ngôi (binary) được đánh giá từ trái sang phải; ngoại lệ đáng chú ý là các toán tử gán (=, +=, ...) được đánh giá từ phải sang trái, đó là lý do a = b = c hợp lệ và gán c cho b rồi gán b cho a.",
+          "citations": [
+            "day02-src-2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day02-sec-control-flow",
+      "title": "Ba nhóm câu lệnh điều khiển luồng",
+      "blocks": [
+        {
+          "id": "day02-blk-4",
+          "type": "paragraph",
+          "text": "Java chia các câu lệnh điều khiển luồng thành ba nhóm: nhóm quyết định (if-then, if-then-else, switch) chọn một trong nhiều nhánh thực thi; nhóm lặp (for, while, do-while) lặp lại một khối lệnh; nhóm rẽ nhánh (break, continue, return) thay đổi thứ tự thực thi bình thường.",
+          "citations": [
+            "day02-src-3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day02-sec-switch",
+      "title": "switch: statement, switch expression và pattern matching",
+      "blocks": [
+        {
+          "id": "day02-blk-5",
+          "type": "paragraph",
+          "text": "switch làm việc với các kiểu byte, short, char, int (và lớp bọc tương ứng), kiểu enum và String. Cú pháp switch block có hai dạng: switch rule dùng mũi tên -> (mỗi nhánh dẫn tới một biểu thức, một block, hoặc throw, không fall-through), và switch labeled statement group kiểu cũ dùng dấu hai chấm (:), có fall-through nếu thiếu break.",
+          "citations": [
+            "day02-src-4",
+            "day02-src-7",
+            "day02-src-8"
+          ]
+        },
+        {
+          "id": "day02-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "class SwitchClassicDemo {\n    public static void main(String[] args) {\n        int month = 3;\n        String season;\n        switch (month) {\n            case 12:\n            case 1:\n            case 2:\n                season = \"Winter\";\n                break;\n            case 3:\n            case 4:\n            case 5:\n                season = \"Spring\";\n                break;\n            default:\n                season = \"Unknown\";\n        }\n        System.out.println(season); // Spring\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day02-src-4",
+            "day02-src-9"
+          ]
+        },
+        {
+          "id": "day02-blk-7",
+          "type": "warning",
+          "text": "Trong switch labeled statement kiểu cũ (dùng dấu hai chấm), nếu quên break, thực thi sẽ 'rơi tiếp' (fall-through) xuống case ngay bên dưới và tiếp tục chạy các lệnh ở đó cho tới khi gặp break hoặc hết block — một nguồn lỗi rất phổ biến với người mới.",
+          "citations": [
+            "day02-src-5",
+            "day02-src-9"
+          ]
+        },
+        {
+          "id": "day02-blk-8",
+          "type": "code",
+          "language": "java",
+          "code": "class SwitchExpressionDemo {\n    public static void main(String[] args) {\n        int month = 3;\n        String season = switch (month) {\n            case 12, 1, 2 -> \"Winter\";\n            case 3, 4, 5 -> \"Spring\";\n            default -> {\n                yield \"Unknown\";\n            }\n        };\n        System.out.println(season); // Spring\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day02-src-7"
+          ]
+        },
+        {
+          "id": "day02-blk-9",
+          "type": "paragraph",
+          "text": "Từ Java SE 7, biểu thức switch cũng có thể là một String, so khớp bằng String.equals() với từng nhãn case — ví dụ chuyển tên tháng thành số thứ tự tháng.",
+          "citations": [
+            "day02-src-6"
+          ]
+        },
+        {
+          "id": "day02-blk-10",
+          "type": "note",
+          "text": "Pattern matching cơ bản: một type pattern kiểm tra một giá trị có phải instance của kiểu chỉ định hay không; nếu khớp, một biến pattern được khởi tạo với giá trị đó để dùng tiếp ngay trong biểu thức, không cần ép kiểu thủ công.",
+          "citations": [
+            "day02-src-10"
+          ]
+        },
+        {
+          "id": "day02-blk-11",
+          "type": "code",
+          "language": "java",
+          "code": "class PatternMatchingDemo {\n    static String describe(Object value) {\n        if (value instanceof String s) {\n            return \"String co do dai \" + s.length();\n        } else if (value instanceof Integer i) {\n            return \"Integer gap doi la \" + (i * 2);\n        }\n        return \"Khong xac dinh\";\n    }\n\n    public static void main(String[] args) {\n        System.out.println(describe(\"java\"));\n        System.out.println(describe(21));\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day02-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day02-sec-loops",
+      "title": "Vòng lặp for, enhanced for và giới thiệu Stream",
+      "blocks": [
+        {
+          "id": "day02-blk-12",
+          "type": "paragraph",
+          "text": "Vòng lặp for cơ bản gồm ba phần trong dấu ngoặc đơn: khởi tạo (chạy một lần trước khi lặp), điều kiện dừng (kiểm tra trước mỗi vòng, còn true thì tiếp tục lặp) và biểu thức tăng/giảm (chạy sau mỗi vòng lặp).",
+          "citations": [
+            "day02-src-11"
+          ]
+        },
+        {
+          "id": "day02-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "class ForLoopDemo {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3, 4, 5};\n        int sum = 0;\n        for (int i = 0; i < numbers.length; i++) {\n            sum += numbers[i];\n        }\n        System.out.println(\"sum(for) = \" + sum);\n\n        int sumEnhanced = 0;\n        for (int n : numbers) {\n            sumEnhanced += n;\n        }\n        System.out.println(\"sum(enhanced for) = \" + sumEnhanced);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day02-src-11",
+            "day02-src-12"
+          ]
+        },
+        {
+          "id": "day02-blk-14",
+          "type": "paragraph",
+          "text": "Dạng for nâng cao (enhanced for / for-each) dùng để duyệt mảng hoặc Collection mà không cần quản lý chỉ số thủ công, được khuyến nghị dùng khi có thể vì code ngắn gọn và ít lỗi off-by-one hơn.",
+          "citations": [
+            "day02-src-12"
+          ]
+        },
+        {
+          "id": "day02-blk-15",
+          "type": "paragraph",
+          "text": "Java Stream API (gói java.util.stream) cung cấp một cách khai báo (declarative) để xử lý dãy phần tử — ví dụ numbers.stream().filter(n -> n % 2 == 0).sum() thay cho một vòng for thủ công. Ngày 2 chỉ giới thiệu khái niệm để so sánh với vòng lặp truyền thống; Stream API sẽ được học sâu ở các buổi Collections/Streams của Unit sau.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Quên break trong switch labeled statement kiểu cũ, khiến chương trình vô tình chạy xuyên qua các case tiếp theo (fall-through).",
+    "Nhầm độ ưu tiên toán tử khi viết biểu thức phức tạp (ví dụ quên ngoặc quanh phép so sánh trước &&/||), dẫn tới kết quả logic sai.",
+    "Ép kiểu thủ công (cast) sau khi đã kiểm tra instanceof thay vì dùng pattern variable có sẵn từ instanceof pattern, khiến code dài dòng và dễ ClassCastException nếu điều kiện kiểm tra sai đối tượng."
+  ],
+  "practices": [
+    {
+      "id": "day02-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Trong một switch labeled statement kiểu cũ (dùng dấu hai chấm), điều gì xảy ra nếu một nhánh case thiếu lệnh break?",
+      "choices": [
+        {
+          "id": "day02-prac-1-a",
+          "text": "Chương trình báo lỗi biên dịch"
+        },
+        {
+          "id": "day02-prac-1-b",
+          "text": "switch tự động dừng lại như có break"
+        },
+        {
+          "id": "day02-prac-1-c",
+          "text": "Thực thi rơi tiếp (fall-through) xuống case kế tiếp cho tới khi gặp break hoặc hết block"
+        },
+        {
+          "id": "day02-prac-1-d",
+          "text": "Chỉ default được thực thi"
+        }
+      ],
+      "correctChoiceIds": [
+        "day02-prac-1-c"
+      ],
+      "hint": "Nhớ từ khóa 'fall-through' được nhắc trong bài.",
+      "solution": "Thực thi rơi tiếp (fall-through) xuống case kế tiếp cho tới khi gặp break hoặc hết block.",
+      "explanation": "Đây là hành vi mặc định của switch labeled statement kiểu cũ: các case chỉ là nhãn (label) đánh dấu điểm bắt đầu, không phải rào chắn — thiếu break thì luồng thực thi tiếp tục chạy xuyên qua các case tiếp theo. Không có lỗi biên dịch, không tự dừng, và không chỉ chạy default.",
+      "rubric": "Chọn đúng đáp án fall-through và giải thích được vì sao case chỉ là nhãn chứ không phải rào chắn.",
+      "sourceUsage": [
+        "day02-src-5",
+        "day02-src-9"
+      ]
+    },
+    {
+      "id": "day02-prac-2",
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "switch expression sau trả về giá trị gì cho season khi month = 7?\nString season = switch (month) {\n    case 12, 1, 2 -> \"Winter\";\n    case 3, 4, 5 -> \"Spring\";\n    case 6, 7, 8 -> \"Summer\";\n    default -> \"Unknown\";\n};",
+      "choices": [
+        {
+          "id": "day02-prac-2-a",
+          "text": "\"Spring\""
+        },
+        {
+          "id": "day02-prac-2-b",
+          "text": "\"Summer\""
+        },
+        {
+          "id": "day02-prac-2-c",
+          "text": "\"Unknown\""
+        },
+        {
+          "id": "day02-prac-2-d",
+          "text": "Lỗi biên dịch vì thiếu break"
+        }
+      ],
+      "correctChoiceIds": [
+        "day02-prac-2-b"
+      ],
+      "hint": "Trong switch rule dùng mũi tên ->, mỗi case chỉ khớp đúng danh sách nhãn của nó, không cần break và không fall-through.",
+      "solution": "\"Summer\" — case 6, 7, 8 khớp với month = 7.",
+      "explanation": "switch rule (mũi tên ->) không có fall-through: mỗi nhánh chỉ thực thi khi giá trị khớp đúng danh sách nhãn của nó, month = 7 khớp case 6, 7, 8 nên trả về \"Summer\". Cú pháp arrow cũng không cần và không dùng break.",
+      "rubric": "Chọn đúng \"Summer\" và giải thích được switch rule không fall-through nên không cần break.",
+      "sourceUsage": [
+        "day02-src-7"
+      ]
+    },
+    {
+      "id": "day02-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "So sánh ngắn gọn switch statement kiểu cũ (dùng dấu hai chấm) và switch expression mới (dùng mũi tên ->): nêu ít nhất hai điểm khác biệt.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về fall-through, từ khóa yield, và việc gán trực tiếp kết quả cho một biến.",
+      "solution": "(1) switch kiểu cũ có thể fall-through nếu thiếu break, switch rule dùng -> không fall-through. (2) switch expression có thể trả về giá trị trực tiếp để gán cho biến (dùng yield trong block phức tạp), còn switch statement kiểu cũ chỉ thực thi lệnh, không tự trả giá trị.",
+      "explanation": "Câu trả lời tốt nêu được ít nhất: khác biệt về fall-through, và khác biệt về khả năng trả giá trị trực tiếp (yield) của switch expression.",
+      "rubric": "Đạt yêu cầu nếu nêu đúng ít nhất hai khác biệt thực chất, không chỉ nói 'cú pháp khác nhau' chung chung.",
+      "sourceUsage": [
+        "day02-src-7",
+        "day02-src-9"
+      ]
+    },
+    {
+      "id": "day02-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một phương thức Java dùng pattern matching với instanceof (không ép kiểu thủ công bằng cast) để nhận một Object và trả về một String mô tả: nếu là String thì trả về độ dài, nếu là Integer thì trả về giá trị nhân đôi, còn lại trả về \"Khong xac dinh\".",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Cú pháp: if (value instanceof String s) { ... dùng s trực tiếp ... }",
+      "solution": "static String describe(Object value) {\n    if (value instanceof String s) {\n        return \"do dai \" + s.length();\n    } else if (value instanceof Integer i) {\n        return \"gap doi \" + (i * 2);\n    }\n    return \"Khong xac dinh\";\n}",
+      "explanation": "Lời giải mẫu dùng đúng cú pháp type pattern (instanceof String s) để vừa kiểm tra kiểu vừa khởi tạo biến pattern dùng ngay, không cast thủ công kiểu (String) value.",
+      "rubric": "Đạt yêu cầu nếu dùng đúng cú pháp instanceof pattern (không cast thủ công) và xử lý đúng cả ba nhánh String/Integer/khác.",
+      "sourceUsage": [
+        "day02-src-10"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viết lại đoạn switch kiểu cũ (dùng dấu hai chấm) ở phần switch sang switch expression dùng mũi tên -> và so sánh độ dài/độ rõ ràng của code.",
+    "Viết một vòng for cơ bản và một enhanced for cùng tính tổng một mảng int, đo thử bằng System.nanoTime() để cảm nhận không có khác biệt hiệu năng đáng kể ở quy mô nhỏ."
+  ],
+  "references": [
+    {
+      "id": "day02-ref-1",
+      "type": "external",
+      "resourceId": "res-df903793f0b9",
+      "citationId": "day02-src-1"
+    },
+    {
+      "id": "day02-ref-2",
+      "type": "external",
+      "resourceId": "res-82c961b7a92a",
+      "citationId": "day02-src-3"
+    },
+    {
+      "id": "day02-ref-3",
+      "type": "external",
+      "resourceId": "res-28fe8d3fda30",
+      "citationId": "day02-src-4"
+    },
+    {
+      "id": "day02-ref-4",
+      "type": "external",
+      "resourceId": "res-284db3d782e6",
+      "citationId": "day02-src-7"
+    },
+    {
+      "id": "day02-ref-5",
+      "type": "external",
+      "resourceId": "res-740a979a150e",
+      "citationId": "day02-src-11"
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day02-src-1",
+      "resourceId": "res-df903793f0b9",
+      "locator": "Operators — bảng Operators Precedence",
+      "topic": "Bảng độ ưu tiên toán tử"
+    },
+    {
+      "id": "day02-src-2",
+      "resourceId": "res-df903793f0b9",
+      "locator": "Operators — đoạn giải thích ngay dưới bảng",
+      "topic": "Thứ tự đánh giá toán tử"
+    },
+    {
+      "id": "day02-src-3",
+      "resourceId": "res-82c961b7a92a",
+      "locator": "Control Flow Statements — đoạn tổng quan",
+      "topic": "Ba nhóm câu lệnh điều khiển luồng"
+    },
+    {
+      "id": "day02-src-4",
+      "resourceId": "res-28fe8d3fda30",
+      "locator": "The switch Statement",
+      "topic": "switch hoạt động trên kiểu nào"
+    },
+    {
+      "id": "day02-src-5",
+      "resourceId": "res-28fe8d3fda30",
+      "locator": "The switch Statement — đoạn giải thích break",
+      "topic": "Vai trò của break trong switch"
+    },
+    {
+      "id": "day02-src-6",
+      "resourceId": "res-28fe8d3fda30",
+      "locator": "Using Strings in switch Statements",
+      "topic": "switch trên String"
+    },
+    {
+      "id": "day02-src-7",
+      "resourceId": "res-284db3d782e6",
+      "locator": "§14.11.1 Switch Blocks",
+      "topic": "Cấu trúc switch block (rule vs labeled)"
+    },
+    {
+      "id": "day02-src-8",
+      "resourceId": "res-284db3d782e6",
+      "locator": "§14.11 The switch Statement",
+      "topic": "Kiểu dữ liệu hợp lệ cho switch"
+    },
+    {
+      "id": "day02-src-9",
+      "resourceId": "res-284db3d782e6",
+      "locator": "§14.11.3 Execution of a switch Statement, Example 14.11.3-1",
+      "topic": "Fall-through trong switch nhãn kiểu cũ"
+    },
+    {
+      "id": "day02-src-10",
+      "resourceId": "res-284db3d782e6",
+      "locator": "§14.30.1 Kinds of Patterns; §14.30.2 Pattern Matching",
+      "topic": "Pattern matching cơ bản (type pattern)"
+    },
+    {
+      "id": "day02-src-11",
+      "resourceId": "res-740a979a150e",
+      "locator": "The for Statement — cú pháp chung",
+      "topic": "Cú pháp for cơ bản"
+    },
+    {
+      "id": "day02-src-12",
+      "resourceId": "res-740a979a150e",
+      "locator": "The for Statement — Enhanced for",
+      "topic": "Enhanced for (for-each)"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Chủ đề 'Stream intro' trong outline gốc của Day 2 không có nguồn đọc được nào được gán riêng cho lesson này; phần giới thiệu Stream trong bài chỉ mang tính so sánh khái niệm, không kèm trích dẫn nguồn ngoài, không đưa vào sourceUsage. Nội dung Stream đầy đủ sẽ được học ở Collections/Streams (Unit sau)."
+    ]
+  }
+}

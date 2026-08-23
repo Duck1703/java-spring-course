@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "id": "day-05",
+  "catalogRef": {
+    "unitId": "unit-02",
+    "group": "java",
+    "title": "Inheritance, Polymorphism & Abstract",
+    "objectives": [
+      "LO2"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      10,
+      11
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-aad15fef0599",
+      "res-36a8d5deef22",
+      "res-b5dd43254a15",
+      "res-10672cc3a9fa"
+    ]
+  },
+  "unitId": "unit-02",
+  "group": "java",
+  "kind": "theory",
+  "title": "Inheritance, Polymorphism & Abstract",
+  "summary": "Bài học về kế thừa lớp bằng extends, this/super khi trùng tên thành viên, phân biệt method overloading (tĩnh) và overriding (động), upcast/downcast an toàn với instanceof, và thiết kế abstract class.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO2"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 4 (class, object, constructor, access modifier, encapsulation)."
+  ],
+  "outcomes": [
+    "Viết đúng cú pháp kế thừa lớp bằng extends và gọi constructor lớp cha bằng super(...).",
+    "Dùng đúng this/super để phân biệt thành viên bị che (hidden member) giữa lớp con và lớp cha.",
+    "Phân biệt method overloading (compile-time) và method overriding (runtime), giải thích được polymorphism tĩnh và động.",
+    "Downcast an toàn bằng instanceof, tránh ClassCastException.",
+    "Thiết kế được một abstract class với abstract method và code dùng chung."
+  ],
+  "sections": [
+    {
+      "id": "day05-sec-inheritance",
+      "title": "Kế thừa (Inheritance) với extends",
+      "blocks": [
+        {
+          "id": "day05-blk-1",
+          "type": "paragraph",
+          "text": "Một lớp kế thừa lớp khác bằng từ khóa extends và có thể bổ sung field/method mới bên cạnh những gì thừa hưởng từ lớp cha. Java chỉ hỗ trợ đơn kế thừa với lớp (mỗi lớp chỉ extends được đúng một lớp cha), khác với một số ngôn ngữ cho phép đa kế thừa lớp.",
+          "citations": [
+            "day05-src-1"
+          ]
+        },
+        {
+          "id": "day05-blk-2",
+          "type": "paragraph",
+          "text": "Lớp con kế thừa các thành viên non-static protected và public của lớp cha; thành viên private và static không được kế thừa (static member vẫn truy cập được qua tên lớp cha, nhưng không phải theo cơ chế kế thừa instance).",
+          "citations": [
+            "day05-src-2"
+          ]
+        },
+        {
+          "id": "day05-blk-3",
+          "type": "important",
+          "text": "Một lớp chỉ kế thừa được một lớp cha (extends) nhưng có thể implement nhiều interface cùng lúc. Nếu hai interface có default method trùng chữ ký, lớp implement bắt buộc phải tự override lại phương thức đó để giải quyết xung đột — trình biên dịch không tự chọn thay.",
+          "citations": [
+            "day05-src-3"
+          ]
+        },
+        {
+          "id": "day05-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "class Animal {\n    protected String name;\n\n    public Animal(String name) {\n        this.name = name;\n    }\n\n    public String makeSound() {\n        return name + \" makes a generic sound\";\n    }\n}\n\nclass Dog extends Animal {\n    public Dog(String name) {\n        super(name); // goi constructor cua Animal\n    }\n\n    @Override\n    public String makeSound() {\n        return name + \" barks\"; // truy cap field ke thua tu Animal\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-1",
+            "day05-src-2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day05-sec-this-super",
+      "title": "this và super khi trùng tên thành viên",
+      "blocks": [
+        {
+          "id": "day05-blk-5",
+          "type": "paragraph",
+          "text": "Khi lớp con và lớp cha khai báo biến hoặc phương thức cùng tên (hidden instance member), dùng super.tenThanhVien để truy cập tường minh thành viên của lớp cha, và this.tenThanhVien để truy cập thành viên của lớp con hiện tại — tránh nhầm lẫn giá trị nào đang được dùng.",
+          "citations": [
+            "day05-src-4"
+          ]
+        },
+        {
+          "id": "day05-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "class Base {\n    protected int level = 1;\n}\n\nclass Advanced extends Base {\n    protected int level = 2; // che field 'level' cua Base\n\n    public void printLevels() {\n        System.out.println(\"this.level = \" + this.level);   // 2\n        System.out.println(\"super.level = \" + super.level); // 1\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day05-sec-polymorphism",
+      "title": "Method Overriding, Overloading và Polymorphism",
+      "blocks": [
+        {
+          "id": "day05-blk-7",
+          "type": "paragraph",
+          "text": "Polymorphism (đa hình) trong Java chia làm hai loại: polymorphism tĩnh (static, còn gọi là compile-time) được giải quyết ngay lúc biên dịch — ví dụ method overloading (nhiều method cùng tên khác danh sách tham số); và polymorphism động (dynamic, runtime) được JVM giải quyết khi gọi một phương thức đã được override trên subclass, tùy vào kiểu thực sự của đối tượng lúc chạy.",
+          "citations": [
+            "day05-src-5"
+          ]
+        },
+        {
+          "id": "day05-blk-8",
+          "type": "paragraph",
+          "text": "Ví dụ điển hình của polymorphism động: nếu một subclass override lại một phương thức của lớp cha rồi được gán cho một biến khai báo kiểu lớp cha, JVM vẫn gọi đúng phiên bản đã override của subclass lúc runtime, nhờ JVM giữ tham chiếu tới kiểu thực sự của đối tượng chứ không dựa vào kiểu khai báo của biến.",
+          "citations": [
+            "day05-src-6"
+          ]
+        },
+        {
+          "id": "day05-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "class Shape {\n    public double area() {\n        return 0;\n    }\n\n    // method overloading: cung ten describe, khac danh sach tham so\n    public String describe() {\n        return \"Shape with area \" + area();\n    }\n\n    public String describe(String prefix) {\n        return prefix + \": \" + describe();\n    }\n}\n\nclass Circle extends Shape {\n    private final double radius;\n\n    public Circle(double radius) {\n        this.radius = radius;\n    }\n\n    @Override // method overriding: cung chu ky voi Shape.area()\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nclass PolymorphismDemo {\n    public static void main(String[] args) {\n        Shape shape = new Circle(2.0); // bien khai bao kieu Shape\n        System.out.println(shape.describe()); // goi Circle.area() luc runtime\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-5",
+            "day05-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day05-sec-downcast",
+      "title": "Upcast, downcast và ClassCastException",
+      "blocks": [
+        {
+          "id": "day05-blk-10",
+          "type": "warning",
+          "text": "Ép kiểu từ lớp cha xuống lớp con (downcast) khi đối tượng thực sự không phải kiểu đó sẽ ném ClassCastException lúc runtime — nên luôn dùng instanceof (hoặc pattern matching instanceof đã học ở Day 2) để kiểm tra trước khi ép kiểu, thay vì ép kiểu 'liều'.",
+          "citations": [
+            "day05-src-7"
+          ]
+        },
+        {
+          "id": "day05-blk-11",
+          "type": "code",
+          "language": "java",
+          "code": "class Shape {\n    public double area() {\n        return 0;\n    }\n}\n\nclass Circle extends Shape {\n    private final double radius;\n\n    public Circle(double radius) {\n        this.radius = radius;\n    }\n\n    @Override\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nclass DowncastDemo {\n    public static void main(String[] args) {\n        Shape shape = new Circle(1.5);\n\n        if (shape instanceof Circle circle) { // downcast an toan\n            System.out.println(\"radius-based area: \" + circle.area());\n        } else {\n            System.out.println(\"Khong phai Circle, bo qua downcast\");\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day05-sec-abstract",
+      "title": "Abstract class",
+      "blocks": [
+        {
+          "id": "day05-blk-12",
+          "type": "paragraph",
+          "text": "Một lớp được khai báo abstract bằng từ khóa abstract; lớp abstract không thể khởi tạo trực tiếp bằng new nhưng có thể được kế thừa để các lớp con cụ thể hóa.",
+          "citations": [
+            "day05-src-8"
+          ]
+        },
+        {
+          "id": "day05-blk-13",
+          "type": "important",
+          "text": "Nếu một lớp khai báo ít nhất một abstract method (method không có thân, chỉ có chữ ký), bản thân lớp đó cũng bắt buộc phải là abstract. Lớp con phải cài đặt (override) toàn bộ abstract method kế thừa được, hoặc chính lớp con đó cũng phải khai báo abstract.",
+          "citations": [
+            "day05-src-9"
+          ]
+        },
+        {
+          "id": "day05-blk-14",
+          "type": "paragraph",
+          "text": "Nên dùng abstract class khi muốn dùng chung code (field, method đã cài đặt sẵn) giữa các lớp con có quan hệ họ hàng gần, đồng thời định nghĩa một phần API bắt buộc lớp con phải tự cài đặt — tận dụng cả kế thừa lẫn đa hình trong cùng một thiết kế.",
+          "citations": [
+            "day05-src-10"
+          ]
+        },
+        {
+          "id": "day05-blk-15",
+          "type": "code",
+          "language": "java",
+          "code": "abstract class Vehicle {\n    protected final String plateNumber;\n\n    protected Vehicle(String plateNumber) {\n        this.plateNumber = plateNumber;\n    }\n\n    public abstract double calculateTollFee(); // bat buoc lop con cai dat\n\n    public String getPlateNumber() { // code dung chung, khong can override\n        return plateNumber;\n    }\n}\n\nclass Motorbike extends Vehicle {\n    public Motorbike(String plateNumber) {\n        super(plateNumber);\n    }\n\n    @Override\n    public double calculateTollFee() {\n        return 5000.0;\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-8",
+            "day05-src-9"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Ép kiểu downcast trực tiếp mà không kiểm tra instanceof trước, gây ClassCastException khi đối tượng thực sự không phải kiểu đích.",
+    "Nhầm lẫn method overloading với method overriding — ví dụ tưởng đổi kiểu trả về hoặc chỉ đổi tên tham số (không đổi kiểu/số lượng) là overloading hợp lệ.",
+    "Quên rằng field bị 'che' (hidden) theo kiểu khai báo của biến (không có polymorphism động cho field như với method), dẫn tới đọc nhầm giá trị khi dùng biến kiểu lớp cha để truy cập field."
+  ],
+  "practices": [
+    {
+      "id": "day05-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Nếu một class khai báo ít nhất một abstract method, điều gì bắt buộc phải đúng?",
+      "choices": [
+        {
+          "id": "day05-prac-1-a",
+          "text": "Class đó cũng phải được khai báo abstract"
+        },
+        {
+          "id": "day05-prac-1-b",
+          "text": "Class đó có thể khởi tạo trực tiếp bằng new nếu cần"
+        },
+        {
+          "id": "day05-prac-1-c",
+          "text": "Chỉ lớp con mới cần abstract, lớp khai báo method thì không"
+        },
+        {
+          "id": "day05-prac-1-d",
+          "text": "Method đó phải có thân (body) rỗng {}"
+        }
+      ],
+      "correctChoiceIds": [
+        "day05-prac-1-a"
+      ],
+      "hint": "Nhớ ràng buộc song song giữa abstract method và abstract class.",
+      "solution": "Class đó cũng phải được khai báo abstract.",
+      "explanation": "Java bắt buộc: nếu một class có ít nhất một abstract method (method chỉ có chữ ký, không thân), bản thân class đó phải abstract, vì việc khởi tạo một đối tượng thiếu cài đặt cho một method là không hợp lệ. Vì vậy class đó không thể khởi tạo trực tiếp (đáp án B sai), quy tắc áp dụng cho chính class khai báo method chứ không chỉ lớp con (đáp án C sai), và abstract method không có thân {} chứ không phải thân rỗng (đáp án D sai — abstract method kết thúc bằng dấu chấm phẩy, không có cặp ngoặc nhọn nào).",
+      "rubric": "Chọn đúng đáp án A và giải thích được vì sao ba lựa chọn còn lại sai.",
+      "sourceUsage": [
+        "day05-src-9"
+      ]
+    },
+    {
+      "id": "day05-prac-2",
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "Cho hai class:\nclass Base { int level = 1; }\nclass Advanced extends Base { int level = 2;\n    void print() {\n        System.out.println(this.level + \",\" + super.level);\n    }\n}\nGọi new Advanced().print() in ra gì?",
+      "choices": [
+        {
+          "id": "day05-prac-2-a",
+          "text": "1,1"
+        },
+        {
+          "id": "day05-prac-2-b",
+          "text": "2,2"
+        },
+        {
+          "id": "day05-prac-2-c",
+          "text": "2,1"
+        },
+        {
+          "id": "day05-prac-2-d",
+          "text": "1,2"
+        }
+      ],
+      "correctChoiceIds": [
+        "day05-prac-2-c"
+      ],
+      "hint": "this luôn trỏ tới thành viên của chính lớp con hiện tại, super luôn trỏ tới thành viên của lớp cha bị che.",
+      "solution": "2,1 — this.level lấy field level = 2 của Advanced, super.level lấy field level = 1 của Base.",
+      "explanation": "Advanced khai báo field level riêng (che field level của Base, đây là field hiding chứ không phải override vì field không có tính đa hình runtime như method). this.level luôn truy cập field của chính đối tượng hiện tại (Advanced) nên là 2. super.level tường minh yêu cầu lấy field level của lớp cha Base, cho ra 1. Kết quả in ra là 2,1.",
+      "rubric": "Chọn đúng 2,1 và giải thích được this/super trỏ tới field của đúng lớp nào.",
+      "sourceUsage": [
+        "day05-src-4"
+      ]
+    },
+    {
+      "id": "day05-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Giải thích ngắn gọn sự khác nhau giữa method overloading và method overriding, mỗi loại được giải quyết ở giai đoạn nào (compile-time hay runtime)?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Overloading liên quan tới nhiều method cùng tên khác tham số; overriding liên quan tới lớp con định nghĩa lại method của lớp cha.",
+      "solution": "Overloading: nhiều method cùng tên nhưng khác danh sách tham số trong cùng một class, được giải quyết lúc biên dịch (compile-time/polymorphism tĩnh) dựa trên kiểu tham số truyền vào. Overriding: lớp con định nghĩa lại đúng chữ ký một method đã có ở lớp cha, được giải quyết lúc chạy (runtime/polymorphism động) dựa trên kiểu thực sự của đối tượng.",
+      "explanation": "Câu trả lời tốt cần nêu đúng: overloading = compile-time, khác tham số, cùng class; overriding = runtime, cùng chữ ký, quan hệ lớp cha-con.",
+      "rubric": "Đạt yêu cầu nếu phân biệt đúng cả giai đoạn giải quyết (compile-time vs runtime) lẫn điều kiện áp dụng (khác tham số vs cùng chữ ký).",
+      "sourceUsage": [
+        "day05-src-5",
+        "day05-src-6"
+      ]
+    },
+    {
+      "id": "day05-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Thiết kế một abstract class Employee với abstract method calculateBonus(), và một class con cụ thể override phương thức đó. Viết đoạn code minh họa việc gọi calculateBonus() qua một biến khai báo kiểu Employee (upcast) để thể hiện đúng polymorphism động.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Xem lại ví dụ Vehicle/Motorbike ở phần Abstract class — abstract method bắt buộc lớp con cài đặt, biến khai báo kiểu lớp cha nhưng gọi đúng phiên bản lớp con lúc runtime.",
+      "solution": "public abstract class Employee {\n    public abstract double calculateBonus();\n}\n\npublic class SalesEmployee extends Employee {\n    @Override\n    public double calculateBonus() {\n        return 1000.0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Employee e = new SalesEmployee(); // upcast\n        System.out.println(e.calculateBonus()); // goi dung SalesEmployee luc runtime\n    }\n}",
+      "explanation": "Lời giải mẫu định nghĩa đúng abstract method không thân trong Employee, class con override đầy đủ, và minh họa upcast (biến kiểu Employee nhưng gọi đúng phiên bản đã override lúc runtime).",
+      "rubric": "Đạt yêu cầu nếu abstract class có abstract method hợp lệ, class con override đúng, và đoạn main thể hiện đúng polymorphism động qua biến khai báo kiểu lớp cha.",
+      "sourceUsage": [
+        "day05-src-8",
+        "day05-src-9",
+        "day05-src-6"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm một lớp con thứ hai cho Vehicle (ví dụ Car) với công thức tính toll fee khác, rồi viết một List<Vehicle> chứa cả Motorbike và Car để quan sát polymorphism động khi lặp qua danh sách.",
+    "Thử bỏ từ khóa abstract khỏi calculateTollFee() trong Vehicle và quan sát lỗi biên dịch xảy ra, để hiểu rõ hơn ràng buộc giữa abstract class và abstract method."
+  ],
+  "references": [
+    {
+      "id": "day05-ref-1",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day05-src-1"
+    },
+    {
+      "id": "day05-ref-2",
+      "type": "external",
+      "resourceId": "res-36a8d5deef22",
+      "citationId": "day05-src-5"
+    },
+    {
+      "id": "day05-ref-3",
+      "type": "external",
+      "resourceId": "res-b5dd43254a15",
+      "citationId": "day05-src-8"
+    },
+    {
+      "id": "day05-ref-4",
+      "type": "internal",
+      "description": "Mở rộng trực tiếp phần constructor/access modifier đã học ở Day 4 (Classes, Objects, Encapsulation)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day05-src-1",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§3.1 Extending a Class",
+      "topic": "Kế thừa lớp bằng extends"
+    },
+    {
+      "id": "day05-src-2",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§3.1 Extending a Class",
+      "topic": "Thành viên nào được kế thừa"
+    },
+    {
+      "id": "day05-src-3",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§4.1 Implementing Multiple Interfaces; §4.2 Issues With Multiple Inheritance",
+      "topic": "Đa kế thừa qua interface"
+    },
+    {
+      "id": "day05-src-4",
+      "resourceId": "res-aad15fef0599",
+      "locator": "§6.1 Hidden Instance Members",
+      "topic": "this và super khi trùng tên thành viên"
+    },
+    {
+      "id": "day05-src-5",
+      "resourceId": "res-36a8d5deef22",
+      "locator": "§2 Static Polymorphism; §3 Dynamic Polymorphism",
+      "topic": "Polymorphism tĩnh và động"
+    },
+    {
+      "id": "day05-src-6",
+      "resourceId": "res-36a8d5deef22",
+      "locator": "§3 Dynamic Polymorphism",
+      "topic": "Method overriding qua ví dụ GenericFile/ImageFile"
+    },
+    {
+      "id": "day05-src-7",
+      "resourceId": "res-36a8d5deef22",
+      "locator": "§5.1 Type Identification During Downcasting",
+      "topic": "Upcast/downcast và ClassCastException"
+    },
+    {
+      "id": "day05-src-8",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§2 Key Concepts for Abstract Classes",
+      "topic": "Định nghĩa abstract class"
+    },
+    {
+      "id": "day05-src-9",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§2 Key Concepts for Abstract Classes",
+      "topic": "Ràng buộc với abstract method"
+    },
+    {
+      "id": "day05-src-10",
+      "resourceId": "res-b5dd43254a15",
+      "locator": "§3 When to Use Abstract Classes",
+      "topic": "Khi nào nên dùng abstract class"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Tài nguyên res-10672cc3a9fa được catalog gán cho Day 5 nhưng trả về HTTP 404 khi truy cập thực tế (Task 2, checkedAt 2026-08-22T16:33:26Z); không có nội dung nào được trích dẫn từ tài nguyên này."
+    ]
+  }
+}
