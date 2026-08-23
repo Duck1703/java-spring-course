@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "id": "day-07",
+  "catalogRef": {
+    "unitId": "unit-03",
+    "group": "java",
+    "title": "Interface, Inner Classes & Enums",
+    "outline": [
+      "Interface, Inner Classes & Enums\n+ Interface\n+ Abstract vs Interface\n+ Inner Classes\n+ Enums\n+ SOLID Principles",
+      "Assignment"
+    ],
+    "objectives": [
+      "LO3"
+    ],
+    "durationMinutes": 150.0,
+    "syllabusAssignments": [
+      {
+        "row": 14,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-0196dd00302a",
+      "res-ec467b92f9e7",
+      "res-4bc225ad1d9e",
+      "res-062b84a9042d",
+      "res-c246ae22f99a"
+    ],
+    "sourceRows": [
+      13,
+      14
+    ]
+  },
+  "unitId": "unit-03",
+  "group": "java",
+  "kind": "theory",
+  "title": "Interface, Inner Classes & Enums",
+  "summary": "Interface la 'hop dong' API cho phep da-implement (khac abstract class chi don-extends); Inner Classes, Enums va SOLID Principles duoc gioi thieu o muc chuan Java 17 de hoan thien nen tang OOP truoc khi hoc generics/collections/exception o Day 8-9.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO3"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Day 5 (extends, this/super, polymorphism, abstract class) va Day 6 (Employee Management System)."
+  ],
+  "outcomes": [
+    "Phan biet dung khi nao dung interface, khi nao dung abstract class.",
+    "Su dung dung static nested class, inner class va anonymous class.",
+    "Khai bao va su dung enum voi constructor/field/method rieng.",
+    "Nhan dien duoc 5 nguyen tac SOLID trong mot thiet ke lop cu the."
+  ],
+  "sections": [
+    {
+      "id": "day07-sec-interface",
+      "title": "Interface",
+      "blocks": [
+        {
+          "id": "day07-blk-1",
+          "type": "paragraph",
+          "text": "Interface la mot kieu tham chieu trong Java, dong vai tro nhu mot 'hop dong' (contract) ve API: interface khai bao cac phuong thuc ma lop implement no bat buoc phai cung cap phan cai dat cu the. Bai hoc Interfaces and Inheritance cua Oracle trinh bay interface o dung vi tri nay trong chuong trinh hoc, tiep noi ngay sau phan ke thua (extends) da hoc o Day 5.",
+          "citations": [
+            "day07-src-1"
+          ]
+        },
+        {
+          "id": "day07-blk-2",
+          "type": "code",
+          "language": "java",
+          "code": "interface Payable {\n    double calculateAmount();\n\n    default String describe() {\n        return \"Amount due: \" + calculateAmount();\n    }\n}\n\nclass Invoice implements Payable {\n    private final double baseAmount;\n    private final double taxRate;\n\n    Invoice(double baseAmount, double taxRate) {\n        this.baseAmount = baseAmount;\n        this.taxRate = taxRate;\n    }\n\n    @Override\n    public double calculateAmount() {\n        return baseAmount * (1 + taxRate);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day07-src-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day07-sec-abstract-vs-interface",
+      "title": "Abstract class vs Interface",
+      "blocks": [
+        {
+          "id": "day07-blk-3",
+          "type": "paragraph",
+          "text": "Interface va abstract class (da hoc o Day 5) giong nhau o mot diem cot loi: ca hai deu co the khai bao phuong thuc chua co phan cai dat, buoc lop con/lop implement phai tu hoan thien. Diem khac biet lon nhat nam o quan he ke thua: mot lop chi duoc extends dung mot abstract class (don ke thua), nhung co the implements nhieu interface cung luc - day chinh la co che Java dung de mo phong da ke thua hanh vi.",
+          "citations": [
+            "day07-src-1"
+          ]
+        },
+        {
+          "id": "day07-blk-4",
+          "type": "table",
+          "columns": [
+            "Tieu chi",
+            "Abstract class",
+            "Interface"
+          ],
+          "rows": [
+            [
+              "Ke thua/implement",
+              "extends - chi mot abstract class (don ke thua)",
+              "implements - nhieu interface cung luc"
+            ],
+            [
+              "Method chua cai dat",
+              "Co the co (abstract method)",
+              "Co (method truu tuong mac dinh, tru default/static method)"
+            ],
+            [
+              "Field/constructor",
+              "Co the co field non-static, non-final va constructor rieng",
+              "Truoc Java 8 chi co hang so static final, khong co constructor"
+            ]
+          ],
+          "citations": [
+            "day07-src-1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day07-sec-inner-classes",
+      "title": "Inner Classes",
+      "blocks": [
+        {
+          "id": "day07-blk-5",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan chuyen sau trong bo tai lieu cua khoa hoc (xem authoring.limitations); noi dung duoi day trinh bay theo kien thuc Java 17 chuan, pham vi vua du de hoc vien nhan dien va su dung dung cac loai lop long nhau.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-6",
+          "type": "paragraph",
+          "text": "Java co bon loai lop long nhau (nested class): static nested class (khai bao voi tu khoa static ben trong lop ngoai, khong giu tham chieu toi instance cua lop ngoai), inner class (khong static, moi instance gan voi mot instance cu the cua lop ngoai va co the truy cap truc tiep field/method cua lop ngoai), local class (khai bao ben trong than mot phuong thuc, chi dung duoc trong pham vi phuong thuc do), va anonymous class (lop khong ten, khai bao va khoi tao cung luc, thuong dung de cai dat nhanh mot interface hoac ke thua mot lop de tao doi tuong dung mot lan). Vi du: `class Outer { class Inner { ... } static class StaticHelper { ... } Runnable r = new Runnable() { public void run() { ... } }; }` the hien lan luot inner class, static nested class va anonymous class ben trong mot lop Outer.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day07-sec-enums",
+      "title": "Enums",
+      "blocks": [
+        {
+          "id": "day07-blk-8",
+          "type": "note",
+          "text": "Tuong tu Inner Classes, Enums khong co nguon trich dan chuyen sau trong bo tai lieu cua khoa hoc; noi dung duoi day theo kien thuc Java 17 chuan (xem authoring.limitations).",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-9",
+          "type": "paragraph",
+          "text": "Enum trong Java la mot kieu du lieu dac biet dung de bieu dien mot tap gia tri co dinh, huu han (vi du: cac ngay trong tuan, cac trang thai don hang). Ngoai cac hang so don gian, enum co the co constructor rieng (luon private hoac package-private), field, va method - moi hang so enum thuc chat la mot instance duy nhat cua chinh kieu enum do. Enum cung dung duoc truc tiep trong switch (ca dang classic va dang arrow da hoc o Day 2). Vi du: `enum OrderStatus { NEW(false), PROCESSING(false), SHIPPED(true), CANCELLED(true); private final boolean terminal; OrderStatus(boolean terminal) { this.terminal = terminal; } boolean isTerminal() { return terminal; } }` ket hop voi `switch (status) { case NEW -> ...; case SHIPPED, CANCELLED -> ...; }` cho thay enum co constructor/field/method rieng va dung truc tiep trong switch expression.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day07-sec-solid",
+      "title": "SOLID Principles",
+      "blocks": [
+        {
+          "id": "day07-blk-11",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan trong bo tai lieu cua khoa hoc; noi dung duoi day tom tat theo kien thuc thiet ke huong doi tuong chuan, o muc do gioi thieu (xem authoring.limitations).",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-12",
+          "type": "paragraph",
+          "text": "SOLID la 5 nguyen tac thiet ke huong doi tuong pho bien: Single Responsibility (moi lop chi nen co mot ly do de thay doi), Open/Closed (mo de mo rong, dong de sua doi - uu tien them lop/interface moi thay vi sua lop cu), Liskov Substitution (lop con phai thay the duoc lop cha ma khong lam sai lech hanh vi mong doi - lien quan truc tiep den polymorphism da hoc o Day 5), Interface Segregation (nhieu interface nho, chuyen biet tot hon mot interface lon, om dom), va Dependency Inversion (module cap cao nen phu thuoc vao abstraction/interface, khong phu thuoc truc tiep vao lop cu the).",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dung interface chi de khai bao hang so static final (anti-pattern 'constant interface') thay vi dung mot lop hang so thong thuong.",
+    "Quen rang inner class (khong static) luon giu tham chieu ngam toi instance cua lop ngoai, de gay ro ri bo nho neu giu inner class song lau hon lop ngoai can thiet.",
+    "Khai bao enum constructor la public (enum constructor luon phai la private hoac package-private, khong the la public/protected)."
+  ],
+  "practices": [
+    {
+      "id": "day07-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Diem khac biet co ban nhat giua abstract class va interface ve kha nang ke thua/implement la gi?",
+      "choices": [
+        {
+          "id": "day07-prac-1-a",
+          "text": "Mot lop chi extends duoc mot abstract class, nhung implements duoc nhieu interface cung luc"
+        },
+        {
+          "id": "day07-prac-1-b",
+          "text": "Interface khong the co method, con abstract class thi co"
+        },
+        {
+          "id": "day07-prac-1-c",
+          "text": "Abstract class khong the co constructor, con interface thi co"
+        },
+        {
+          "id": "day07-prac-1-d",
+          "text": "Ca hai deu cho phep da ke thua khong gioi han"
+        }
+      ],
+      "correctChoiceIds": [
+        "day07-prac-1-a"
+      ],
+      "hint": "Xem lai bang so sanh Abstract class vs Interface.",
+      "solution": "day07-prac-1-a",
+      "explanation": "extends la don ke thua (mot abstract class), implements la da nang (nhieu interface cung luc) - day la ly do interface duoc dung de mo phong da ke thua hanh vi trong Java.",
+      "rubric": "Chon dung dap an ve don ke thua vs da implement.",
+      "sourceUsage": [
+        "day07-src-1"
+      ]
+    },
+    {
+      "id": "day07-prac-2",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Giai thich nguyen tac Single Responsibility (SRP) bang mot vi du cu the: mot lop OrderService dang vua xu ly logic don hang vua tu ghi log ra file thi vi pham SRP nhu the nao, va nen tach lai sao cho dung.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "SRP noi ve 'mot ly do de thay doi' - dem xem lop dang co bao nhieu ly do khac nhau khien no phai sua.",
+      "solution": "Tach OrderService (chi xu ly nghiep vu don hang) va mot lop rieng nhu OrderLogger/AuditWriter (chi lo ghi log). Moi lop chi con mot ly do de thay doi: OrderService thay doi khi nghiep vu don hang thay doi, OrderLogger thay doi khi cach ghi log thay doi.",
+      "explanation": "SRP giup lop de bao tri va test hon vi moi lop chi tap trung mot trach nhiem.",
+      "rubric": "Danh gia hoc vien co nhan dien dung 'nhieu ly do thay doi' va de xuat tach lop hop ly hay khong.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day07-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot enum Season voi 4 gia tri (SPRING, SUMMER, AUTUMN, WINTER) va mot phuong thuc tinh fromMonth(int month) tra ve Season tuong ung (thang 12, 1, 2 la WINTER; 3, 4, 5 la SPRING; 6, 7, 8 la SUMMER; con lai la AUTUMN), dung switch expression dang arrow da hoc o Day 2.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung switch expression voi case gop nhieu gia tri (vi du: case 12, 1, 2 ->).",
+      "solution": "enum Season { SPRING, SUMMER, AUTUMN, WINTER;\n    static Season fromMonth(int month) {\n        return switch (month) {\n            case 12, 1, 2 -> WINTER;\n            case 3, 4, 5 -> SPRING;\n            case 6, 7, 8 -> SUMMER;\n            default -> AUTUMN;\n        };\n    }\n}",
+      "explanation": "Enum ket hop switch expression cho phep bieu dien logic anh xa gon va an toan kieu.",
+      "rubric": "Danh gia enum co du 4 gia tri, phuong thuc tinh (static) dung switch expression dang arrow, va logic anh xa thang dung.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day07-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot interface Shape2D voi method double area(); sau do viet mot lop Rectangle implements Shape2D, va mot inner class ben trong Rectangle ten Diagonal co method double length() tinh duong cheo hinh chu nhat.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Inner class truy cap truc tiep field cua lop ngoai (Rectangle) ma khong can truyen tham so.",
+      "solution": "interface Shape2D { double area(); }\nclass Rectangle implements Shape2D {\n    private final double width, height;\n    Rectangle(double width, double height) { this.width = width; this.height = height; }\n    public double area() { return width * height; }\n    class Diagonal {\n        double length() { return Math.sqrt(width * width + height * height); }\n    }\n}",
+      "explanation": "Bai tap ket hop interface (Day 7) va inner class (Day 7) trong cung mot thiet ke nho.",
+      "rubric": "Danh gia interface duoc implement dung, inner class truy cap dung field cua lop ngoai, cong thuc duong cheo chinh xac.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 14,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Refactor mot lop 'God class' vi pham SRP (vi du: lop vua doc file, vua tinh toan, vua ghi log) thanh nhieu lop nho theo tung trach nhiem.",
+    "Chuyen mot anonymous class Runnable thanh mot lambda expression tuong duong (chuan bi truoc cho Day 10 - Functional Interface & Lambda)."
+  ],
+  "references": [
+    {
+      "id": "day07-ref-1",
+      "type": "external",
+      "resourceId": "res-0196dd00302a",
+      "citationId": "day07-src-1"
+    },
+    {
+      "id": "day07-ref-2",
+      "type": "internal",
+      "description": "Ap dung truc tiep kien thuc extends/polymorphism/abstract class da hoc o Day 5 khi so sanh Abstract class vs Interface."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day07-src-1",
+      "resourceId": "res-0196dd00302a",
+      "locator": "Lesson: Interfaces and Inheritance — mục lục",
+      "topic": "Noi dung bai hoc Interfaces and Inheritance"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Inner Classes: khong co nguon trich dan nao trong resourceIds cua Day 7 mo ta chi tiet (res-ec467b92f9e7, res-4bc225ad1d9e, res-062b84a9042d, res-c246ae22f99a deu tra ve 404 khi truy cap); noi dung duoc trinh bay theo kien thuc Java 17 chuan trong cac block paragraph/note/code khong gan citation.",
+      "Enums: tuong tu Inner Classes, khong co nguon nao trong resourceIds cua Day 7 con truy cap duoc de trich dan chi tiet; noi dung theo kien thuc Java 17 chuan.",
+      "SOLID Principles: khong co nguon nao trong resourceIds cua Day 7 mo ta cac nguyen tac SOLID; noi dung tom tat theo kien thuc thiet ke huong doi tuong chuan, muc gioi thieu."
+    ]
+  }
+}

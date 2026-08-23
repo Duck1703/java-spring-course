@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "id": "day-12",
+  "catalogRef": {
+    "unitId": "unit-04",
+    "group": "java",
+    "title": "- Assignment 4: Data Processing Pipeline",
+    "objectives": [
+      "LO4"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      22
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 22,
+        "text": "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+      }
+    ],
+    "resourceIds": [
+      "res-9b1feb8ea22f",
+      "res-b73632f693f7",
+      "res-543deb939f9e",
+      "res-88adadc6f2f4",
+      "res-d6607fed4419"
+    ]
+  },
+  "unitId": "unit-04",
+  "group": "java",
+  "kind": "project",
+  "title": "- Assignment 4: Data Processing Pipeline",
+  "summary": "Assignment 4 tong hop Stream API (Day 10), NIO.2 File I/O va synchronized (Day 11) thanh mot pipeline xu ly du lieu hoan chinh: doc CSV lon bang Files.lines(), bien doi/nhom/tong hop/sap xep bang Stream, do hieu nang parallel vs sequential bang JMH, dam bao an toan luong khi can, va xuat bao cao ra JSON bang Files.writeString().",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO4"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Day 10 (Lambda & Stream API Chuyen Sau) va Day 11 (Concurrency & File I/O)."
+  ],
+  "outcomes": [
+    "Doc file lon hieu qua bang Files.lines() (Stream<String> lazy).",
+    "Xay dung pipeline Stream hoan chinh: loc, nhom, tong hop, sap xep, gioi han top-N.",
+    "Hieu duoc vi sao can do hieu nang bang cong cu chuyen dung (JMH) thay vi tu do thu cong.",
+    "Nhan dien dung khi nao that su can mot accumulator dong bo rieng khi dung parallel stream.",
+    "Xuat du lieu ra file bang Files.writeString()."
+  ],
+  "sections": [
+    {
+      "id": "day12-sec-brief",
+      "title": "De bai: Data Processing Pipeline",
+      "blocks": [
+        {
+          "id": "day12-blk-1",
+          "type": "deliverable",
+          "text": "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON",
+          "citations": []
+        },
+        {
+          "id": "day12-blk-2",
+          "type": "note",
+          "text": "Assignment nay tong hop Stream API (Day 10) va NIO.2 File I/O (Day 11) thanh mot pipeline xu ly du lieu hoan chinh: doc file CSV lon, bien doi/tong hop bang Stream, do hieu nang parallel vs sequential, dam bao an toan luong khi gom ket qua, va xuat bao cao ra JSON.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day12-sec-fileio",
+      "title": "Doc CSV va xuat bao cao bang NIO.2",
+      "blocks": [
+        {
+          "id": "day12-blk-3",
+          "type": "paragraph",
+          "text": "Goi java.nio.file cung cap Path lam duong dan va lop Files chua cac phuong thuc tinh thao tac tren Path; Files.lines(path) tra ve mot Stream<String> doc tung dong cua file mot cach lazy, phu hop de doc file CSV lon (500K dong) ma khong can tai toan bo noi dung vao bo nho cung luc.",
+          "citations": [
+            "day12-src-1",
+            "day12-src-3"
+          ]
+        },
+        {
+          "id": "day12-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass SalesCsvReader {\n    record SalesRow(String category, double revenue, boolean valid) {}\n\n    List<SalesRow> readValidRows(Path csvFile) throws IOException {\n        try (var lines = Files.lines(csvFile)) {\n            return lines.skip(1)\n                    .map(SalesCsvReader::parseLine)\n                    .filter(SalesRow::valid)\n                    .collect(Collectors.toList());\n        }\n    }\n\n    private static SalesRow parseLine(String line) {\n        String[] cols = line.split(\",\", -1);\n        if (cols.length < 2) {\n            return new SalesRow(\"\", 0, false);\n        }\n        try {\n            double revenue = Double.parseDouble(cols[1].trim());\n            return new SalesRow(cols[0].trim(), revenue, revenue >= 0);\n        } catch (NumberFormatException e) {\n            return new SalesRow(cols[0].trim(), 0, false);\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day12-src-1",
+            "day12-src-3"
+          ]
+        },
+        {
+          "id": "day12-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.Map;\n\nclass TopCategoryReportExporter {\n    void exportToJson(Path target, List<Map.Entry<String, Double>> topCategories) throws IOException {\n        StringBuilder json = new StringBuilder(\"[\\n\");\n        for (int i = 0; i < topCategories.size(); i++) {\n            var entry = topCategories.get(i);\n            json.append(\"  {\\\"category\\\": \\\"\").append(entry.getKey())\n                    .append(\"\\\", \\\"revenue\\\": \").append(entry.getValue()).append(\"}\");\n            json.append(i < topCategories.size() - 1 ? \",\\n\" : \"\\n\");\n        }\n        json.append(\"]\\n\");\n        Files.writeString(target, json.toString());\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day12-src-3",
+            "day12-src-4"
+          ]
+        },
+        {
+          "id": "day12-blk-6",
+          "type": "note",
+          "text": "Files.writeString() (tu Java 11) cung la mot phuong thuc tinh cua Files thao tac tren Path, tuong tu nhom Files.createFile()/delete() da neu trong bai hoc File I/O - o day dung de ghi truc tiep noi dung JSON da dung san thanh String ra file bao cao.",
+          "citations": [
+            "day12-src-1",
+            "day12-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day12-sec-pipeline",
+      "title": "Stream transform: loc, nhom, tong hop, sap xep",
+      "blocks": [
+        {
+          "id": "day12-blk-7",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan trong resourceIds cua rieng Day 12 (2 trong 5 resourceIds la unavailable, 3 con lai chi la nguon File I/O); nguon Stream API chi tiet thuoc ve resourceIds cua Day 10, khong duoc gan cho Day 12 nen khong the trich dan cheo giua hai bai (xem authoring.limitations). Noi dung duoi day ap dung Stream API da hoc o Day 10 bang kien thuc Java 17 chuan.",
+          "citations": []
+        },
+        {
+          "id": "day12-blk-8",
+          "type": "paragraph",
+          "text": "Pipeline goi y gom bon buoc noi tiep tren stream cac SalesRow da doc duoc: (1) loc bo dong khong hop le bang `.filter(SalesRow::valid)` (da thuc hien ngay trong luc doc CSV); (2) nhom theo category bang `.collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)))` de vua nhom vua cong don revenue trong cung mot buoc, tra ve Map<String, Double>; (3) chuyen Map thanh danh sach entry va sap xep giam dan theo revenue bang `.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())`; (4) lay 10 phan tu dau bang `.limit(10)` roi collect thanh danh sach de xuat bao cao.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day12-sec-benchmark",
+      "title": "Parallel vs sequential benchmark (JMH)",
+      "blocks": [
+        {
+          "id": "day12-blk-9",
+          "type": "note",
+          "text": "Chu de JMH (Java Microbenchmark Harness) khong co nguon trich dan nao trong toan bo bo tai lieu duoc gan cho khoa hoc (khong resourceId nao cua Day 7-12 de cap JMH) - xem authoring.limitations. Noi dung duoi day trinh bay o muc gioi thieu, du de hoc vien bat dau do hieu nang dung dan.",
+          "citations": []
+        },
+        {
+          "id": "day12-blk-10",
+          "type": "paragraph",
+          "text": "JMH la thu vien chuyen dung de do hieu nang (micro-benchmark) cho Java, tranh cac sai lam pho bien khi tu do thoi gian bang System.currentTimeMillis() (nhu JIT warm-up chua on dinh, dead code elimination cua trinh bien dich xoa mat doan code khong dung ket qua). Y tuong co ban: danh dau phuong thuc can do bang @Benchmark, chay nhieu vong 'warm-up' truoc khi do that su, va so sanh thoi gian trung binh giua phien ban stream() (sequential) va parallelStream() (song song) tren cung mot tap du lieu 500K dong.",
+          "citations": []
+        },
+        {
+          "id": "day12-blk-11",
+          "type": "note",
+          "text": "Voi tap du lieu 500K dong va thao tac tinh toan don gian (cong don revenue), parallel stream chua chac nhanh hon sequential - dung JMH de do that su thay vi doan, va doi chieu voi luu y ve parallel stream da hoc o Day 10.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day12-sec-accumulator",
+      "title": "Thread-safe result accumulator",
+      "blocks": [
+        {
+          "id": "day12-blk-12",
+          "type": "note",
+          "text": "Chu de dong bo/thread-safety khong co nguon trich dan trong resourceIds cua rieng Day 12 - nguon synchronized/concurrency chi tiet thuoc ve resourceIds cua Day 11, khong duoc gan cho Day 12 nen khong the trich dan cheo giua hai bai (xem authoring.limitations). Noi dung duoi day ap dung lai mau thiet ke synchronized da hoc o Day 11.",
+          "citations": []
+        },
+        {
+          "id": "day12-blk-13",
+          "type": "paragraph",
+          "text": "Neu benchmark o tren dung parallelStream() va can gom ket qua vao mot cau truc du lieu dung chung (vi du: dem so dong loi gap phai trong luc xu ly song song), cau truc do phai duoc dong bo dung cach (giong mau ThreadSafeAccumulator voi cac method synchronized da viet o Day 11), hoac uu tien dung cac Collector tu thiet ke sao cho khong can chia se trang thai mutable giua cac thread (cach an toan va don gian hon la de rieng Stream API tu quan ly gom ket qua qua collect(), khong tu tao bien dem chia se thu cong khi khong that su can thiet).",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Doc toan bo 500K dong vao mot List<String> bang Files.readAllLines() roi moi xu ly, thay vi dung Files.lines() de xu ly lazy tung dong.",
+    "Tu tao bien dem chia se (vi du int errorCount) va cap nhat truc tiep ben trong lambda cua parallelStream() ma khong dong bo - gay race condition ngay ca khi logic chinh da dung Collectors an toan.",
+    "So sanh hieu nang parallel vs sequential bang mot lan do don le voi System.currentTimeMillis(), khong warm-up JIT truoc, dan toi ket luan sai lech ve viec parallel co thuc su nhanh hon hay khong."
+  ],
+  "practices": [
+    {
+      "id": "day12-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vi sao Files.lines(path) phu hop de doc mot file CSV 500K dong hon la doc toan bo noi dung file vao mot String/List roi moi xu ly?",
+      "choices": [
+        {
+          "id": "day12-prac-1-a",
+          "text": "Vi Files.lines() tra ve Stream<String> lazy, doc tung dong khi can thay vi tai toan bo file vao bo nho cung luc"
+        },
+        {
+          "id": "day12-prac-1-b",
+          "text": "Vi Files.lines() tu dong chay song song tren nhieu thread"
+        },
+        {
+          "id": "day12-prac-1-c",
+          "text": "Vi Files.lines() khong can dong (close) sau khi dung"
+        },
+        {
+          "id": "day12-prac-1-d",
+          "text": "Vi Files.lines() tu dong bo qua cac dong loi"
+        }
+      ],
+      "correctChoiceIds": [
+        "day12-prac-1-a"
+      ],
+      "hint": "Xem lai dac diem lazy cua Stream tra ve tu Files.lines().",
+      "solution": "day12-prac-1-a",
+      "explanation": "Files.lines() tra ve mot Stream<String> lazy: cac dong chi thuc su duoc doc khi terminal operation (nhu collect()) duoc goi, giup tranh tai toan bo file lon vao bo nho cung mot luc.",
+      "rubric": "Chon dung ly do lien quan toi tinh lazy cua Stream.",
+      "sourceUsage": [
+        "day12-src-3"
+      ]
+    },
+    {
+      "id": "day12-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot method dung Stream de tu danh sach SalesRow da loc hop le, nhom theo category va cong don revenue, tra ve Map<String, Double>.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung Collectors.groupingBy() ket hop Collectors.summingDouble() trong cung mot buoc collect().",
+      "solution": "Map<String, Double> aggregateByCategory(List<SalesRow> rows) {\n    return rows.stream()\n            .collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)));\n}",
+      "explanation": "Ap dung Collectors.groupingBy() ket hop downstream collector summingDouble() da hoc o Day 10 vao du lieu thuc te.",
+      "rubric": "Danh gia dung ham nhom (category) va ham tong hop (summingDouble tren revenue) duoc chon dung, ket qua la Map<String, Double>.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day12-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vi sao can can nhac ky truoc khi tu tao mot bien dem/accumulator dung chung giua cac thread khi dung parallelStream(), thay vi luon mac dinh can mot accumulator dong bo thu cong?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghi ve cach Stream API tu gom ket qua qua collect() ma khong can chia se trang thai mutable.",
+      "solution": "Neu logic co the dien dat hoan toan bang collect()/reduce() (nhu aggregateByCategory o tren), Stream API da tu dam bao an toan luong khi gom ket qua ma khong can bien chia se thu cong. Chi khi that su can mot hieu ung phu (side-effect) ngoai pipeline (vi du dem loi song song) moi can mot accumulator dong bo rieng, va phai dong bo dung cach (nhu ThreadSafeAccumulator o Day 11) de tranh race condition.",
+      "explanation": "Uu tien cach tiep can khai bao (Stream/Collector) truoc khi tu quan ly trang thai chia se thu cong.",
+      "rubric": "Danh gia hoc vien nhan dien duoc khi nao thuc su can accumulator dong bo rieng.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day12-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot method dung Files.writeString(Path, String) de ghi mot chuoi noi dung JSON da dung san ra file bao cao.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Files.writeString() nhan truc tiep Path va String, tu dong tao/ghi de file.",
+      "solution": "void writeReport(Path target, String jsonContent) throws IOException {\n    Files.writeString(target, jsonContent);\n}",
+      "explanation": "Ap dung truc tiep Files.writeString() (mot phuong thuc tinh khac cua Files) da gioi thieu trong bai.",
+      "rubric": "Danh gia goi dung Files.writeString() voi hai tham so Path va String, khai bao throws IOException.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 22,
+      "text": "- Assignment 4: Data Processing Pipeline\n  - Read file CSV 500K rows (simulated sales data)\n  - Stream transform: filter invalid → group by category → aggregate revenue → sort top 10\n  - Parallel vs sequential benchmark (JMH)\n  - Thread-safe result accumulator\n  - Export report ra JSON"
+    }
+  ],
+  "enhancedExercises": [
+    "Them buoc ghi lai danh sach cac dong CSV bi loai (invalid) ra mot file rieng, dung Collectors.partitioningBy() de tach song song hai nhom hop le/khong hop le trong cung mot lan duyet.",
+    "Viet ban JMH @Benchmark thuc su (neu co san thu vien JMH trong project) cho ca hai phien ban stream()/parallelStream() cua buoc nhom-tong-hop, va ghi lai ket qua do duoc."
+  ],
+  "references": [
+    {
+      "id": "day12-ref-1",
+      "type": "external",
+      "resourceId": "res-543deb939f9e",
+      "citationId": "day12-src-1"
+    },
+    {
+      "id": "day12-ref-2",
+      "type": "external",
+      "resourceId": "res-d6607fed4419",
+      "citationId": "day12-src-3"
+    },
+    {
+      "id": "day12-ref-3",
+      "type": "internal",
+      "description": "Tong hop Stream API (Day 10) va synchronized/concurrency (Day 11) vao mot pipeline xu ly du lieu du an thuc te."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day12-src-1",
+      "resourceId": "res-543deb939f9e",
+      "locator": "File I/O (Featuring NIO.2) — mục lục",
+      "topic": "Cau truc bai hoc File I/O featuring NIO.2"
+    },
+    {
+      "id": "day12-src-2",
+      "resourceId": "res-88adadc6f2f4",
+      "locator": "Java IO Series — mục lục theo nhóm",
+      "topic": "Cau truc trang tong hop IO Series"
+    },
+    {
+      "id": "day12-src-3",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§3. Checking a File or Directory",
+      "topic": "Path va lop Files la entry point cua NIO.2"
+    },
+    {
+      "id": "day12-src-4",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§4. Creating Files; §6. Deleting a File",
+      "topic": "Tao va xoa file/thu muc"
+    },
+    {
+      "id": "day12-src-5",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§7. Copying Files; §8. Moving Files",
+      "topic": "Copy va move file"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Stream transform chi tiet (group by category, aggregate revenue, sort top 10): nguon Stream API day du thuoc ve resourceIds cua Day 10, khong nam trong 5 resourceIds rieng cua Day 12 nen khong the trich dan cheo giua hai lesson - trinh bay bang cach ap dung lai kien thuc Stream API da hoc o Day 10.",
+      "JMH (Java Microbenchmark Harness) va benchmark parallel vs sequential: khong co resourceId nao trong toan bo khoa hoc (Day 7-12) de cap JMH - trinh bay o muc gioi thieu bang kien thuc chuan, khong gan citation gia.",
+      "Thread-safe result accumulator: nguon synchronized/concurrency chi tiet thuoc ve resourceIds cua Day 11, khong nam trong 5 resourceIds rieng cua Day 12 nen khong the trich dan cheo giua hai lesson - trinh bay bang cach ap dung lai mau thiet ke da hoc o Day 11."
+    ]
+  }
+}

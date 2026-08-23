@@ -1,0 +1,305 @@
+{
+  "schemaVersion": 1,
+  "id": "day-09",
+  "catalogRef": {
+    "unitId": "unit-03",
+    "group": "java",
+    "title": "- Lab 3: Custom Collection & Exception Framework",
+    "objectives": [
+      "LO3"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      17
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 17,
+        "text": "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+      }
+    ],
+    "resourceIds": [
+      "res-e3b2dcb60e96",
+      "res-899383bc8d09",
+      "res-12fa3a9d4910",
+      "res-30d834f8fef0",
+      "res-9762250d04d9"
+    ]
+  },
+  "unitId": "unit-03",
+  "group": "java",
+  "kind": "lab",
+  "title": "- Lab 3: Custom Collection & Exception Framework",
+  "summary": "Lab 3: tu cai dat SimpleArrayList<E> (mang dong) va SimpleHashMap<K,V> (separate chaining) cung mot he thong exception rieng cho tang truy cap du lieu, tong hop generics/collections/exception da hoc o Day 8.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO3"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Day 8 (Generics, Collections Framework, Exception hierarchy, try-with-resources)."
+  ],
+  "outcomes": [
+    "Tu cai dat mot cau truc du lieu generic (dynamic array) tu dau.",
+    "Tu cai dat mot hash map don gian dung separate chaining.",
+    "Thiet ke mot exception hierarchy rieng cho mot tang ung dung cu the.",
+    "Viet bo test dat do bao phu cao, gom ca nhanh loi."
+  ],
+  "sections": [
+    {
+      "id": "day09-sec-brief",
+      "title": "De bai: Custom Collection & Exception Framework",
+      "blocks": [
+        {
+          "id": "day09-blk-1",
+          "type": "deliverable",
+          "text": "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%",
+          "citations": []
+        },
+        {
+          "id": "day09-blk-2",
+          "type": "note",
+          "text": "Lab nay tong hop truc tiep kien thuc Day 8: generics (SimpleArrayList<E>, SimpleHashMap<K,V> phai la kieu tham so hoa), Collections Framework (cai dat lai mot phan hanh vi cua List/Map tu dau) va exception hierarchy (thiet ke rieng mot nhanh exception cho tang truy cap du lieu).",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day09-sec-design",
+      "title": "Phan ra thiet ke (guided decomposition)",
+      "blocks": [
+        {
+          "id": "day09-blk-3",
+          "type": "paragraph",
+          "text": "SimpleArrayList<E> nen dung generic type parameter E giong cach cac generic method/class da hoc o Day 8, de trinh bien dich kiem tra kieu phan tu ngay luc them/lay ra thay vi phai ep kieu tu Object.",
+          "citations": [
+            "day09-src-1"
+          ]
+        },
+        {
+          "id": "day09-blk-4",
+          "type": "note",
+          "text": "Chu de 'separate chaining' (moi bucket cua hash map la mot danh sach lien ket cac Node<K,V>) la chi tiet cai dat noi bo cua hash table, khong duoc mo ta trong cac trang mo dau/muc luc Collections ma Day 9 duoc gan (Trail: Collections va Collections Series deu la trang tong quan cap interface, khong di sau vao thuat toan noi bo tung cai dat) - xem authoring.limitations. Thiet ke goi y: mot mang cac 'bucket' (Node<K,V>[]), voi index bucket tinh tu key.hashCode(); moi bucket la mot danh sach lien ket don de xu ly dung do (collision) khi nhieu key roi vao cung mot bucket.",
+          "citations": []
+        },
+        {
+          "id": "day09-blk-5",
+          "type": "important",
+          "text": "Exception rieng cua tang truy cap du lieu (DataAccessException va hai lop con DuplicatedKeyException/KeyNotFoundException) nen ke thua RuntimeException (unchecked) chu khong phai Exception (checked): day la loi logic nghiep vu luc runtime (thao tac tren key khong hop le), khong phai loi ngoai canh bat buoc goi phai xu ly ngay tai moi diem goi nhu IOException.",
+          "citations": [
+            "day09-src-4",
+            "day09-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day09-sec-implementation",
+      "title": "Cai dat tham khao",
+      "blocks": [
+        {
+          "id": "day09-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.Iterator;\nimport java.util.NoSuchElementException;\n\nclass DataAccessException extends RuntimeException {\n    DataAccessException(String message) {\n        super(message);\n    }\n}\n\nclass DuplicatedKeyException extends DataAccessException {\n    DuplicatedKeyException(String message) {\n        super(message);\n    }\n}\n\nclass KeyNotFoundException extends DataAccessException {\n    KeyNotFoundException(String message) {\n        super(message);\n    }\n}\n\nclass SimpleArrayList<E> implements Iterable<E> {\n    private Object[] elements = new Object[8];\n    private int size = 0;\n\n    void add(E element) {\n        if (size == elements.length) {\n            elements = java.util.Arrays.copyOf(elements, elements.length * 2);\n        }\n        elements[size++] = element;\n    }\n\n    @SuppressWarnings(\"unchecked\")\n    E get(int index) {\n        checkIndex(index);\n        return (E) elements[index];\n    }\n\n    @SuppressWarnings(\"unchecked\")\n    E remove(int index) {\n        checkIndex(index);\n        E removed = (E) elements[index];\n        int numMoved = size - index - 1;\n        if (numMoved > 0) {\n            System.arraycopy(elements, index + 1, elements, index, numMoved);\n        }\n        elements[--size] = null;\n        return removed;\n    }\n\n    int size() {\n        return size;\n    }\n\n    private void checkIndex(int index) {\n        if (index < 0 || index >= size) {\n            throw new IndexOutOfBoundsException(\"index=\" + index + \", size=\" + size);\n        }\n    }\n\n    @Override\n    public Iterator<E> iterator() {\n        return new Iterator<E>() {\n            private int cursor = 0;\n\n            @Override\n            public boolean hasNext() {\n                return cursor < size;\n            }\n\n            @Override\n            public E next() {\n                if (!hasNext()) {\n                    throw new NoSuchElementException();\n                }\n                return get(cursor++);\n            }\n        };\n    }\n}\n\nclass SimpleHashMap<K, V> {\n    private static class Node<K, V> {\n        final K key;\n        V value;\n        Node<K, V> next;\n\n        Node(K key, V value, Node<K, V> next) {\n            this.key = key;\n            this.value = value;\n            this.next = next;\n        }\n    }\n\n    private Node<K, V>[] buckets;\n    private int size = 0;\n\n    @SuppressWarnings(\"unchecked\")\n    SimpleHashMap() {\n        buckets = new Node[16];\n    }\n\n    void put(K key, V value) {\n        int index = indexOf(key);\n        for (Node<K, V> node = buckets[index]; node != null; node = node.next) {\n            if (node.key.equals(key)) {\n                throw new DuplicatedKeyException(\"Key already exists: \" + key);\n            }\n        }\n        buckets[index] = new Node<>(key, value, buckets[index]);\n        size++;\n    }\n\n    V get(K key) {\n        int index = indexOf(key);\n        for (Node<K, V> node = buckets[index]; node != null; node = node.next) {\n            if (node.key.equals(key)) {\n                return node.value;\n            }\n        }\n        throw new KeyNotFoundException(\"Key not found: \" + key);\n    }\n\n    int size() {\n        return size;\n    }\n\n    private int indexOf(K key) {\n        return Math.floorMod(key.hashCode(), buckets.length);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day09-src-1",
+            "day09-src-4",
+            "day09-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day09-sec-tests",
+      "title": "Danh sach test can co",
+      "blocks": [
+        {
+          "id": "day09-blk-7",
+          "type": "table",
+          "columns": [
+            "Test case",
+            "Muc tieu",
+            "Ket qua mong doi"
+          ],
+          "rows": [
+            [
+              "add() + get() lien tiep tren SimpleArrayList",
+              "Xac nhan phan tu duoc them va lay dung thu tu",
+              "get(i) tra ve dung phan tu da add o vi tri i"
+            ],
+            [
+              "get()/remove() voi index ngoai pham vi",
+              "Xac nhan validate bien",
+              "Nem IndexOutOfBoundsException"
+            ],
+            [
+              "put() voi key da ton tai",
+              "Xac nhan rang buoc khong trung key",
+              "Nem DuplicatedKeyException"
+            ],
+            [
+              "get() voi key khong ton tai",
+              "Xac nhan xu ly truy van sai",
+              "Nem KeyNotFoundException"
+            ]
+          ],
+          "citations": [
+            "day09-src-4",
+            "day09-src-5"
+          ]
+        },
+        {
+          "id": "day09-blk-8",
+          "type": "warning",
+          "text": "Test coverage >= 80% (theo de bai) can bao phu ca nhanh loi (index/key khong hop le) chu khong chi nhanh thanh cong - cac exception rieng (DuplicatedKeyException, KeyNotFoundException, IndexOutOfBoundsException) can co it nhat mot test rieng cho tung loai.",
+          "citations": [
+            "day09-src-4",
+            "day09-src-5"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dung Object[] lam mang noi bo nhung quen ep kieu (E) khi tra ve tu get(), dan toi loi bien dich hoac ClassCastException khong ro rang.",
+    "Quen tang buckets khi so phan tu vuot mot nguong (load factor) - cai dat trong bai co the bo qua resize de don gian, nhung can ghi ro gioi han nay neu khong lam.",
+    "Cho ca ba loai exception ke thua truc tiep RuntimeException thay vi cho DuplicatedKeyException/KeyNotFoundException ke thua DataAccessException - lam mat kha nang catch chung ca nhom bang mot khoi catch (DataAccessException e)."
+  ],
+  "practices": [
+    {
+      "id": "day09-prac-1",
+      "type": "applied",
+      "interaction": "self-check",
+      "prompt": "Cai dat day du SimpleArrayList<E>, SimpleHashMap<K,V> va he thong exception (DataAccessException, DuplicatedKeyException, KeyNotFoundException) theo dung de bai, kem bo test dat test coverage >= 80%.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Bat dau tu SimpleArrayList (don gian hon) truoc, viet test ngay sau moi method; SimpleHashMap va exception hierarchy lam sau.",
+      "solution": "Xem muc 'Cai dat tham khao' o tren; day la mot cach cai dat hop le, co the dieu chinh chi tiet noi bo (vi du kich thuoc mang ban dau) mien giu dung API cong khai theo de bai.",
+      "explanation": "Khong co loi giai co dinh - danh gia theo do dung API va do bao phu test.",
+      "rubric": "Dat yeu cau khi: SimpleArrayList co du add/get/remove/size/iterator; SimpleHashMap dung separate chaining va nem dung exception; ca ba loai exception deu ke thua dung nhanh DataAccessException; test bao phu ca nhanh loi.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day09-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Tai sao DataAccessException trong lab nay nen ke thua RuntimeException (unchecked) thay vi Exception (checked)?",
+      "choices": [
+        {
+          "id": "day09-prac-2-a",
+          "text": "Vi day la loi logic nghiep vu phat sinh luc runtime khi thao tac key khong hop le, khong phai loi ngoai canh bat buoc moi noi goi phai xu ly ngay"
+        },
+        {
+          "id": "day09-prac-2-b",
+          "text": "Vi RuntimeException chay nhanh hon Exception"
+        },
+        {
+          "id": "day09-prac-2-c",
+          "text": "Vi checked exception khong the co constructor nhan String message"
+        },
+        {
+          "id": "day09-prac-2-d",
+          "text": "Vi Java khong cho phep tu tao checked exception"
+        }
+      ],
+      "correctChoiceIds": [
+        "day09-prac-2-a"
+      ],
+      "hint": "Xem lai phan phan biet checked vs unchecked o Day 8.",
+      "solution": "day09-prac-2-a",
+      "explanation": "Checked exception phu hop voi loi ngoai canh khong the tranh duoc du code dung (vi du IOException); loi truy cap du lieu sai (key trung, key khong ton tai) la loi logic co the tranh duoc bang kiem tra dieu kien truoc, phu hop lam unchecked exception.",
+      "rubric": "Chon dung ly do RuntimeException phu hop hon Exception cho truong hop nay.",
+      "sourceUsage": [
+        "day09-src-5"
+      ]
+    },
+    {
+      "id": "day09-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot unit test (dang JUnit-style, chi can viet than method test, khong can day du annotation) cho SimpleHashMap.put(): tao map, put mot key, roi put lai chinh key do lan nua va xac nhan ket qua nem DuplicatedKeyException.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung assertThrows(DuplicatedKeyException.class, () -> ...) kieu JUnit 5.",
+      "solution": "void putDuplicateKey_throwsDuplicatedKeyException() {\n    SimpleHashMap<String, Integer> map = new SimpleHashMap<>();\n    map.put(\"a\", 1);\n    assertThrows(DuplicatedKeyException.class, () -> map.put(\"a\", 2));\n}",
+      "explanation": "Test truc tiep xac nhan hop dong (contract) cua exception rieng da thiet ke.",
+      "rubric": "Danh gia test tao du lieu dung, goi put() hai lan cung key, va assert dung loai exception duoc nem.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 17,
+      "text": "- Lab 3: Custom Collection & Exception Framework\n  - Implement `SimpleArrayList<E>` with dynamic array (add, get, remove, size, iterator)\n  - Implement `SimpleHashMap<K,V>` with separate chaining\n  - Custom exception hierarchy: `DataAccessException` → `DuplicatedKeyException`, `KeyNotFoundException`\n  - Test coverage ≥ 80%"
+    }
+  ],
+  "enhancedExercises": [
+    "Them phuong thuc remove(K key) cho SimpleHashMap, nem KeyNotFoundException neu key khong ton tai.",
+    "Do thoi gian chay get()/put() cua SimpleHashMap voi so luong phan tu lon dan (100, 1000, 10000) de quan sat truc quan hieu ung cua hash collision khi khong resize buckets."
+  ],
+  "references": [
+    {
+      "id": "day09-ref-1",
+      "type": "external",
+      "resourceId": "res-e3b2dcb60e96",
+      "citationId": "day09-src-1"
+    },
+    {
+      "id": "day09-ref-2",
+      "type": "external",
+      "resourceId": "res-30d834f8fef0",
+      "citationId": "day09-src-4"
+    },
+    {
+      "id": "day09-ref-3",
+      "type": "internal",
+      "description": "Ap dung truc tiep generics/collections/exception hierarchy da hoc o Day 8."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day09-src-1",
+      "resourceId": "res-e3b2dcb60e96",
+      "locator": "Lesson: Generics (Updated) — đoạn giới thiệu",
+      "topic": "Muc dich bai hoc Generics"
+    },
+    {
+      "id": "day09-src-2",
+      "resourceId": "res-899383bc8d09",
+      "locator": "Trail: Collections — mục lục",
+      "topic": "Noi dung Trail Collections cua Oracle"
+    },
+    {
+      "id": "day09-src-3",
+      "resourceId": "res-12fa3a9d4910",
+      "locator": "Java Collections Series — mục lục theo nhóm",
+      "topic": "Cau truc trang tong hop Collections Series"
+    },
+    {
+      "id": "day09-src-4",
+      "resourceId": "res-30d834f8fef0",
+      "locator": "§3. Exception Hierarchy",
+      "topic": "Phan cap Exception"
+    },
+    {
+      "id": "day09-src-5",
+      "resourceId": "res-30d834f8fef0",
+      "locator": "§3.1. Checked Exceptions; §3.2. Unchecked Exceptions",
+      "topic": "Checked vs unchecked"
+    },
+    {
+      "id": "day09-src-6",
+      "resourceId": "res-9762250d04d9",
+      "locator": "§5. A Custom Resource With AutoCloseable",
+      "topic": "Tu tao resource voi AutoCloseable"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Separate chaining (thiet ke noi bo cua SimpleHashMap voi mang bucket va danh sach lien ket): khong co nguon nao trong resourceIds cua Day 9 mo ta chi tiet thuat toan noi bo cua hash table - hai nguon Collections (res-899383bc8d09, res-12fa3a9d4910) chi la trang tong quan cap interface/mo hinh phan nhom, khong di sau vao cai dat. Noi dung thiet ke separate chaining duoc trinh bay theo kien thuc cau truc du lieu chuan, khong gan citation gia."
+    ]
+  }
+}

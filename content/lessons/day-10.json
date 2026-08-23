@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "id": "day-10",
+  "catalogRef": {
+    "unitId": "unit-04",
+    "group": "java",
+    "title": "Lambda & Stream API Chuyên Sâu",
+    "outline": [
+      "Lambda & Stream API Chuyên Sâu\n+ Lambda & Functional Interface\n+ Stream pipeline\n+ Collectors\n+ Optional deep dive\n+ Parallel Stream",
+      "Assignment"
+    ],
+    "objectives": [
+      "LO4"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      18,
+      19
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 19,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-0851edc9dd41",
+      "res-713a3e371ba0",
+      "res-9b1feb8ea22f",
+      "res-55e66ec50cc0",
+      "res-b73632f693f7"
+    ]
+  },
+  "unitId": "unit-04",
+  "group": "java",
+  "kind": "theory",
+  "title": "Lambda & Stream API Chuyên Sâu",
+  "summary": "Lambda expression la cach viet gon cai dat functional interface; Stream.filter() loc phan tu qua Predicate (ke ca nhieu dieu kien va xu ly checked exception); Collectors, Optional va Parallel Stream duoc gioi thieu o muc chuan Java 17 de hoan thien buc tranh Stream API.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO4"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Day 8-9 (Generics, Collections Framework, Exception hierarchy)."
+  ],
+  "outcomes": [
+    "Viet duoc lambda expression cho cac functional interface chuan (Predicate, Function, Consumer, Supplier).",
+    "Xay dung duoc mot Stream pipeline loc theo nhieu dieu kien bang filter().",
+    "Su dung dung Collectors.toList()/groupingBy()/toMap() de gom ket qua stream.",
+    "Giai thich duoc vi sao Optional an toan hon tra ve null va khi nao parallel stream co loi."
+  ],
+  "sections": [
+    {
+      "id": "day10-sec-lambda",
+      "title": "Lambda & Functional Interface",
+      "blocks": [
+        {
+          "id": "day10-blk-1",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan chuyen sau trong resourceIds cua Day 10 (xem authoring.limitations); noi dung duoi day theo kien thuc Java 17 chuan, tap trung vao phan lam nen tang cho Stream API.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-2",
+          "type": "paragraph",
+          "text": "Functional interface la mot interface chi co dung mot phuong thuc truu tuong (abstract method) - vi du Predicate<T> (co method boolean test(T t)), Function<T,R> (R apply(T t)), Consumer<T> (void accept(T t)), Supplier<T> (T get()). Lambda expression la cach viet gon mot cai dat cho functional interface: cu phap tong quat la `(tham so) -> bieu thuc hoac khoi lenh`, vi du `Predicate<Integer> isEven = n -> n % 2 == 0;` tuong duong voi viet mot lop an danh cai dat Predicate nhung ngan gon hon rat nhieu.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day10-sec-pipeline",
+      "title": "Stream pipeline va Stream.filter()",
+      "blocks": [
+        {
+          "id": "day10-blk-3",
+          "type": "paragraph",
+          "text": "Stream.filter() la mot intermediate operation cua Stream, nhan vao mot Predicate<T> va tra ve mot stream moi chi gom cac phan tu thoa dieu kien; co the truyen vao bang lambda expression hoac method reference.",
+          "citations": [
+            "day10-src-1"
+          ]
+        },
+        {
+          "id": "day10-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.List;\nimport java.util.stream.Collectors;\n\nclass ProductFilterDemo {\n    record Product(String name, double price, boolean inStock) {}\n\n    List<Product> availableUnder(List<Product> products, double maxPrice) {\n        return products.stream()\n                .filter(p -> p.inStock() && p.price() <= maxPrice)\n                .collect(Collectors.toList());\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day10-src-1",
+            "day10-src-2"
+          ]
+        },
+        {
+          "id": "day10-blk-5",
+          "type": "paragraph",
+          "text": "Co the ket hop nhieu dieu kien loc trong cung mot lambda bang toan tu && (nhu vi du tren ket hop inStock() va gioi han gia) thay vi goi filter() nhieu lan lien tiep.",
+          "citations": [
+            "day10-src-2"
+          ]
+        },
+        {
+          "id": "day10-blk-6",
+          "type": "note",
+          "text": "Functional interface chuan cua Java (nhu Predicate) khong khai bao checked exception trong chu ky phuong thuc, nen mot method reference nem checked exception se bi loi bien dich khi dung truc tiep trong filter(); cach xu ly pho bien la boc try-catch ben trong than lambda roi chuyen checked exception thanh unchecked (hoac tra ve gia tri mac dinh) truoc khi tra ve boolean.",
+          "citations": [
+            "day10-src-3"
+          ]
+        },
+        {
+          "id": "day10-blk-7",
+          "type": "table",
+          "columns": [
+            "Nhom",
+            "Vi du thao tac",
+            "Vai tro trong pipeline"
+          ],
+          "rows": [
+            [
+              "Stream Basics",
+              "Stream.of, list.stream()",
+              "Khoi tao nguon du lieu cho pipeline"
+            ],
+            [
+              "Operations with Streams",
+              "filter, map/flatMap, reduce, parallel stream",
+              "Bien doi/loc/tong hop du lieu qua stream"
+            ],
+            [
+              "Stream Collectors",
+              "Collectors (toList, groupingBy, toMap)",
+              "Gom ket qua cuoi pipeline thanh cau truc du lieu cu the"
+            ]
+          ],
+          "citations": [
+            "day10-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day10-sec-collectors",
+      "title": "Collectors",
+      "blocks": [
+        {
+          "id": "day10-blk-8",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan chi tiet trong resourceIds cua Day 10 - bang o muc truoc (c4) chi xac nhan Collectors la mot nhom chu de trong Streams Series, khong mo ta chi tiet tung phuong thuc (xem authoring.limitations). Noi dung duoi day theo kien thuc Java 17 chuan.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-9",
+          "type": "paragraph",
+          "text": "Collectors la lop tien ich cung cap cac 'chien luoc gom ket qua' de dung voi Stream.collect(): Collectors.toList()/toSet() gom thanh collection; Collectors.groupingBy(keyFn) nhom phan tu theo mot khoa thanh Map<K, List<T>>; Collectors.toMap(keyFn, valueFn) gom truc tiep thanh Map<K, V>; Collectors.joining(delimiter) noi cac phan tu String lai voi nhau.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day10-sec-optional",
+      "title": "Optional",
+      "blocks": [
+        {
+          "id": "day10-blk-10",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan trong resourceIds cua Day 10 (xem authoring.limitations); noi dung duoi day theo kien thuc Java 17 chuan.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-11",
+          "type": "paragraph",
+          "text": "Optional<T> la mot kieu wrapper bieu dien 'co the co hoac khong co gia tri', dung de thay the viec tra ve null truc tiep va buoc noi goi phai xu ly tuong minh truong hop rong: Optional.ofNullable(x) tao Optional co the rong; isPresent()/isEmpty() kiem tra; get() lay gia tri (nem NoSuchElementException neu rong, nen tranh dung truc tiep); orElse(default)/orElseGet(supplier) cung cap gia tri thay the an toan hon; map(fn) bien doi gia tri ben trong neu co.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day10-sec-parallel",
+      "title": "Parallel Stream",
+      "blocks": [
+        {
+          "id": "day10-blk-12",
+          "type": "note",
+          "text": "Chu de nay khong co nguon trich dan chi tiet trong resourceIds cua Day 10 - bang c4 chi xac nhan 'parallel stream' la mot thao tac duoc liet ke trong nhom Operations with Streams, khong mo ta co che hoat dong (xem authoring.limitations). Noi dung duoi day theo kien thuc Java 17 chuan.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-13",
+          "type": "note",
+          "text": "list.stream().parallel() (hoac list.parallelStream()) chia cong viec cho nhieu thread trong ForkJoinPool.commonPool(), chi nen dung khi tap du lieu du lon va thao tac tren moi phan tu du 'nang' de bu duoc chi phi dieu phoi song song; voi tap du lieu nho hoac thao tac don gian, parallel stream co the CHAM HON stream tuan tu. Ngoai ra thao tac ben trong parallel stream phai stateless va khong gay side-effect tren du lieu chia se, neu khong se dan toi ket qua sai lech ngau nhien.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Goi get() truc tiep tren Optional ma khong kiem tra isPresent() truoc, dan toi NoSuchElementException khi Optional rong - mat het loi ich an toan cua Optional.",
+    "Dung method reference nem checked exception truc tiep trong filter()/map() ma khong boc try-catch, gay loi bien dich vi functional interface chuan khong khai bao checked exception.",
+    "Dung parallel stream cho tap du lieu nho hoac thao tac don gian, khien code cham hon va kho doan ket qua vi chi phi dieu phoi song song lon hon loi ich."
+  ],
+  "practices": [
+    {
+      "id": "day10-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Stream.filter() nhan vao tham so kieu gi va lam gi voi stream nguon?",
+      "choices": [
+        {
+          "id": "day10-prac-1-a",
+          "text": "Nhan mot Predicate<T>, tra ve stream moi chi gom cac phan tu thoa dieu kien Predicate"
+        },
+        {
+          "id": "day10-prac-1-b",
+          "text": "Nhan mot Function<T,R>, bien doi tung phan tu sang kieu moi"
+        },
+        {
+          "id": "day10-prac-1-c",
+          "text": "Nhan mot Comparator<T>, sap xep lai stream"
+        },
+        {
+          "id": "day10-prac-1-d",
+          "text": "Nhan mot Consumer<T>, in ra tung phan tu roi tra ve stream rong"
+        }
+      ],
+      "correctChoiceIds": [
+        "day10-prac-1-a"
+      ],
+      "hint": "Xem lai dinh nghia filter() la intermediate operation loc phan tu.",
+      "solution": "day10-prac-1-a",
+      "explanation": "filter() la intermediate operation, luon nhan Predicate<T> (dieu kien tra ve boolean) va giu lai nhung phan tu thoa dieu kien do.",
+      "rubric": "Chon dung kieu tham so va hanh vi cua filter().",
+      "sourceUsage": [
+        "day10-src-1"
+      ]
+    },
+    {
+      "id": "day10-prac-2",
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "Cho `List<Integer> nums = List.of(1, 2, 3, 4, 5, 6);` va `nums.stream().filter(n -> n % 2 == 0 && n > 2).collect(Collectors.toList())`. Ket qua tra ve la gi?",
+      "choices": [
+        {
+          "id": "day10-prac-2-a",
+          "text": "[4, 6]"
+        },
+        {
+          "id": "day10-prac-2-b",
+          "text": "[2, 4, 6]"
+        },
+        {
+          "id": "day10-prac-2-c",
+          "text": "[1, 3, 5]"
+        },
+        {
+          "id": "day10-prac-2-d",
+          "text": "[3, 4, 5, 6]"
+        }
+      ],
+      "correctChoiceIds": [
+        "day10-prac-2-a"
+      ],
+      "hint": "Ap dung ca hai dieu kien && cung luc cho tung phan tu.",
+      "solution": "day10-prac-2-a",
+      "explanation": "Dieu kien ket hop 'n % 2 == 0 && n > 2' chi giu lai cac so chan va lon hon 2: trong day [1..6] chi co 4 va 6 thoa ca hai dieu kien.",
+      "rubric": "Danh gia dung ket qua loc theo nhieu dieu kien ket hop bang &&.",
+      "sourceUsage": [
+        "day10-src-2"
+      ]
+    },
+    {
+      "id": "day10-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Cho record Employee(String name, String department, double salary). Viet mot method tra ve danh sach ten (String) cac Employee co department la \"IT\" va salary >= 20000000, dung Stream API.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Ket hop filter() voi dieu kien && roi map() sang String ten truoc khi collect.",
+      "solution": "List<String> filterItStaff(List<Employee> employees) {\n    return employees.stream()\n            .filter(e -> e.department().equals(\"IT\") && e.salary() >= 20000000)\n            .map(Employee::name)\n            .collect(Collectors.toList());\n}",
+      "explanation": "Bai tap ket hop filter() (loc nhieu dieu kien) va map() trong cung mot pipeline.",
+      "rubric": "Danh gia dung thu tu filter() truoc map(), dieu kien loc dung, ket qua la danh sach ten (khong con nguyen Employee).",
+      "sourceUsage": [
+        "day10-src-2"
+      ]
+    },
+    {
+      "id": "day10-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vi sao nen dung Optional<T> lam kieu tra ve thay vi tra ve null truc tiep cho mot method 'tim kiem, co the khong thay'?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghi ve dieu gi xay ra o phia noi goi neu ho quen kiem tra null.",
+      "solution": "Tra ve null buoc noi goi phai tu nho kiem tra null, de quen la NullPointerException; Optional<T> lam ro rang trong chu ky phuong thuc rang gia tri co the khong ton tai, buoc noi goi phai xu ly tuong minh (qua isPresent/orElse/map...) thay vi vo tinh bo quen.",
+      "explanation": "Optional bien 'kha nang thieu gia tri' thanh mot phan cua kieu du lieu, giam nguy co NullPointerException khong duoc kiem soat.",
+      "rubric": "Danh gia hoc vien neu dung ly do ve tinh tuong minh/an toan kieu cua Optional so voi null.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 19,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viet mot pipeline dung Collectors.groupingBy() de nhom danh sach Employee theo department, sau do tinh luong trung binh tung phong ban bang Collectors.averagingDouble().",
+    "So sanh thoi gian chay giua stream() va parallelStream() tren mot danh sach 1 trieu phan tu voi mot phep tinh don gian (vi du cong don) de tu quan sat khi nao parallel that su co loi."
+  ],
+  "references": [
+    {
+      "id": "day10-ref-1",
+      "type": "external",
+      "resourceId": "res-713a3e371ba0",
+      "citationId": "day10-src-1"
+    },
+    {
+      "id": "day10-ref-2",
+      "type": "external",
+      "resourceId": "res-55e66ec50cc0",
+      "citationId": "day10-src-4"
+    },
+    {
+      "id": "day10-ref-3",
+      "type": "internal",
+      "description": "Ap dung truc tiep generics/collections da hoc o Day 8-9 lam nen tang cho Stream API."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day10-src-1",
+      "resourceId": "res-713a3e371ba0",
+      "locator": "§2. Using Stream.filter()",
+      "topic": "Stream.filter() nhan Predicate"
+    },
+    {
+      "id": "day10-src-2",
+      "resourceId": "res-713a3e371ba0",
+      "locator": "§2.2. Filtering Collections with Multiple Criteria",
+      "topic": "Loc theo nhieu dieu kien"
+    },
+    {
+      "id": "day10-src-3",
+      "resourceId": "res-713a3e371ba0",
+      "locator": "§3. Handling Exceptions",
+      "topic": "Xu ly checked exception trong Predicate"
+    },
+    {
+      "id": "day10-src-4",
+      "resourceId": "res-55e66ec50cc0",
+      "locator": "Java Streams Series — mục lục theo nhóm",
+      "topic": "Cau truc trang tong hop Streams Series"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Lambda & Functional Interface: khong co nguon nao trong resourceIds cua Day 10 mo ta rieng chu de nay (3 trong 5 resourceIds la unavailable) - trinh bay bang kien thuc Java 17 chuan.",
+      "Collectors: chi duoc xac nhan o muc 'ten nhom chu de' qua c4 (trang tong hop Streams Series), khong co nguon mo ta chi tiet tung phuong thuc Collectors - trinh bay bang kien thuc Java 17 chuan.",
+      "Optional: khong co nguon nao trong resourceIds cua Day 10 mo ta chu de nay - trinh bay bang kien thuc Java 17 chuan.",
+      "Parallel Stream: chi duoc xac nhan o muc 'ten thao tac duoc liet ke' qua c4, khong co nguon mo ta co che hoat dong/canh bao hieu nang - phan canh bao hieu nang trinh bay bang kien thuc Java 17 chuan."
+    ]
+  }
+}

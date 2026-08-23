@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "id": "day-11",
+  "catalogRef": {
+    "unitId": "unit-04",
+    "group": "java",
+    "title": "Concurrency & File I/O",
+    "outline": [
+      "Concurrency & File I/O\n+ Thread fundamentals\n+ synchronized & volatile\n+ ExecutorService\n+ NIO & File I/O\n+ Serialization",
+      "Guides/Review"
+    ],
+    "objectives": [
+      "LO4"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      20,
+      21
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-3393c8cbdaaf",
+      "res-a553d0d4478d",
+      "res-9a6cde117315",
+      "res-fc9869512a5f",
+      "res-fe3cc9768091",
+      "res-543deb939f9e",
+      "res-88adadc6f2f4",
+      "res-d6607fed4419",
+      "res-0c7109cb4fa8"
+    ]
+  },
+  "unitId": "unit-04",
+  "group": "java",
+  "kind": "theory",
+  "title": "Concurrency & File I/O",
+  "summary": "Vong doi Thread (6 trang thai), synchronized/volatile de ngan race condition va dam bao memory visibility, ExecutorService de tach quan ly thread khoi tac vu, NIO.2 Path/Files cho thao tac file, va Serialization de luu/truyen trang thai object - day la bai giau nguon trich dan nhat trong Unit 4 voi ca 9 resourceIds deu da doc duoc.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO4"
+  ],
+  "prerequisites": [
+    "Da hoan thanh Day 10 (Lambda & Stream API Chuyen Sau)."
+  ],
+  "outcomes": [
+    "Liet ke va giai thich dung 6 trang thai vong doi cua Thread.",
+    "Dung synchronized dung cach de ngan race condition, hieu duoc tinh reentrant cua khoa.",
+    "Giai thich duoc vai tro cua volatile va happens-before trong memory visibility.",
+    "Dung ExecutorService thay vi tu quan ly Thread thu cong.",
+    "Thao tac file/thu muc bang java.nio.file.Path/Files va tu cai dat serialization dung cach (serialVersionUID, transient)."
+  ],
+  "sections": [
+    {
+      "id": "day11-sec-thread",
+      "title": "Thread fundamentals: vong doi Thread",
+      "blocks": [
+        {
+          "id": "day11-blk-1",
+          "type": "paragraph",
+          "text": "java.lang.Thread dinh nghia enum State voi 6 trang thai vong doi: NEW (da tao, chua goi start()), RUNNABLE (dang chay hoac dang cho duoc cap CPU), BLOCKED (dang cho de vao mot synchronized method/block), WAITING (cho vo thoi han hanh dong cua thread khac), TIMED_WAITING (cho co gioi han thoi gian) va TERMINATED (da ket thuc thuc thi).",
+          "citations": [
+            "day11-src-1"
+          ]
+        },
+        {
+          "id": "day11-blk-2",
+          "type": "paragraph",
+          "text": "Mot thread roi vao BLOCKED khi co vao mot synchronized method/block dang bi thread khac giu khoa monitor. Nguoc lai, WAITING xay ra khi goi object.wait(), thread.join() hoac LockSupport.park() khong kem timeout; TIMED_WAITING xay ra khi cac phuong thuc tuong tu duoc goi kem timeout, vi du Thread.sleep(millis).",
+          "citations": [
+            "day11-src-2",
+            "day11-src-3"
+          ]
+        },
+        {
+          "id": "day11-blk-3",
+          "type": "code",
+          "language": "java",
+          "code": "class ThreadLifecycleDemo {\n    static void run() throws InterruptedException {\n        Thread worker = new Thread(() -> {\n            try {\n                Thread.sleep(50);\n            } catch (InterruptedException e) {\n                Thread.currentThread().interrupt();\n            }\n        });\n        System.out.println(\"Before start: \" + worker.getState());\n        worker.start();\n        System.out.println(\"After start: \" + worker.getState());\n        worker.join();\n        System.out.println(\"After join: \" + worker.getState());\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-1",
+            "day11-src-3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day11-sec-synchronized",
+      "title": "synchronized va race condition",
+      "blocks": [
+        {
+          "id": "day11-blk-4",
+          "type": "paragraph",
+          "text": "Race condition xay ra khi nhieu thread cung cap nhat du lieu chia se co the thay doi (mutable) dong thoi ma khong dong bo, dan toi ket qua sai lech khong nhat quan. Cac thread chu yeu giao tiep qua viec chia se field/object, cach nay hieu qua nhung co the gay hai loai loi: thread interference (xen ke thao tac gay sai lech) va memory consistency error (thay gia tri khong nhat quan) - synchronization la cong cu de ngan ca hai.",
+          "citations": [
+            "day11-src-4",
+            "day11-src-10"
+          ]
+        },
+        {
+          "id": "day11-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "class Counter {\n    private int count = 0;\n\n    synchronized void increment() {\n        count++;\n    }\n\n    synchronized int get() {\n        return count;\n    }\n}\n\nclass RaceConditionDemo {\n    static void run() throws InterruptedException {\n        Counter counter = new Counter();\n        Runnable task = () -> {\n            for (int i = 0; i < 1000; i++) {\n                counter.increment();\n            }\n        };\n        Thread t1 = new Thread(task);\n        Thread t2 = new Thread(task);\n        t1.start();\n        t2.start();\n        t1.join();\n        t2.join();\n        System.out.println(counter.get());\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-4",
+            "day11-src-5"
+          ]
+        },
+        {
+          "id": "day11-blk-6",
+          "type": "note",
+          "text": "synchronized instance method khoa theo doi tuong instance (increment() va get() o tren khoa theo tung Counter rieng); synchronized static method se khoa theo doi tuong Class thay vi tung instance, nen chi mot thread chay duoc bat ke co bao nhieu instance. Khoa cua synchronized la reentrant: mot thread dang giu khoa co the tiep tuc lay lai chinh khoa do nhieu lan long nhau ma khong bi deadlock voi chinh minh.",
+          "citations": [
+            "day11-src-5",
+            "day11-src-6"
+          ]
+        },
+        {
+          "id": "day11-blk-7",
+          "type": "paragraph",
+          "text": "Trang Synchronization cua Oracle liet ke cac chu de con lien quan: Thread Interference, Memory Consistency Errors, Synchronized Methods (idiom don gian de chong ca hai loi tren), Implicit Locks and Synchronization, va Atomic Access.",
+          "citations": [
+            "day11-src-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day11-sec-volatile",
+      "title": "Memory visibility va volatile",
+      "blocks": [
+        {
+          "id": "day11-blk-8",
+          "type": "paragraph",
+          "text": "Trong he nhieu loi, moi thread co the giu ban sao bien trong cache rieng; neu khong dong bo, thread khac co the khong thay gia tri vua cap nhat (memory visibility) hoac thay cac thay doi theo thu tu khac voi thu tu chuong trinh goc (reordering).",
+          "citations": [
+            "day11-src-7"
+          ]
+        },
+        {
+          "id": "day11-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "class VolatileFlagDemo {\n    private volatile boolean running = true;\n\n    void stop() {\n        running = false;\n    }\n\n    void loopUntilStopped() {\n        while (running) {\n            // cong viec lap, luon doc gia tri moi nhat tu bo nho chinh\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-8"
+          ]
+        },
+        {
+          "id": "day11-blk-10",
+          "type": "note",
+          "text": "Danh dau bien volatile buoc runtime/processor khong duoc sap xep lai cac lenh lien quan toi bien do va luon ghi/doc gia tri moi nhat tu bo nho chinh, dam bao moi thread thay gia tri nhat quan - nhung khong cap mutual exclusion nhu synchronized (khong thay the duoc synchronized khi can dam bao mot khoi thao tac la nguyen tu). Theo Java Memory Model, mot lan ghi vao bien volatile luon happens-before moi lan doc tiep theo cua cung bien do, nen cac gia tri thread A thay truoc khi ghi volatile cung duoc thread B thay sau khi doc volatile do.",
+          "citations": [
+            "day11-src-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day11-sec-executor",
+      "title": "ExecutorService",
+      "blocks": [
+        {
+          "id": "day11-blk-11",
+          "type": "paragraph",
+          "text": "Trong ung dung lon, nen tach viec quan ly/tao thread ra khoi phan dinh nghia tac vu (Runnable); cac doi tuong dong goi viec quan ly nay goi la executor, thay vi gan chat Runnable voi mot Thread cu the nhu cach lam don gian truoc do.",
+          "citations": [
+            "day11-src-12"
+          ]
+        },
+        {
+          "id": "day11-blk-12",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.concurrent.ExecutorService;\nimport java.util.concurrent.Executors;\nimport java.util.concurrent.TimeUnit;\n\nclass ExecutorDemo {\n    static void run() throws InterruptedException {\n        ExecutorService executor = Executors.newFixedThreadPool(2);\n        executor.submit(() -> System.out.println(\"task 1\"));\n        executor.submit(() -> System.out.println(\"task 2\"));\n        executor.shutdown();\n        executor.awaitTermination(1, TimeUnit.SECONDS);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-12",
+            "day11-src-13"
+          ]
+        },
+        {
+          "id": "day11-blk-13",
+          "type": "note",
+          "text": "Chu de Executor chia lam ba phan: Executor Interfaces (dinh nghia 3 kieu doi tuong executor), Thread Pools (loai cai dat executor pho bien nhat, nhu newFixedThreadPool o vi du tren) va Fork/Join (framework tan dung nhieu bo xu ly).",
+          "citations": [
+            "day11-src-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day11-sec-fileio",
+      "title": "NIO.2 va File I/O",
+      "blocks": [
+        {
+          "id": "day11-blk-14",
+          "type": "paragraph",
+          "text": "Goi java.nio.file cung cap Path lam entry point chinh (dai dien cho duong dan) va lop Files chua cac phuong thuc tinh thao tac tren Path nhu exists(), isReadable(), isWritable() de kiem tra file/thu muc; day cung la noi dung mo dau cua bai hoc File I/O (Featuring NIO.2).",
+          "citations": [
+            "day11-src-14",
+            "day11-src-16"
+          ]
+        },
+        {
+          "id": "day11-blk-15",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.nio.file.StandardCopyOption;\n\nclass FileOpsDemo {\n    static void run(Path source, Path target) throws IOException {\n        if (!Files.exists(source)) {\n            Files.createFile(source);\n        }\n        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);\n        Files.deleteIfExists(source);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-17",
+            "day11-src-18"
+          ]
+        },
+        {
+          "id": "day11-blk-16",
+          "type": "paragraph",
+          "text": "Files.createFile()/createDirectory() tao file hoac thu muc (doi hoi cac thanh phan duong dan cha da ton tai, khac voi createDirectories() tao de quy); Files.delete() xoa va nem exception neu khong ton tai, con deleteIfExists() thi khong. Files.copy()/Files.move() thao tac tuong tu copy/cut-paste; mac dinh that bai neu file dich da ton tai tru khi truyen StandardCopyOption.REPLACE_EXISTING; copy thu muc khong de quy noi dung ben trong.",
+          "citations": [
+            "day11-src-17",
+            "day11-src-18"
+          ]
+        },
+        {
+          "id": "day11-blk-17",
+          "type": "note",
+          "text": "Java IO Series cua Baeldung phan loai cac bai viet File I/O theo ba nhom: thao tac file co ban (doc/ghi/xoa/doi ten), Java IO APIs (OutputStream, BufferedReader kieu cu) va Java NIO APIs (NIO2 File API, Path, WatchService, Selector) - Day 11 tap trung vao nhom NIO APIs qua Path/Files.",
+          "citations": [
+            "day11-src-15"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day11-sec-serialization",
+      "title": "Serialization",
+      "blocks": [
+        {
+          "id": "day11-blk-18",
+          "type": "paragraph",
+          "text": "Serialization la chuyen trang thai cua mot object thanh chuoi byte de luu hoac truyen qua mang; deserialization lam nguoc lai. Lop muon serialize duoc phai implement interface danh dau Serializable.",
+          "citations": [
+            "day11-src-19"
+          ]
+        },
+        {
+          "id": "day11-blk-19",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.io.ObjectInputStream;\nimport java.io.ObjectOutputStream;\nimport java.io.Serializable;\n\nclass Address implements Serializable {\n    private static final long serialVersionUID = 1L;\n\n    private final String city;\n\n    Address(String city) {\n        this.city = city;\n    }\n}\n\nclass Employee implements Serializable {\n    private static final long serialVersionUID = 1L;\n\n    private final String name;\n    private final Address address;\n    private transient String cachedDisplayName;\n\n    Employee(String name, Address address) {\n        this.name = name;\n        this.address = address;\n    }\n\n    private void writeObject(ObjectOutputStream out) throws IOException {\n        out.defaultWriteObject();\n    }\n\n    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {\n        in.defaultReadObject();\n        cachedDisplayName = name.toUpperCase();\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-19",
+            "day11-src-20",
+            "day11-src-21",
+            "day11-src-22"
+          ]
+        },
+        {
+          "id": "day11-blk-20",
+          "type": "note",
+          "text": "Khi mot lop implements Serializable, moi lop con cung serializable theo; neu mot object tham chieu toi object khac (nhu Employee tham chieu Address o tren), object duoc tham chieu cung phai serializable rieng, neu khong se nem NotSerializableException.",
+          "citations": [
+            "day11-src-20"
+          ]
+        },
+        {
+          "id": "day11-blk-21",
+          "type": "paragraph",
+          "text": "JVM gan mot so hieu phien ban (serialVersionUID) cho moi lop serializable de xac nhan object luu va object doc lai co cung cau truc; nen khai bao tuong minh vi so tu sinh phu thuoc trinh bien dich, co the gay InvalidClassException khi khac moi truong. Co the override writeObject/readObject de tu dinh nghia cach serialize field khong serializable duoc; field danh dau transient se bi bo qua khi serialize mac dinh.",
+          "citations": [
+            "day11-src-21",
+            "day11-src-22"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Chi dong bo (synchronized) method ghi (vi du increment()) ma quen dong bo ca method doc (get()) tren cung field - van co the doc phai gia tri cu do memory visibility, du khong con mat du lieu do ghi chong ghi.",
+    "Dung volatile de thay the synchronized khi can dam bao mot chuoi thao tac (nhu doc-sua-ghi) la nguyen tu - volatile chi dam bao visibility, khong dam bao mutual exclusion.",
+    "Danh dau mot field tham chieu toi object khong implement Serializable trong mot lop da Serializable ma khong danh dau transient - se nem NotSerializableException luc runtime thay vi loi luc bien dich."
+  ],
+  "practices": [
+    {
+      "id": "day11-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Diem khac biet chinh giua trang thai BLOCKED va WAITING cua Thread la gi?",
+      "choices": [
+        {
+          "id": "day11-prac-1-a",
+          "text": "BLOCKED la dang cho de vao mot synchronized method/block bi khoa; WAITING la cho vo thoi han mot hanh dong cua thread khac (vi du wait()/join() khong timeout)"
+        },
+        {
+          "id": "day11-prac-1-b",
+          "text": "BLOCKED va WAITING la mot, chi khac ten goi"
+        },
+        {
+          "id": "day11-prac-1-c",
+          "text": "BLOCKED xay ra sau TERMINATED, WAITING xay ra truoc NEW"
+        },
+        {
+          "id": "day11-prac-1-d",
+          "text": "BLOCKED chi danh cho synchronized static method, WAITING chi danh cho synchronized instance method"
+        }
+      ],
+      "correctChoiceIds": [
+        "day11-prac-1-a"
+      ],
+      "hint": "Xem lai dinh nghia tung trang thai trong 6 trang thai vong doi Thread.",
+      "solution": "day11-prac-1-a",
+      "explanation": "BLOCKED gan voi viec cho khoa monitor de vao synchronized; WAITING gan voi viec cho mot hanh dong tu thread khac (khong co timeout).",
+      "rubric": "Chon dung nguyen nhan dan toi tung trang thai.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day11-prac-2",
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "Trong RaceConditionDemo o tren, hai thread t1/t2 cung goi counter.increment() 1000 lan qua method synchronized. Gia tri counter.get() sau khi ca hai thread join() la bao nhieu?",
+      "choices": [
+        {
+          "id": "day11-prac-2-a",
+          "text": "Luon la 2000"
+        },
+        {
+          "id": "day11-prac-2-b",
+          "text": "Co the nho hon 2000 do race condition"
+        },
+        {
+          "id": "day11-prac-2-c",
+          "text": "Luon la 1000"
+        },
+        {
+          "id": "day11-prac-2-d",
+          "text": "Khong xac dinh duoc, co the la bat ky so nao"
+        }
+      ],
+      "correctChoiceIds": [
+        "day11-prac-2-a"
+      ],
+      "hint": "increment() va get() deu la synchronized instance method tren cung mot Counter.",
+      "solution": "day11-prac-2-a",
+      "explanation": "Vi ca increment() va get() deu synchronized tren cung mot instance Counter, moi lan goi increment() la nguyen tu (atomic) doi voi field count - khong con race condition, nen ket qua luon dung 2000 (2 thread x 1000 lan).",
+      "rubric": "Danh gia hoc vien hieu dung synchronized loai bo race condition trong vi du nay.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day11-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot lop ThreadSafeAccumulator voi field long total va mot phuong thuc synchronized void add(long amount) cong don vao total, cung phuong thuc synchronized long getTotal() tra ve gia tri hien tai.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Ap dung dung mau Counter da hoc: ca hai method deu synchronized tren cung instance.",
+      "solution": "class ThreadSafeAccumulator {\n    private long total = 0;\n\n    synchronized void add(long amount) {\n        total += amount;\n    }\n\n    synchronized long getTotal() {\n        return total;\n    }\n}",
+      "explanation": "Accumulator dung chung nhieu thread can dong bo dung dan tren field mutable de tranh race condition.",
+      "rubric": "Danh gia ca hai method deu duoc danh dau synchronized va thao tac dung tren field total.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day11-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viet mot method dung java.nio.file.Files de: kiem tra file dau vao co ton tai khong, neu co thi copy sang mot duong dan dich (ghi de neu dich da ton tai).",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dung Files.exists() de kiem tra, Files.copy() voi StandardCopyOption.REPLACE_EXISTING de ghi de.",
+      "solution": "void copyIfExists(Path source, Path target) throws IOException {\n    if (Files.exists(source)) {\n        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);\n    }\n}",
+      "explanation": "Bai tap ap dung truc tiep Files.exists()/Files.copy() da hoc trong bai.",
+      "rubric": "Danh gia co kiem tra ton tai truoc khi copy va dung dung REPLACE_EXISTING de cho phep ghi de.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viet lai RaceConditionDemo nhung bo synchronized o increment() de tu quan sat ket qua counter.get() sai lech (< 2000) do race condition, roi so sanh voi ban co synchronized.",
+    "Viet mot chuong trinh dung ExecutorService voi newFixedThreadPool(4) de xu ly song song viec doc noi dung nhieu file bang Files.readString(), roi tong hop ket qua vao mot danh sach dung chung (co dong bo dung cach)."
+  ],
+  "references": [
+    {
+      "id": "day11-ref-1",
+      "type": "external",
+      "resourceId": "res-3393c8cbdaaf",
+      "citationId": "day11-src-1"
+    },
+    {
+      "id": "day11-ref-2",
+      "type": "external",
+      "resourceId": "res-a553d0d4478d",
+      "citationId": "day11-src-4"
+    },
+    {
+      "id": "day11-ref-3",
+      "type": "external",
+      "resourceId": "res-9a6cde117315",
+      "citationId": "day11-src-7"
+    },
+    {
+      "id": "day11-ref-4",
+      "type": "external",
+      "resourceId": "res-fc9869512a5f",
+      "citationId": "day11-src-10"
+    },
+    {
+      "id": "day11-ref-5",
+      "type": "external",
+      "resourceId": "res-fe3cc9768091",
+      "citationId": "day11-src-12"
+    },
+    {
+      "id": "day11-ref-6",
+      "type": "external",
+      "resourceId": "res-543deb939f9e",
+      "citationId": "day11-src-14"
+    },
+    {
+      "id": "day11-ref-7",
+      "type": "external",
+      "resourceId": "res-88adadc6f2f4",
+      "citationId": "day11-src-15"
+    },
+    {
+      "id": "day11-ref-8",
+      "type": "external",
+      "resourceId": "res-d6607fed4419",
+      "citationId": "day11-src-16"
+    },
+    {
+      "id": "day11-ref-9",
+      "type": "external",
+      "resourceId": "res-0c7109cb4fa8",
+      "citationId": "day11-src-19"
+    },
+    {
+      "id": "day11-ref-10",
+      "type": "internal",
+      "description": "Tiep noi Stream API (Day 10) - Day 12 se ket hop Stream, File I/O va (neu can) concurrency vao mot pipeline xu ly du lieu hoan chinh."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day11-src-1",
+      "resourceId": "res-3393c8cbdaaf",
+      "locator": "§3. Life Cycle of a Thread in Java",
+      "topic": "6 trang thai vong doi Thread"
+    },
+    {
+      "id": "day11-src-2",
+      "resourceId": "res-3393c8cbdaaf",
+      "locator": "§3.3. Blocked",
+      "topic": "Cach vao trang thai BLOCKED"
+    },
+    {
+      "id": "day11-src-3",
+      "resourceId": "res-3393c8cbdaaf",
+      "locator": "§3.4. Waiting; §3.5. Timed Waiting",
+      "topic": "WAITING vs TIMED_WAITING"
+    },
+    {
+      "id": "day11-src-4",
+      "resourceId": "res-a553d0d4478d",
+      "locator": "§2. Why Synchronization?",
+      "topic": "Race condition la gi"
+    },
+    {
+      "id": "day11-src-5",
+      "resourceId": "res-a553d0d4478d",
+      "locator": "§3.1. Synchronized Instance Methods; §3.2. Synchronized Static Methods",
+      "topic": "synchronized instance vs static method"
+    },
+    {
+      "id": "day11-src-6",
+      "resourceId": "res-a553d0d4478d",
+      "locator": "§3.4. Reentrancy",
+      "topic": "Reentrancy cua khoa synchronized"
+    },
+    {
+      "id": "day11-src-7",
+      "resourceId": "res-9a6cde117315",
+      "locator": "§3.1. Memory Visibility; §3.2. Reordering",
+      "topic": "Van de memory visibility va reordering"
+    },
+    {
+      "id": "day11-src-8",
+      "resourceId": "res-9a6cde117315",
+      "locator": "§4. volatile Memory Order",
+      "topic": "volatile giai quyet van de gi"
+    },
+    {
+      "id": "day11-src-9",
+      "resourceId": "res-9a6cde117315",
+      "locator": "§7. Happens-Before Ordering",
+      "topic": "Quy tac happens-before"
+    },
+    {
+      "id": "day11-src-10",
+      "resourceId": "res-fc9869512a5f",
+      "locator": "Synchronization — đoạn mở đầu",
+      "topic": "Vi sao can synchronization"
+    },
+    {
+      "id": "day11-src-11",
+      "resourceId": "res-fc9869512a5f",
+      "locator": "Synchronization — mục lục các phần con",
+      "topic": "Noi dung cac muc con"
+    },
+    {
+      "id": "day11-src-12",
+      "resourceId": "res-fe3cc9768091",
+      "locator": "Executors — đoạn mở đầu",
+      "topic": "Executor la gi va vi sao can"
+    },
+    {
+      "id": "day11-src-13",
+      "resourceId": "res-fe3cc9768091",
+      "locator": "Executors — mục lục",
+      "topic": "Ba nhom noi dung con"
+    },
+    {
+      "id": "day11-src-14",
+      "resourceId": "res-543deb939f9e",
+      "locator": "File I/O (Featuring NIO.2) — mục lục",
+      "topic": "Cau truc bai hoc File I/O featuring NIO.2"
+    },
+    {
+      "id": "day11-src-15",
+      "resourceId": "res-88adadc6f2f4",
+      "locator": "Java IO Series — mục lục theo nhóm",
+      "topic": "Cau truc trang tong hop IO Series"
+    },
+    {
+      "id": "day11-src-16",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§3. Checking a File or Directory",
+      "topic": "Path va lop Files la entry point cua NIO.2"
+    },
+    {
+      "id": "day11-src-17",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§4. Creating Files; §6. Deleting a File",
+      "topic": "Tao va xoa file/thu muc"
+    },
+    {
+      "id": "day11-src-18",
+      "resourceId": "res-d6607fed4419",
+      "locator": "§7. Copying Files; §8. Moving Files",
+      "topic": "Copy va move file"
+    },
+    {
+      "id": "day11-src-19",
+      "resourceId": "res-0c7109cb4fa8",
+      "locator": "§1. Introduction; §2. Serialization and Deserialization",
+      "topic": "Serialization/deserialization la gi"
+    },
+    {
+      "id": "day11-src-20",
+      "resourceId": "res-0c7109cb4fa8",
+      "locator": "§3.1. Inheritance and Composition",
+      "topic": "Rang buoc ke thua/composition khi serialize"
+    },
+    {
+      "id": "day11-src-21",
+      "resourceId": "res-0c7109cb4fa8",
+      "locator": "§3.2. Serial Version UID",
+      "topic": "serialVersionUID"
+    },
+    {
+      "id": "day11-src-22",
+      "resourceId": "res-0c7109cb4fa8",
+      "locator": "§3.3. Custom Serialization in Java",
+      "topic": "Custom serialization va transient"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": []
+  }
+}
