@@ -1,0 +1,1027 @@
+[
+  {
+    "resourceId": "res-0196dd00302a",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/IandI/index.html",
+    "lessonIds": [
+      "day-07"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/IandI/index.html",
+      "contentSha256": "4bec3ed24efb115370e0ea495c198507619e8f85c5bc57e1e1ab542847117365"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Lesson: Interfaces and Inheritance (The Java Tutorials > Learning the Java Language)",
+      "relevantHeadings": [
+        "Interfaces",
+        "Inheritance"
+      ],
+      "topics": [
+        "interfaces",
+        "inheritance",
+        "abstract classes"
+      ],
+      "facts": [
+        {
+          "topic": "Nội dung bài học Interfaces and Inheritance",
+          "summary": "Trang mục lục giới thiệu hai phần: Interfaces (interface dùng để làm gì, vì sao nên viết, cách viết) và Inheritance (cách một lớp con kế thừa field/method từ lớp cha, mọi lớp đều dẫn xuất từ Object, cách override method kế thừa, và lớp abstract giống interface).",
+          "locator": "Lesson: Interfaces and Inheritance — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-062b84a9042d",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-enum",
+    "lessonIds": [
+      "day-07"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-enum",
+      "contentSha256": "b1f3ff62ddfacc4202eb2eda947f882bd16a18710c401671d70a41f321916da3"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-0851edc9dd41",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-functional-interface",
+    "lessonIds": [
+      "day-10"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-functional-interface",
+      "contentSha256": "591cc1111e322ef18863c7bf39f1663c718517266ed929d1eba1f03a89dacee6"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-0c7109cb4fa8",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-serialization",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-serialization",
+      "contentSha256": "6fdf83333781f1adc4d788b1d0b6218aac3f85c231d4bb3812cd1c2983090acc"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Introduction to Java Serialization | Baeldung",
+      "relevantHeadings": [
+        "1. Introduction",
+        "2. Serialization and Deserialization",
+        "3.1. Inheritance and Composition",
+        "3.2. Serial Version UID",
+        "3.3. Custom Serialization in Java"
+      ],
+      "topics": [
+        "serialization",
+        "Serializable",
+        "serialVersionUID"
+      ],
+      "facts": [
+        {
+          "topic": "Serialization/deserialization là gì",
+          "summary": "Serialization là chuyển trạng thái của một object thành chuỗi byte để lưu hoặc truyền qua mạng; deserialization làm ngược lại; lớp muốn serialize được phải implement interface đánh dấu Serializable.",
+          "locator": "§1. Introduction; §2. Serialization and Deserialization"
+        },
+        {
+          "topic": "Ràng buộc kế thừa/composition khi serialize",
+          "summary": "Khi một lớp implements Serializable, mọi lớp con cũng serializable theo; nếu một object tham chiếu tới object khác, object được tham chiếu cũng phải serializable riêng, nếu không sẽ ném NotSerializableException.",
+          "locator": "§3.1. Inheritance and Composition"
+        },
+        {
+          "topic": "serialVersionUID",
+          "summary": "JVM gắn một số hiệu phiên bản (serialVersionUID) cho mỗi lớp serializable để xác nhận object lưu và object đọc lại có cùng cấu trúc; nên khai báo tường minh vì số tự sinh phụ thuộc trình biên dịch, có thể gây InvalidClassException khi khác môi trường.",
+          "locator": "§3.2. Serial Version UID"
+        },
+        {
+          "topic": "Custom serialization và transient",
+          "summary": "Có thể override writeObject/readObject để tự định nghĩa cách serialize field không serializable được; field đánh dấu transient sẽ bị bỏ qua khi serialize mặc định.",
+          "locator": "§3.3. Custom Serialization in Java"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-12fa3a9d4910",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-collections",
+    "lessonIds": [
+      "day-08",
+      "day-09"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-collections",
+      "contentSha256": "de105c57ead6055910cb7d1ee64224970836dc164e6bcaae5f38083c10651111"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java Collections Series | Baeldung",
+      "relevantHeadings": [
+        "List",
+        "Sets",
+        "Maps",
+        "Queues",
+        "Operations on Collection"
+      ],
+      "topics": [
+        "Java Collections Framework",
+        "List/Set/Map/Queue"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc trang tổng hợp Collections Series",
+          "summary": "Đây là trang mục lục tổng hợp các bài viết Collections của Baeldung, phân theo nhóm interface chính: List (ArrayList, LinkedList...), Sets (HashSet, TreeSet), Maps (HashMap, TreeMap, LinkedHashMap...), Queues (BlockingQueue, ArrayDeque...) và các thao tác chung trên Collection như sort, iterator, time complexity.",
+          "locator": "Java Collections Series — mục lục theo nhóm"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-30d834f8fef0",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-exceptions",
+    "lessonIds": [
+      "day-08",
+      "day-09"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-exceptions",
+      "contentSha256": "8b7f2806e7f669057dd8e541a4d4f3b6fb47d3c8ad4d513fa51aec8924eecd9a"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Exception Handling in Java | Baeldung",
+      "relevantHeadings": [
+        "3. Exception Hierarchy",
+        "3.1. Checked Exceptions",
+        "3.2. Unchecked Exceptions",
+        "4.4. try-with-resources",
+        "6. Anti-Patterns"
+      ],
+      "topics": [
+        "exception hierarchy",
+        "checked vs unchecked",
+        "try-with-resources",
+        "anti-patterns"
+      ],
+      "facts": [
+        {
+          "topic": "Phân cấp Exception",
+          "summary": "Mọi exception đều kế thừa từ Throwable, chia thành hai nhánh: Exception (gồm checked exception và RuntimeException là unchecked) và Error (luôn unchecked, thường không nên tự bắt/tạo).",
+          "locator": "§3. Exception Hierarchy"
+        },
+        {
+          "topic": "Checked vs unchecked",
+          "summary": "Checked exception (như IOException) bắt buộc compiler yêu cầu xử lý hoặc khai báo throws; unchecked exception (kế thừa RuntimeException, như NullPointerException) không bắt buộc, thường dùng cho lỗi lập trình.",
+          "locator": "§3.1. Checked Exceptions; §3.2. Unchecked Exceptions"
+        },
+        {
+          "topic": "try-with-resources",
+          "summary": "Từ Java 7, các đối tượng implement AutoCloseable có thể khai báo trong try(...) để tự động được đóng khi kết thúc block, không cần finally thủ công.",
+          "locator": "§4.4. try-with-resources"
+        },
+        {
+          "topic": "Anti-pattern: nuốt exception và return/throw trong finally",
+          "summary": "Bắt exception rồi bỏ qua (catch rỗng) hoặc dùng return/throw trong khối finally sẽ làm mất thông tin exception gốc — return trong finally khiến JVM huỷ bỏ exception đang ném từ try.",
+          "locator": "§6. Anti-Patterns"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-3393c8cbdaaf",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-thread-lifecycle",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-thread-lifecycle",
+      "contentSha256": "68a3d6e2543847fabbd60f677cacc427fdd69c7a09ea910164c637708a41aa3c"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Life Cycle of a Thread in Java | Baeldung",
+      "relevantHeadings": [
+        "3. Life Cycle of a Thread in Java",
+        "3.2. Runnable",
+        "3.3. Blocked",
+        "3.4. Waiting",
+        "3.5. Timed Waiting",
+        "3.6. Terminated"
+      ],
+      "topics": [
+        "thread lifecycle",
+        "Thread.State"
+      ],
+      "facts": [
+        {
+          "topic": "6 trạng thái vòng đời Thread",
+          "summary": "java.lang.Thread định nghĩa enum State với 6 trạng thái: NEW (đã tạo, chưa start), RUNNABLE (đang chạy hoặc chờ CPU), BLOCKED (chờ monitor lock để vào vùng synchronized), WAITING (chờ vô thời hạn hành động của thread khác), TIMED_WAITING (chờ có giới hạn thời gian) và TERMINATED (đã kết thúc).",
+          "locator": "§3. Life Cycle of a Thread in Java"
+        },
+        {
+          "topic": "Cách vào trạng thái BLOCKED",
+          "summary": "Một thread rơi vào BLOCKED khi cố vào một synchronized method/block đang bị thread khác giữ khoá monitor.",
+          "locator": "§3.3. Blocked"
+        },
+        {
+          "topic": "WAITING vs TIMED_WAITING",
+          "summary": "WAITING xảy ra khi gọi object.wait(), thread.join() hoặc LockSupport.park() không có timeout; TIMED_WAITING xảy ra khi các phương thức tương tự được gọi kèm timeout, ví dụ Thread.sleep(millis).",
+          "locator": "§3.4. Waiting; §3.5. Timed Waiting"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-4bc225ad1d9e",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-inner-class-enums",
+    "lessonIds": [
+      "day-07"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-inner-class-enums",
+      "contentSha256": "51383a30f2ed8377bd100e9095c4329d047b0d62b7567be0a6b6beaf12e6de05"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-543deb939f9e",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/io/fileio.html",
+    "lessonIds": [
+      "day-11",
+      "day-12"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/io/fileio.html",
+      "contentSha256": "76c094095e9c2dba7e6496fa5f08c3045811166177427043eb10533ab64f9a75"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "File I/O (Featuring NIO.2) (The Java Tutorials > Essential Java Classes > Basic I/O)",
+      "relevantHeadings": [
+        "File I/O (Featuring NIO.2)"
+      ],
+      "topics": [
+        "NIO.2",
+        "Path",
+        "Files API"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc bài học File I/O featuring NIO.2",
+          "summary": "Trang mục lục giới thiệu gói java.nio.file: bắt đầu từ khái niệm Path (entry point chính), rồi tới lớp Files chứa các phương thức thao tác file (kiểm tra, xoá, copy, move), tiếp theo là quản lý metadata, đọc/ghi file và thư mục, random access file, symbolic/hard link, duyệt cây thư mục đệ quy, tìm file theo wildcard, theo dõi thay đổi thư mục (watch service), và bảng ánh xạ API cũ (java.io.File) sang API mới.",
+          "locator": "File I/O (Featuring NIO.2) — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-55e66ec50cc0",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-streams",
+    "lessonIds": [
+      "day-10"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-streams",
+      "contentSha256": "294df93cfaa6c7501f487af95e98cf6ae493e416d16b6981f99a6afb33ec81fd"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java Streams Series | Baeldung",
+      "relevantHeadings": [
+        "Stream Basics",
+        "Stream Collectors",
+        "Operations with Streams"
+      ],
+      "topics": [
+        "Stream API",
+        "Collectors"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc trang tổng hợp Streams Series",
+          "summary": "Đây là trang mục lục tổng hợp các bài viết Stream API của Baeldung, phân theo nhóm: Stream Basics (giới thiệu Stream, functional interface), Stream Collectors (Collectors, groupingBy, toMap), và Operations with Streams (filter, map/flatMap, reduce, parallel stream, Optional...).",
+          "locator": "Java Streams Series — mục lục theo nhóm"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-713a3e371ba0",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-stream-filter-lambda",
+    "lessonIds": [
+      "day-10"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-stream-filter-lambda",
+      "contentSha256": "5000d2a46e2376ad1d7c8ffe88c0d15d45c383eb4f5e0da31020b0fc00cc6a6f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java Stream Filter with Lambda Expression | Baeldung",
+      "relevantHeadings": [
+        "2. Using Stream.filter()",
+        "2.1. Filtering Collections",
+        "2.2. Filtering Collections with Multiple Criteria",
+        "3. Handling Exceptions"
+      ],
+      "topics": [
+        "Stream.filter",
+        "lambda expression",
+        "Predicate"
+      ],
+      "facts": [
+        {
+          "topic": "Stream.filter() nhận Predicate",
+          "summary": "filter() là intermediate operation của Stream, nhận một Predicate<T> và trả về stream chỉ gồm phần tử thoả điều kiện, có thể viết bằng lambda expression hoặc method reference.",
+          "locator": "§2. Using Stream.filter()"
+        },
+        {
+          "topic": "Lọc theo nhiều điều kiện",
+          "summary": "Có thể kết hợp nhiều điều kiện trong cùng một lambda truyền cho filter() bằng toán tử && để lọc theo nhiều tiêu chí cùng lúc.",
+          "locator": "§2.2. Filtering Collections with Multiple Criteria"
+        },
+        {
+          "topic": "Xử lý checked exception trong Predicate",
+          "summary": "Functional interface chuẩn của Java không khai báo checked exception, nên method reference ném checked exception sẽ lỗi biên dịch khi dùng trong filter(); cách xử lý phổ biến là bọc try-catch bên trong lambda.",
+          "locator": "§3. Handling Exceptions"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-74dcb3852a23",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html",
+    "lessonIds": [
+      "day-08"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/exceptions/index.html",
+      "contentSha256": "3848a7423459443b315bf1d7459585bbbd25b9ed1ec613531e9fb529631a25e8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Lesson: Exceptions (The Java Tutorials > Essential Java Classes)",
+      "relevantHeadings": [
+        "Lesson: Exceptions",
+        "The Catch or Specify Requirement",
+        "The try-with-resources Statement"
+      ],
+      "topics": [
+        "exceptions",
+        "try-catch-finally"
+      ],
+      "facts": [
+        {
+          "topic": "Nội dung bài học Exceptions",
+          "summary": "Trang mục lục tóm tắt lesson Exceptions gồm: khái niệm exception, quy tắc catch-or-specify (try/catch/finally, chained exception), cách throw exception, try-with-resources, tranh cãi về unchecked exception, và lợi ích của cơ chế exception so với cách xử lý lỗi truyền thống.",
+          "locator": "Lesson: Exceptions — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-88adadc6f2f4",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-io",
+    "lessonIds": [
+      "day-11",
+      "day-12"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-io",
+      "contentSha256": "30061855c268a2c590a097b94666928efd5a71d28e6d60c6c676bb39e682ac97"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java IO Series | Baeldung",
+      "relevantHeadings": [
+        "Java I/O – Working with Files",
+        "Java IO APIs",
+        "Java NIO APIs"
+      ],
+      "topics": [
+        "Java IO",
+        "Java NIO"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc trang tổng hợp IO Series",
+          "summary": "Đây là trang mục lục tổng hợp các bài viết Java IO của Baeldung, phân theo nhóm: thao tác file cơ bản (đọc/ghi/xoá/đổi tên), Java IO APIs (OutputStream, BufferedReader) và Java NIO APIs (NIO2 File API, Path, WatchService, Selector).",
+          "locator": "Java IO Series — mục lục theo nhóm"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-899383bc8d09",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/collections/index.html",
+    "lessonIds": [
+      "day-08",
+      "day-09"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/collections/index.html",
+      "contentSha256": "f34c14ad58e5480bc5c1a878a55c878b0fe03c12a9ed17c194fcbf71e7325b9a"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Trail: Collections (The Java Tutorials)",
+      "relevantHeadings": [
+        "Trail: Collections"
+      ],
+      "topics": [
+        "Java Collections Framework"
+      ],
+      "facts": [
+        {
+          "topic": "Nội dung Trail Collections của Oracle",
+          "summary": "Trail giới thiệu Java Collections Framework qua các phần: Introduction (khái niệm collection), Interfaces (các interface cốt lõi và khi nào dùng interface nào), Aggregate Operations, Implementations (cài đặt sẵn có trong JDK và wrapper implementation), Algorithms, Custom Implementations và Interoperability với API cũ.",
+          "locator": "Trail: Collections — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-8abee0bfd5a7",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-generics",
+    "lessonIds": [
+      "day-08"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-generics",
+      "contentSha256": "9ff91189a1b966e3f813e5470330f958718992b567473ad3223eb82afe3cb82b"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "The Basics of Java Generics | Baeldung",
+      "relevantHeadings": [
+        "2. The Need for Generics",
+        "3. Generic Methods",
+        "3.1. Bounded Generics",
+        "4. Using Wildcards With Generics",
+        "5. Type Erasure",
+        "6. Generics and Primitive Data Types"
+      ],
+      "topics": [
+        "generics",
+        "bounded types",
+        "wildcards",
+        "type erasure"
+      ],
+      "facts": [
+        {
+          "topic": "Lý do có generics",
+          "summary": "Trước generics, một List không tham số hoá kiểu buộc phải ép kiểu tường minh khi lấy phần tử ra và có thể gây lỗi runtime; khai báo List<Integer> cho phép compiler kiểm tra kiểu ngay lúc biên dịch.",
+          "locator": "§2. The Need for Generics"
+        },
+        {
+          "topic": "Generic method và bounded type",
+          "summary": "Một generic method khai báo tham số kiểu (ví dụ <T>) trước kiểu trả về; có thể giới hạn kiểu bằng extends (upper bound), kể cả nhiều bound cùng lúc nếu bound đầu tiên là class.",
+          "locator": "§3. Generic Methods; §3.1. Bounded Generics"
+        },
+        {
+          "topic": "Wildcard trong generics",
+          "summary": "Dấu ? biểu diễn kiểu chưa biết; List<Object> không phải là supertype của List<String>, nên dùng wildcard chặn trên (? extends T) hoặc chặn dưới (? super T) để một phương thức nhận nhiều kiểu con/cha khác nhau.",
+          "locator": "§4. Using Wildcards With Generics"
+        },
+        {
+          "topic": "Type erasure",
+          "summary": "Trình biên dịch xoá bỏ thông tin kiểu generic sau khi kiểm tra kiểu xong, thay bằng Object hoặc bound tương ứng, để bytecode sinh ra không có kiểu generic mới nào — đây cũng là lý do generics không dùng được với kiểu nguyên thủy.",
+          "locator": "§5. Type Erasure; §6. Generics and Primitive Data Types"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-9762250d04d9",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-try-with-resources",
+    "lessonIds": [
+      "day-08",
+      "day-09"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-try-with-resources",
+      "contentSha256": "1c5b10deba8a09d8b8e64f659ba48c8aa10cf9c781ab06f4ccd127b70c2e633c"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Java – Try with Resources | Baeldung",
+      "relevantHeadings": [
+        "2. Using try-with-resources",
+        "4. try-with-resources With Multiple Resources",
+        "5. A Custom Resource With AutoCloseable",
+        "6. Resource Closing Order"
+      ],
+      "topics": [
+        "try-with-resources",
+        "AutoCloseable"
+      ],
+      "facts": [
+        {
+          "topic": "Cú pháp try-with-resources cơ bản",
+          "summary": "Resource khai báo trong try(...) phải implement AutoCloseable; Java tự động gọi close() khi kết thúc block, không cần finally thủ công như trước Java 7.",
+          "locator": "§2. Using try-with-resources"
+        },
+        {
+          "topic": "Nhiều resource trong một try",
+          "summary": "Có thể khai báo nhiều resource, phân tách bằng dấu chấm phẩy, trong cùng một try-with-resources.",
+          "locator": "§4. try-with-resources With Multiple Resources"
+        },
+        {
+          "topic": "Tự tạo resource với AutoCloseable",
+          "summary": "Một lớp tự viết muốn dùng được trong try-with-resources chỉ cần implement Closeable hoặc AutoCloseable và override phương thức close().",
+          "locator": "§5. A Custom Resource With AutoCloseable"
+        },
+        {
+          "topic": "Thứ tự đóng resource",
+          "summary": "Các resource được khai báo/khởi tạo trước sẽ được đóng sau cùng — tức đóng theo thứ tự ngược lại với thứ tự khai báo.",
+          "locator": "§6. Resource Closing Order"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-9a6cde117315",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-volatile",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-volatile",
+      "contentSha256": "df965b270ccd0be670e026ba483c63356052c099973738ce3046c20013ba6ac6"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to the Volatile Keyword in Java | Baeldung",
+      "relevantHeadings": [
+        "3.1. Memory Visibility",
+        "3.2. Reordering",
+        "4. volatile Memory Order",
+        "7. Happens-Before Ordering"
+      ],
+      "topics": [
+        "volatile",
+        "memory visibility",
+        "happens-before"
+      ],
+      "facts": [
+        {
+          "topic": "Vấn đề memory visibility và reordering",
+          "summary": "Trong hệ nhiều lõi, mỗi thread có thể giữ bản sao biến trong cache riêng; nếu không đồng bộ, thread khác có thể không thấy giá trị vừa cập nhật (memory visibility) hoặc thấy các thay đổi theo thứ tự khác với thứ tự chương trình gốc (reordering).",
+          "locator": "§3.1. Memory Visibility; §3.2. Reordering"
+        },
+        {
+          "topic": "volatile giải quyết vấn đề gì",
+          "summary": "Đánh dấu biến volatile buộc runtime/processor không được sắp xếp lại các lệnh liên quan tới biến đó và luôn ghi/đọc giá trị mới nhất từ bộ nhớ chính, đảm bảo mọi thread thấy giá trị nhất quán, nhưng không cấp mutual exclusion như synchronized.",
+          "locator": "§4. volatile Memory Order"
+        },
+        {
+          "topic": "Quy tắc happens-before",
+          "summary": "Theo Java Memory Model, một lần ghi vào biến volatile luôn happens-before mọi lần đọc tiếp theo của cùng biến đó; nhờ vậy các giá trị thread A thấy trước khi ghi volatile cũng được thread B thấy sau khi đọc volatile đó.",
+          "locator": "§7. Happens-Before Ordering"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-9b1feb8ea22f",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-stream",
+    "lessonIds": [
+      "day-10",
+      "day-12"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-stream",
+      "contentSha256": "18cf1c4d3c8e08f6d2868f80d6bd8c95b6e6a041ae68ea24620b2be92aba7a4d"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-a553d0d4478d",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-synchronized",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-synchronized",
+      "contentSha256": "f1cdc2c342b8e6f06125e41867ec17d4e6ad3cacd59f7f0e12f610e2587d31c0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Guide to the Synchronized Keyword in Java | Baeldung",
+      "relevantHeadings": [
+        "2. Why Synchronization?",
+        "3. The Synchronized Keyword",
+        "3.1. Synchronized Instance Methods",
+        "3.2. Synchronized Static Methods",
+        "3.4. Reentrancy"
+      ],
+      "topics": [
+        "synchronized",
+        "race condition",
+        "monitor lock"
+      ],
+      "facts": [
+        {
+          "topic": "Race condition là gì",
+          "summary": "Race condition xảy ra khi nhiều thread cùng cập nhật dữ liệu chia sẻ có thể thay đổi (mutable) đồng thời mà không đồng bộ, dẫn tới kết quả sai lệch không nhất quán.",
+          "locator": "§2. Why Synchronization?"
+        },
+        {
+          "topic": "synchronized instance method vs static method",
+          "summary": "synchronized instance method khoá theo đối tượng instance (chỉ một thread/instance chạy được cùng lúc); synchronized static method khoá theo đối tượng Class, nên chỉ một thread chạy được bất kể có bao nhiêu instance.",
+          "locator": "§3.1. Synchronized Instance Methods; §3.2. Synchronized Static Methods"
+        },
+        {
+          "topic": "Reentrancy của khoá synchronized",
+          "summary": "Khoá của synchronized là reentrant: một thread đang giữ khoá có thể tiếp tục lấy lại chính khoá đó nhiều lần lồng nhau mà không bị deadlock với chính mình.",
+          "locator": "§3.4. Reentrancy"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-b73632f693f7",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-stream-collectors",
+    "lessonIds": [
+      "day-10",
+      "day-12"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-stream-collectors",
+      "contentSha256": "99310a2c37522cab12d7d9521a0b41f5e500eaa2c8fb1936061d99d045b13d61"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-c246ae22f99a",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-solid-principles",
+    "lessonIds": [
+      "day-07"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-solid-principles",
+      "contentSha256": "296c3346369aed3bb04c3d42aa306dfc0201ada41ea42c1e1762b288a2cc2c8c"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d6607fed4419",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-nio-2-file-api",
+    "lessonIds": [
+      "day-11",
+      "day-12"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.baeldung.com/java-nio-2-file-api",
+      "contentSha256": "4b4492eb268177461cc8015e5ab30624a96a567f54e2173538d13956c2ed8bb4"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Introduction to the Java NIO2 File API | Baeldung",
+      "relevantHeadings": [
+        "3. Checking a File or Directory",
+        "4. Creating Files",
+        "6. Deleting a File",
+        "7. Copying Files",
+        "8. Moving Files"
+      ],
+      "topics": [
+        "NIO.2",
+        "Path",
+        "Files API"
+      ],
+      "facts": [
+        {
+          "topic": "Path và lớp Files là entry point của NIO.2",
+          "summary": "Gói java.nio.file cung cấp Path đại diện cho đường dẫn và lớp Files chứa các phương thức tĩnh thao tác trên Path như exists(), isReadable(), isWritable() để kiểm tra file/thư mục.",
+          "locator": "§3. Checking a File or Directory"
+        },
+        {
+          "topic": "Tạo và xoá file/thư mục",
+          "summary": "Files.createFile()/createDirectory() tạo file hoặc thư mục (đòi hỏi các thành phần đường dẫn cha đã tồn tại, khác với createDirectories() tạo đệ quy); Files.delete() xoá và ném exception nếu không tồn tại, deleteIfExists() thì không.",
+          "locator": "§4. Creating Files; §6. Deleting a File"
+        },
+        {
+          "topic": "Copy và move file",
+          "summary": "Files.copy()/Files.move() thao tác trên file hay thư mục tương tự copy/cut-paste; mặc định thất bại nếu file đích đã tồn tại, trừ khi truyền StandardCopyOption.REPLACE_EXISTING; copy thư mục không đệ quy nội dung bên trong.",
+          "locator": "§7. Copying Files; §8. Moving Files"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-e3b2dcb60e96",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/java/generics/index.html",
+    "lessonIds": [
+      "day-08",
+      "day-09"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/java/generics/index.html",
+      "contentSha256": "2377373e473f8cf568ee59f7e1db2ec1f477c1a8e5ab6c00b9a5ec10d9a1066b"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Lesson: Generics (Updated) (The Java Tutorials > Learning the Java Language)",
+      "relevantHeadings": [
+        "Lesson: Generics (Updated)"
+      ],
+      "topics": [
+        "generics"
+      ],
+      "facts": [
+        {
+          "topic": "Mục đích bài học Generics",
+          "summary": "Trang giới thiệu vắn tắt mục đích của generics: giúp phát hiện thêm lỗi ngay lúc biên dịch thay vì để chúng trở thành lỗi runtime khó truy vết, tăng độ ổn định cho code khi dự án lớn dần.",
+          "locator": "Lesson: Generics (Updated) — đoạn giới thiệu"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ec467b92f9e7",
+    "batch": "java-advanced",
+    "requestedUrl": "https://www.baeldung.com/java-interface",
+    "lessonIds": [
+      "day-07"
+    ],
+    "access": {
+      "status": "not_found",
+      "httpStatus": 404,
+      "finalUrl": "https://www.baeldung.com/java-interface",
+      "contentSha256": "ec1de0961b57614e37a54ff11bb6bbf425ba700cc3f53e0a9b56d619b43d8233"
+    },
+    "read": {
+      "status": "unavailable",
+      "method": null,
+      "pageTitle": null,
+      "relevantHeadings": null,
+      "topics": null,
+      "facts": [],
+      "limitation": "URL trả về HTTP 404 (not_found) trong đợt truy cập thực tế Task 2 (checkedAt 2026-08-22T16:33:26Z); không có bằng chứng webfetch-fallback nên không thể trích dẫn nội dung từ nguồn này."
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-fc9869512a5f",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/sync.html",
+      "contentSha256": "af65ebf7afeb8ff386d5ca24d44577614879c0f76acf1279c646b170dc6a79d8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Synchronization (The Java Tutorials > Essential Java Classes > Concurrency)",
+      "relevantHeadings": [
+        "Synchronization",
+        "Thread Interference",
+        "Memory Consistency Errors",
+        "Synchronized Methods"
+      ],
+      "topics": [
+        "synchronization",
+        "thread interference"
+      ],
+      "facts": [
+        {
+          "topic": "Vì sao cần synchronization",
+          "summary": "Các thread giao tiếp chủ yếu qua việc chia sẻ field/object; cách này hiệu quả nhưng có thể gây hai loại lỗi: thread interference (xen kẽ thao tác gây sai lệch) và memory consistency error (thấy giá trị không nhất quán); synchronization là công cụ để ngăn cả hai.",
+          "locator": "Synchronization — đoạn mở đầu"
+        },
+        {
+          "topic": "Nội dung các mục con",
+          "summary": "Trang liệt kê các chủ đề con: Thread Interference, Memory Consistency Errors, Synchronized Methods (idiom đơn giản để chống cả hai lỗi trên), Implicit Locks and Synchronization, và Atomic Access.",
+          "locator": "Synchronization — mục lục các phần con"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-fe3cc9768091",
+    "batch": "java-advanced",
+    "requestedUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html",
+    "lessonIds": [
+      "day-11"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.oracle.com/javase/tutorial/essential/concurrency/executors.html",
+      "contentSha256": "577c2ff2c29173fe29e413db7408313d881e6cb38d80c616a119bb9d87f679d0"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Executors (The Java Tutorials > Essential Java Classes > Concurrency)",
+      "relevantHeadings": [
+        "Executors",
+        "Executor Interfaces",
+        "Thread Pools",
+        "Fork/Join"
+      ],
+      "topics": [
+        "Executor",
+        "ExecutorService",
+        "thread pool"
+      ],
+      "facts": [
+        {
+          "topic": "Executor là gì và vì sao cần",
+          "summary": "Trong ứng dụng lớn, nên tách việc quản lý/tạo thread ra khỏi phần định nghĩa tác vụ (Runnable); các đối tượng đóng gói việc quản lý này gọi là executor, thay vì gắn chặt Runnable với một Thread cụ thể như cách làm đơn giản trước đó.",
+          "locator": "Executors — đoạn mở đầu"
+        },
+        {
+          "topic": "Ba nhóm nội dung con",
+          "summary": "Trang chia làm ba phần: Executor Interfaces (định nghĩa 3 kiểu đối tượng executor), Thread Pools (loại cài đặt executor phổ biến nhất) và Fork/Join (framework mới từ JDK 7 tận dụng nhiều bộ xử lý).",
+          "locator": "Executors — mục lục"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  }
+]
