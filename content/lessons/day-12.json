@@ -30,25 +30,25 @@
   "group": "java",
   "kind": "project",
   "title": "- Assignment 4: Data Processing Pipeline",
-  "summary": "Assignment 4 tong hop Stream API (Day 10), NIO.2 File I/O va synchronized (Day 11) thanh mot pipeline xu ly du lieu hoan chinh: doc CSV lon bang Files.lines(), bien doi/nhom/tong hop/sap xep bang Stream, do hieu nang parallel vs sequential bang JMH, dam bao an toan luong khi can, va xuat bao cao ra JSON bang Files.writeString().",
+  "summary": "Assignment 4 tổng hợp Stream API (Day 10), NIO.2 File I/O và synchronized (Day 11) thành một pipeline xử lý dữ liệu hoàn chỉnh: đọc CSV lớn bằng Files.lines(), biến đổi/nhóm/tổng hợp/sắp xếp bằng Stream, đo hiệu năng parallel vs sequential bằng JMH, đảm bảo an toàn luồng khi cần, và xuất báo cáo ra JSON bằng Files.writeString().",
   "durationMinutes": 150.0,
   "objectives": [
     "LO4"
   ],
   "prerequisites": [
-    "Da hoan thanh Day 10 (Lambda & Stream API Chuyen Sau) va Day 11 (Concurrency & File I/O)."
+    "Đã hoàn thành Day 10 (Lambda & Stream API Chuyên Sâu) và Day 11 (Concurrency & File I/O)."
   ],
   "outcomes": [
-    "Doc file lon hieu qua bang Files.lines() (Stream<String> lazy).",
-    "Xay dung pipeline Stream hoan chinh: loc, nhom, tong hop, sap xep, gioi han top-N.",
-    "Hieu duoc vi sao can do hieu nang bang cong cu chuyen dung (JMH) thay vi tu do thu cong.",
-    "Nhan dien dung khi nao that su can mot accumulator dong bo rieng khi dung parallel stream.",
-    "Xuat du lieu ra file bang Files.writeString()."
+    "Đọc file lớn hiệu quả bằng Files.lines() (Stream<String> lazy).",
+    "Xây dựng pipeline Stream hoàn chỉnh: lọc, nhóm, tổng hợp, sắp xếp, giới hạn top-N.",
+    "Hiểu được vì sao cần đo hiệu năng bằng công cụ chuyên dụng (JMH) thay vì tự đo thủ công.",
+    "Nhận diện đúng khi nào thật sự cần một accumulator đồng bộ riêng khi dùng parallel stream.",
+    "Xuất dữ liệu ra file bằng Files.writeString()."
   ],
   "sections": [
     {
       "id": "day12-sec-brief",
-      "title": "De bai: Data Processing Pipeline",
+      "title": "Đề bài: Data Processing Pipeline",
       "blocks": [
         {
           "id": "day12-blk-1",
@@ -59,19 +59,19 @@
         {
           "id": "day12-blk-2",
           "type": "note",
-          "text": "Assignment nay tong hop Stream API (Day 10) va NIO.2 File I/O (Day 11) thanh mot pipeline xu ly du lieu hoan chinh: doc file CSV lon, bien doi/tong hop bang Stream, do hieu nang parallel vs sequential, dam bao an toan luong khi gom ket qua, va xuat bao cao ra JSON.",
+          "text": "Assignment này tổng hợp Stream API (Day 10) và NIO.2 File I/O (Day 11) thành một pipeline xử lý dữ liệu hoàn chỉnh: đọc file CSV lớn, biến đổi/tổng hợp bằng Stream, đo hiệu năng parallel vs sequential, đảm bảo an toàn luồng khi gom kết quả, và xuất báo cáo ra JSON.",
           "citations": []
         }
       ]
     },
     {
       "id": "day12-sec-fileio",
-      "title": "Doc CSV va xuat bao cao bang NIO.2",
+      "title": "Đọc CSV và xuất báo cáo bằng NIO.2",
       "blocks": [
         {
           "id": "day12-blk-3",
           "type": "paragraph",
-          "text": "Goi java.nio.file cung cap Path lam duong dan va lop Files chua cac phuong thuc tinh thao tac tren Path; Files.lines(path) tra ve mot Stream<String> doc tung dong cua file mot cach lazy, phu hop de doc file CSV lon (500K dong) ma khong can tai toan bo noi dung vao bo nho cung luc.",
+          "text": "Gói java.nio.file cung cấp Path làm đường dẫn và lớp Files chứa các phương thức tĩnh thao tác trên Path; Files.lines(path) trả về một Stream<String> đọc từng dòng của file một cách lazy, phù hợp để đọc file CSV lớn (500K dòng) mà không cần tải toàn bộ nội dung vào bộ nhớ cùng lúc.",
           "citations": [
             "day12-src-1",
             "day12-src-3"
@@ -102,7 +102,7 @@
         {
           "id": "day12-blk-6",
           "type": "note",
-          "text": "Files.writeString() (tu Java 11) cung la mot phuong thuc tinh cua Files thao tac tren Path, tuong tu nhom Files.createFile()/delete() da neu trong bai hoc File I/O - o day dung de ghi truc tiep noi dung JSON da dung san thanh String ra file bao cao.",
+          "text": "Files.writeString() (từ Java 11) cũng là một phương thức tĩnh của Files thao tác trên Path, tương tự nhóm Files.createFile()/delete() đã nêu trong bài học File I/O — ở đây dùng để ghi trực tiếp nội dung JSON đã dựng sẵn thành String ra file báo cáo.",
           "citations": [
             "day12-src-1",
             "day12-src-4"
@@ -112,18 +112,18 @@
     },
     {
       "id": "day12-sec-pipeline",
-      "title": "Stream transform: loc, nhom, tong hop, sap xep",
+      "title": "Stream transform: lọc, nhóm, tổng hợp, sắp xếp",
       "blocks": [
         {
           "id": "day12-blk-7",
           "type": "note",
-          "text": "Chu de nay khong co nguon trich dan trong resourceIds cua rieng Day 12 (2 trong 5 resourceIds la unavailable, 3 con lai chi la nguon File I/O); nguon Stream API chi tiet thuoc ve resourceIds cua Day 10, khong duoc gan cho Day 12 nen khong the trich dan cheo giua hai bai (xem authoring.limitations). Noi dung duoi day ap dung Stream API da hoc o Day 10 bang kien thuc Java 17 chuan.",
+          "text": "Chủ đề này không có nguồn trích dẫn trong resourceIds của riêng Day 12 (2 trong 5 resourceIds là unavailable, 3 còn lại chỉ là nguồn File I/O); nguồn Stream API chi tiết thuộc về resourceIds của Day 10, không được gắn cho Day 12 nên không thể trích dẫn chéo giữa hai bài (xem authoring.limitations). Nội dung dưới đây áp dụng Stream API đã học ở Day 10 bằng kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
           "id": "day12-blk-8",
           "type": "paragraph",
-          "text": "Pipeline goi y gom bon buoc noi tiep tren stream cac SalesRow da doc duoc: (1) loc bo dong khong hop le bang `.filter(SalesRow::valid)` (da thuc hien ngay trong luc doc CSV); (2) nhom theo category bang `.collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)))` de vua nhom vua cong don revenue trong cung mot buoc, tra ve Map<String, Double>; (3) chuyen Map thanh danh sach entry va sap xep giam dan theo revenue bang `.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())`; (4) lay 10 phan tu dau bang `.limit(10)` roi collect thanh danh sach de xuat bao cao.",
+          "text": "Pipeline gợi ý gồm bốn bước nối tiếp trên stream các SalesRow đã đọc được: (1) lọc bỏ dòng không hợp lệ bằng `.filter(SalesRow::valid)` (đã thực hiện ngay trong lúc đọc CSV); (2) nhóm theo category bằng `.collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)))` để vừa nhóm vừa cộng dồn revenue trong cùng một bước, trả về Map<String, Double>; (3) chuyển Map thành danh sách entry và sắp xếp giảm dần theo revenue bằng `.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())`; (4) lấy 10 phần tử đầu bằng `.limit(10)` rồi collect thành danh sách để xuất báo cáo.",
           "citations": []
         }
       ]
@@ -135,19 +135,19 @@
         {
           "id": "day12-blk-9",
           "type": "note",
-          "text": "Chu de JMH (Java Microbenchmark Harness) khong co nguon trich dan nao trong toan bo bo tai lieu duoc gan cho khoa hoc (khong resourceId nao cua Day 7-12 de cap JMH) - xem authoring.limitations. Noi dung duoi day trinh bay o muc gioi thieu, du de hoc vien bat dau do hieu nang dung dan.",
+          "text": "Chủ đề JMH (Java Microbenchmark Harness) không có nguồn trích dẫn nào trong toàn bộ bộ tài liệu được gắn cho khóa học (không resourceId nào của Day 7-12 đề cập JMH) — xem authoring.limitations. Nội dung dưới đây trình bày ở mức giới thiệu, đủ để học viên bắt đầu đo hiệu năng đúng đắn.",
           "citations": []
         },
         {
           "id": "day12-blk-10",
           "type": "paragraph",
-          "text": "JMH la thu vien chuyen dung de do hieu nang (micro-benchmark) cho Java, tranh cac sai lam pho bien khi tu do thoi gian bang System.currentTimeMillis() (nhu JIT warm-up chua on dinh, dead code elimination cua trinh bien dich xoa mat doan code khong dung ket qua). Y tuong co ban: danh dau phuong thuc can do bang @Benchmark, chay nhieu vong 'warm-up' truoc khi do that su, va so sanh thoi gian trung binh giua phien ban stream() (sequential) va parallelStream() (song song) tren cung mot tap du lieu 500K dong.",
+          "text": "JMH là thư viện chuyên dụng để đo hiệu năng (micro-benchmark) cho Java, tránh các sai lầm phổ biến khi tự đo thời gian bằng System.currentTimeMillis() (như JIT warm-up chưa ổn định, dead code elimination của trình biên dịch xóa mất đoạn code không dùng kết quả). Ý tưởng cơ bản: đánh dấu phương thức cần đo bằng @Benchmark, chạy nhiều vòng 'warm-up' trước khi đo thật sự, và so sánh thời gian trung bình giữa phiên bản stream() (sequential) và parallelStream() (song song) trên cùng một tập dữ liệu 500K dòng.",
           "citations": []
         },
         {
           "id": "day12-blk-11",
           "type": "note",
-          "text": "Voi tap du lieu 500K dong va thao tac tinh toan don gian (cong don revenue), parallel stream chua chac nhanh hon sequential - dung JMH de do that su thay vi doan, va doi chieu voi luu y ve parallel stream da hoc o Day 10.",
+          "text": "Với tập dữ liệu 500K dòng và thao tác tính toán đơn giản (cộng dồn revenue), parallel stream chưa chắc nhanh hơn sequential — dùng JMH để đo thật sự thay vì đoán, và đối chiếu với lưu ý về parallel stream đã học ở Day 10.",
           "citations": []
         }
       ]
@@ -159,54 +159,54 @@
         {
           "id": "day12-blk-12",
           "type": "note",
-          "text": "Chu de dong bo/thread-safety khong co nguon trich dan trong resourceIds cua rieng Day 12 - nguon synchronized/concurrency chi tiet thuoc ve resourceIds cua Day 11, khong duoc gan cho Day 12 nen khong the trich dan cheo giua hai bai (xem authoring.limitations). Noi dung duoi day ap dung lai mau thiet ke synchronized da hoc o Day 11.",
+          "text": "Chủ đề đồng bộ/thread-safety không có nguồn trích dẫn trong resourceIds của riêng Day 12 — nguồn synchronized/concurrency chi tiết thuộc về resourceIds của Day 11, không được gắn cho Day 12 nên không thể trích dẫn chéo giữa hai bài (xem authoring.limitations). Nội dung dưới đây áp dụng lại mẫu thiết kế synchronized đã học ở Day 11.",
           "citations": []
         },
         {
           "id": "day12-blk-13",
           "type": "paragraph",
-          "text": "Neu benchmark o tren dung parallelStream() va can gom ket qua vao mot cau truc du lieu dung chung (vi du: dem so dong loi gap phai trong luc xu ly song song), cau truc do phai duoc dong bo dung cach (giong mau ThreadSafeAccumulator voi cac method synchronized da viet o Day 11), hoac uu tien dung cac Collector tu thiet ke sao cho khong can chia se trang thai mutable giua cac thread (cach an toan va don gian hon la de rieng Stream API tu quan ly gom ket qua qua collect(), khong tu tao bien dem chia se thu cong khi khong that su can thiet).",
+          "text": "Nếu benchmark ở trên dùng parallelStream() và cần gom kết quả vào một cấu trúc dữ liệu dùng chung (ví dụ: đếm số dòng lỗi gặp phải trong lúc xử lý song song), cấu trúc đó phải được đồng bộ đúng cách (giống mẫu ThreadSafeAccumulator với các method synchronized đã viết ở Day 11), hoặc ưu tiên dùng các Collector tự thiết kế sao cho không cần chia sẻ trạng thái mutable giữa các thread (cách an toàn và đơn giản hơn là để riêng Stream API tự quản lý gom kết quả qua collect(), không tự tạo biến đếm chia sẻ thủ công khi không thật sự cần thiết).",
           "citations": []
         }
       ]
     }
   ],
   "commonMistakes": [
-    "Doc toan bo 500K dong vao mot List<String> bang Files.readAllLines() roi moi xu ly, thay vi dung Files.lines() de xu ly lazy tung dong.",
-    "Tu tao bien dem chia se (vi du int errorCount) va cap nhat truc tiep ben trong lambda cua parallelStream() ma khong dong bo - gay race condition ngay ca khi logic chinh da dung Collectors an toan.",
-    "So sanh hieu nang parallel vs sequential bang mot lan do don le voi System.currentTimeMillis(), khong warm-up JIT truoc, dan toi ket luan sai lech ve viec parallel co thuc su nhanh hon hay khong."
+    "Đọc toàn bộ 500K dòng vào một List<String> bằng Files.readAllLines() rồi mới xử lý, thay vì dùng Files.lines() để xử lý lazy từng dòng.",
+    "Tự tạo biến đếm chia sẻ (ví dụ int errorCount) và cập nhật trực tiếp bên trong lambda của parallelStream() mà không đồng bộ — gây race condition ngay cả khi logic chính đã dùng Collectors an toàn.",
+    "So sánh hiệu năng parallel vs sequential bằng một lần đo đơn lẻ với System.currentTimeMillis(), không warm-up JIT trước, dẫn tới kết luận sai lệch về việc parallel có thực sự nhanh hơn hay không."
   ],
   "practices": [
     {
       "id": "day12-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Vi sao Files.lines(path) phu hop de doc mot file CSV 500K dong hon la doc toan bo noi dung file vao mot String/List roi moi xu ly?",
+      "prompt": "Vì sao Files.lines(path) phù hợp để đọc một file CSV 500K dòng hơn là đọc toàn bộ nội dung file vào một String/List rồi mới xử lý?",
       "choices": [
         {
           "id": "day12-prac-1-a",
-          "text": "Vi Files.lines() tra ve Stream<String> lazy, doc tung dong khi can thay vi tai toan bo file vao bo nho cung luc"
+          "text": "Vì Files.lines() trả về Stream<String> lazy, đọc từng dòng khi cần thay vì tải toàn bộ file vào bộ nhớ cùng lúc"
         },
         {
           "id": "day12-prac-1-b",
-          "text": "Vi Files.lines() tu dong chay song song tren nhieu thread"
+          "text": "Vì Files.lines() tự động chạy song song trên nhiều thread"
         },
         {
           "id": "day12-prac-1-c",
-          "text": "Vi Files.lines() khong can dong (close) sau khi dung"
+          "text": "Vì Files.lines() không cần đóng (close) sau khi dùng"
         },
         {
           "id": "day12-prac-1-d",
-          "text": "Vi Files.lines() tu dong bo qua cac dong loi"
+          "text": "Vì Files.lines() tự động bỏ qua các dòng lỗi"
         }
       ],
       "correctChoiceIds": [
         "day12-prac-1-a"
       ],
-      "hint": "Xem lai dac diem lazy cua Stream tra ve tu Files.lines().",
+      "hint": "Xem lại đặc điểm lazy của Stream trả về từ Files.lines().",
       "solution": "day12-prac-1-a",
-      "explanation": "Files.lines() tra ve mot Stream<String> lazy: cac dong chi thuc su duoc doc khi terminal operation (nhu collect()) duoc goi, giup tranh tai toan bo file lon vao bo nho cung mot luc.",
-      "rubric": "Chon dung ly do lien quan toi tinh lazy cua Stream.",
+      "explanation": "Files.lines() trả về một Stream<String> lazy: các dòng chỉ thật sự được đọc khi terminal operation (như collect()) được gọi, giúp tránh tải toàn bộ file lớn vào bộ nhớ cùng một lúc.",
+      "rubric": "Chọn đúng lý do liên quan tới tính lazy của Stream.",
       "sourceUsage": [
         "day12-src-3"
       ]
@@ -215,39 +215,39 @@
       "id": "day12-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot method dung Stream de tu danh sach SalesRow da loc hop le, nhom theo category va cong don revenue, tra ve Map<String, Double>.",
+      "prompt": "Viết một method dùng Stream để từ danh sách SalesRow đã lọc hợp lệ, nhóm theo category và cộng dồn revenue, trả về Map<String, Double>.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung Collectors.groupingBy() ket hop Collectors.summingDouble() trong cung mot buoc collect().",
+      "hint": "Dùng Collectors.groupingBy() kết hợp Collectors.summingDouble() trong cùng một bước collect().",
       "solution": "Map<String, Double> aggregateByCategory(List<SalesRow> rows) {\n    return rows.stream()\n            .collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)));\n}",
-      "explanation": "Ap dung Collectors.groupingBy() ket hop downstream collector summingDouble() da hoc o Day 10 vao du lieu thuc te.",
-      "rubric": "Danh gia dung ham nhom (category) va ham tong hop (summingDouble tren revenue) duoc chon dung, ket qua la Map<String, Double>.",
+      "explanation": "Áp dụng Collectors.groupingBy() kết hợp downstream collector summingDouble() đã học ở Day 10 vào dữ liệu thực tế.",
+      "rubric": "Đánh giá đúng hàm nhóm (category) và hàm tổng hợp (summingDouble trên revenue) được chọn đúng, kết quả là Map<String, Double>.",
       "sourceUsage": []
     },
     {
       "id": "day12-prac-3",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Vi sao can can nhac ky truoc khi tu tao mot bien dem/accumulator dung chung giua cac thread khi dung parallelStream(), thay vi luon mac dinh can mot accumulator dong bo thu cong?",
+      "prompt": "Vì sao cần cân nhắc kỹ trước khi tự tạo một biến đếm/accumulator dùng chung giữa các thread khi dùng parallelStream(), thay vì luôn mặc định cần một accumulator đồng bộ thủ công?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nghi ve cach Stream API tu gom ket qua qua collect() ma khong can chia se trang thai mutable.",
-      "solution": "Neu logic co the dien dat hoan toan bang collect()/reduce() (nhu aggregateByCategory o tren), Stream API da tu dam bao an toan luong khi gom ket qua ma khong can bien chia se thu cong. Chi khi that su can mot hieu ung phu (side-effect) ngoai pipeline (vi du dem loi song song) moi can mot accumulator dong bo rieng, va phai dong bo dung cach (nhu ThreadSafeAccumulator o Day 11) de tranh race condition.",
-      "explanation": "Uu tien cach tiep can khai bao (Stream/Collector) truoc khi tu quan ly trang thai chia se thu cong.",
-      "rubric": "Danh gia hoc vien nhan dien duoc khi nao thuc su can accumulator dong bo rieng.",
+      "hint": "Nghĩ về cách Stream API tự gom kết quả qua collect() mà không cần chia sẻ trạng thái mutable.",
+      "solution": "Nếu logic có thể diễn đạt hoàn toàn bằng collect()/reduce() (như aggregateByCategory ở trên), Stream API đã tự đảm bảo an toàn luồng khi gom kết quả mà không cần biến chia sẻ thủ công. Chỉ khi thật sự cần một hiệu ứng phụ (side-effect) ngoài pipeline (ví dụ đếm lỗi song song) mới cần một accumulator đồng bộ riêng, và phải đồng bộ đúng cách (như ThreadSafeAccumulator ở Day 11) để tránh race condition.",
+      "explanation": "Ưu tiên cách tiếp cận khai báo (Stream/Collector) trước khi tự quản lý trạng thái chia sẻ thủ công.",
+      "rubric": "Đánh giá học viên nhận diện được khi nào thật sự cần accumulator đồng bộ riêng.",
       "sourceUsage": []
     },
     {
       "id": "day12-prac-4",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot method dung Files.writeString(Path, String) de ghi mot chuoi noi dung JSON da dung san ra file bao cao.",
+      "prompt": "Viết một method dùng Files.writeString(Path, String) để ghi một chuỗi nội dung JSON đã dựng sẵn ra file báo cáo.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Files.writeString() nhan truc tiep Path va String, tu dong tao/ghi de file.",
+      "hint": "Files.writeString() nhận trực tiếp Path và String, tự động tạo/ghi đè file.",
       "solution": "void writeReport(Path target, String jsonContent) throws IOException {\n    Files.writeString(target, jsonContent);\n}",
-      "explanation": "Ap dung truc tiep Files.writeString() (mot phuong thuc tinh khac cua Files) da gioi thieu trong bai.",
-      "rubric": "Danh gia goi dung Files.writeString() voi hai tham so Path va String, khai bao throws IOException.",
+      "explanation": "Áp dụng trực tiếp Files.writeString() (một phương thức tĩnh khác của Files) đã giới thiệu trong bài.",
+      "rubric": "Đánh giá gọi đúng Files.writeString() với hai tham số Path và String, khai báo throws IOException.",
       "sourceUsage": []
     }
   ],
@@ -258,8 +258,8 @@
     }
   ],
   "enhancedExercises": [
-    "Them buoc ghi lai danh sach cac dong CSV bi loai (invalid) ra mot file rieng, dung Collectors.partitioningBy() de tach song song hai nhom hop le/khong hop le trong cung mot lan duyet.",
-    "Viet ban JMH @Benchmark thuc su (neu co san thu vien JMH trong project) cho ca hai phien ban stream()/parallelStream() cua buoc nhom-tong-hop, va ghi lai ket qua do duoc."
+    "Thêm bước ghi lại danh sách các dòng CSV bị loại (invalid) ra một file riêng, dùng Collectors.partitioningBy() để tách song song hai nhóm hợp lệ/không hợp lệ trong cùng một lần duyệt.",
+    "Viết bản JMH @Benchmark thật sự (nếu có sẵn thư viện JMH trong project) cho cả hai phiên bản stream()/parallelStream() của bước nhóm-tổng-hợp, và ghi lại kết quả đo được."
   ],
   "references": [
     {
@@ -277,7 +277,7 @@
     {
       "id": "day12-ref-3",
       "type": "internal",
-      "description": "Tong hop Stream API (Day 10) va synchronized/concurrency (Day 11) vao mot pipeline xu ly du lieu du an thuc te."
+      "description": "Tổng hợp Stream API (Day 10) và synchronized/concurrency (Day 11) vào một pipeline xử lý dữ liệu dự án thực tế."
     }
   ],
   "sourceUsage": [
@@ -285,40 +285,40 @@
       "id": "day12-src-1",
       "resourceId": "res-543deb939f9e",
       "locator": "File I/O (Featuring NIO.2) — mục lục",
-      "topic": "Cau truc bai hoc File I/O featuring NIO.2"
+      "topic": "Cấu trúc bài học File I/O featuring NIO.2"
     },
     {
       "id": "day12-src-2",
       "resourceId": "res-88adadc6f2f4",
       "locator": "Java IO Series — mục lục theo nhóm",
-      "topic": "Cau truc trang tong hop IO Series"
+      "topic": "Cấu trúc trang tổng hợp IO Series"
     },
     {
       "id": "day12-src-3",
       "resourceId": "res-d6607fed4419",
       "locator": "§3. Checking a File or Directory",
-      "topic": "Path va lop Files la entry point cua NIO.2"
+      "topic": "Path và lớp Files là entry point của NIO.2"
     },
     {
       "id": "day12-src-4",
       "resourceId": "res-d6607fed4419",
       "locator": "§4. Creating Files; §6. Deleting a File",
-      "topic": "Tao va xoa file/thu muc"
+      "topic": "Tạo và xóa file/thư mục"
     },
     {
       "id": "day12-src-5",
       "resourceId": "res-d6607fed4419",
       "locator": "§7. Copying Files; §8. Moving Files",
-      "topic": "Copy va move file"
+      "topic": "Copy và move file"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Stream transform chi tiet (group by category, aggregate revenue, sort top 10): nguon Stream API day du thuoc ve resourceIds cua Day 10, khong nam trong 5 resourceIds rieng cua Day 12 nen khong the trich dan cheo giua hai lesson - trinh bay bang cach ap dung lai kien thuc Stream API da hoc o Day 10.",
-      "JMH (Java Microbenchmark Harness) va benchmark parallel vs sequential: khong co resourceId nao trong toan bo khoa hoc (Day 7-12) de cap JMH - trinh bay o muc gioi thieu bang kien thuc chuan, khong gan citation gia.",
-      "Thread-safe result accumulator: nguon synchronized/concurrency chi tiet thuoc ve resourceIds cua Day 11, khong nam trong 5 resourceIds rieng cua Day 12 nen khong the trich dan cheo giua hai lesson - trinh bay bang cach ap dung lai mau thiet ke da hoc o Day 11."
+      "Stream transform chi tiết (group by category, aggregate revenue, sort top 10): nguồn Stream API đầy đủ thuộc về resourceIds của Day 10, không nằm trong 5 resourceIds riêng của Day 12 nên không thể trích dẫn chéo giữa hai lesson — trình bày bằng cách áp dụng lại kiến thức Stream API đã học ở Day 10.",
+      "JMH (Java Microbenchmark Harness) và benchmark parallel vs sequential: không có resourceId nào trong toàn bộ khóa học (Day 7-12) đề cập JMH — trình bày ở mức giới thiệu bằng kiến thức chuẩn, không gắn citation giả.",
+      "Thread-safe result accumulator: nguồn synchronized/concurrency chi tiết thuộc về resourceIds của Day 11, không nằm trong 5 resourceIds riêng của Day 12 nên không thể trích dẫn chéo giữa hai lesson — trình bày bằng cách áp dụng lại mẫu thiết kế đã học ở Day 11."
     ]
   }
 }

@@ -35,19 +35,19 @@
   "group": "java",
   "kind": "theory",
   "title": "Interface, Inner Classes & Enums",
-  "summary": "Interface la 'hop dong' API cho phep da-implement (khac abstract class chi don-extends); Inner Classes, Enums va SOLID Principles duoc gioi thieu o muc chuan Java 17 de hoan thien nen tang OOP truoc khi hoc generics/collections/exception o Day 8-9.",
+  "summary": "Interface là 'hợp đồng' API cho phép đa-implement (khác abstract class chỉ đơn-extends); Inner Classes, Enums và SOLID Principles được giới thiệu ở mức chuẩn Java 17 để hoàn thiện nền tảng OOP trước khi học generics/collections/exception ở Day 8-9.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO3"
   ],
   "prerequisites": [
-    "Da hoan thanh Day 5 (extends, this/super, polymorphism, abstract class) va Day 6 (Employee Management System)."
+    "Đã hoàn thành Day 5 (extends, this/super, polymorphism, abstract class) và Day 6 (Employee Management System)."
   ],
   "outcomes": [
-    "Phan biet dung khi nao dung interface, khi nao dung abstract class.",
-    "Su dung dung static nested class, inner class va anonymous class.",
-    "Khai bao va su dung enum voi constructor/field/method rieng.",
-    "Nhan dien duoc 5 nguyen tac SOLID trong mot thiet ke lop cu the."
+    "Phân biệt đúng khi nào dùng interface, khi nào dùng abstract class.",
+    "Sử dụng đúng static nested class, inner class và anonymous class.",
+    "Khai báo và sử dụng enum với constructor/field/method riêng.",
+    "Nhận diện được 5 nguyên tắc SOLID trong một thiết kế lớp cụ thể."
   ],
   "sections": [
     {
@@ -57,7 +57,7 @@
         {
           "id": "day07-blk-1",
           "type": "paragraph",
-          "text": "Interface la mot kieu tham chieu trong Java, dong vai tro nhu mot 'hop dong' (contract) ve API: interface khai bao cac phuong thuc ma lop implement no bat buoc phai cung cap phan cai dat cu the. Bai hoc Interfaces and Inheritance cua Oracle trinh bay interface o dung vi tri nay trong chuong trinh hoc, tiep noi ngay sau phan ke thua (extends) da hoc o Day 5.",
+          "text": "Interface là một kiểu tham chiếu trong Java, đóng vai trò như một 'hợp đồng' (contract) về API: interface khai báo các phương thức mà lớp implement nó bắt buộc phải cung cấp phần cài đặt cụ thể. Bài học Interfaces and Inheritance của Oracle trình bày interface ở đúng vị trí này trong chương trình học, tiếp nối ngay phần kế thừa (extends) đã học ở Day 5.",
           "citations": [
             "day07-src-1"
           ]
@@ -81,7 +81,7 @@
         {
           "id": "day07-blk-3",
           "type": "paragraph",
-          "text": "Interface va abstract class (da hoc o Day 5) giong nhau o mot diem cot loi: ca hai deu co the khai bao phuong thuc chua co phan cai dat, buoc lop con/lop implement phai tu hoan thien. Diem khac biet lon nhat nam o quan he ke thua: mot lop chi duoc extends dung mot abstract class (don ke thua), nhung co the implements nhieu interface cung luc - day chinh la co che Java dung de mo phong da ke thua hanh vi.",
+          "text": "Interface và abstract class (đã học ở Day 5) giống nhau ở một điểm cốt lõi: cả hai đều có thể khai báo phương thức chưa có phần cài đặt, buộc lớp con/lớp implement phải tự hoàn thiện. Điểm khác biệt lớn nhất nằm ở quan hệ kế thừa: một lớp chỉ được extends đúng một abstract class (đơn kế thừa), nhưng có thể implements nhiều interface cùng lúc — đây chính là cơ chế Java dùng để mô phỏng đa kế thừa hành vi.",
           "citations": [
             "day07-src-1"
           ]
@@ -90,25 +90,25 @@
           "id": "day07-blk-4",
           "type": "table",
           "columns": [
-            "Tieu chi",
+            "Tiêu chí",
             "Abstract class",
             "Interface"
           ],
           "rows": [
             [
-              "Ke thua/implement",
-              "extends - chi mot abstract class (don ke thua)",
-              "implements - nhieu interface cung luc"
+              "Kế thừa/implement",
+              "extends — chỉ một abstract class (đơn kế thừa)",
+              "implements — nhiều interface cùng lúc"
             ],
             [
-              "Method chua cai dat",
-              "Co the co (abstract method)",
-              "Co (method truu tuong mac dinh, tru default/static method)"
+              "Method chưa cài đặt",
+              "Có thể có (abstract method)",
+              "Có (method trừu tượng mặc định, trừ default/static method)"
             ],
             [
               "Field/constructor",
-              "Co the co field non-static, non-final va constructor rieng",
-              "Truoc Java 8 chi co hang so static final, khong co constructor"
+              "Có thể có field non-static, non-final và constructor riêng",
+              "Trước Java 8 chỉ có hằng số static final, không có constructor"
             ]
           ],
           "citations": [
@@ -124,13 +124,13 @@
         {
           "id": "day07-blk-5",
           "type": "note",
-          "text": "Chu de nay khong co nguon trich dan chuyen sau trong bo tai lieu cua khoa hoc (xem authoring.limitations); noi dung duoi day trinh bay theo kien thuc Java 17 chuan, pham vi vua du de hoc vien nhan dien va su dung dung cac loai lop long nhau.",
+          "text": "Chủ đề này không có nguồn trích dẫn chuyên sâu trong bộ tài liệu của khóa học (xem authoring.limitations); nội dung dưới đây trình bày theo kiến thức Java 17 chuẩn, phạm vi vừa đủ để học viên nhận diện và sử dụng đúng các loại lớp lồng nhau.",
           "citations": []
         },
         {
           "id": "day07-blk-6",
           "type": "paragraph",
-          "text": "Java co bon loai lop long nhau (nested class): static nested class (khai bao voi tu khoa static ben trong lop ngoai, khong giu tham chieu toi instance cua lop ngoai), inner class (khong static, moi instance gan voi mot instance cu the cua lop ngoai va co the truy cap truc tiep field/method cua lop ngoai), local class (khai bao ben trong than mot phuong thuc, chi dung duoc trong pham vi phuong thuc do), va anonymous class (lop khong ten, khai bao va khoi tao cung luc, thuong dung de cai dat nhanh mot interface hoac ke thua mot lop de tao doi tuong dung mot lan). Vi du: `class Outer { class Inner { ... } static class StaticHelper { ... } Runnable r = new Runnable() { public void run() { ... } }; }` the hien lan luot inner class, static nested class va anonymous class ben trong mot lop Outer.",
+          "text": "Java có bốn loại lớp lồng nhau (nested class): static nested class (khai báo với từ khóa static bên trong lớp ngoài, không giữ tham chiếu tới instance của lớp ngoài), inner class (không static, mỗi instance gắn với một instance cụ thể của lớp ngoài và có thể truy cập trực tiếp field/method của lớp ngoài), local class (khai báo bên trong thân một phương thức, chỉ dùng được trong phạm vi phương thức đó), và anonymous class (lớp không tên, khai báo và khởi tạo cùng lúc, thường dùng để cài đặt nhanh một interface hoặc kế thừa một lớp để tạo đối tượng dùng một lần). Ví dụ: `class Outer { class Inner { ... } static class StaticHelper { ... } Runnable r = new Runnable() { public void run() { ... } }; }` thể hiện lần lượt inner class, static nested class và anonymous class bên trong một lớp Outer.",
           "citations": []
         }
       ]
@@ -142,13 +142,13 @@
         {
           "id": "day07-blk-8",
           "type": "note",
-          "text": "Tuong tu Inner Classes, Enums khong co nguon trich dan chuyen sau trong bo tai lieu cua khoa hoc; noi dung duoi day theo kien thuc Java 17 chuan (xem authoring.limitations).",
+          "text": "Tương tự Inner Classes, Enums không có nguồn trích dẫn chuyên sâu trong bộ tài liệu của khóa học; nội dung dưới đây theo kiến thức Java 17 chuẩn (xem authoring.limitations).",
           "citations": []
         },
         {
           "id": "day07-blk-9",
           "type": "paragraph",
-          "text": "Enum trong Java la mot kieu du lieu dac biet dung de bieu dien mot tap gia tri co dinh, huu han (vi du: cac ngay trong tuan, cac trang thai don hang). Ngoai cac hang so don gian, enum co the co constructor rieng (luon private hoac package-private), field, va method - moi hang so enum thuc chat la mot instance duy nhat cua chinh kieu enum do. Enum cung dung duoc truc tiep trong switch (ca dang classic va dang arrow da hoc o Day 2). Vi du: `enum OrderStatus { NEW(false), PROCESSING(false), SHIPPED(true), CANCELLED(true); private final boolean terminal; OrderStatus(boolean terminal) { this.terminal = terminal; } boolean isTerminal() { return terminal; } }` ket hop voi `switch (status) { case NEW -> ...; case SHIPPED, CANCELLED -> ...; }` cho thay enum co constructor/field/method rieng va dung truc tiep trong switch expression.",
+          "text": "Enum trong Java là một kiểu dữ liệu đặc biệt dùng để biểu diễn một tập giá trị cố định, hữu hạn (ví dụ: các ngày trong tuần, các trạng thái đơn hàng). Ngoài các hằng số đơn giản, enum có thể có constructor riêng (luôn private hoặc package-private), field, và method — mỗi hằng số enum thực chất là một instance duy nhất của chính kiểu enum đó. Enum cũng dùng được trực tiếp trong switch (cả dạng classic và dạng arrow đã học ở Day 2). Ví dụ: `enum OrderStatus { NEW(false), PROCESSING(false), SHIPPED(true), CANCELLED(true); private final boolean terminal; OrderStatus(boolean terminal) { this.terminal = terminal; } boolean isTerminal() { return terminal; } }` kết hợp với `switch (status) { case NEW -> ...; case SHIPPED, CANCELLED -> ...; }` cho thấy enum có constructor/field/method riêng và dùng trực tiếp trong switch expression.",
           "citations": []
         }
       ]
@@ -160,54 +160,54 @@
         {
           "id": "day07-blk-11",
           "type": "note",
-          "text": "Chu de nay khong co nguon trich dan trong bo tai lieu cua khoa hoc; noi dung duoi day tom tat theo kien thuc thiet ke huong doi tuong chuan, o muc do gioi thieu (xem authoring.limitations).",
+          "text": "Chủ đề này không có nguồn trích dẫn trong bộ tài liệu của khóa học; nội dung dưới đây tóm tắt theo kiến thức thiết kế hướng đối tượng chuẩn, ở mức độ giới thiệu (xem authoring.limitations).",
           "citations": []
         },
         {
           "id": "day07-blk-12",
           "type": "paragraph",
-          "text": "SOLID la 5 nguyen tac thiet ke huong doi tuong pho bien: Single Responsibility (moi lop chi nen co mot ly do de thay doi), Open/Closed (mo de mo rong, dong de sua doi - uu tien them lop/interface moi thay vi sua lop cu), Liskov Substitution (lop con phai thay the duoc lop cha ma khong lam sai lech hanh vi mong doi - lien quan truc tiep den polymorphism da hoc o Day 5), Interface Segregation (nhieu interface nho, chuyen biet tot hon mot interface lon, om dom), va Dependency Inversion (module cap cao nen phu thuoc vao abstraction/interface, khong phu thuoc truc tiep vao lop cu the).",
+          "text": "SOLID là 5 nguyên tắc thiết kế hướng đối tượng phổ biến: Single Responsibility (mỗi lớp chỉ nên có một lý do để thay đổi), Open/Closed (mở để mở rộng, đóng để sửa đổi — ưu tiên thêm lớp/interface mới thay vì sửa lớp cũ), Liskov Substitution (lớp con phải thay thế được lớp cha mà không làm sai lệch hành vi mong đợi — liên quan trực tiếp đến polymorphism đã học ở Day 5), Interface Segregation (nhiều interface nhỏ, chuyên biệt tốt hơn một interface lớn, ôm đồm), và Dependency Inversion (module cấp cao nên phụ thuộc vào abstraction/interface, không phụ thuộc trực tiếp vào lớp cụ thể).",
           "citations": []
         }
       ]
     }
   ],
   "commonMistakes": [
-    "Dung interface chi de khai bao hang so static final (anti-pattern 'constant interface') thay vi dung mot lop hang so thong thuong.",
-    "Quen rang inner class (khong static) luon giu tham chieu ngam toi instance cua lop ngoai, de gay ro ri bo nho neu giu inner class song lau hon lop ngoai can thiet.",
-    "Khai bao enum constructor la public (enum constructor luon phai la private hoac package-private, khong the la public/protected)."
+    "Dùng interface chỉ để khai báo hằng số static final (anti-pattern 'constant interface') thay vì dùng một lớp hằng số thông thường.",
+    "Quên rằng inner class (không static) luôn giữ tham chiếu ngầm tới instance của lớp ngoài, dễ gây rò rỉ bộ nhớ nếu giữ inner class sống lâu hơn lớp ngoài cần thiết.",
+    "Khai báo enum constructor là public (enum constructor luôn phải là private hoặc package-private, không thể là public/protected)."
   ],
   "practices": [
     {
       "id": "day07-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Diem khac biet co ban nhat giua abstract class va interface ve kha nang ke thua/implement la gi?",
+      "prompt": "Điểm khác biệt cơ bản nhất giữa abstract class và interface về khả năng kế thừa/implement là gì?",
       "choices": [
         {
           "id": "day07-prac-1-a",
-          "text": "Mot lop chi extends duoc mot abstract class, nhung implements duoc nhieu interface cung luc"
+          "text": "Một lớp chỉ extends được một abstract class, nhưng implements được nhiều interface cùng lúc"
         },
         {
           "id": "day07-prac-1-b",
-          "text": "Interface khong the co method, con abstract class thi co"
+          "text": "Interface không thể có method, còn abstract class thì có"
         },
         {
           "id": "day07-prac-1-c",
-          "text": "Abstract class khong the co constructor, con interface thi co"
+          "text": "Abstract class không thể có constructor, còn interface thì có"
         },
         {
           "id": "day07-prac-1-d",
-          "text": "Ca hai deu cho phep da ke thua khong gioi han"
+          "text": "Cả hai đều cho phép đa kế thừa không giới hạn"
         }
       ],
       "correctChoiceIds": [
         "day07-prac-1-a"
       ],
-      "hint": "Xem lai bang so sanh Abstract class vs Interface.",
+      "hint": "Xem lại bảng so sánh Abstract class vs Interface.",
       "solution": "day07-prac-1-a",
-      "explanation": "extends la don ke thua (mot abstract class), implements la da nang (nhieu interface cung luc) - day la ly do interface duoc dung de mo phong da ke thua hanh vi trong Java.",
-      "rubric": "Chon dung dap an ve don ke thua vs da implement.",
+      "explanation": "extends là đơn kế thừa (một abstract class), implements là đa năng (nhiều interface cùng lúc) — đây là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java.",
+      "rubric": "Chọn đúng đáp án về đơn kế thừa vs đa implement.",
       "sourceUsage": [
         "day07-src-1"
       ]
@@ -216,39 +216,39 @@
       "id": "day07-prac-2",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Giai thich nguyen tac Single Responsibility (SRP) bang mot vi du cu the: mot lop OrderService dang vua xu ly logic don hang vua tu ghi log ra file thi vi pham SRP nhu the nao, va nen tach lai sao cho dung.",
+      "prompt": "Giải thích nguyên tắc Single Responsibility (SRP) bằng một ví dụ cụ thể: một lớp OrderService đang vừa xử lý logic đơn hàng vừa tự ghi log ra file thì vi phạm SRP như thế nào, và nên tách lại sao cho đúng.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "SRP noi ve 'mot ly do de thay doi' - dem xem lop dang co bao nhieu ly do khac nhau khien no phai sua.",
-      "solution": "Tach OrderService (chi xu ly nghiep vu don hang) va mot lop rieng nhu OrderLogger/AuditWriter (chi lo ghi log). Moi lop chi con mot ly do de thay doi: OrderService thay doi khi nghiep vu don hang thay doi, OrderLogger thay doi khi cach ghi log thay doi.",
-      "explanation": "SRP giup lop de bao tri va test hon vi moi lop chi tap trung mot trach nhiem.",
-      "rubric": "Danh gia hoc vien co nhan dien dung 'nhieu ly do thay doi' va de xuat tach lop hop ly hay khong.",
+      "hint": "SRP nói về 'một lý do để thay đổi' — đếm xem lớp đang có bao nhiêu lý do khác nhau khiến nó phải sửa.",
+      "solution": "Tách OrderService (chỉ xử lý nghiệp vụ đơn hàng) và một lớp riêng như OrderLogger/AuditWriter (chỉ lo ghi log). Mỗi lớp chỉ còn một lý do để thay đổi: OrderService thay đổi khi nghiệp vụ đơn hàng thay đổi, OrderLogger thay đổi khi cách ghi log thay đổi.",
+      "explanation": "SRP giúp lớp dễ bảo trì và test hơn vì mỗi lớp chỉ tập trung một trách nhiệm.",
+      "rubric": "Đánh giá học viên có nhận diện đúng 'nhiều lý do thay đổi' và đề xuất tách lớp hợp lý hay không.",
       "sourceUsage": []
     },
     {
       "id": "day07-prac-3",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot enum Season voi 4 gia tri (SPRING, SUMMER, AUTUMN, WINTER) va mot phuong thuc tinh fromMonth(int month) tra ve Season tuong ung (thang 12, 1, 2 la WINTER; 3, 4, 5 la SPRING; 6, 7, 8 la SUMMER; con lai la AUTUMN), dung switch expression dang arrow da hoc o Day 2.",
+      "prompt": "Viết một enum Season với 4 giá trị (SPRING, SUMMER, AUTUMN, WINTER) và một phương thức tĩnh fromMonth(int month) trả về Season tương ứng (tháng 12, 1, 2 là WINTER; 3, 4, 5 là SPRING; 6, 7, 8 là SUMMER; còn lại là AUTUMN), dùng switch expression dạng arrow đã học ở Day 2.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung switch expression voi case gop nhieu gia tri (vi du: case 12, 1, 2 ->).",
+      "hint": "Dùng switch expression với case gộp nhiều giá trị (ví dụ: case 12, 1, 2 ->).",
       "solution": "enum Season { SPRING, SUMMER, AUTUMN, WINTER;\n    static Season fromMonth(int month) {\n        return switch (month) {\n            case 12, 1, 2 -> WINTER;\n            case 3, 4, 5 -> SPRING;\n            case 6, 7, 8 -> SUMMER;\n            default -> AUTUMN;\n        };\n    }\n}",
-      "explanation": "Enum ket hop switch expression cho phep bieu dien logic anh xa gon va an toan kieu.",
-      "rubric": "Danh gia enum co du 4 gia tri, phuong thuc tinh (static) dung switch expression dang arrow, va logic anh xa thang dung.",
+      "explanation": "Enum kết hợp switch expression cho phép biểu diễn logic ánh xạ gọn và an toàn kiểu.",
+      "rubric": "Đánh giá enum có đủ 4 giá trị, phương thức tĩnh (static) dùng switch expression dạng arrow, và logic ánh xạ tháng đúng.",
       "sourceUsage": []
     },
     {
       "id": "day07-prac-4",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot interface Shape2D voi method double area(); sau do viet mot lop Rectangle implements Shape2D, va mot inner class ben trong Rectangle ten Diagonal co method double length() tinh duong cheo hinh chu nhat.",
+      "prompt": "Viết một interface Shape2D với method double area(); sau đó viết một lớp Rectangle implements Shape2D, và một inner class bên trong Rectangle tên Diagonal có method double length() tính đường chéo hình chữ nhật.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Inner class truy cap truc tiep field cua lop ngoai (Rectangle) ma khong can truyen tham so.",
+      "hint": "Inner class truy cập trực tiếp field của lớp ngoài (Rectangle) mà không cần truyền tham số.",
       "solution": "interface Shape2D { double area(); }\nclass Rectangle implements Shape2D {\n    private final double width, height;\n    Rectangle(double width, double height) { this.width = width; this.height = height; }\n    public double area() { return width * height; }\n    class Diagonal {\n        double length() { return Math.sqrt(width * width + height * height); }\n    }\n}",
-      "explanation": "Bai tap ket hop interface (Day 7) va inner class (Day 7) trong cung mot thiet ke nho.",
-      "rubric": "Danh gia interface duoc implement dung, inner class truy cap dung field cua lop ngoai, cong thuc duong cheo chinh xac.",
+      "explanation": "Bài tập kết hợp interface (Day 7) và inner class (Day 7) trong cùng một thiết kế nhỏ.",
+      "rubric": "Đánh giá interface được implement đúng, inner class truy cập đúng field của lớp ngoài, công thức đường chéo chính xác.",
       "sourceUsage": []
     }
   ],
@@ -259,8 +259,8 @@
     }
   ],
   "enhancedExercises": [
-    "Refactor mot lop 'God class' vi pham SRP (vi du: lop vua doc file, vua tinh toan, vua ghi log) thanh nhieu lop nho theo tung trach nhiem.",
-    "Chuyen mot anonymous class Runnable thanh mot lambda expression tuong duong (chuan bi truoc cho Day 10 - Functional Interface & Lambda)."
+    "Refactor một lớp 'God class' vi phạm SRP (ví dụ: lớp vừa đọc file, vừa tính toán, vừa ghi log) thành nhiều lớp nhỏ theo từng trách nhiệm.",
+    "Chuyển một anonymous class Runnable thành một lambda expression tương đương (chuẩn bị trước cho Day 10 — Functional Interface & Lambda)."
   ],
   "references": [
     {
@@ -272,7 +272,7 @@
     {
       "id": "day07-ref-2",
       "type": "internal",
-      "description": "Ap dung truc tiep kien thuc extends/polymorphism/abstract class da hoc o Day 5 khi so sanh Abstract class vs Interface."
+      "description": "Áp dụng trực tiếp kiến thức extends/polymorphism/abstract class đã học ở Day 5 khi so sánh Abstract class vs Interface."
     }
   ],
   "sourceUsage": [
@@ -280,16 +280,16 @@
       "id": "day07-src-1",
       "resourceId": "res-0196dd00302a",
       "locator": "Lesson: Interfaces and Inheritance — mục lục",
-      "topic": "Noi dung bai hoc Interfaces and Inheritance"
+      "topic": "Nội dung bài học Interfaces and Inheritance"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Inner Classes: khong co nguon trich dan nao trong resourceIds cua Day 7 mo ta chi tiet (res-ec467b92f9e7, res-4bc225ad1d9e, res-062b84a9042d, res-c246ae22f99a deu tra ve 404 khi truy cap); noi dung duoc trinh bay theo kien thuc Java 17 chuan trong cac block paragraph/note/code khong gan citation.",
-      "Enums: tuong tu Inner Classes, khong co nguon nao trong resourceIds cua Day 7 con truy cap duoc de trich dan chi tiet; noi dung theo kien thuc Java 17 chuan.",
-      "SOLID Principles: khong co nguon nao trong resourceIds cua Day 7 mo ta cac nguyen tac SOLID; noi dung tom tat theo kien thuc thiet ke huong doi tuong chuan, muc gioi thieu."
+      "Inner Classes: không có nguồn trích dẫn nào trong resourceIds của Day 7 mô tả chi tiết (res-ec467b92f9e7, res-4bc225ad1d9e, res-062b84a9042d, res-c246ae22f99a đều trả về 404 khi truy cập); nội dung được trình bày theo kiến thức Java 17 chuẩn trong các block paragraph/note/code không gắn citation.",
+      "Enums: tương tự Inner Classes, không có nguồn nào trong resourceIds của Day 7 còn truy cập được để trích dẫn chi tiết; nội dung theo kiến thức Java 17 chuẩn.",
+      "SOLID Principles: không có nguồn nào trong resourceIds của Day 7 mô tả các nguyên tắc SOLID; nội dung tóm tắt theo kiến thức thiết kế hướng đối tượng chuẩn, mức giới thiệu."
     ]
   }
 }

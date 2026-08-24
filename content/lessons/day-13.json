@@ -29,24 +29,24 @@
   "group": "spring",
   "kind": "theory",
   "title": "Spring Boot Fundamentals & Bean Lifecycle",
-  "summary": "Nen tang Spring Boot va IoC container: kien truc Spring Boot o muc tong quan, BeanFactory/ApplicationContext, khai niem bean, 6 bean scope (singleton/prototype/request/session/application/websocket), scoped proxy, bean lifecycle callback (@PostConstruct/@PreDestroy) va cac stereotype annotation (@Component/@Service/@Repository/@Controller).",
+  "summary": "Nền tảng Spring Boot và IoC container: kiến trúc Spring Boot ở mức tổng quan, BeanFactory/ApplicationContext, khái niệm bean, 6 bean scope (singleton/prototype/request/session/application/websocket), scoped proxy, bean lifecycle callback (@PostConstruct/@PreDestroy) và các stereotype annotation (@Component/@Service/@Repository/@Controller).",
   "durationMinutes": 150.0,
   "objectives": [
     "LO5"
   ],
   "prerequisites": [
-    "Da hoan thanh Unit 3-4 (Java OOP, generics, collections, exception, stream, concurrency) - Spring xay dung tren nen OOP va DI thuan Java."
+    "Đã hoàn thành Unit 3-4 (Java OOP, generics, collections, exception, stream, concurrency) — Spring xây dựng trên nền OOP và DI thuần Java."
   ],
   "outcomes": [
-    "Giai thich duoc IoC/DI theo dinh nghia Spring va vai tro cua BeanFactory/ApplicationContext.",
-    "Phan biet dung 6 bean scope va biet khi nao can scoped proxy.",
-    "Mo ta duoc thu tu callback khoi tao/huy trong bean lifecycle.",
-    "Nhan dien dung stereotype annotation phu hop cho tung tang kien truc."
+    "Giải thích được IoC/DI theo định nghĩa Spring và vai trò của BeanFactory/ApplicationContext.",
+    "Phân biệt đúng 6 bean scope và biết khi nào cần scoped proxy.",
+    "Mô tả được thứ tự callback khởi tạo/hủy trong bean lifecycle.",
+    "Nhận diện đúng stereotype annotation phù hợp cho từng tầng kiến trúc."
   ],
   "sections": [
     {
       "id": "day13-sec-brief",
-      "title": "De bai va pham vi bai hoc",
+      "title": "Đề bài và phạm vi bài học",
       "blocks": [
         {
           "id": "day13-blk-1",
@@ -57,25 +57,25 @@
         {
           "id": "day13-blk-2",
           "type": "note",
-          "text": "Bai hoc mo dau don vi Spring: kien truc Spring Boot o muc tong quan, IoC container, bean scope, bean lifecycle va cac stereotype annotation dung de danh dau bean. Assignment cua ngay nay khong co de bai chi tiet rieng (chi ghi 'Assignment' trong lich hoc) - hoc vien on tap va thuc hanh lai cac vi du trong bai.",
+          "text": "Bài học mở đầu đơn vị Spring: kiến trúc Spring Boot ở mức tổng quan, IoC container, bean scope, bean lifecycle và các stereotype annotation dùng để đánh dấu bean. Assignment của ngày này không có đề bài chi tiết riêng (chỉ ghi 'Assignment' trong lịch học) — học viên ôn tập và thực hành lại các ví dụ trong bài.",
           "citations": []
         }
       ]
     },
     {
       "id": "day13-sec-architecture",
-      "title": "Spring Boot Architecture (tong quan)",
+      "title": "Spring Boot Architecture (tổng quan)",
       "blocks": [
         {
           "id": "day13-blk-3",
           "type": "note",
-          "text": "Kien truc chi tiet cua Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) khong co resource nao trong resourceIds cua rieng Day 13 mo ta truc tiep - resource duy nhat lien quan (Learn Spring Boot Series) chi la trang muc luc lien ket toi cac bai con, khong phai bai viet sau ve kien truc (xem authoring.limitations). Noi dung duoi day trinh bay o muc gioi thieu bang kien thuc chuan cua Spring Boot: ung dung Spring Boot dong goi mot embedded server (Tomcat mac dinh), tu dong cau hinh bean dua tren classpath (auto-configuration - se hoc chi tiet o Day 14), va cung cap cac starter dependency (spring-boot-starter-web, ...) de gom nhom cac thu vien lien quan.",
+          "text": "Kiến trúc chi tiết của Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) không có resource nào trong resourceIds của riêng Day 13 mô tả trực tiếp — resource duy nhất liên quan (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không phải bài viết sâu về kiến trúc (xem authoring.limitations). Nội dung dưới đây trình bày ở mức giới thiệu bằng kiến thức chuẩn của Spring Boot: ứng dụng Spring Boot đóng gói một embedded server (Tomcat mặc định), tự động cấu hình bean dựa trên classpath (auto-configuration — sẽ học chi tiết ở Day 14), và cung cấp các starter dependency (spring-boot-starter-web, ...) để gom nhóm các thư viện liên quan.",
           "citations": []
         },
         {
           "id": "day13-blk-4",
           "type": "note",
-          "text": "Trang Learn Spring Boot Series cua Baeldung la mot muc luc tong hop, phan theo cac cum chu de: Basics, Properties, Customization, Testing, Under the Hood, Persistence, DevOps Tools, va Integration With Other Libraries - la diem bat dau tot de tra cuu sau hon ve tung khia canh cua Spring Boot.",
+          "text": "Trang Learn Spring Boot Series của Baeldung là một mục lục tổng hợp, phân theo các cụm chủ đề: Basics, Properties, Customization, Testing, Under the Hood, Persistence, DevOps Tools, và Integration With Other Libraries — là điểm bắt đầu tốt để tra cứu sâu hơn về từng khía cạnh của Spring Boot.",
           "citations": [
             "day13-src-9"
           ]
@@ -89,7 +89,7 @@
         {
           "id": "day13-blk-5",
           "type": "paragraph",
-          "text": "Spring dinh nghia Dependency Injection la mot dang chuyen biet cua Inversion of Control, trong do doi tuong khai bao dependency cua no chi qua constructor argument, tham so cua factory method, hoac property duoc set sau khi doi tuong duoc khoi tao; container tiem cac dependency nay khi tao bean. Hai goi org.springframework.beans va org.springframework.context la nen tang cua IoC container: BeanFactory cung cap co che cau hinh co ban, con ApplicationContext la sub-interface cua BeanFactory bo sung tich hop AOP, xu ly message resource (i18n), publish event, va cac context chuyen biet nhu WebApplicationContext. Mot bean la doi tuong duoc khoi tao, lap rap (assemble) va quan ly boi Spring IoC container.",
+          "text": "Spring định nghĩa Dependency Injection là một dạng chuyên biệt của Inversion of Control, trong đó đối tượng khai báo dependency của nó chỉ qua constructor argument, tham số của factory method, hoặc property được set sau khi đối tượng được khởi tạo; container tiêm các dependency này khi tạo bean. Hai gói org.springframework.beans và org.springframework.context là nền tảng của IoC container: BeanFactory cung cấp cơ chế cấu hình cơ bản, còn ApplicationContext là sub-interface của BeanFactory bổ sung tích hợp AOP, xử lý message resource (i18n), publish event, và các context chuyên biệt như WebApplicationContext. Một bean là đối tượng được khởi tạo, lắp ráp (assemble) và quản lý bởi Spring IoC container.",
           "citations": [
             "day13-src-1",
             "day13-src-2",
@@ -107,7 +107,7 @@
             "day13-src-2",
             "day13-src-3"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         }
       ]
     },
@@ -118,7 +118,7 @@
         {
           "id": "day13-blk-7",
           "type": "paragraph",
-          "text": "Spring Framework ho tro 6 scope: singleton (mac dinh, mot instance cho toan container), prototype (moi lan request la mot instance moi), va bon scope chi dung duoc trong web-aware ApplicationContext: request, session, application, websocket; ngoai ra co the tao custom scope. Singleton cua Spring la per-container va per-bean (mot bean definition trong mot container tao dung mot instance), khac voi singleton pattern GoF von hard-code mot instance duy nhat cho moi ClassLoader.",
+          "text": "Spring Framework hỗ trợ 6 scope: singleton (mặc định, một instance cho toàn container), prototype (mỗi lần request là một instance mới), và bốn scope chỉ dùng được trong web-aware ApplicationContext: request, session, application, websocket; ngoài ra có thể tạo custom scope. Singleton của Spring là per-container và per-bean (một bean definition trong một container tạo đúng một instance), khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader.",
           "citations": [
             "day13-src-4",
             "day13-src-5"
@@ -129,32 +129,32 @@
           "type": "table",
           "columns": [
             "Scope",
-            "Mo ta"
+            "Mô tả"
           ],
           "rows": [
             [
               "singleton",
-              "Mac dinh; mot instance duy nhat cho toan container, dung chung cho moi lan request bean"
+              "Mặc định; một instance duy nhất cho toàn container, dùng chung cho mỗi lần request bean"
             ],
             [
               "prototype",
-              "Container tao instance moi cho moi lan request bean; container khong quan ly destruction callback"
+              "Container tạo instance mới cho mỗi lần request bean; container không quản lý destruction callback"
             ],
             [
               "request",
-              "Mot instance cho moi HTTP request; chi hop le trong web-aware ApplicationContext"
+              "Một instance cho mỗi HTTP request; chỉ hợp lệ trong web-aware ApplicationContext"
             ],
             [
               "session",
-              "Mot instance cho moi HTTP session; chi hop le trong web-aware ApplicationContext"
+              "Một instance cho mỗi HTTP session; chỉ hợp lệ trong web-aware ApplicationContext"
             ],
             [
               "application",
-              "Mot instance cho vong doi ServletContext; chi hop le trong web-aware ApplicationContext"
+              "Một instance cho vòng đời ServletContext; chỉ hợp lệ trong web-aware ApplicationContext"
             ],
             [
               "websocket",
-              "Mot instance cho vong doi WebSocket session; chi hop le trong web-aware ApplicationContext"
+              "Một instance cho vòng đời WebSocket session; chỉ hợp lệ trong web-aware ApplicationContext"
             ]
           ],
           "citations": [
@@ -171,12 +171,12 @@
             "day13-src-5",
             "day13-src-6"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
           "id": "day13-blk-10",
           "type": "note",
-          "text": "Voi prototype scope, container tao instance moi cho moi lan request bean nhung khong quan ly toan bo vong doi: callback khoi tao van duoc goi nhung destruction callback da cau hinh khong duoc goi, client code phai tu don dep tai nguyen cua bean prototype. Co the gan bean vao scope request/session/application bang annotation @RequestScope, @SessionScope, @ApplicationScope; cac scope nay chi hop le trong web-aware ApplicationContext, neu dung ngoai ngu canh do se nem IllegalStateException.",
+          "text": "Với prototype scope, container tạo instance mới cho mỗi lần request bean nhưng không quản lý toàn bộ vòng đời: callback khởi tạo vẫn được gọi nhưng destruction callback đã cấu hình không được gọi, client code phải tự dọn dẹp tài nguyên của bean prototype. Có thể gắn bean vào scope request/session/application bằng annotation @RequestScope, @SessionScope, @ApplicationScope; các scope này chỉ hợp lệ trong web-aware ApplicationContext, nếu dùng ngoài ngữ cảnh đó sẽ ném IllegalStateException.",
           "citations": [
             "day13-src-6",
             "day13-src-7"
@@ -185,7 +185,7 @@
         {
           "id": "day13-blk-11",
           "type": "note",
-          "text": "Khi tiem mot bean scope ngan hon (nhu request-scoped) vao bean scope dai hon (singleton), can dung scoped proxy de Spring tao mot proxy: proxy giu cung interface cong khai nhung lay doi tuong that tu scope tuong ung tai thoi diem goi method, tranh viec singleton chi giu mai mot instance duoc tiem luc khoi tao.",
+          "text": "Khi tiêm một bean scope ngắn hơn (như request-scoped) vào bean scope dài hơn (singleton), cần dùng scoped proxy để Spring tạo một proxy: proxy giữ cùng interface công khai nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method, tránh việc singleton chỉ giữ mãi một instance được tiêm lúc khởi tạo.",
           "citations": [
             "day13-src-8"
           ]
@@ -194,65 +194,65 @@
     },
     {
       "id": "day13-sec-lifecycle",
-      "title": "Bean Lifecycle (gioi thieu)",
+      "title": "Bean Lifecycle (giới thiệu)",
       "blocks": [
         {
           "id": "day13-blk-12",
           "type": "note",
-          "text": "Chu de bean lifecycle (thu tu goi cac callback khoi tao/huy) khong co resource nao trong resourceIds cua rieng Day 13 mo ta (xem authoring.limitations). Kien thuc chuan cua Spring: mot bean co the khai bao callback khoi tao bang annotation `@PostConstruct` (goi sau khi moi dependency da duoc tiem) hoac bang cach implement interface `InitializingBean` (override `afterPropertiesSet()`); tuong tu, callback huy dung `@PreDestroy` hoac implement `DisposableBean` (override `destroy()`). Voi bean scope singleton, container goi callback huy khi container dong; voi prototype, nhu da neu o phan scope, container khong tu goi callback huy.",
+          "text": "Chủ đề bean lifecycle (thứ tự gọi các callback khởi tạo/hủy) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
           "citations": []
         }
       ]
     },
     {
       "id": "day13-sec-stereotypes",
-      "title": "Stereotype Annotations (gioi thieu)",
+      "title": "Stereotype Annotations (giới thiệu)",
       "blocks": [
         {
           "id": "day13-blk-13",
           "type": "note",
-          "text": "Chu de cac stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`) khong co resource nao trong resourceIds cua rieng Day 13 mo ta (xem authoring.limitations). Kien thuc chuan cua Spring: `@Component` la annotation goc, danh dau mot class de component scanning tu dong dang ky no thanh bean; `@Service`, `@Repository`, `@Controller` la cac annotation chuyen biet hoa cua `@Component` cho tung tang kien truc (nghiep vu, truy cap du lieu, dieu khien web) - ve mat co che chung deu la mot bean nhu nhau, diem khac biet la ngu nghia va mot so xu ly them (vi du `@Repository` tu dong dich exception tang persistence).",
+          "text": "Chủ đề các stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: `@Component` là annotation gốc, đánh dấu một class để component scanning tự động đăng ký nó thành bean; `@Service`, `@Repository`, `@Controller` là các annotation chuyên biệt hóa của `@Component` cho từng tầng kiến trúc (nghiệp vụ, truy cập dữ liệu, điều khiển web) — về mặt cơ chế chung đều là một bean như nhau, điểm khác biệt là ngữ nghĩa và một số xử lý thêm (ví dụ `@Repository` tự động dịch exception tầng persistence).",
           "citations": []
         }
       ]
     }
   ],
   "commonMistakes": [
-    "Tiem truc tiep mot request/session-scoped bean vao singleton bean ma khong dung scoped proxy.",
-    "Nham lan singleton cua Spring (per-container/per-bean) voi singleton pattern GoF (mot instance cho ca ung dung).",
-    "Ky vong container tu goi destruction callback cho bean scope prototype giong nhu singleton."
+    "Tiêm trực tiếp một request/session-scoped bean vào singleton bean mà không dùng scoped proxy.",
+    "Nhầm lẫn singleton của Spring (per-container/per-bean) với singleton pattern GoF (một instance cho cả ứng dụng).",
+    "Kỳ vọng container tự gọi destruction callback cho bean scope prototype giống như singleton."
   ],
   "practices": [
     {
       "id": "day13-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Singleton scope cua Spring khac gi so voi Singleton Pattern kinh dien (GoF)?",
+      "prompt": "Singleton scope của Spring khác gì so với Singleton Pattern kinh điển (GoF)?",
       "choices": [
         {
           "id": "day13-prac-1-a",
-          "text": "Singleton cua Spring la per-container va per-bean definition, khong phai mot instance duy nhat cho toan JVM/ClassLoader nhu GoF"
+          "text": "Singleton của Spring là per-container và per-bean definition, không phải một instance duy nhất cho toàn JVM/ClassLoader như GoF"
         },
         {
           "id": "day13-prac-1-b",
-          "text": "Singleton cua Spring luon thread-safe con GoF thi khong"
+          "text": "Singleton của Spring luôn thread-safe còn GoF thì không"
         },
         {
           "id": "day13-prac-1-c",
-          "text": "Singleton cua Spring khong the co constructor"
+          "text": "Singleton của Spring không thể có constructor"
         },
         {
           "id": "day13-prac-1-d",
-          "text": "Singleton cua Spring va GoF hoan toan giong nhau"
+          "text": "Singleton của Spring và GoF hoàn toàn giống nhau"
         }
       ],
       "correctChoiceIds": [
         "day13-prac-1-a"
       ],
-      "hint": "Doc lai dinh nghia scope trong tai lieu Spring Bean Scopes.",
+      "hint": "Đọc lại định nghĩa scope trong tài liệu Spring Bean Scopes.",
       "solution": "day13-prac-1-a",
-      "explanation": "Tai lieu Spring xac dinh singleton scope la per-container va per-bean: mot bean definition trong mot container Spring tao dung mot instance, khac voi singleton pattern GoF von hard-code mot instance duy nhat cho moi ClassLoader.",
-      "rubric": "Chon dung diem khac biet ve pham vi (container/bean) thay vi nham lan voi thread-safety hay cu phap.",
+      "explanation": "Tài liệu Spring xác định singleton scope là per-container và per-bean: một bean definition trong một container Spring tạo đúng một instance, khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader.",
+      "rubric": "Chọn đúng điểm khác biệt về phạm vi (container/bean) thay vì nhầm lẫn với thread-safety hay cú pháp.",
       "sourceUsage": [
         "day13-src-5"
       ]
@@ -261,13 +261,13 @@
       "id": "day13-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot @Configuration class dinh nghia mot @Bean scope prototype ten la 'taskBuilder' tra ve mot doi tuong TaskBuilder tuy y.",
+      "prompt": "Viết một @Configuration class định nghĩa một @Bean scope prototype tên là 'taskBuilder' trả về một đối tượng TaskBuilder tùy ý.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) tren method @Bean.",
+      "hint": "Dùng @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) trên method @Bean.",
       "solution": "@Configuration\nclass TaskConfig {\n    @Bean\n    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)\n    TaskBuilder taskBuilder() {\n        return new TaskBuilder();\n    }\n}",
-      "explanation": "Ap dung lai mau @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) da hoc trong bai vao mot bean moi.",
-      "rubric": "Danh gia dung: co @Configuration tren class, @Bean tren method, va @Scope voi hang so SCOPE_PROTOTYPE (hoac chuoi \"prototype\").",
+      "explanation": "Áp dụng lại mẫu @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE) đã học trong bài vào một bean mới.",
+      "rubric": "Đánh giá đúng: có @Configuration trên class, @Bean trên method, và @Scope với hằng số SCOPE_PROTOTYPE (hoặc chuỗi \"prototype\").",
       "sourceUsage": [
         "day13-src-6"
       ]
@@ -276,13 +276,13 @@
       "id": "day13-prac-3",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Vi sao khong nen tiem truc tiep mot request-scoped bean vao mot singleton bean ma khong dung scoped proxy?",
+      "prompt": "Vì sao không nên tiêm trực tiếp một request-scoped bean vào một singleton bean mà không dùng scoped proxy?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nghi ve thoi diem container tao va tiem singleton bean - chi mot lan duy nhat.",
-      "solution": "Vi singleton bean chi duoc container tao va tiem dependency dung mot lan luc khoi dong; neu tiem truc tiep instance request-scoped hien tai vao lucdo, singleton se giu mai instance cua request dau tien thay vi lay instance dung cho tung request sau nay. Scoped proxy giai quyet van de nay bang cach tiem mot proxy giu nguyen interface nhung lay doi tuong that tu scope tuong ung tai thoi diem goi method.",
-      "explanation": "Giai thich vong doi khoi tao singleton chi dien ra mot lan.",
-      "rubric": "Danh gia hoc vien noi dung duoc ly do lien quan toi thoi diem khoi tao/tiem cua singleton bean.",
+      "hint": "Nghĩ về thời điểm container tạo và tiêm singleton bean — chỉ một lần duy nhất.",
+      "solution": "Vì singleton bean chỉ được container tạo và tiêm dependency đúng một lần lúc khởi động; nếu tiêm trực tiếp instance request-scoped hiện tại vào lúc đó, singleton sẽ giữ mãi instance của request đầu tiên thay vì lấy instance đúng cho từng request sau này. Scoped proxy giải quyết vấn đề này bằng cách tiêm một proxy giữ nguyên interface nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method.",
+      "explanation": "Giải thích vòng đời khởi tạo singleton chỉ diễn ra một lần.",
+      "rubric": "Đánh giá học viên nói đúng lý do liên quan tới thời điểm khởi tạo/tiêm của singleton bean.",
       "sourceUsage": [
         "day13-src-8"
       ]
@@ -291,13 +291,13 @@
       "id": "day13-prac-4",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Neu mot bean can chay logic don dep tai nguyen (dong ket noi, xoa file tam) khi container dong, nen dung callback nao va vi sao khong nen dung scope prototype cho bean nay?",
+      "prompt": "Nếu một bean cần chạy logic dọn dẹp tài nguyên (đóng kết nối, xóa file tạm) khi container đóng, nên dùng callback nào và vì sao không nên dùng scope prototype cho bean này?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Xem lai phan Bean Lifecycle va phan Prototype scope trong bai.",
-      "solution": "Nen dung @PreDestroy (hoac implement DisposableBean) va khai bao bean o scope singleton (mac dinh); container chi tu goi destruction callback voi bean singleton. Neu dung scope prototype, container tao instance moi cho moi lan request nhung khong quan ly toan bo vong doi - destruction callback se khong duoc container tu goi, client code phai tu don dep tai nguyen.",
-      "explanation": "Lien ket callback huy voi scope da hoc: chi singleton duoc container tu goi callback huy.",
-      "rubric": "Danh gia hoc vien ket noi dung kien thuc bean lifecycle voi kien thuc prototype scope da hoc trong cung bai.",
+      "hint": "Xem lại phần Bean Lifecycle và phần Prototype scope trong bài.",
+      "solution": "Nên dùng @PreDestroy (hoặc implement DisposableBean) và khai báo bean ở scope singleton (mặc định); container chỉ tự gọi destruction callback với bean singleton. Nếu dùng scope prototype, container tạo instance mới cho mỗi lần request nhưng không quản lý toàn bộ vòng đời — destruction callback sẽ không được container tự gọi, client code phải tự dọn dẹp tài nguyên.",
+      "explanation": "Liên kết callback hủy với scope đã học: chỉ singleton được container tự gọi callback hủy.",
+      "rubric": "Đánh giá học viên kết nối đúng kiến thức bean lifecycle với kiến thức prototype scope đã học trong cùng bài.",
       "sourceUsage": [
         "day13-src-6"
       ]
@@ -310,8 +310,8 @@
     }
   ],
   "enhancedExercises": [
-    "Viet mot custom scope don gian (implement org.springframework.beans.factory.config.Scope) va dang ky bang ConfigurableBeanFactory.registerScope().",
-    "Thu nghiem @PostConstruct/@PreDestroy tren mot bean singleton va quan sat thu tu goi so voi constructor."
+    "Viết một custom scope đơn giản (implement org.springframework.beans.factory.config.Scope) và đăng ký bằng ConfigurableBeanFactory.registerScope().",
+    "Thử nghiệm @PostConstruct/@PreDestroy trên một bean singleton và quan sát thứ tự gọi so với constructor."
   ],
   "references": [
     {
@@ -329,7 +329,7 @@
     {
       "id": "day13-ref-3",
       "type": "internal",
-      "description": "Chuan bi nen tang IoC/bean truoc khi hoc sau ve DI va cau hinh (@Configuration/@Bean/@ConfigurationProperties) o Day 14-15."
+      "description": "Chuẩn bị nền tảng IoC/bean trước khi học sâu về DI và cấu hình (@Configuration/@Bean/@ConfigurationProperties) ở Day 14-15."
     }
   ],
   "sourceUsage": [
@@ -373,7 +373,7 @@
       "id": "day13-src-7",
       "resourceId": "res-bf1095022eae",
       "locator": "§Request, Session, Application, and WebSocket Scopes",
-      "topic": "Annotation cho scope web-aware"
+      "topic": "Các annotation dành cho scope web-aware (request/session/application)"
     },
     {
       "id": "day13-src-8",
@@ -392,9 +392,9 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Spring Boot Architecture (kien truc tong quan): resource duy nhat lien quan trong resourceIds cua Day 13 (Learn Spring Boot Series) chi la trang muc luc lien ket toi cac bai con, khong mo ta kien truc cu the - trinh bay o muc gioi thieu bang kien thuc chuan, khong gan citation cho cac khang dinh ky thuat cu the.",
-      "Bean lifecycle (thu tu callback khoi tao/huy): khong co resource nao trong resourceIds cua Day 13 mo ta chu de nay - trinh bay bang kien thuc chuan cua Spring trong khoi note khong yeu cau trich dan.",
-      "Stereotype annotations (@Component/@Service/@Repository/@Controller): khong co resource nao trong resourceIds cua Day 13 mo ta chu de nay - trinh bay bang kien thuc chuan cua Spring trong khoi note khong yeu cau trich dan."
+      "Spring Boot Architecture (kiến trúc tổng quan): resource duy nhất liên quan trong resourceIds của Day 13 (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không mô tả kiến trúc cụ thể — trình bày ở mức giới thiệu bằng kiến thức chuẩn, không gắn citation cho các khẳng định kỹ thuật cụ thể.",
+      "Bean lifecycle (thứ tự callback khởi tạo/hủy): không có resource nào trong resourceIds của Day 13 mô tả chủ đề này — trình bày bằng kiến thức chuẩn của Spring trong khối note không yêu cầu trích dẫn.",
+      "Stereotype annotations (@Component/@Service/@Repository/@Controller): không có resource nào trong resourceIds của Day 13 mô tả chủ đề này — trình bày bằng kiến thức chuẩn của Spring trong khối note không yêu cầu trích dẫn."
     ]
   }
 }

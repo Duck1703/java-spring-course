@@ -91,11 +91,11 @@ def static_checks(html: str) -> list[str]:
     # Runtime-created hooks live in the app script — check they are created.
     runtime_labels = [
         "'main-content'",
-        "'Danh muc khoa hoc'",
-        "'Tim kiem bai hoc'",
-        "Tien do khoa hoc",
+        "'Danh mục khóa học'",
+        "'Tìm kiếm bài học'",
+        "Tiến độ khóa học",
         '"Sao chép mã mẫu vào clipboard"',
-        "'Mo danh muc'",
+        "'Mở danh mục'",
     ]
     for needle in runtime_labels:
         if needle not in html:

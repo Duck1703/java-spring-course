@@ -28,19 +28,19 @@
   "group": "java",
   "kind": "theory",
   "title": "Generics, Collections & Exception Handling",
-  "summary": "Generics giup kiem tra kieu luc bien dich (bounded type, wildcard, type erasure); Collections Framework to chuc du lieu qua List/Set/Map; Exception hierarchy phan biet checked/unchecked va try-with-resources tu dong dong resource theo thu tu nguoc khai bao.",
+  "summary": "Generics giúp kiểm tra kiểu lúc biên dịch (bounded type, wildcard, type erasure); Collections Framework tổ chức dữ liệu qua List/Set/Map; Exception hierarchy phân biệt checked/unchecked và try-with-resources tự động đóng resource theo thứ tự ngược khai báo.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO3"
   ],
   "prerequisites": [
-    "Da hoan thanh Day 7 (Interface, Inner Classes, Enums, SOLID Principles)."
+    "Đã hoàn thành Day 7 (Interface, Inner Classes, Enums, SOLID Principles)."
   ],
   "outcomes": [
-    "Viet duoc generic method voi bounded type parameter.",
-    "Chon dung cai dat List/Set/Map phu hop tung tinh huong.",
-    "Phan biet checked va unchecked exception, thiet ke exception hierarchy hop ly.",
-    "Dung try-with-resources thay cho finally thu cong khi lam viec voi AutoCloseable."
+    "Viết được generic method với bounded type parameter.",
+    "Chọn đúng cài đặt List/Set/Map phù hợp từng tình huống.",
+    "Phân biệt checked và unchecked exception, thiết kế exception hierarchy hợp lý.",
+    "Dùng try-with-resources thay cho finally thủ công khi làm việc với AutoCloseable."
   ],
   "sections": [
     {
@@ -50,7 +50,7 @@
         {
           "id": "day08-blk-1",
           "type": "paragraph",
-          "text": "Generics cho phep mot lop, interface hoac method thao tac tren kieu du lieu duoc tham so hoa, giup trinh bien dich phat hien loi ve kieu ngay luc bien dich thay vi de loi roi den runtime moi phat hien.",
+          "text": "Generics cho phép một lớp, interface hoặc method thao tác trên kiểu dữ liệu được tham số hóa, giúp trình biên dịch phát hiện lỗi về kiểu ngay lúc biên dịch thay vì để lỗi rơi đến runtime mới phát hiện.",
           "citations": [
             "day08-src-1"
           ]
@@ -58,7 +58,7 @@
         {
           "id": "day08-blk-2",
           "type": "paragraph",
-          "text": "Truoc khi co generics, cac collection (nhu List) luu Object va lap trinh vien phai ep kieu tuong minh moi khi lay phan tu ra - de gay ClassCastException luc runtime neu ep sai kieu. Khai bao generic nhu List<Integer> giup trinh bien dich kiem tra kieu ngay tai diem them/lay phan tu, loai bo hoan toan nhu cau ep kieu thu cong.",
+          "text": "Trước khi có generics, các collection (như List) lưu Object và lập trình viên phải ép kiểu tường minh mỗi khi lấy phần tử ra — dễ gây ClassCastException lúc runtime nếu ép sai kiểu. Khai báo generic như List<Integer> giúp trình biên dịch kiểm tra kiểu ngay tại điểm thêm/lấy phần tử, loại bỏ hoàn toàn nhu cầu ép kiểu thủ công.",
           "citations": [
             "day08-src-2"
           ]
@@ -76,7 +76,7 @@
         {
           "id": "day08-blk-4",
           "type": "important",
-          "text": "Wildcard '?' dung khi khong can quan tam kieu cu the: '? extends T' (upper bounded) cho phep doc phan tu kieu T tro len nhung khong duoc them vao (producer); '? super T' (lower bounded) cho phep them phan tu kieu T tro xuong (consumer).",
+          "text": "Wildcard '?' dùng khi không cần quan tâm kiểu cụ thể: '? extends T' (upper bounded) cho phép đọc phần tử kiểu T trở lên nhưng không được thêm vào (producer); '? super T' (lower bounded) cho phép thêm phần tử kiểu T trở xuống (consumer).",
           "citations": [
             "day08-src-4"
           ]
@@ -84,7 +84,7 @@
         {
           "id": "day08-blk-5",
           "type": "note",
-          "text": "Type erasure: trinh bien dich Java xoa toan bo thong tin kieu generic sau khi bien dich xong (bytecode khong con biet List<Integer> khac List<String>) - day cung la ly do generics khong dung truc tiep duoc voi kieu nguyen thuy (int, double...), chi dung duoc voi kieu tham chieu (Integer, Double...).",
+          "text": "Type erasure: trình biên dịch Java xóa toàn bộ thông tin kiểu generic sau khi biên dịch xong (bytecode không còn biết List<Integer> khác List<String>) — đây cũng là lý do generics không dùng trực tiếp được với kiểu nguyên thủy (int, double...), chỉ dùng được với kiểu tham chiếu (Integer, Double...).",
           "citations": [
             "day08-src-5"
           ]
@@ -98,7 +98,7 @@
         {
           "id": "day08-blk-6",
           "type": "paragraph",
-          "text": "Java Collections Framework (theo Trail chinh thuc cua Oracle) gom cac interface goc nhu Collection, List, Set, Map cung cac lop cai dat va thuat toan di kem, cung cap mot kien truc thong nhat de luu tru va thao tac tren nhom doi tuong.",
+          "text": "Java Collections Framework (theo Trail chính thức của Oracle) gồm các interface gốc như Collection, List, Set, Map cùng các lớp cài đặt và thuật toán đi kèm, cung cấp một kiến trúc thống nhất để lưu trữ và thao tác trên nhóm đối tượng.",
           "citations": [
             "day08-src-6"
           ]
@@ -106,7 +106,7 @@
         {
           "id": "day08-blk-7",
           "type": "paragraph",
-          "text": "Theo cach phan nhom cua Java Collections Series, cac cai dat pho bien duoc chia theo tung nhom interface: List (ArrayList, LinkedList), Set (HashSet, LinkedHashSet, TreeSet), Map (HashMap, LinkedHashMap, TreeMap), moi nhom co dac diem rieng ve thu tu va trung lap.",
+          "text": "Theo cách phân nhóm của Java Collections Series, các cài đặt phổ biến được chia theo từng nhóm interface: List (ArrayList, LinkedList), Set (HashSet, LinkedHashSet, TreeSet), Map (HashMap, LinkedHashMap, TreeMap), mỗi nhóm có đặc điểm riêng về thứ tự và trùng lặp.",
           "citations": [
             "day08-src-7"
           ]
@@ -116,27 +116,27 @@
           "type": "table",
           "columns": [
             "Interface",
-            "Cho phep phan tu trung lap?",
-            "Co thu tu?",
-            "Cai dat tieu bieu"
+            "Cho phép phần tử trùng lặp?",
+            "Có thứ tự?",
+            "Cài đặt tiêu biểu"
           ],
           "rows": [
             [
               "List",
-              "Co",
-              "Co (theo chi so index)",
+              "Có",
+              "Có (theo chỉ số index)",
               "ArrayList, LinkedList"
             ],
             [
               "Set",
-              "Khong",
-              "Tuy cai dat (HashSet: khong; LinkedHashSet/TreeSet: co)",
+              "Không",
+              "Tùy cài đặt (HashSet: không; LinkedHashSet/TreeSet: có)",
               "HashSet, LinkedHashSet, TreeSet"
             ],
             [
               "Map",
-              "Key khong trung, value co the trung",
-              "Tuy cai dat (HashMap: khong; LinkedHashMap/TreeMap: co)",
+              "Key không trùng, value có thể trùng",
+              "Tùy cài đặt (HashMap: không; LinkedHashMap/TreeMap: có)",
               "HashMap, LinkedHashMap, TreeMap"
             ]
           ],
@@ -154,7 +154,7 @@
         {
           "id": "day08-blk-9",
           "type": "paragraph",
-          "text": "Bai hoc Exceptions trinh bay co che xu ly loi cua Java: khi mot doi tuong exception duoc nem (throw) trong luc thuc thi mot method, luong thuc thi binh thuong bi ngat va JVM tim kiem noi xu ly (catch) phu hop.",
+          "text": "Bài học Exceptions trình bày cơ chế xử lý lỗi của Java: khi một đối tượng exception được ném (throw) trong lúc thực thi một method, luồng thực thi bình thường bị ngắt và JVM tìm kiếm nơi xử lý (catch) phù hợp.",
           "citations": [
             "day08-src-8"
           ]
@@ -162,7 +162,7 @@
         {
           "id": "day08-blk-10",
           "type": "important",
-          "text": "Phan cap exception bat dau tu Throwable, chia thanh hai nhanh chinh: Exception (bao gom checked exception va nhanh con RuntimeException la unchecked exception) va Error (loi nghiem trong cua JVM, khong nen tu catch de xu ly).",
+          "text": "Phân cấp exception bắt đầu từ Throwable, chia thành hai nhánh chính: Exception (bao gồm checked exception và nhánh con RuntimeException là unchecked exception) và Error (lỗi nghiêm trọng của JVM, không nên tự catch để xử lý).",
           "citations": [
             "day08-src-9"
           ]
@@ -170,7 +170,7 @@
         {
           "id": "day08-blk-11",
           "type": "paragraph",
-          "text": "Checked exception (ke thua truc tiep tu Exception, khong qua RuntimeException) bat buoc phai duoc khai bao trong chu ky throws hoac xu ly bang try-catch, kiem tra ngay luc bien dich. Unchecked exception (ke thua tu RuntimeException) khong bi kiem tra luc bien dich, thuong dai dien cho loi lap trinh (vi du: NullPointerException).",
+          "text": "Checked exception (kế thừa trực tiếp từ Exception, không qua RuntimeException) bắt buộc phải được khai báo trong chữ ký throws hoặc xử lý bằng try-catch, kiểm tra ngay lúc biên dịch. Unchecked exception (kế thừa từ RuntimeException) không bị kiểm tra lúc biên dịch, thường đại diện cho lỗi lập trình (ví dụ: NullPointerException).",
           "citations": [
             "day08-src-10"
           ]
@@ -189,7 +189,7 @@
         {
           "id": "day08-blk-13",
           "type": "warning",
-          "text": "Hai anti-pattern pho bien can tranh: (1) 'nuot' exception bang mot catch block rong khong lam gi ca, khien loi bien mat khong dau vet; (2) dung return hoac throw ben trong khoi finally, vi no se ghi de (che khuat) hoan toan gia tri return hoac exception dang duoc nem tu khoi try/catch tuong ung.",
+          "text": "Hai anti-pattern phổ biến cần tránh: (1) 'nuốt' exception bằng một catch block rỗng không làm gì cả, khiến lỗi biến mất không dấu vết; (2) dùng return hoặc throw bên trong khối finally, vì nó sẽ ghi đè (che khuất) hoàn toàn giá trị return hoặc exception đang được ném từ khối try/catch tương ứng.",
           "citations": [
             "day08-src-11"
           ]
@@ -203,7 +203,7 @@
         {
           "id": "day08-blk-14",
           "type": "paragraph",
-          "text": "Cu phap try-with-resources (tu Java 7) cho phep khai bao resource (kieu AutoCloseable) ngay trong ngoac don sau tu khoa try; resource se duoc tu dong dong (goi close()) khi khoi try ket thuc, ke ca khi co exception xay ra, khong can khoi finally thu cong.",
+          "text": "Cú pháp try-with-resources (từ Java 7) cho phép khai báo resource (kiểu AutoCloseable) ngay trong ngoặc đơn sau từ khóa try; resource sẽ được tự động đóng (gọi close()) khi khối try kết thúc, kể cả khi có exception xảy ra, không cần khối finally thủ công.",
           "citations": [
             "day08-src-12"
           ]
@@ -211,7 +211,7 @@
         {
           "id": "day08-blk-15",
           "type": "paragraph",
-          "text": "Mot khoi try-with-resources co the khai bao nhieu resource cung luc, phan cach nhau bang dau cham phay.",
+          "text": "Một khối try-with-resources có thể khai báo nhiều resource cùng lúc, phân cách nhau bằng dấu chấm phẩy.",
           "citations": [
             "day08-src-13"
           ]
@@ -230,7 +230,7 @@
         {
           "id": "day08-blk-17",
           "type": "note",
-          "text": "Thu tu dong resource nguoc voi thu tu khai bao: resource khai bao sau cung se duoc dong truoc, resource khai bao dau tien duoc dong sau cung.",
+          "text": "Thứ tự đóng resource ngược với thứ tự khai báo: resource khai báo sau cùng sẽ được đóng trước, resource khai báo đầu tiên được đóng sau cùng.",
           "citations": [
             "day08-src-15"
           ]
@@ -239,41 +239,41 @@
     }
   ],
   "commonMistakes": [
-    "Bat exception chung chung bang catch (Exception e) roi bo qua (nuot loi) thay vi xu ly hoac re-throw dung loai exception cu the.",
-    "Dung return/throw ben trong khoi finally, vo tinh che mat gia tri hoac exception that su cua khoi try/catch.",
-    "Khai bao kieu nguyen thuy (int, double) lam type argument cho generic (vi du List<int>) - Java khong cho phep vi type erasure chi hoat dong voi kieu tham chieu."
+    "Bắt exception chung chung bằng catch (Exception e) rồi bỏ qua (nuốt lỗi) thay vì xử lý hoặc re-throw đúng loại exception cụ thể.",
+    "Dùng return/throw bên trong khối finally, vô tình che mất giá trị hoặc exception thực sự của khối try/catch.",
+    "Khai báo kiểu nguyên thủy (int, double) làm type argument cho generic (ví dụ List<int>) — Java không cho phép vì type erasure chỉ hoạt động với kiểu tham chiếu."
   ],
   "practices": [
     {
       "id": "day08-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Dieu gi phan biet checked exception voi unchecked exception (RuntimeException)?",
+      "prompt": "Điều gì phân biệt checked exception với unchecked exception (RuntimeException)?",
       "choices": [
         {
           "id": "day08-prac-1-a",
-          "text": "Checked exception bat buoc khai bao throws hoac try-catch, duoc kiem tra luc bien dich; unchecked thi khong"
+          "text": "Checked exception bắt buộc khai báo throws hoặc try-catch, được kiểm tra lúc biên dịch; unchecked thì không"
         },
         {
           "id": "day08-prac-1-b",
-          "text": "Checked exception chi xay ra luc runtime, unchecked chi xay ra luc bien dich"
+          "text": "Checked exception chỉ xảy ra lúc runtime, unchecked chỉ xảy ra lúc biên dịch"
         },
         {
           "id": "day08-prac-1-c",
-          "text": "Unchecked exception khong the duoc catch bang catch block"
+          "text": "Unchecked exception không thể được catch bằng catch block"
         },
         {
           "id": "day08-prac-1-d",
-          "text": "Khong co su khac biet nao, day chi la quy uoc dat ten"
+          "text": "Không có sự khác biệt nào, đây chỉ là quy ước đặt tên"
         }
       ],
       "correctChoiceIds": [
         "day08-prac-1-a"
       ],
-      "hint": "Xem lai phan phan cap Throwable -> Exception -> RuntimeException.",
+      "hint": "Xem lại phần phân cấp Throwable -> Exception -> RuntimeException.",
       "solution": "day08-prac-1-a",
-      "explanation": "Checked exception (ke thua Exception, khong qua RuntimeException) bi trinh bien dich bat buoc xu ly; unchecked exception (ke thua RuntimeException) thi khong.",
-      "rubric": "Chon dung dinh nghia checked vs unchecked.",
+      "explanation": "Checked exception (kế thừa Exception, không qua RuntimeException) bị trình biên dịch bắt buộc xử lý; unchecked exception (kế thừa RuntimeException) thì không.",
+      "rubric": "Chọn đúng định nghĩa checked vs unchecked.",
       "sourceUsage": [
         "day08-src-10"
       ]
@@ -282,32 +282,32 @@
       "id": "day08-prac-2",
       "type": "predict-output",
       "interaction": "multiple-choice",
-      "prompt": "Trong mot khoi try-with-resources khai bao 'try (A a = new A(); B b = new B()) { ... }', resource nao duoc dong (close()) truoc?",
+      "prompt": "Trong một khối try-with-resources khai báo 'try (A a = new A(); B b = new B()) { ... }', resource nào được đóng (close()) trước?",
       "choices": [
         {
           "id": "day08-prac-2-a",
-          "text": "b (resource khai bao sau cung duoc dong truoc)"
+          "text": "b (resource khai báo sau cùng được đóng trước)"
         },
         {
           "id": "day08-prac-2-b",
-          "text": "a (resource khai bao dau tien duoc dong truoc)"
+          "text": "a (resource khai báo đầu tiên được đóng trước)"
         },
         {
           "id": "day08-prac-2-c",
-          "text": "Ca hai dong dong thoi, khong co thu tu xac dinh"
+          "text": "Cả hai đóng đồng thời, không có thứ tự xác định"
         },
         {
           "id": "day08-prac-2-d",
-          "text": "Khong resource nao duoc tu dong dong"
+          "text": "Không resource nào được tự động đóng"
         }
       ],
       "correctChoiceIds": [
         "day08-prac-2-a"
       ],
-      "hint": "Thu tu dong nguoc voi thu tu khai bao.",
+      "hint": "Thứ tự đóng ngược với thứ tự khai báo.",
       "solution": "day08-prac-2-a",
-      "explanation": "try-with-resources dong resource theo thu tu nguoc lai voi thu tu khai bao: b duoc dong truoc, a duoc dong sau.",
-      "rubric": "Chon dung resource duoc dong truoc.",
+      "explanation": "try-with-resources đóng resource theo thứ tự ngược lại với thứ tự khai báo: b được đóng trước, a được đóng sau.",
+      "rubric": "Chọn đúng resource được đóng trước.",
       "sourceUsage": [
         "day08-src-15"
       ]
@@ -316,33 +316,33 @@
       "id": "day08-prac-3",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot generic method 'static <T extends Comparable<T>> T min(List<T> items)' tra ve phan tu nho nhat trong danh sach (gia dinh danh sach khong rong).",
+      "prompt": "Viết một generic method 'static <T extends Comparable<T>> T min(List<T> items)' trả về phần tử nhỏ nhất trong danh sách (giả định danh sách không rỗng).",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung compareTo() de so sanh tung phan tu, giu lai phan tu nho nhat da thay.",
+      "hint": "Dùng compareTo() để so sánh từng phần tử, giữ lại phần tử nhỏ nhất đã thấy.",
       "solution": "static <T extends Comparable<T>> T min(List<T> items) {\n    T smallest = items.get(0);\n    for (T item : items) {\n        if (item.compareTo(smallest) < 0) {\n            smallest = item;\n        }\n    }\n    return smallest;\n}",
-      "explanation": "Bounded generic method dam bao T co the so sanh duoc (Comparable<T>) tai thoi diem bien dich.",
-      "rubric": "Danh gia method dung bounded type parameter dung, duyet toan bo danh sach, tra ve dung phan tu nho nhat.",
+      "explanation": "Bounded generic method đảm bảo T có thể so sánh được (Comparable<T>) tại thời điểm biên dịch.",
+      "rubric": "Đánh giá method dùng bounded type parameter đúng, duyệt toàn bộ danh sách, trả về đúng phần tử nhỏ nhất.",
       "sourceUsage": []
     },
     {
       "id": "day08-prac-4",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Giai thich type erasure anh huong the nao toi viec khong the tao 'new T[10]' hoac 'new ArrayList<Integer>()[5]' (mang cua kieu generic) trong Java.",
+      "prompt": "Giải thích type erasure ảnh hưởng thế nào tới việc không thể tạo 'new T[10]' hoặc 'new ArrayList<Integer>()[5]' (mảng của kiểu generic) trong Java.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Sau type erasure, trinh bien dich khong con biet T la kieu gi luc runtime nen khong the cap phat mang dung kieu.",
-      "solution": "Vi type erasure xoa het thong tin kieu generic cu the sau khi bien dich, JVM luc runtime khong biet T thuc su la kieu gi de tao mang dung kieu do (mang trong Java can biet kieu phan tu cu the luc tao) - nen Java cam truc tiep 'new T[]' va 'new List<X>[]'.",
-      "explanation": "Type erasure la ly do sau xa cua nhieu han che ky la trong generics ma lap trinh vien Java hay gap.",
-      "rubric": "Danh gia hoc vien lien ket dung type erasure voi han che tao mang generic.",
+      "hint": "Sau type erasure, trình biên dịch không còn biết T là kiểu gì lúc runtime nên không thể cấp phát mảng đúng kiểu.",
+      "solution": "Vì type erasure xóa hết thông tin kiểu generic cụ thể sau khi biên dịch, JVM lúc runtime không biết T thực sự là kiểu gì để tạo mảng đúng kiểu đó (mảng trong Java cần biết kiểu phần tử cụ thể lúc tạo) — nên Java cấm trực tiếp 'new T[]' và 'new List<X>[]'.",
+      "explanation": "Type erasure là lý do sâu xa của nhiều hạn chế kỳ lạ trong generics mà lập trình viên Java hay gặp.",
+      "rubric": "Đánh giá học viên liên kết đúng type erasure với hạn chế tạo mảng generic.",
       "sourceUsage": []
     }
   ],
   "syllabusAssignments": [],
   "enhancedExercises": [
-    "Viet mot custom exception hierarchy 3 tang (vi du: AppException -> ValidationException -> MissingFieldException) va mot method minh hoa catch dung tung tang.",
-    "Viet mot lop tu tao cai dat AutoCloseable, mo mot 'ket noi' gia lap trong constructor va dong no trong close(), roi dung trong try-with-resources voi 3 resource cung luc."
+    "Viết một custom exception hierarchy 3 tầng (ví dụ: AppException -> ValidationException -> MissingFieldException) và một method minh họa catch đúng từng tầng.",
+    "Viết một lớp tự tạo cài đặt AutoCloseable, mở một 'kết nối' giả lập trong constructor và đóng nó trong close(), rồi dùng trong try-with-resources với 3 resource cùng lúc."
   ],
   "references": [
     {
@@ -381,25 +381,25 @@
       "id": "day08-src-1",
       "resourceId": "res-e3b2dcb60e96",
       "locator": "Lesson: Generics (Updated) — đoạn giới thiệu",
-      "topic": "Muc dich bai hoc Generics"
+      "topic": "Mục đích bài học Generics"
     },
     {
       "id": "day08-src-2",
       "resourceId": "res-8abee0bfd5a7",
       "locator": "§2. The Need for Generics",
-      "topic": "Ly do co generics"
+      "topic": "Lý do có generics"
     },
     {
       "id": "day08-src-3",
       "resourceId": "res-8abee0bfd5a7",
       "locator": "§3. Generic Methods; §3.1. Bounded Generics",
-      "topic": "Generic method va bounded type"
+      "topic": "Generic method và bounded type"
     },
     {
       "id": "day08-src-4",
       "resourceId": "res-8abee0bfd5a7",
       "locator": "§4. Using Wildcards With Generics",
-      "topic": "Wildcard trong generics"
+      "topic": "Wildcard (dấu hỏi ?) trong generics"
     },
     {
       "id": "day08-src-5",
@@ -411,25 +411,25 @@
       "id": "day08-src-6",
       "resourceId": "res-899383bc8d09",
       "locator": "Trail: Collections — mục lục",
-      "topic": "Noi dung Trail Collections cua Oracle"
+      "topic": "Nội dung Trail Collections của Oracle"
     },
     {
       "id": "day08-src-7",
       "resourceId": "res-12fa3a9d4910",
       "locator": "Java Collections Series — mục lục theo nhóm",
-      "topic": "Cau truc trang tong hop Collections Series"
+      "topic": "Cấu trúc trang tổng hợp Collections Series"
     },
     {
       "id": "day08-src-8",
       "resourceId": "res-74dcb3852a23",
       "locator": "Lesson: Exceptions — mục lục",
-      "topic": "Noi dung bai hoc Exceptions"
+      "topic": "Nội dung bài học Exceptions"
     },
     {
       "id": "day08-src-9",
       "resourceId": "res-30d834f8fef0",
       "locator": "§3. Exception Hierarchy",
-      "topic": "Phan cap Exception"
+      "topic": "Phân cấp Exception"
     },
     {
       "id": "day08-src-10",
@@ -441,31 +441,31 @@
       "id": "day08-src-11",
       "resourceId": "res-30d834f8fef0",
       "locator": "§6. Anti-Patterns",
-      "topic": "Anti-pattern: nuot exception va return/throw trong finally"
+      "topic": "Anti-pattern: nuốt exception và return/throw trong finally"
     },
     {
       "id": "day08-src-12",
       "resourceId": "res-9762250d04d9",
       "locator": "§2. Using try-with-resources",
-      "topic": "Cu phap try-with-resources co ban"
+      "topic": "Cú pháp try-with-resources cơ bản"
     },
     {
       "id": "day08-src-13",
       "resourceId": "res-9762250d04d9",
       "locator": "§4. try-with-resources With Multiple Resources",
-      "topic": "Nhieu resource trong mot try"
+      "topic": "Nhiều resource trong một try"
     },
     {
       "id": "day08-src-14",
       "resourceId": "res-9762250d04d9",
       "locator": "§5. A Custom Resource With AutoCloseable",
-      "topic": "Tu tao resource voi AutoCloseable"
+      "topic": "Tự tạo resource với AutoCloseable"
     },
     {
       "id": "day08-src-15",
       "resourceId": "res-9762250d04d9",
       "locator": "§6. Resource Closing Order",
-      "topic": "Thu tu dong resource"
+      "topic": "Thứ tự đóng resource"
     }
   ],
   "authoring": {

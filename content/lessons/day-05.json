@@ -73,7 +73,7 @@
           "id": "day05-blk-4",
           "type": "code",
           "language": "java",
-          "code": "class Animal {\n    protected String name;\n\n    public Animal(String name) {\n        this.name = name;\n    }\n\n    public String makeSound() {\n        return name + \" makes a generic sound\";\n    }\n}\n\nclass Dog extends Animal {\n    public Dog(String name) {\n        super(name); // goi constructor cua Animal\n    }\n\n    @Override\n    public String makeSound() {\n        return name + \" barks\"; // truy cap field ke thua tu Animal\n    }\n}\n",
+          "code": "class Animal {\n    protected String name;\n\n    public Animal(String name) {\n        this.name = name;\n    }\n\n    public String makeSound() {\n        return name + \" makes a generic sound\";\n    }\n}\n\nclass Dog extends Animal {\n    public Dog(String name) {\n        super(name); // gọi constructor của Animal\n    }\n\n    @Override\n    public String makeSound() {\n        return name + \" barks\"; // truy cập field kế thừa từ Animal\n    }\n}\n",
           "compile": true,
           "citations": [
             "day05-src-1",
@@ -98,7 +98,7 @@
           "id": "day05-blk-6",
           "type": "code",
           "language": "java",
-          "code": "class Base {\n    protected int level = 1;\n}\n\nclass Advanced extends Base {\n    protected int level = 2; // che field 'level' cua Base\n\n    public void printLevels() {\n        System.out.println(\"this.level = \" + this.level);   // 2\n        System.out.println(\"super.level = \" + super.level); // 1\n    }\n}\n",
+          "code": "class Base {\n    protected int level = 1;\n}\n\nclass Advanced extends Base {\n    protected int level = 2; // che field 'level' của Base\n\n    public void printLevels() {\n        System.out.println(\"this.level = \" + this.level);   // 2\n        System.out.println(\"super.level = \" + super.level); // 1\n    }\n}\n",
           "compile": true,
           "citations": [
             "day05-src-4"
@@ -130,7 +130,7 @@
           "id": "day05-blk-9",
           "type": "code",
           "language": "java",
-          "code": "class Shape {\n    public double area() {\n        return 0;\n    }\n\n    // method overloading: cung ten describe, khac danh sach tham so\n    public String describe() {\n        return \"Shape with area \" + area();\n    }\n\n    public String describe(String prefix) {\n        return prefix + \": \" + describe();\n    }\n}\n\nclass Circle extends Shape {\n    private final double radius;\n\n    public Circle(double radius) {\n        this.radius = radius;\n    }\n\n    @Override // method overriding: cung chu ky voi Shape.area()\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nclass PolymorphismDemo {\n    public static void main(String[] args) {\n        Shape shape = new Circle(2.0); // bien khai bao kieu Shape\n        System.out.println(shape.describe()); // goi Circle.area() luc runtime\n    }\n}\n",
+          "code": "class Shape {\n    public double area() {\n        return 0;\n    }\n\n    // method overloading: cung ten describe, khac danh sach tham so\n    public String describe() {\n        return \"Shape with area \" + area();\n    }\n\n    public String describe(String prefix) {\n        return prefix + \": \" + describe();\n    }\n}\n\nclass Circle extends Shape {\n    private final double radius;\n\n    public Circle(double radius) {\n        this.radius = radius;\n    }\n\n    @Override // method overriding: cùng chữ ký với Shape.area()\n    public double area() {\n        return Math.PI * radius * radius;\n    }\n}\n\nclass PolymorphismDemo {\n    public static void main(String[] args) {\n        Shape shape = new Circle(2.0); // bien khai bao kieu Shape\n        System.out.println(shape.describe()); // goi Circle.area() luc runtime\n    }\n}\n",
           "compile": true,
           "citations": [
             "day05-src-5",
@@ -195,7 +195,7 @@
           "id": "day05-blk-15",
           "type": "code",
           "language": "java",
-          "code": "abstract class Vehicle {\n    protected final String plateNumber;\n\n    protected Vehicle(String plateNumber) {\n        this.plateNumber = plateNumber;\n    }\n\n    public abstract double calculateTollFee(); // bat buoc lop con cai dat\n\n    public String getPlateNumber() { // code dung chung, khong can override\n        return plateNumber;\n    }\n}\n\nclass Motorbike extends Vehicle {\n    public Motorbike(String plateNumber) {\n        super(plateNumber);\n    }\n\n    @Override\n    public double calculateTollFee() {\n        return 5000.0;\n    }\n}\n",
+          "code": "abstract class Vehicle {\n    protected final String plateNumber;\n\n    protected Vehicle(String plateNumber) {\n        this.plateNumber = plateNumber;\n    }\n\n    public abstract double calculateTollFee(); // bat buoc lop con cai dat\n\n    public String getPlateNumber() { // code dùng chung, không cần override\n        return plateNumber;\n    }\n}\n\nclass Motorbike extends Vehicle {\n    public Motorbike(String plateNumber) {\n        super(plateNumber);\n    }\n\n    @Override\n    public double calculateTollFee() {\n        return 5000.0;\n    }\n}\n",
           "compile": true,
           "citations": [
             "day05-src-8",
@@ -303,7 +303,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Xem lại ví dụ Vehicle/Motorbike ở phần Abstract class — abstract method bắt buộc lớp con cài đặt, biến khai báo kiểu lớp cha nhưng gọi đúng phiên bản lớp con lúc runtime.",
-      "solution": "public abstract class Employee {\n    public abstract double calculateBonus();\n}\n\npublic class SalesEmployee extends Employee {\n    @Override\n    public double calculateBonus() {\n        return 1000.0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Employee e = new SalesEmployee(); // upcast\n        System.out.println(e.calculateBonus()); // goi dung SalesEmployee luc runtime\n    }\n}",
+      "solution": "public abstract class Employee {\n    public abstract double calculateBonus();\n}\n\npublic class SalesEmployee extends Employee {\n    @Override\n    public double calculateBonus() {\n        return 1000.0;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Employee e = new SalesEmployee(); // upcast\n        System.out.println(e.calculateBonus()); // gọi đúng SalesEmployee lúc runtime\n    }\n}",
       "explanation": "Lời giải mẫu định nghĩa đúng abstract method không thân trong Employee, class con override đầy đủ, và minh họa upcast (biến kiểu Employee nhưng gọi đúng phiên bản đã override lúc runtime).",
       "rubric": "Đạt yêu cầu nếu abstract class có abstract method hợp lệ, class con override đúng, và đoạn main thể hiện đúng polymorphism động qua biến khai báo kiểu lớp cha.",
       "sourceUsage": [

@@ -29,24 +29,24 @@
   "group": "spring",
   "kind": "theory",
   "title": "Controller & Request/Response",
-  "summary": "Xay dung REST controller voi @RestController/@RequestMapping va cac shortcut theo HTTP method; cu phap URI pattern va @PathVariable; @RequestParam va params attribute; loi Ambiguous Mapping; ResponseEntity va cac builder tinh; content negotiation qua consumes/produces; khi nao dung @ResponseBody/@ResponseStatus thay vi ResponseEntity.",
+  "summary": "Xây dựng REST controller với @RestController/@RequestMapping và các shortcut theo HTTP method; cú pháp URI pattern và @PathVariable; @RequestParam và params attribute; lỗi Ambiguous Mapping; ResponseEntity và các builder tĩnh; content negotiation qua consumes/produces; khi nào dùng @ResponseBody/@ResponseStatus thay vì ResponseEntity.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO6"
   ],
   "prerequisites": [
-    "Da hoc Day 13-15 (IoC, DI, @Configuration/@Bean, @ConfigurationProperties) - controller cung la bean duoc Spring quan ly."
+    "Đã học Day 13-15 (IoC, DI, @Configuration/@Bean, @ConfigurationProperties) — controller cũng là bean được Spring quản lý."
   ],
   "outcomes": [
-    "Khai bao dung mapping bang @RequestMapping va cac shortcut theo HTTP method.",
-    "Bat va rang buoc kieu bien path/query bang @PathVariable/@RequestParam, tranh loi Ambiguous Mapping.",
-    "Dung ResponseEntity de kiem soat status/headers/body cua response.",
-    "Chon dung giua ResponseEntity, @ResponseBody, @ResponseStatus theo tung tinh huong."
+    "Khai báo đúng mapping bằng @RequestMapping và các shortcut theo HTTP method.",
+    "Bắt và ràng buộc kiểu biến path/query bằng @PathVariable/@RequestParam, tránh lỗi Ambiguous Mapping.",
+    "Dùng ResponseEntity để kiểm soát status/headers/body của response.",
+    "Chọn đúng giữa ResponseEntity, @ResponseBody, @ResponseStatus theo từng tình huống."
   ],
   "sections": [
     {
       "id": "day16-sec-brief",
-      "title": "De bai va pham vi bai hoc",
+      "title": "Đề bài và phạm vi bài học",
       "blocks": [
         {
           "id": "day16-blk-1",
@@ -57,19 +57,19 @@
         {
           "id": "day16-blk-2",
           "type": "note",
-          "text": "Bai mo dau Unit 6 (Spring MVC/REST): xay dung controller voi @RestController, khai bao mapping bang @RequestMapping va cac shortcut theo HTTP method, xu ly tham so tu path/query, dung ResponseEntity de kiem soat toan bo HTTP response, va content negotiation qua consumes/produces. Lich hoc ngay nay ghi 'Assignment' nhung khong co de bai chi tiet rieng - hoc vien on tap va thuc hanh lai vi du trong bai.",
+          "text": "Bài mở đầu Unit 6 (Spring MVC/REST): xây dựng controller với @RestController, khai báo mapping bằng @RequestMapping và các shortcut theo HTTP method, xử lý tham số từ path/query, dùng ResponseEntity để kiểm soát toàn bộ HTTP response, và content negotiation qua consumes/produces. Lịch học ngày nay ghi 'Assignment' nhưng không có đề bài chi tiết riêng — học viên ôn tập và thực hành lại ví dụ trong bài.",
           "citations": []
         }
       ]
     },
     {
       "id": "day16-sec-mapping",
-      "title": "@RequestMapping va cac shortcut",
+      "title": "@RequestMapping và các shortcut",
       "blocks": [
         {
           "id": "day16-blk-3",
           "type": "paragraph",
-          "text": "@RequestMapping co the dat o cap class (mapping dung chung, vi du prefix /api/products) hoac method (endpoint cu the); cac annotation rut gon @GetMapping/@PostMapping/@PutMapping/@DeleteMapping/@PatchMapping duoc cung cap vi phan lon method nen gan voi mot HTTP method cu the thay vi khop moi method nhu @RequestMapping mac dinh. Neu khong chi dinh method, mapping se khop voi moi HTTP method gui toi path do.",
+          "text": "@RequestMapping có thể đặt ở cấp class (mapping dùng chung, ví dụ prefix /api/products) hoặc method (endpoint cụ thể); các annotation rút gọn @GetMapping/@PostMapping/@PutMapping/@DeleteMapping/@PatchMapping được cung cấp vì phần lớn method nên gắn với một HTTP method cụ thể thay vì khớp mọi method như @RequestMapping mặc định. Nếu không chỉ định method, mapping sẽ khớp với mọi HTTP method gửi tới path đó.",
           "citations": [
             "day16-src-1",
             "day16-src-5"
@@ -79,29 +79,29 @@
           "id": "day16-blk-4",
           "type": "table",
           "columns": [
-            "Ky hieu",
-            "Y nghia"
+            "Ký hiệu",
+            "Ý nghĩa"
           ],
           "rows": [
             [
               "?",
-              "Khop dung mot ky tu bat ky trong mot segment"
+              "Khớp đúng một ký tự bất kỳ trong một segment"
             ],
             [
               "*",
-              "Khop khong hoac nhieu ky tu trong mot segment"
+              "Khớp không hoặc nhiều ký tự trong một segment"
             ],
             [
               "**",
-              "Khop khong hoac nhieu segment"
+              "Khớp không hoặc nhiều segment"
             ],
             [
               "{name}",
-              "Bat bien path segment, truy cap qua @PathVariable"
+              "Bắt biến path segment, truy cập qua @PathVariable"
             ],
             [
               "{name:regex}",
-              "Bat bien path segment theo bieu thuc chinh quy, vi du {id:[\\d]+} chi khop gia tri so"
+              "Bắt biến path segment theo biểu thức chính quy, ví dụ {id:[\\d]+} chỉ khớp giá trị số"
             ]
           ],
           "citations": [
@@ -121,18 +121,18 @@
             "day16-src-3",
             "day16-src-4"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         }
       ]
     },
     {
       "id": "day16-sec-params",
-      "title": "Xu ly tham so: @PathVariable va @RequestParam",
+      "title": "Xử lý tham số: @PathVariable và @RequestParam",
       "blocks": [
         {
           "id": "day16-blk-6",
           "type": "paragraph",
-          "text": "@PathVariable bat mot hoac nhieu phan cua URI (vi du /foos/{fooid}/bar/{barid}) va tu dong chuyen kieu (int, long, Date, ...), nem TypeMismatchException neu khong chuyen duoc; @RequestParam(\"id\") trich gia tri query parameter truc tiep. @RequestMapping cung co the khai bao them params=\"id\" hoac params={\"id\",\"second\"} de chi khop khi request co (cac) parameter do; request khop nhieu dieu kien nhat se duoc chon.",
+          "text": "@PathVariable bắt một hoặc nhiều phần của URI (ví dụ /foos/{fooid}/bar/{barid}) và tự động chuyển kiểu (int, long, Date, ...), ném TypeMismatchException nếu không chuyển được; @RequestParam(\"id\") trích giá trị query parameter trực tiếp. @RequestMapping cũng có thể khai báo thêm params=\"id\" hoặc params={\"id\",\"second\"} để chỉ khớp khi request có (các) parameter đó; request khớp nhiều điều kiện nhất sẽ được chọn.",
           "citations": [
             "day16-src-5",
             "day16-src-6"
@@ -141,7 +141,7 @@
         {
           "id": "day16-blk-7",
           "type": "warning",
-          "text": "Khi hai method co cung HTTP method, URL, parameters, headers va media type, Spring nem IllegalStateException bao ambiguous mapping ngay luc khoi dong ung dung (khong phai luc goi request) - khac phuc bang cach phan biet qua produces/consumes khac nhau hoac doi URL cua mot trong hai method.",
+          "text": "Khi hai method có cùng HTTP method, URL, parameters, headers và media type, Spring ném IllegalStateException báo ambiguous mapping ngay lúc khởi động ứng dụng (không phải lúc gọi request) — khắc phục bằng cách phân biệt qua produces/consumes khác nhau hoặc đổi URL của một trong hai method.",
           "citations": [
             "day16-src-7"
           ]
@@ -150,12 +150,12 @@
     },
     {
       "id": "day16-sec-response",
-      "title": "ResponseEntity va content negotiation",
+      "title": "ResponseEntity và content negotiation",
       "blocks": [
         {
           "id": "day16-blk-8",
           "type": "paragraph",
-          "text": "ResponseEntity dai dien cho toan bo HTTP response gom status code, headers va body; controller tra ve ResponseEntity de Spring tu dong dung response tuong ung, kieu generic nen body co the la bat ky kieu nao. ResponseEntity cung cap cac phuong thuc tinh tien dung nhu ok(), badRequest(), notFound(), status(HttpStatus) ket hop .body(T) de dung response ngan gon thay vi goi constructor truc tiep.",
+          "text": "ResponseEntity đại diện cho toàn bộ HTTP response gồm status code, headers và body; controller trả về ResponseEntity để Spring tự động dựng response tương ứng, kiểu generic nên body có thể là bất kỳ kiểu nào. ResponseEntity cung cấp các phương thức tĩnh tiện dụng như ok(), badRequest(), notFound(), status(HttpStatus) kết hợp .body(T) để dựng response ngắn gọn thay vì gọi constructor trực tiếp.",
           "citations": [
             "day16-src-8",
             "day16-src-9"
@@ -165,17 +165,17 @@
           "id": "day16-blk-9",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\nclass OrderQueryController {\n\n    // @ResponseStatus phu hop khi chi can dat ma trang thai co dinh cho\n    // response thanh cong, khong can dung ca ResponseEntity.\n    @GetMapping(\"/api/orders/{id}/status\")\n    @ResponseStatus(HttpStatus.OK)\n    @ResponseBody\n    String status(@PathVariable String id) {\n        return \"PENDING\";\n    }\n}\n",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\nclass OrderQueryController {\n\n    // @ResponseStatus phù hợp khi chỉ cần đặt mã trạng thái cố định cho\n    // response thành công, không cần dùng cả ResponseEntity.\n    @GetMapping(\"/api/orders/{id}/status\")\n    @ResponseStatus(HttpStatus.OK)\n    @ResponseBody\n    String status(@PathVariable String id) {\n        return \"PENDING\";\n    }\n}\n",
           "compile": false,
           "citations": [
             "day16-src-10"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
           "id": "day16-blk-10",
           "type": "note",
-          "text": "Khong nen lam dung ResponseEntity cho moi truong hop: dung @ResponseBody khi chi can tra du lieu (khong can kiem soat status code/headers), dung @ResponseStatus khi chi can dat ma trang thai tuy bien cho response thanh cong hoac exception handler. Thuoc tinh consumes thu hep mapping theo Content-Type cua request, produces thu hep theo Accept header/kieu noi dung tra ve; ca hai ho tro phu dinh (vi du !text/plain) va khi khai bao o method se override (khong cong don) gia tri khai bao o class.",
+          "text": "Không nên lạm dụng ResponseEntity cho mọi trường hợp: dùng @ResponseBody khi chỉ cần trả dữ liệu (không cần kiểm soát status code/headers), dùng @ResponseStatus khi chỉ cần đặt mã trạng thái tùy chỉnh cho response thành công hoặc exception handler. Thuộc tính consumes thu hẹp mapping theo Content-Type của request, produces thu hẹp theo Accept header/kiểu nội dung trả về; cả hai hỗ trợ phủ định (ví dụ !text/plain) và khi khai báo ở method sẽ override (không cộng dồn) giá trị khai báo ở class.",
           "citations": [
             "day16-src-4",
             "day16-src-10"
@@ -185,16 +185,16 @@
     }
   ],
   "commonMistakes": [
-    "Khai bao hai method mapping trung hoan toan (cung method/URL/params/headers/media type), gay IllegalStateException luc khoi dong.",
-    "Dung @PathVariable ma khong rang buoc kieu, nhan TypeMismatchException khi client gui gia tri sai kieu.",
-    "Lam dung ResponseEntity cho moi endpoint don gian thay vi @ResponseBody/@ResponseStatus."
+    "Khai báo hai method mapping trùng hoàn toàn (cùng method/URL/params/headers/media type), gây IllegalStateException lúc khởi động.",
+    "Dùng @PathVariable mà không ràng buộc kiểu, nhận TypeMismatchException khi client gửi giá trị sai kiểu.",
+    "Lạm dụng ResponseEntity cho mọi endpoint đơn giản thay vì @ResponseBody/@ResponseStatus."
   ],
   "practices": [
     {
       "id": "day16-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Pattern URI nao chi khop dung mot bien path segment duoc dung kieu so (vi du chi chap nhan /products/42, khong chap nhan /products/abc)?",
+      "prompt": "Pattern URI nào chỉ khớp đúng một biến path segment được dùng kiểu số (ví dụ chỉ chấp nhận /products/42, không chấp nhận /products/abc)?",
       "choices": [
         {
           "id": "day16-prac-1-a",
@@ -216,10 +216,10 @@
       "correctChoiceIds": [
         "day16-prac-1-a"
       ],
-      "hint": "Doc lai bang cu phap URI pattern trong bai.",
+      "hint": "Đọc lại bảng cú pháp URI pattern trong bài.",
       "solution": "day16-prac-1-a",
-      "explanation": "{name:regex} bat bien path segment theo bieu thuc chinh quy; {id:[\\d]+} chi khop gia tri gom toan chu so, cac lua chon con lai (*, **, ?) chi khop ky tu/segment bat ky, khong rang buoc kieu du lieu.",
-      "rubric": "Chon dung cu phap {name:regex}, phan biet voi cac wildcard * ** ? khong rang buoc kieu.",
+      "explanation": "{name:regex} bắt biến path segment theo biểu thức chính quy; {id:[\\d]+} chỉ khớp giá trị gồm toàn chữ số, các lựa chọn còn lại (*, **, ?) chỉ khớp ký tự/segment bất kỳ, không ràng buộc kiểu dữ liệu.",
+      "rubric": "Chọn đúng cú pháp {name:regex}, phân biệt với các wildcard * ** ? không ràng buộc kiểu.",
       "sourceUsage": [
         "day16-src-2",
         "day16-src-3"
@@ -229,13 +229,13 @@
       "id": "day16-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot method controller GET /api/products/{id} tra ve ResponseEntity<Product>: 200 kem body neu tim thay, 404 rong neu khong.",
+      "prompt": "Viết một method controller GET /api/products/{id} trả về ResponseEntity<Product>: 200 kèm body nếu tìm thấy, 404 rỗng nếu không.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung repository.findById(id) tra ve Optional roi map/orElseGet nhu vi du trong bai.",
+      "hint": "Dùng repository.findById(id) trả về Optional rồi map/orElseGet như ví dụ trong bài.",
       "solution": "@GetMapping(\"/{id}\")\nResponseEntity<Product> findById(@PathVariable long id) {\n    return repository.findById(id)\n            .map(ResponseEntity::ok)\n            .orElseGet(() -> ResponseEntity.notFound().build());\n}",
-      "explanation": "Ap dung lai mau map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build()) tu vi du trong bai.",
-      "rubric": "Danh gia dung: co @PathVariable, tra 200 kem body khi tim thay, 404 rong khi khong tim thay.",
+      "explanation": "Áp dụng lại mẫu map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build()) từ ví dụ trong bài.",
+      "rubric": "Đánh giá đúng: có @PathVariable, trả 200 kèm body khi tìm thấy, 404 rỗng khi không tìm thấy.",
       "sourceUsage": [
         "day16-src-8",
         "day16-src-9"
@@ -245,13 +245,13 @@
       "id": "day16-prac-3",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Hai method controller cung nhan GET /api/items, khong khac gi ve params/headers/media type. Dieu gi xay ra luc khoi dong ung dung va cach khac phuc?",
+      "prompt": "Hai method controller cùng nhận GET /api/items, không khác gì về params/headers/media type. Điều gì xảy ra lúc khởi động ứng dụng và cách khắc phục?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Xem lai phan canh bao ve Ambiguous Mapping trong bai.",
-      "solution": "Spring nem IllegalStateException bao ambiguous mapping ngay luc khoi dong ung dung. Khac phuc bang cach phan biet hai method qua produces/consumes khac nhau, hoac doi URL cua mot trong hai method de chung khong con trung nhau hoan toan.",
-      "explanation": "Nho lai loi ambiguous mapping xay ra luc khoi dong, khong phai luc goi request.",
-      "rubric": "Danh gia hoc vien neu dung thoi diem loi xay ra va it nhat mot cach khac phuc hop ly.",
+      "hint": "Xem lại phần cảnh báo về Ambiguous Mapping trong bài.",
+      "solution": "Spring ném IllegalStateException báo ambiguous mapping ngay lúc khởi động ứng dụng. Khắc phục bằng cách phân biệt hai method qua produces/consumes khác nhau, hoặc đổi URL của một trong hai method để chúng không còn trùng nhau hoàn toàn.",
+      "explanation": "Nhớ lại lỗi ambiguous mapping xảy ra lúc khởi động, không phải lúc gọi request.",
+      "rubric": "Đánh giá học viên nêu đúng thời điểm lỗi xảy ra và ít nhất một cách khắc phục hợp lý.",
       "sourceUsage": [
         "day16-src-7"
       ]
@@ -260,13 +260,13 @@
       "id": "day16-prac-4",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Khi nao nen dung @ResponseStatus + @ResponseBody thay vi ResponseEntity cho mot endpoint?",
+      "prompt": "Khi nào nên dùng @ResponseStatus + @ResponseBody thay vì ResponseEntity cho một endpoint?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Xem lai phan 'Khong nen lam dung ResponseEntity' trong bai.",
-      "solution": "Nen dung khi endpoint chi can tra du lieu voi mot ma trang thai co dinh, khong can kiem soat dong (per-request) status code hay headers tuy bien - dung @ResponseBody de tra du lieu va @ResponseStatus de dat ma trang thai co dinh cho response thanh cong.",
-      "explanation": "Lien ket voi khuyen nghi khong lam dung ResponseEntity da neu trong bai.",
-      "rubric": "Danh gia hoc vien neu dung dieu kien: status co dinh, khong can dieu chinh dong theo tung request.",
+      "hint": "Xem lại phần 'Không nên lạm dụng ResponseEntity' trong bài.",
+      "solution": "Nên dùng khi endpoint chỉ cần trả dữ liệu với một mã trạng thái cố định, không cần kiểm soát động (per-request) status code hay headers tùy chỉnh — dùng @ResponseBody để trả dữ liệu và @ResponseStatus để đặt mã trạng thái cố định cho response thành công.",
+      "explanation": "Liên kết với khuyến nghị không lạm dụng ResponseEntity đã nêu trong bài.",
+      "rubric": "Đánh giá học viên nêu đúng điều kiện: status cố định, không cần điều chỉnh động theo từng request.",
       "sourceUsage": [
         "day16-src-10"
       ]
@@ -279,8 +279,8 @@
     }
   ],
   "enhancedExercises": [
-    "Them consumes/produces cho ProductController.create de chi chap nhan application/json va tra loi 415 voi Content-Type khac.",
-    "Viet test goi hai endpoint gay ambiguous mapping co chu y va sua bang produces khac nhau."
+    "Thêm consumes/produces cho ProductController.create để chỉ chấp nhận application/json và trả lỗi 415 với Content-Type khác.",
+    "Viết test gọi hai endpoint gây ambiguous mapping có chủ ý và sửa bằng produces khác nhau."
   ],
   "references": [
     {
@@ -298,7 +298,7 @@
     {
       "id": "day16-ref-3",
       "type": "internal",
-      "description": "Controller trong bai la bean duoc Spring quan ly nhu da hoc o Day 13-15."
+      "description": "Controller trong bài là bean được Spring quản lý như đã học ở Day 13-15."
     }
   ],
   "sourceUsage": [
@@ -306,61 +306,61 @@
       "id": "day16-src-1",
       "resourceId": "res-2aefb097db80",
       "locator": "§@RequestMapping",
-      "topic": "RequestMapping va cac shortcut theo HTTP method"
+      "topic": "RequestMapping và các shortcut theo HTTP method"
     },
     {
       "id": "day16-src-2",
       "resourceId": "res-2aefb097db80",
       "locator": "§URI patterns — bảng Pattern/Description/Example",
-      "topic": "Cu phap URI pattern"
+      "topic": "Cú pháp URI pattern"
     },
     {
       "id": "day16-src-3",
       "resourceId": "res-2aefb097db80",
       "locator": "§URI patterns — Captured URI variables; bảng {*path}",
-      "topic": "@PathVariable va kieu {*path}"
+      "topic": "@PathVariable và kiểu {*path}"
     },
     {
       "id": "day16-src-4",
       "resourceId": "res-2aefb097db80",
       "locator": "§Consumable Media Types; §Producible Media Types",
-      "topic": "Thu hep mapping theo consumes/produces"
+      "topic": "Thu hẹp mapping theo consumes/produces"
     },
     {
       "id": "day16-src-5",
       "resourceId": "res-d8a874d76b06",
       "locator": "§4. RequestMapping With Path Variables",
-      "topic": "@PathVariable don, nhieu bien va rang buoc regex"
+      "topic": "@PathVariable đơn, nhiều biến và ràng buộc regex"
     },
     {
       "id": "day16-src-6",
       "resourceId": "res-d8a874d76b06",
       "locator": "§5. RequestMapping With Request Parameters",
-      "topic": "@RequestParam va params attribute"
+      "topic": "@RequestParam và params attribute"
     },
     {
       "id": "day16-src-7",
       "resourceId": "res-d8a874d76b06",
       "locator": "§6.4. Ambiguous Mapping Error",
-      "topic": "Loi Ambiguous Mapping"
+      "topic": "Lỗi Ambiguous Mapping"
     },
     {
       "id": "day16-src-8",
       "resourceId": "res-06dd51e41e25",
       "locator": "§2. ResponseEntity",
-      "topic": "ResponseEntity la gi"
+      "topic": "ResponseEntity là gì"
     },
     {
       "id": "day16-src-9",
       "resourceId": "res-06dd51e41e25",
       "locator": "§2. ResponseEntity — static builder methods",
-      "topic": "Builder tinh cua ResponseEntity"
+      "topic": "Builder tĩnh của ResponseEntity"
     },
     {
       "id": "day16-src-10",
       "resourceId": "res-06dd51e41e25",
       "locator": "§3. Alternatives; §3.1 @ResponseBody; §3.2 @ResponseStatus",
-      "topic": "Khi nao khong can ResponseEntity"
+      "topic": "Khi nào không cần ResponseEntity"
     }
   ],
   "authoring": {

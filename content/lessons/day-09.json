@@ -30,24 +30,24 @@
   "group": "java",
   "kind": "lab",
   "title": "- Lab 3: Custom Collection & Exception Framework",
-  "summary": "Lab 3: tu cai dat SimpleArrayList<E> (mang dong) va SimpleHashMap<K,V> (separate chaining) cung mot he thong exception rieng cho tang truy cap du lieu, tong hop generics/collections/exception da hoc o Day 8.",
+  "summary": "Lab 3: tự cài đặt SimpleArrayList<E> (mảng động) và SimpleHashMap<K,V> (separate chaining) cùng một hệ thống exception riêng cho tầng truy cập dữ liệu, tổng hợp generics/collections/exception đã học ở Day 8.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO3"
   ],
   "prerequisites": [
-    "Da hoan thanh Day 8 (Generics, Collections Framework, Exception hierarchy, try-with-resources)."
+    "Đã hoàn thành Day 8 (Generics, Collections Framework, Exception hierarchy, try-with-resources)."
   ],
   "outcomes": [
-    "Tu cai dat mot cau truc du lieu generic (dynamic array) tu dau.",
-    "Tu cai dat mot hash map don gian dung separate chaining.",
-    "Thiet ke mot exception hierarchy rieng cho mot tang ung dung cu the.",
-    "Viet bo test dat do bao phu cao, gom ca nhanh loi."
+    "Tự cài đặt một cấu trúc dữ liệu generic (dynamic array) từ đầu.",
+    "Tự cài đặt một hash map đơn giản dùng separate chaining.",
+    "Thiết kế một exception hierarchy riêng cho một tầng ứng dụng cụ thể.",
+    "Viết bộ test đạt độ bao phủ cao, gồm cả nhánh lỗi."
   ],
   "sections": [
     {
       "id": "day09-sec-brief",
-      "title": "De bai: Custom Collection & Exception Framework",
+      "title": "Đề bài: Custom Collection & Exception Framework",
       "blocks": [
         {
           "id": "day09-blk-1",
@@ -58,19 +58,19 @@
         {
           "id": "day09-blk-2",
           "type": "note",
-          "text": "Lab nay tong hop truc tiep kien thuc Day 8: generics (SimpleArrayList<E>, SimpleHashMap<K,V> phai la kieu tham so hoa), Collections Framework (cai dat lai mot phan hanh vi cua List/Map tu dau) va exception hierarchy (thiet ke rieng mot nhanh exception cho tang truy cap du lieu).",
+          "text": "Lab này tổng hợp trực tiếp kiến thức Day 8: generics (SimpleArrayList<E>, SimpleHashMap<K,V> phải là kiểu tham số hóa), Collections Framework (cài đặt lại một phần hành vi của List/Map từ đầu) và exception hierarchy (thiết kế riêng một nhánh exception cho tầng truy cập dữ liệu).",
           "citations": []
         }
       ]
     },
     {
       "id": "day09-sec-design",
-      "title": "Phan ra thiet ke (guided decomposition)",
+      "title": "Phân rã thiết kế (guided decomposition)",
       "blocks": [
         {
           "id": "day09-blk-3",
           "type": "paragraph",
-          "text": "SimpleArrayList<E> nen dung generic type parameter E giong cach cac generic method/class da hoc o Day 8, de trinh bien dich kiem tra kieu phan tu ngay luc them/lay ra thay vi phai ep kieu tu Object.",
+          "text": "SimpleArrayList<E> nên dùng generic type parameter E giống cách các generic method/class đã học ở Day 8, để trình biên dịch kiểm tra kiểu phần tử ngay lúc thêm/lấy ra thay vì phải ép kiểu từ Object.",
           "citations": [
             "day09-src-1"
           ]
@@ -78,13 +78,13 @@
         {
           "id": "day09-blk-4",
           "type": "note",
-          "text": "Chu de 'separate chaining' (moi bucket cua hash map la mot danh sach lien ket cac Node<K,V>) la chi tiet cai dat noi bo cua hash table, khong duoc mo ta trong cac trang mo dau/muc luc Collections ma Day 9 duoc gan (Trail: Collections va Collections Series deu la trang tong quan cap interface, khong di sau vao thuat toan noi bo tung cai dat) - xem authoring.limitations. Thiet ke goi y: mot mang cac 'bucket' (Node<K,V>[]), voi index bucket tinh tu key.hashCode(); moi bucket la mot danh sach lien ket don de xu ly dung do (collision) khi nhieu key roi vao cung mot bucket.",
+          "text": "Chủ đề 'separate chaining' (mỗi bucket của hash map là một danh sách liên kết các Node<K,V>) là chi tiết cài đặt nội bộ của hash table, không được mô tả trong các trang mở đầu/mục lục Collections mà Day 9 được gắn (Trail: Collections và Collections Series đều là trang tổng quan cấp interface, không đi sâu vào thuật toán nội bộ từng cài đặt) — xem authoring.limitations. Thiết kế gợi ý: một mảng các 'bucket' (Node<K,V>[]), với index bucket tính từ key.hashCode(); mỗi bucket là một danh sách liên kết đơn để xử lý đụng độ (collision) khi nhiều key rơi vào cùng một bucket.",
           "citations": []
         },
         {
           "id": "day09-blk-5",
           "type": "important",
-          "text": "Exception rieng cua tang truy cap du lieu (DataAccessException va hai lop con DuplicatedKeyException/KeyNotFoundException) nen ke thua RuntimeException (unchecked) chu khong phai Exception (checked): day la loi logic nghiep vu luc runtime (thao tac tren key khong hop le), khong phai loi ngoai canh bat buoc goi phai xu ly ngay tai moi diem goi nhu IOException.",
+          "text": "Exception riêng của tầng truy cập dữ liệu (DataAccessException và hai lớp con DuplicatedKeyException/KeyNotFoundException) nên kế thừa RuntimeException (unchecked) chứ không phải Exception (checked): đây là lỗi logic nghiệp vụ lúc runtime (thao tác trên key không hợp lệ), không phải lỗi ngoại cảnh bắt buộc gọi phải xử lý ngay tại mỗi điểm gọi như IOException.",
           "citations": [
             "day09-src-4",
             "day09-src-5"
@@ -94,7 +94,7 @@
     },
     {
       "id": "day09-sec-implementation",
-      "title": "Cai dat tham khao",
+      "title": "Cài đặt tham khảo",
       "blocks": [
         {
           "id": "day09-blk-6",
@@ -112,36 +112,36 @@
     },
     {
       "id": "day09-sec-tests",
-      "title": "Danh sach test can co",
+      "title": "Danh sách test cần có",
       "blocks": [
         {
           "id": "day09-blk-7",
           "type": "table",
           "columns": [
             "Test case",
-            "Muc tieu",
-            "Ket qua mong doi"
+            "Mục tiêu",
+            "Kết quả mong đợi"
           ],
           "rows": [
             [
-              "add() + get() lien tiep tren SimpleArrayList",
-              "Xac nhan phan tu duoc them va lay dung thu tu",
-              "get(i) tra ve dung phan tu da add o vi tri i"
+              "add() + get() liên tiếp trên SimpleArrayList",
+              "Xác nhận phần tử được thêm và lấy đúng thứ tự",
+              "get(i) trả về đúng phần tử đã add ở vị trí i"
             ],
             [
-              "get()/remove() voi index ngoai pham vi",
-              "Xac nhan validate bien",
-              "Nem IndexOutOfBoundsException"
+              "get()/remove() với index ngoài phạm vi",
+              "Xác nhận validate biên",
+              "Ném IndexOutOfBoundsException"
             ],
             [
-              "put() voi key da ton tai",
-              "Xac nhan rang buoc khong trung key",
-              "Nem DuplicatedKeyException"
+              "put() với key đã tồn tại",
+              "Xác nhận ràng buộc không trùng key",
+              "Ném DuplicatedKeyException"
             ],
             [
-              "get() voi key khong ton tai",
-              "Xac nhan xu ly truy van sai",
-              "Nem KeyNotFoundException"
+              "get() với key không tồn tại",
+              "Xác nhận xử lý truy vấn sai",
+              "Ném KeyNotFoundException"
             ]
           ],
           "citations": [
@@ -152,7 +152,7 @@
         {
           "id": "day09-blk-8",
           "type": "warning",
-          "text": "Test coverage >= 80% (theo de bai) can bao phu ca nhanh loi (index/key khong hop le) chu khong chi nhanh thanh cong - cac exception rieng (DuplicatedKeyException, KeyNotFoundException, IndexOutOfBoundsException) can co it nhat mot test rieng cho tung loai.",
+          "text": "Test coverage ≥ 80% (theo đề bài) cần bao phủ cả nhánh lỗi (index/key không hợp lệ) chứ không chỉ nhánh thành công — các exception riêng (DuplicatedKeyException, KeyNotFoundException, IndexOutOfBoundsException) cần có ít nhất một test riêng cho từng loại.",
           "citations": [
             "day09-src-4",
             "day09-src-5"
@@ -162,54 +162,54 @@
     }
   ],
   "commonMistakes": [
-    "Dung Object[] lam mang noi bo nhung quen ep kieu (E) khi tra ve tu get(), dan toi loi bien dich hoac ClassCastException khong ro rang.",
-    "Quen tang buckets khi so phan tu vuot mot nguong (load factor) - cai dat trong bai co the bo qua resize de don gian, nhung can ghi ro gioi han nay neu khong lam.",
-    "Cho ca ba loai exception ke thua truc tiep RuntimeException thay vi cho DuplicatedKeyException/KeyNotFoundException ke thua DataAccessException - lam mat kha nang catch chung ca nhom bang mot khoi catch (DataAccessException e)."
+    "Dùng Object[] làm mảng nội bộ nhưng quên ép kiểu (E) khi trả về từ get(), dẫn tới lỗi biên dịch hoặc ClassCastException không rõ ràng.",
+    "Quên tăng buckets khi số phần tử vượt một ngưỡng (load factor) — cài đặt trong bài có thể bỏ qua resize để đơn giản, nhưng cần ghi rõ giới hạn này nếu không làm.",
+    "Cho cả ba loại exception kế thừa trực tiếp RuntimeException thay vì cho DuplicatedKeyException/KeyNotFoundException kế thừa DataAccessException — làm mất khả năng catch chung cả nhóm bằng một khối catch (DataAccessException e)."
   ],
   "practices": [
     {
       "id": "day09-prac-1",
       "type": "applied",
       "interaction": "self-check",
-      "prompt": "Cai dat day du SimpleArrayList<E>, SimpleHashMap<K,V> va he thong exception (DataAccessException, DuplicatedKeyException, KeyNotFoundException) theo dung de bai, kem bo test dat test coverage >= 80%.",
+      "prompt": "Cài đặt đầy đủ SimpleArrayList<E>, SimpleHashMap<K,V> và hệ thống exception (DataAccessException, DuplicatedKeyException, KeyNotFoundException) theo đúng đề bài, kèm bộ test đạt test coverage ≥ 80%.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Bat dau tu SimpleArrayList (don gian hon) truoc, viet test ngay sau moi method; SimpleHashMap va exception hierarchy lam sau.",
-      "solution": "Xem muc 'Cai dat tham khao' o tren; day la mot cach cai dat hop le, co the dieu chinh chi tiet noi bo (vi du kich thuoc mang ban dau) mien giu dung API cong khai theo de bai.",
-      "explanation": "Khong co loi giai co dinh - danh gia theo do dung API va do bao phu test.",
-      "rubric": "Dat yeu cau khi: SimpleArrayList co du add/get/remove/size/iterator; SimpleHashMap dung separate chaining va nem dung exception; ca ba loai exception deu ke thua dung nhanh DataAccessException; test bao phu ca nhanh loi.",
+      "hint": "Bắt đầu từ SimpleArrayList (đơn giản hơn) trước, viết test ngay sau mỗi method; SimpleHashMap và exception hierarchy làm sau.",
+      "solution": "Xem mục 'Cài đặt tham khảo' ở trên; đây là một cách cài đặt hợp lệ, có thể điều chỉnh chi tiết nội bộ (ví dụ kích thước mảng ban đầu) miễn giữ đúng API công khai theo đề bài.",
+      "explanation": "Không có lời giải cố định — đánh giá theo độ đúng API và độ bao phủ test.",
+      "rubric": "Đạt yêu cầu khi: SimpleArrayList có đủ add/get/remove/size/iterator; SimpleHashMap dùng separate chaining và ném đúng exception; cả ba loại exception đều kế thừa đúng nhánh DataAccessException; test bao phủ cả nhánh lỗi.",
       "sourceUsage": []
     },
     {
       "id": "day09-prac-2",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Tai sao DataAccessException trong lab nay nen ke thua RuntimeException (unchecked) thay vi Exception (checked)?",
+      "prompt": "Tại sao DataAccessException trong lab này nên kế thừa RuntimeException (unchecked) thay vì Exception (checked)?",
       "choices": [
         {
           "id": "day09-prac-2-a",
-          "text": "Vi day la loi logic nghiep vu phat sinh luc runtime khi thao tac key khong hop le, khong phai loi ngoai canh bat buoc moi noi goi phai xu ly ngay"
+          "text": "Vì đây là lỗi logic nghiệp vụ phát sinh lúc runtime khi thao tác key không hợp lệ, không phải lỗi ngoại cảnh bắt buộc mọi nơi gọi phải xử lý ngay"
         },
         {
           "id": "day09-prac-2-b",
-          "text": "Vi RuntimeException chay nhanh hon Exception"
+          "text": "Vì RuntimeException chạy nhanh hơn Exception"
         },
         {
           "id": "day09-prac-2-c",
-          "text": "Vi checked exception khong the co constructor nhan String message"
+          "text": "Vì checked exception không thể có constructor nhận String message"
         },
         {
           "id": "day09-prac-2-d",
-          "text": "Vi Java khong cho phep tu tao checked exception"
+          "text": "Vì Java không cho phép tự tạo checked exception"
         }
       ],
       "correctChoiceIds": [
         "day09-prac-2-a"
       ],
-      "hint": "Xem lai phan phan biet checked vs unchecked o Day 8.",
+      "hint": "Xem lại phần phân biệt checked vs unchecked ở Day 8.",
       "solution": "day09-prac-2-a",
-      "explanation": "Checked exception phu hop voi loi ngoai canh khong the tranh duoc du code dung (vi du IOException); loi truy cap du lieu sai (key trung, key khong ton tai) la loi logic co the tranh duoc bang kiem tra dieu kien truoc, phu hop lam unchecked exception.",
-      "rubric": "Chon dung ly do RuntimeException phu hop hon Exception cho truong hop nay.",
+      "explanation": "Checked exception phù hợp với lỗi ngoại cảnh không thể tránh được dù code đúng (ví dụ IOException); lỗi truy cập dữ liệu sai (key trùng, key không tồn tại) là lỗi logic có thể tránh được bằng kiểm tra điều kiện trước, phù hợp làm unchecked exception.",
+      "rubric": "Chọn đúng lý do RuntimeException phù hợp hơn Exception cho trường hợp này.",
       "sourceUsage": [
         "day09-src-5"
       ]
@@ -218,13 +218,13 @@
       "id": "day09-prac-3",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viet mot unit test (dang JUnit-style, chi can viet than method test, khong can day du annotation) cho SimpleHashMap.put(): tao map, put mot key, roi put lai chinh key do lan nua va xac nhan ket qua nem DuplicatedKeyException.",
+      "prompt": "Viết một unit test (dạng JUnit-style, chỉ cần viết thân method test, không cần đầy đủ annotation) cho SimpleHashMap.put(): tạo map, put một key, rồi put lại chính key đó lần nữa và xác nhận kết quả ném DuplicatedKeyException.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung assertThrows(DuplicatedKeyException.class, () -> ...) kieu JUnit 5.",
+      "hint": "Dùng assertThrows(DuplicatedKeyException.class, () -> ...) kiểu JUnit 5.",
       "solution": "void putDuplicateKey_throwsDuplicatedKeyException() {\n    SimpleHashMap<String, Integer> map = new SimpleHashMap<>();\n    map.put(\"a\", 1);\n    assertThrows(DuplicatedKeyException.class, () -> map.put(\"a\", 2));\n}",
-      "explanation": "Test truc tiep xac nhan hop dong (contract) cua exception rieng da thiet ke.",
-      "rubric": "Danh gia test tao du lieu dung, goi put() hai lan cung key, va assert dung loai exception duoc nem.",
+      "explanation": "Test trực tiếp xác nhận hợp đồng (contract) của exception riêng đã thiết kế.",
+      "rubric": "Đánh giá test tạo dữ liệu đúng, gọi put() hai lần cùng key, và assert đúng loại exception được ném.",
       "sourceUsage": []
     }
   ],
@@ -235,8 +235,8 @@
     }
   ],
   "enhancedExercises": [
-    "Them phuong thuc remove(K key) cho SimpleHashMap, nem KeyNotFoundException neu key khong ton tai.",
-    "Do thoi gian chay get()/put() cua SimpleHashMap voi so luong phan tu lon dan (100, 1000, 10000) de quan sat truc quan hieu ung cua hash collision khi khong resize buckets."
+    "Thêm phương thức remove(K key) cho SimpleHashMap, ném KeyNotFoundException nếu key không tồn tại.",
+    "Đo thời gian chạy get()/put() của SimpleHashMap với số lượng phần tử lớn dần (100, 1000, 10000) để quan sát trực quan hiệu ứng của hash collision khi không resize buckets."
   ],
   "references": [
     {
@@ -254,7 +254,7 @@
     {
       "id": "day09-ref-3",
       "type": "internal",
-      "description": "Ap dung truc tiep generics/collections/exception hierarchy da hoc o Day 8."
+      "description": "Áp dụng trực tiếp generics/collections/exception hierarchy đã học ở Day 8."
     }
   ],
   "sourceUsage": [
@@ -262,25 +262,25 @@
       "id": "day09-src-1",
       "resourceId": "res-e3b2dcb60e96",
       "locator": "Lesson: Generics (Updated) — đoạn giới thiệu",
-      "topic": "Muc dich bai hoc Generics"
+      "topic": "Mục đích bài học Generics"
     },
     {
       "id": "day09-src-2",
       "resourceId": "res-899383bc8d09",
       "locator": "Trail: Collections — mục lục",
-      "topic": "Noi dung Trail Collections cua Oracle"
+      "topic": "Nội dung Trail Collections của Oracle"
     },
     {
       "id": "day09-src-3",
       "resourceId": "res-12fa3a9d4910",
       "locator": "Java Collections Series — mục lục theo nhóm",
-      "topic": "Cau truc trang tong hop Collections Series"
+      "topic": "Cấu trúc trang tổng hợp Collections Series"
     },
     {
       "id": "day09-src-4",
       "resourceId": "res-30d834f8fef0",
       "locator": "§3. Exception Hierarchy",
-      "topic": "Phan cap Exception"
+      "topic": "Phân cấp Exception"
     },
     {
       "id": "day09-src-5",
@@ -292,14 +292,14 @@
       "id": "day09-src-6",
       "resourceId": "res-9762250d04d9",
       "locator": "§5. A Custom Resource With AutoCloseable",
-      "topic": "Tu tao resource voi AutoCloseable"
+      "topic": "Tự tạo resource với AutoCloseable"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Separate chaining (thiet ke noi bo cua SimpleHashMap voi mang bucket va danh sach lien ket): khong co nguon nao trong resourceIds cua Day 9 mo ta chi tiet thuat toan noi bo cua hash table - hai nguon Collections (res-899383bc8d09, res-12fa3a9d4910) chi la trang tong quan cap interface/mo hinh phan nhom, khong di sau vao cai dat. Noi dung thiet ke separate chaining duoc trinh bay theo kien thuc cau truc du lieu chuan, khong gan citation gia."
+      "Separate chaining (thiết kế nội bộ của SimpleHashMap với mảng bucket và danh sách liên kết): không có nguồn nào trong resourceIds của Day 9 mô tả chi tiết thuật toán nội bộ của hash table — hai nguồn Collections (res-899383bc8d09, res-12fa3a9d4910) chỉ là trang tổng quan cấp interface/mô hình phân nhóm, không đi sâu vào cài đặt. Nội dung thiết kế separate chaining được trình bày theo kiến thức cấu trúc dữ liệu chuẩn, không gắn citation giả."
     ]
   }
 }

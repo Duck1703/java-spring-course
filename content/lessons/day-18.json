@@ -28,24 +28,24 @@
   "group": "spring",
   "kind": "lab",
   "title": "- Lab 6: User & Task Management API",
-  "summary": "Lab 6 - User & Task Management API: CRUD Task (title/description/status/priority/dueDate) voi @RequestMapping/@PathVariable, validation co ban (title notBlank, dueDate future) ket hop custom validator @ValidStatusTransition (validate cap class kiem tra chuyen trang thai hop le), va global exception handler tra ve ProblemDetail.",
+  "summary": "Lab 6 — User & Task Management API: CRUD Task (title/description/status/priority/dueDate) với @RequestMapping/@PathVariable, validation cơ bản (title notBlank, dueDate future) kết hợp custom validator @ValidStatusTransition (validate cấp class kiểm tra chuyển trạng thái hợp lệ), và global exception handler trả về ProblemDetail.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO6"
   ],
   "prerequisites": [
-    "Da hoc Day 16 (controller/mapping/ResponseEntity) va Day 17 (Bean Validation, custom validator, @RestControllerAdvice, ProblemDetail)."
+    "Đã học Day 16 (controller/mapping/ResponseEntity) và Day 17 (Bean Validation, custom validator, @RestControllerAdvice, ProblemDetail)."
   ],
   "outcomes": [
-    "Xay dung day du CRUD endpoint cho Task voi mapping/path variable dung quy uoc da hoc.",
-    "Ket hop Bean Validation co ban voi mot custom validator cap class cho logic nghiep vu rieng (chuyen trang thai).",
-    "Tap trung xu ly loi bang @RestControllerAdvice tra ve ProblemDetail nhat quan.",
-    "Mo ta duoc quy trinh xuat Postman collection de chia se/kiem thu API."
+    "Xây dựng đầy đủ CRUD endpoint cho Task với mapping/path variable đúng quy ước đã học.",
+    "Kết hợp Bean Validation cơ bản với một custom validator cấp class cho logic nghiệp vụ riêng (chuyển trạng thái).",
+    "Tập trung xử lý lỗi bằng @RestControllerAdvice trả về ProblemDetail nhất quán.",
+    "Mô tả được quy trình xuất Postman collection để chia sẻ/kiểm thử API."
   ],
   "sections": [
     {
       "id": "day18-sec-brief",
-      "title": "De bai Lab 6",
+      "title": "Đề bài Lab 6",
       "blocks": [
         {
           "id": "day18-blk-1",
@@ -57,12 +57,12 @@
     },
     {
       "id": "day18-sec-crud",
-      "title": "CRUD Task voi @RequestMapping/@PathVariable",
+      "title": "CRUD Task với @RequestMapping/@PathVariable",
       "blocks": [
         {
           "id": "day18-blk-2",
           "type": "paragraph",
-          "text": "TaskController dung @RequestMapping cap class ('/api/tasks') va cac shortcut theo HTTP method (@GetMapping/@PostMapping/@PutMapping) cho tung thao tac CRUD; bien path {id} duoc bat qua @PathVariable, rang buoc {id:[\\d]+} de chi khop id dang so, tuong tu mau da hoc o Day 16.",
+          "text": "TaskController dùng @RequestMapping cấp class ('/api/tasks') và các shortcut theo HTTP method (@GetMapping/@PostMapping/@PutMapping) cho từng thao tác CRUD; biến path {id} được bắt qua @PathVariable, ràng buộc {id:[\\d]+} để chỉ khớp id dạng số, tương tự mẫu đã học ở Day 16.",
           "citations": [
             "day18-src-1",
             "day18-src-2"
@@ -72,12 +72,12 @@
           "id": "day18-blk-3",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.validation.constraints.Future;\nimport jakarta.validation.constraints.NotBlank;\nimport java.time.LocalDate;\n\nenum TaskStatus { TODO, IN_PROGRESS, DONE }\n\nenum TaskPriority { LOW, MEDIUM, HIGH }\n\n// title khong duoc de trong, dueDate phai la ngay trong tuong lai.\nrecord TaskRequest(\n        @NotBlank(message = \"title khong duoc de trong\") String title,\n        String description,\n        TaskStatus status,\n        TaskPriority priority,\n        @Future(message = \"dueDate phai o tuong lai\") LocalDate dueDate) {\n}\n",
+          "code": "import jakarta.validation.constraints.Future;\nimport jakarta.validation.constraints.NotBlank;\nimport java.time.LocalDate;\n\nenum TaskStatus { TODO, IN_PROGRESS, DONE }\n\nenum TaskPriority { LOW, MEDIUM, HIGH }\n\n// title không được để trống, dueDate phải là ngày trong tương lai.\nrecord TaskRequest(\n        @NotBlank(message = \"title không được để trống\") String title,\n        String description,\n        TaskStatus status,\n        TaskPriority priority,\n        @Future(message = \"dueDate phải ở tương lai\") LocalDate dueDate) {\n}\n",
           "compile": false,
           "citations": [
             "day18-src-3"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
           "id": "day18-blk-4",
@@ -89,12 +89,12 @@
             "day18-src-1",
             "day18-src-2"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
           "id": "day18-blk-5",
           "type": "note",
-          "text": "Rang buoc co ban title notBlank (@NotBlank) va dueDate phai o tuong lai (@Future) dung annotation Bean Validation chuan cua jakarta.validation.constraints; hai annotation nay khong co resource nao trong resourceIds cua rieng Day 18 mo ta (chung thuoc resourceIds cua Day 17, noi Bean Validation co ban da duoc trich dan day du) - Day 18 tap trung trich dan phan validate cap class va ProblemDetail, la phan moi so voi Day 17.",
+          "text": "Ràng buộc cơ bản title notBlank (@NotBlank) và dueDate phải ở tương lai (@Future) dùng annotation Bean Validation chuẩn của jakarta.validation.constraints; hai annotation này không có resource nào trong resourceIds của riêng Day 18 mô tả (chúng thuộc resourceIds của Day 17, nơi Bean Validation cơ bản đã được trích dẫn đầy đủ) — Day 18 tập trung trích dẫn phần validate cấp class và ProblemDetail, là phần mới so với Day 17.",
           "citations": []
         }
       ]
@@ -106,7 +106,7 @@
         {
           "id": "day18-blk-6",
           "type": "paragraph",
-          "text": "Mot constraint tuy chinh duoc dinh nghia bang @interface gan @Constraint(validatedBy = ...Validator.class); lop validator implement ConstraintValidator<Annotation, KieuDuLieu> va override isValid(value, context). @ValidStatusTransition ap dung tuong tu: gan @Target(TYPE) de constraint co the doc dong thoi ca currentStatus va status tu cung mot request, roi kiem tra chuyen trang thai co nam trong tap chuyen hop le hay khong (TODO -> IN_PROGRESS -> DONE, cho phep lui IN_PROGRESS -> TODO, khong cho chuyen tiep tu DONE).",
+          "text": "Một constraint tùy chỉnh được định nghĩa bằng @interface gắn @Constraint(validatedBy = ...Validator.class); lớp validator implement ConstraintValidator<Annotation, KieuDuLieu> và override isValid(value, context). @ValidStatusTransition áp dụng tương tự: gắn @Target(TYPE) để constraint có thể đọc đồng thời cả currentStatus và status từ cùng một request, rồi kiểm tra chuyển trạng thái có nằm trong tập chuyển hợp lệ hay không (TODO -> IN_PROGRESS -> DONE, cho phép lùi IN_PROGRESS -> TODO, không cho chuyển tiếp từ DONE).",
           "citations": [
             "day18-src-3",
             "day18-src-4"
@@ -116,24 +116,24 @@
           "id": "day18-blk-7",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\nimport java.util.Map;\nimport java.util.Set;\n\n@Target(ElementType.TYPE)\n@Retention(RetentionPolicy.RUNTIME)\n@Constraint(validatedBy = StatusTransitionValidator.class)\n@interface ValidStatusTransition {\n    String message() default \"chuyen trang thai khong hop le\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nrecord StatusUpdateRequest(TaskStatus currentStatus, TaskStatus status) {\n}\n\n// @Target(TYPE): constraint xet ca hai field currentStatus va status\n// cua cung mot doi tuong, khong the xet tung field rieng le.\n@ValidStatusTransition\nclass StatusTransitionValidator\n        implements ConstraintValidator<ValidStatusTransition, StatusUpdateRequest> {\n\n    private static final Map<TaskStatus, Set<TaskStatus>> ALLOWED = Map.of(\n            TaskStatus.TODO, Set.of(TaskStatus.IN_PROGRESS),\n            TaskStatus.IN_PROGRESS, Set.of(TaskStatus.DONE, TaskStatus.TODO),\n            TaskStatus.DONE, Set.of());\n\n    @Override\n    public boolean isValid(StatusUpdateRequest value, ConstraintValidatorContext context) {\n        if (value == null || value.currentStatus() == null || value.status() == null) {\n            return false;\n        }\n        return ALLOWED.getOrDefault(value.currentStatus(), Set.of()).contains(value.status());\n    }\n}\n",
+          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\nimport java.util.Map;\nimport java.util.Set;\n\n@Target(ElementType.TYPE)\n@Retention(RetentionPolicy.RUNTIME)\n@Constraint(validatedBy = StatusTransitionValidator.class)\n@interface ValidStatusTransition {\n    String message() default \"chuyển trạng thái không hợp lệ\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nrecord StatusUpdateRequest(TaskStatus currentStatus, TaskStatus status) {\n}\n\n// @Target(TYPE): constraint xét cả hai field currentStatus và status\n// của cùng một đối tượng, không thể xét từng field riêng lẻ.\n@ValidStatusTransition\nclass StatusTransitionValidator\n        implements ConstraintValidator<ValidStatusTransition, StatusUpdateRequest> {\n\n    private static final Map<TaskStatus, Set<TaskStatus>> ALLOWED = Map.of(\n            TaskStatus.TODO, Set.of(TaskStatus.IN_PROGRESS),\n            TaskStatus.IN_PROGRESS, Set.of(TaskStatus.DONE, TaskStatus.TODO),\n            TaskStatus.DONE, Set.of());\n\n    @Override\n    public boolean isValid(StatusUpdateRequest value, ConstraintValidatorContext context) {\n        if (value == null || value.currentStatus() == null || value.status() == null) {\n            return false;\n        }\n        return ALLOWED.getOrDefault(value.currentStatus(), Set.of()).contains(value.status());\n    }\n}\n",
           "compile": false,
           "citations": [
             "day18-src-3",
             "day18-src-4"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         }
       ]
     },
     {
       "id": "day18-sec-exception-handler",
-      "title": "Global exception handler voi ProblemDetail",
+      "title": "Global exception handler với ProblemDetail",
       "blocks": [
         {
           "id": "day18-blk-8",
           "type": "paragraph",
-          "text": "TaskExceptionHandler la mot @RestControllerAdvice tap trung xu ly loi cho toan bo TaskController: dung ProblemDetail.forStatusAndDetail(status, message) de dung phan hoi loi thong nhat (type/title/status/detail/instance) thay vi tu dinh nghia cau truc JSON loi rieng cho tung truong hop, ap dung dung mau da hoc o Day 17.",
+          "text": "TaskExceptionHandler là một @RestControllerAdvice tập trung xử lý lỗi cho toàn bộ TaskController: dùng ProblemDetail.forStatusAndDetail(status, message) để dựng phản hồi lỗi thống nhất (type/title/status/detail/instance) thay vì tự định nghĩa cấu trúc JSON lỗi riêng cho từng trường hợp, áp dụng đúng mẫu đã học ở Day 17.",
           "citations": [
             "day18-src-5",
             "day18-src-6"
@@ -143,12 +143,12 @@
           "id": "day18-blk-9",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\n\n@RestControllerAdvice\nclass TaskExceptionHandler {\n\n    @ExceptionHandler(TaskNotFoundException.class)\n    ProblemDetail handleNotFound(TaskNotFoundException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n    }\n\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleValidation(MethodArgumentNotValidException ex) {\n        ProblemDetail problem = ProblemDetail.forStatusAndDetail(\n                HttpStatus.BAD_REQUEST, \"Du lieu Task khong hop le\");\n        problem.setTitle(\"Task validation failed\");\n        return problem;\n    }\n}\n\nclass TaskNotFoundException extends RuntimeException {\n    TaskNotFoundException(long id) {\n        super(\"Khong tim thay Task voi id=\" + id);\n    }\n}\n",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\n\n@RestControllerAdvice\nclass TaskExceptionHandler {\n\n    @ExceptionHandler(TaskNotFoundException.class)\n    ProblemDetail handleNotFound(TaskNotFoundException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n    }\n\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleValidation(MethodArgumentNotValidException ex) {\n        ProblemDetail problem = ProblemDetail.forStatusAndDetail(\n                HttpStatus.BAD_REQUEST, \"Dữ liệu Task không hợp lệ\");\n        problem.setTitle(\"Task validation failed\");\n        return problem;\n    }\n}\n\nclass TaskNotFoundException extends RuntimeException {\n    TaskNotFoundException(long id) {\n        super(\"Không tìm thấy Task với id=\" + id);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day18-src-5"
           ],
-          "partialReason": "Minh hoa cach dung Spring/Jakarta API; khong bien dich doc lap duoc vi moi truong javac --release 17 cua pipeline nay khong co Spring Framework/Jakarta jar tren classpath (chi co JDK chuan)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         }
       ]
     },
@@ -159,23 +159,23 @@
         {
           "id": "day18-blk-10",
           "type": "note",
-          "text": "Yeu cau xuat Postman collection khong co resource nao trong resourceIds cua Day 18 mo ta (xem authoring.limitations). Cach lam pho bien: goi thu tung endpoint CRUD Task trong Postman, gom cac request lai thanh mot Collection, dung tinh nang 'Export' cua Postman de xuat file .json chua toan bo request/vi du response, luu kem repository de nhom khac/CI co the import lai va chay smoke test.",
+          "text": "Yêu cầu xuất Postman collection không có resource nào trong resourceIds của Day 18 mô tả (xem authoring.limitations). Cách làm phổ biến: gọi thử từng endpoint CRUD Task trong Postman, gom các request lại thành một Collection, dùng tính năng 'Export' của Postman để xuất file .json chứa toàn bộ request/ví dụ response, lưu kèm repository để nhóm khác/CI có thể import lại và chạy smoke test.",
           "citations": []
         }
       ]
     }
   ],
   "commonMistakes": [
-    "Gan @ValidStatusTransition o @Target(FIELD) khien validator khong doc duoc ca hai field can so sanh.",
-    "Quen xu ly TaskNotFoundException trong @RestControllerAdvice, de loi 500 mac dinh lo ra ngoai thay vi ProblemDetail 404 ro rang.",
-    "Cho phep chuyen trang thai tuy y (vi du DONE -> TODO) ma khong kiem tra qua ALLOWED map."
+    "Gắn @ValidStatusTransition ở @Target(FIELD) khiến validator không đọc được cả hai field cần so sánh.",
+    "Quên xử lý TaskNotFoundException trong @RestControllerAdvice, để lỗi 500 mặc định lộ ra ngoài thay vì ProblemDetail 404 rõ ràng.",
+    "Cho phép chuyển trạng thái tùy ý (ví dụ DONE -> TODO) mà không kiểm tra qua ALLOWED map."
   ],
   "practices": [
     {
       "id": "day18-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Theo StatusTransitionValidator trong bai, chuyen trang thai nao duoi day la KHONG hop le?",
+      "prompt": "Theo StatusTransitionValidator trong bài, chuyển trạng thái nào dưới đây là KHÔNG hợp lệ?",
       "choices": [
         {
           "id": "day18-prac-1-a",
@@ -197,10 +197,10 @@
       "correctChoiceIds": [
         "day18-prac-1-a"
       ],
-      "hint": "Xem lai bang ALLOWED trong StatusTransitionValidator.",
+      "hint": "Xem lại bảng ALLOWED trong StatusTransitionValidator.",
       "solution": "day18-prac-1-a",
-      "explanation": "Trong ALLOWED map cua vi du, TaskStatus.DONE anh xa toi Set.of() (tap rong) - nghia la tu DONE khong duoc phep chuyen sang bat ky trang thai nao khac, nen DONE -> IN_PROGRESS la khong hop le.",
-      "rubric": "Doi chieu tung lua chon voi Map ALLOWED trong code vi du; danh gia dung neu nhan ra DONE la trang thai cuoi (khong co chuyen tiep hop le).",
+      "explanation": "Trong ALLOWED map của ví dụ, TaskStatus.DONE ánh xạ tới Set.of() (tập rỗng) — nghĩa là từ DONE không được phép chuyển sang bất kỳ trạng thái nào khác, nên DONE -> IN_PROGRESS là không hợp lệ.",
+      "rubric": "Đối chiếu từng lựa chọn với Map ALLOWED trong code ví dụ; đánh giá đúng nếu nhận ra DONE là trạng thái cuối (không có chuyển tiếp hợp lệ).",
       "sourceUsage": [
         "day18-src-3",
         "day18-src-4"
@@ -210,13 +210,13 @@
       "id": "day18-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Them mot @GetMapping('') tren TaskController tra ve ResponseEntity<List<Task>> toan bo task, tuong tu mau search o Day 16.",
+      "prompt": "Thêm một @GetMapping('') trên TaskController trả về ResponseEntity<List<Task>> toàn bộ task, tương tự mẫu search ở Day 16.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dung @GetMapping khong tham so, goi repository.findAll(), boc trong ResponseEntity.ok().",
+      "hint": "Dùng @GetMapping không tham số, gọi repository.findAll(), bọc trong ResponseEntity.ok().",
       "solution": "@GetMapping\nResponseEntity<java.util.List<Task>> findAll() {\n    return ResponseEntity.ok(repository.findAll());\n}",
-      "explanation": "Ap dung lai mau ResponseEntity.ok(...) da hoc o Day 16 vao TaskController.",
-      "rubric": "Danh gia dung: co @GetMapping cap class, tra ResponseEntity.ok voi danh sach Task.",
+      "explanation": "Áp dụng lại mẫu ResponseEntity.ok(...) đã học ở Day 16 vào TaskController.",
+      "rubric": "Đánh giá đúng: có @GetMapping cấp class, trả ResponseEntity.ok với danh sách Task.",
       "sourceUsage": [
         "day18-src-1"
       ]
@@ -225,13 +225,13 @@
       "id": "day18-prac-3",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Vi sao @ValidStatusTransition duoc gan @Target(ElementType.TYPE) thay vi @Target(ElementType.FIELD) nhu @ValidPhoneNumber o Day 17?",
+      "prompt": "Vì sao @ValidStatusTransition được gắn @Target(ElementType.TYPE) thay vì @Target(ElementType.FIELD) như @ValidPhoneNumber ở Day 17?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "So sanh so field ma constraint can doc de kiem tra.",
-      "solution": "Vi constraint can doc dong thoi hai field (currentStatus va status) tu cung mot doi tuong StatusUpdateRequest de so sanh chuyen trang thai co hop le hay khong; @Target(FIELD) chi cho phep validator xet gia tri cua mot field don le, khong du de kiem tra quan he giua hai field.",
-      "explanation": "Lien ket voi ly do dung @Target(TYPE) cho validate cap class da hoc o Day 17.",
-      "rubric": "Danh gia hoc vien neu dung ly do can doc nhieu field cung luc.",
+      "hint": "So sánh số field mà constraint cần đọc để kiểm tra.",
+      "solution": "Vì constraint cần đọc đồng thời hai field (currentStatus và status) từ cùng một đối tượng StatusUpdateRequest để so sánh chuyển trạng thái có hợp lệ hay không; @Target(FIELD) chỉ cho phép validator xét giá trị của một field đơn lẻ, không đủ để kiểm tra quan hệ giữa hai field.",
+      "explanation": "Liên kết với lý do dùng @Target(TYPE) cho validate cấp class đã học ở Day 17.",
+      "rubric": "Đánh giá học viên nêu đúng lý do cần đọc nhiều field cùng lúc.",
       "sourceUsage": [
         "day18-src-3",
         "day18-src-4"
@@ -241,13 +241,13 @@
       "id": "day18-prac-4",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "TaskExceptionHandler nen tra ve HTTP status nao cho TaskNotFoundException va vi sao dung ProblemDetail thay vi tu dinh nghia mot Map loi rieng?",
+      "prompt": "TaskExceptionHandler nên trả về HTTP status nào cho TaskNotFoundException và vì sao dùng ProblemDetail thay vì tự định nghĩa một Map lỗi riêng?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Xem lai code handleNotFound trong bai va ly do dung ProblemDetail chuan hoa.",
-      "solution": "Nen tra ve HTTP 404 (NOT_FOUND), dung ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage()) de dam bao cau truc loi (type/title/status/detail/instance) thong nhat voi cac loi khac trong cung API, thay vi moi loai loi lai co mot dinh dang JSON rieng gay kho cho client xu ly.",
-      "explanation": "Ket noi voi HTTP status 404 chuan cho 'khong tim thay tai nguyen' va loi ich chuan hoa cua ProblemDetail.",
-      "rubric": "Danh gia dung ca hai y: status 404 va ly do chon ProblemDetail (nhat quan cau truc loi).",
+      "hint": "Xem lại code handleNotFound trong bài và lý do dùng ProblemDetail chuẩn hóa.",
+      "solution": "Nên trả về HTTP 404 (NOT_FOUND), dùng ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage()) để đảm bảo cấu trúc lỗi (type/title/status/detail/instance) thống nhất với các lỗi khác trong cùng API, thay vì mỗi loại lỗi lại có một định dạng JSON riêng gây khó cho client xử lý.",
+      "explanation": "Kết nối với HTTP status 404 chuẩn cho 'không tìm thấy tài nguyên' và lợi ích chuẩn hóa của ProblemDetail.",
+      "rubric": "Đánh giá đúng cả hai ý: status 404 và lý do chọn ProblemDetail (nhất quán cấu trúc lỗi).",
       "sourceUsage": [
         "day18-src-5",
         "day18-src-6"
@@ -261,8 +261,8 @@
     }
   ],
   "enhancedExercises": [
-    "Them endpoint DELETE /api/tasks/{id} va xu ly TaskNotFoundException nhat quan voi cac endpoint con lai.",
-    "Viet test cho StatusTransitionValidator bao phu ca chuyen hop le va khong hop le cho ca 3 trang thai."
+    "Thêm endpoint DELETE /api/tasks/{id} và xử lý TaskNotFoundException nhất quán với các endpoint còn lại.",
+    "Viết test cho StatusTransitionValidator bao phủ cả chuyển hợp lệ và không hợp lệ cho cả 3 trạng thái."
   ],
   "references": [
     {
@@ -280,7 +280,7 @@
     {
       "id": "day18-ref-3",
       "type": "internal",
-      "description": "Tong hop truc tiep cac mau da hoc o Day 16 (controller/mapping) va Day 17 (validation/ProblemDetail) vao mot API hoan chinh."
+      "description": "Tổng hợp trực tiếp các mẫu đã học ở Day 16 (controller/mapping) và Day 17 (validation/ProblemDetail) vào một API hoàn chỉnh."
     }
   ],
   "sourceUsage": [
@@ -288,45 +288,45 @@
       "id": "day18-src-1",
       "resourceId": "res-2aefb097db80",
       "locator": "§@RequestMapping",
-      "topic": "RequestMapping va cac shortcut theo HTTP method"
+      "topic": "RequestMapping và các shortcut theo HTTP method"
     },
     {
       "id": "day18-src-2",
       "resourceId": "res-2aefb097db80",
       "locator": "§URI patterns — Captured URI variables; bảng {*path}",
-      "topic": "@PathVariable va kieu {*path}"
+      "topic": "@PathVariable và kiểu {*path}"
     },
     {
       "id": "day18-src-3",
       "resourceId": "res-7f4116f00d7f",
       "locator": "§4. The New Annotation",
-      "topic": "Dinh nghia annotation validate tuy chinh"
+      "topic": "Định nghĩa annotation validate tùy chỉnh"
     },
     {
       "id": "day18-src-4",
       "resourceId": "res-7f4116f00d7f",
       "locator": "§5. Creating a Validator",
-      "topic": "Cai dat logic validate bang ConstraintValidator"
+      "topic": "Cài đặt logic validate bằng ConstraintValidator"
     },
     {
       "id": "day18-src-5",
       "resourceId": "res-8a73cd80ad49",
       "locator": "§5.2. Implementing ProblemDetail in Exception Handler",
-      "topic": "Tra ProblemDetail trong exception handler toan cuc"
+      "topic": "Trả ProblemDetail trong exception handler toàn cục"
     },
     {
       "id": "day18-src-6",
       "resourceId": "res-8a73cd80ad49",
       "locator": "§4. ProblemDetail Specification",
-      "topic": "Dac ta ProblemDetail"
+      "topic": "Đặc tả ProblemDetail"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "@NotBlank/@Future tren TaskRequest (day18-blk-3): TaskRequest dung cac annotation Bean Validation co ban ma chi thuoc resourceIds cua Day 17 (res-1f904f56cc5a) - de thoa man rule code block phai co citation, day18-blk-3 duoc gan citation c3 (res-7f4116f00d7f, Bean Validation annotation definition) vi cung nam trong resourceIds cua Day 18 va la nguon Bean Validation gan nhat; @NotBlank/@Future la built-in constraint, c3 tap trung custom validator, nen trich dan nay la 'gan nhat co the' - Day 17 (res-1f904f56cc5a) moi co phan trich dan day du ve @NotBlank/@Future.",
-      "Postman collection export: khong co resource nao trong resourceIds cua Day 18 mo ta quy trinh nay - trinh bay bang kien thuc thao tac cong cu chuan (Postman Export) trong khoi note khong yeu cau trich dan."
+      "@NotBlank/@Future trên TaskRequest (day18-blk-3): TaskRequest dùng các annotation Bean Validation cơ bản mà chỉ thuộc resourceIds của Day 17 (res-1f904f56cc5a) — để thỏa mãn rule code block phải có citation, day18-blk-3 được gắn citation c3 (res-7f4116f00d7f, Bean Validation annotation definition) vì cùng nằm trong resourceIds của Day 18 và là nguồn Bean Validation gần nhất; @NotBlank/@Future là built-in constraint, c3 tập trung custom validator, nên trích dẫn này là 'gần nhất có thể' — Day 17 (res-1f904f56cc5a) mới có phần trích dẫn đầy đủ về @NotBlank/@Future.",
+      "Postman collection export: không có resource nào trong resourceIds của Day 18 mô tả quy trình này — trình bày bằng kiến thức thao tác công cụ chuẩn (Postman Export) trong khối note không yêu cầu trích dẫn."
     ]
   }
 }

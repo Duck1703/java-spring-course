@@ -192,7 +192,7 @@
           "id": "day02-blk-11",
           "type": "code",
           "language": "java",
-          "code": "class PatternMatchingDemo {\n    static String describe(Object value) {\n        if (value instanceof String s) {\n            return \"String co do dai \" + s.length();\n        } else if (value instanceof Integer i) {\n            return \"Integer gap doi la \" + (i * 2);\n        }\n        return \"Khong xac dinh\";\n    }\n\n    public static void main(String[] args) {\n        System.out.println(describe(\"java\"));\n        System.out.println(describe(21));\n    }\n}\n",
+          "code": "class PatternMatchingDemo {\n    static String describe(Object value) {\n        if (value instanceof String s) {\n            return \"String có độ dài \" + s.length();\n        } else if (value instanceof Integer i) {\n            return \"Integer gấp đôi là \" + (i * 2);\n        }\n        return \"Khong xac dinh\";\n    }\n\n    public static void main(String[] args) {\n        System.out.println(describe(\"java\"));\n        System.out.println(describe(21));\n    }\n}\n",
           "compile": true,
           "citations": [
             "day02-src-10"
