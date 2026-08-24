@@ -1,0 +1,417 @@
+{
+  "schemaVersion": 1,
+  "id": "day-24",
+  "catalogRef": {
+    "unitId": "unit-08",
+    "group": "spring",
+    "title": "- Lab 8: Auth Service + Performance Optimization",
+    "objectives": [
+      "LO8"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      42
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 42,
+        "text": "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
+      }
+    ],
+    "resourceIds": [
+      "res-65703b737426",
+      "res-ce09de5e928a",
+      "res-8437fa16cd25",
+      "res-28c8c8bc71df"
+    ]
+  },
+  "unitId": "unit-08",
+  "group": "spring",
+  "kind": "lab",
+  "title": "- Lab 8: Auth Service + Performance Optimization",
+  "summary": "Lab 8 - Auth Service + Performance Optimization: ghép luồng Register/Login/Refresh/Logout (Redis blacklist) trên nền JWT đã học, phân quyền CUSTOMER/ADMIN bằng @PreAuthorize, sửa N+1 cho Product list API bằng JOIN FETCH/@EntityGraph kết hợp @NotFound cho quan hệ có soft delete, cấu hình batch fetching (hibernate.jdbc.batch_size, order_inserts/order_updates), và benchmark trước/sau tối ưu.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO8"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 22 (Authentication with Spring Security + JWT) và Day 23 (Authorization & JPA Performance) - Lab 8 ghép toàn bộ kiến thức xác thực, phân quyền, và N+1 của cả hai bài thành một Auth Service hoàn chỉnh có tối ưu hiệu năng."
+  ],
+  "outcomes": [
+    "Triển khai được luồng Register/Login/Refresh/Logout với blacklist thu hồi token trước hạn.",
+    "Áp dụng đúng @PreAuthorize để phân quyền CUSTOMER và ADMIN.",
+    "Sửa được N+1 cho API danh sách bằng JOIN FETCH/@EntityGraph, xử lý đúng @NotFound cho quan hệ có soft delete.",
+    "Cấu hình đúng batch fetching và đo được benchmark trước/sau tối ưu."
+  ],
+  "sections": [
+    {
+      "id": "day24-sec-brief",
+      "title": "Đề bài Lab 8",
+      "blocks": [
+        {
+          "id": "day24-blk-1",
+          "type": "deliverable",
+          "text": "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-2",
+          "type": "note",
+          "text": "Lab 8 tổng hợp trực tiếp kiến thức xác thực JWT đã học ở Day 22, authorization/N+1 đã học ở Day 23, và bổ sung hai chủ đề mới: soft delete (@SoftDelete của Hibernate 6.4) và batch fetching - để hoàn thiện một Auth Service có tối ưu hiệu năng thực tế.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-auth-flow",
+      "title": "Register, Login, Refresh, Logout",
+      "blocks": [
+        {
+          "id": "day24-blk-3",
+          "type": "paragraph",
+          "text": "Luồng Register/Login áp dụng lại cấu hình DelegatingPasswordEncoder đã học ở Day 22 để lưu mật khẩu an toàn; luồng xác thực mỗi request mang access token áp dụng lại đúng cơ chế JwtAuthenticationProvider - xác minh chữ ký và claim (đặc biệt exp) trước khi tạo Authentication đã xác thực, không được bỏ qua bước xác minh chữ ký dù đây là access token do chính hệ thống phát hành.",
+          "citations": [
+            "day24-src-1",
+            "day24-src-2"
+          ]
+        },
+        {
+          "id": "day24-blk-4",
+          "type": "note",
+          "text": "Refresh token và Logout với Redis blacklist (lưu token đã bị thu hồi vào Redis, kiểm tra blacklist trước khi chấp nhận một access/refresh token, cho tới khi token đó tự hết hạn) không có resource nào trong resourceIds của Day 24 mô tả trực tiếp (xem authoring.limitations) - JWT theo thiết kế là stateless và không tự hỗ trợ thu hồi (revoke) trước hạn, nên việc thêm một danh sách đen (blacklist) ngoài Redis là kỹ thuật bổ sung phổ biến để xử lý logout/thu hồi token sớm.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-authorization",
+      "title": "Authorization: CUSTOMER và ADMIN",
+      "blocks": [
+        {
+          "id": "day24-blk-5",
+          "type": "paragraph",
+          "text": "Phân quyền CUSTOMER và ADMIN áp dụng lại nguyên mẫu @PreAuthorize(\"hasRole(...)\") đã học ở Day 23 (resource cụ thể về Method Security thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 - xem authoring.limitations): các endpoint quản trị (xoá sản phẩm, xem toàn bộ đơn hàng) dùng @PreAuthorize(\"hasRole('ADMIN')\"), còn các endpoint của khách hàng (xem đơn hàng của chính mình) có thể kết hợp thêm điều kiện so khớp id người dùng hiện tại trong biểu thức SpEL.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-n1-fix",
+      "title": "Sửa N+1 cho Product list API",
+      "blocks": [
+        {
+          "id": "day24-blk-6",
+          "type": "paragraph",
+          "text": "Áp dụng đúng vấn đề N+1 đã học ở Day 23 vào API danh sách sản phẩm: khi trả về danh sách Product kèm tên Category, nếu code lặp qua từng Product rồi gọi product.getCategory().getName(), mỗi lần truy cập category lazy lần đầu sẽ phát sinh một truy vấn riêng - N sản phẩm sinh ra N truy vấn bổ sung. Cách khắc phục là gộp việc nạp Category vào cùng một câu truy vấn bằng JOIN FETCH (JPQL) hoặc @EntityGraph (khai báo, không cần viết JPQL thủ công) - cả hai đều nạp Category cùng lúc với Product trong đúng một câu SQL.",
+          "citations": [
+            "day24-src-3"
+          ]
+        },
+        {
+          "id": "day24-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.*;\nimport org.springframework.data.jpa.repository.EntityGraph;\nimport org.springframework.data.jpa.repository.Query;\nimport java.util.List;\n\ninterface ProductRepository extends org.springframework.data.repository.Repository<ProductEntity, Long> {\n\n    // JOIN FETCH nap Category cung mot cau truy van duy nhat,\n    // thay vi de proxy lazy tu phat sinh N truy van rieng le.\n    @Query(\"select p from ProductEntity p join fetch p.category\")\n    List<ProductEntity> findAllWithCategory();\n\n    // Tuong duong bang @EntityGraph, khong can viet JPQL thu cong.\n    @EntityGraph(attributePaths = \"category\")\n    List<ProductEntity> findAll();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    @NotFound(action = NotFoundAction.IGNORE)\n    private CategoryEntity category;\n}\n",
+          "compile": false,
+          "citations": [
+            "day24-src-3",
+            "day24-src-5",
+            "day24-src-6"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day24-blk-8",
+          "type": "note",
+          "text": "Nếu Category có thể bị soft-delete (dùng @SoftDelete của Hibernate 6.4 - cơ chế UPDATE một cột đánh dấu thay vì DELETE thật), một Product vẫn có thể trỏ tới category_id của một Category đã bị đánh dấu xoá; khi đó proxy lazy mặc định sẽ ném EntityNotFoundException khi cố nạp Category không còn 'sống'. @NotFound(action = NotFoundAction.IGNORE) trên field @ManyToOne LAZY khiến Hibernate trả về null thay vì ném exception trong tình huống này - cần thiết khi entity liên kết dùng soft delete.",
+          "citations": [
+            "day24-src-5",
+            "day24-src-6"
+          ]
+        },
+        {
+          "id": "day24-blk-9",
+          "type": "important",
+          "text": "second-level cache (bộ nhớ đệm cấp hai của Hibernate, dùng chung giữa nhiều persistence context) KHÔNG tự động giải quyết N+1: nếu cache chưa được 'làm nóng' (warm up) với dữ liệu liên quan, lượt truy vấn đầu tiên vẫn phát sinh đủ N+1 câu truy vấn như bình thường; cache chỉ giúp các lượt gọi sau đó nhanh hơn nếu dữ liệu chưa đổi - không thay thế được việc sửa đúng chiến lược nạp (JOIN FETCH/@EntityGraph) ngay từ câu truy vấn gốc.",
+          "citations": [
+            "day24-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-benchmark",
+      "title": "Batch Fetching và Benchmark",
+      "blocks": [
+        {
+          "id": "day24-blk-10",
+          "type": "paragraph",
+          "text": "Mặc định, Hibernate KHÔNG tự động gộp (batch) các câu lệnh INSERT/UPDATE thành một lô gửi xuống database - mỗi thao tác lưu một entity là một round-trip riêng biệt, dù đang trong cùng một giao dịch. Bật hibernate.jdbc.batch_size (ví dụ 30) cho phép Hibernate gộp nhiều INSERT/UPDATE cùng cấu trúc thành các lô, giảm đáng kể số round-trip tới database khi lưu số lượng lớn bản ghi (ví dụ khi seed dữ liệu hoặc xử lý đơn hàng hàng loạt).",
+          "citations": [
+            "day24-src-7",
+            "day24-src-8"
+          ]
+        },
+        {
+          "id": "day24-blk-11",
+          "type": "paragraph",
+          "text": "hibernate.order_inserts và hibernate.order_updates sắp xếp lại thứ tự các câu lệnh INSERT/UPDATE theo entity type trước khi gửi xuống database - điều kiện cần thiết để Hibernate thực sự gộp được các câu lệnh liền kề cùng loại vào một batch (nếu thứ tự bị xen kẽ giữa các loại entity khác nhau, JDBC driver không gộp batch được hiệu quả).",
+          "citations": [
+            "day24-src-9"
+          ]
+        },
+        {
+          "id": "day24-blk-12",
+          "type": "code",
+          "language": "properties",
+          "code": "# application.properties - bat batch insert/update cho Hibernate\nspring.jpa.properties.hibernate.jdbc.batch_size=30\nspring.jpa.properties.hibernate.order_inserts=true\nspring.jpa.properties.hibernate.order_updates=true\n",
+          "compile": false,
+          "citations": [
+            "day24-src-8",
+            "day24-src-9"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day24-blk-13",
+          "type": "note",
+          "text": "Đo benchmark trước/sau khi bật batch_size và order_inserts/order_updates cho thấy hiệu năng cải thiện rõ rệt khi lưu số lượng lớn bản ghi cùng loại - mức cải thiện cụ thể phụ thuộc vào số lượng bản ghi, cấu hình batch_size, và loại database đang dùng; nên tự đo trên chính schema và dữ liệu mẫu của Lab 8 thay vì áp dụng một con số cố định từ tài liệu tham khảo.",
+          "citations": [
+            "day24-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-testing",
+      "title": "Security Integration Test với @WithMockUser",
+      "blocks": [
+        {
+          "id": "day24-blk-14",
+          "type": "note",
+          "text": "Viết integration test cho Auth Service áp dụng lại đúng mẫu @WithMockUser đã học ở Day 23 (resource cụ thể thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 - xem authoring.limitations): khai báo @WithMockUser(roles = \"ADMIN\") hoặc @WithMockUser(roles = \"CUSTOMER\") trên từng test method để xác minh @PreAuthorize chặn/cho phép đúng theo vai trò, kết hợp @DataJpaTest hoặc @SpringBootTest tuỳ phạm vi test cần kiểm tra.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Chỉ xoá token phía client khi logout mà không có blacklist phía server, khiến token bị lộ trước đó vẫn dùng được tới khi hết hạn.",
+    "Sửa N+1 bằng cách đổi sang FetchType.EAGER thay vì dùng JOIN FETCH/@EntityGraph - vẫn gây N+1 nếu Hibernate chọn chiến lược nạp riêng lẻ.",
+    "Bật hibernate.jdbc.batch_size mà quên bật order_inserts/order_updates, khiến batch không gộp được hiệu quả do thứ tự câu lệnh xen kẽ.",
+    "Quên @NotFound(action = NotFoundAction.IGNORE) cho quan hệ @ManyToOne LAZY trỏ tới entity có thể bị soft-delete, gây EntityNotFoundException runtime."
+  ],
+  "practices": [
+    {
+      "id": "day24-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao cần một cơ chế blacklist (ví dụ lưu trong Redis) khi logout với xác thực JWT stateless, thay vì chỉ xoá token phía client?",
+      "choices": [
+        {
+          "id": "day24-prac-1-a",
+          "text": "Vì JWT tự xác thực bằng chữ ký, server không lưu trạng thái phiên nào - nếu chỉ xoá token phía client, token đó (nếu bị đánh cắp trước đó) vẫn còn hợp lệ tới khi hết hạn tự nhiên"
+        },
+        {
+          "id": "day24-prac-1-b",
+          "text": "Vì Spring Security tự động vô hiệu hoá mọi JWT khi client gọi API logout"
+        },
+        {
+          "id": "day24-prac-1-c",
+          "text": "Vì JWT bắt buộc phải lưu trong Redis mới hoạt động được"
+        },
+        {
+          "id": "day24-prac-1-d",
+          "text": "Vì xoá token phía client sẽ tự động xoá luôn token đó khỏi mọi server khác"
+        }
+      ],
+      "correctChoiceIds": [
+        "day24-prac-1-a"
+      ],
+      "hint": "Nhớ lại đặc điểm stateless của JWT đã học ở Day 22 - server không lưu trạng thái phiên.",
+      "solution": "day24-prac-1-a",
+      "explanation": "JWT tự xác thực bằng chữ ký và không có trạng thái phía server; chỉ xoá token ở client không ngăn được ai đó dùng token đó (nếu đã bị lộ) cho tới khi nó tự hết hạn - cần một blacklist phía server (ví dụ Redis, tra cứu nhanh và tự hết hạn theo TTL) để chủ động thu hồi trước hạn.",
+      "rubric": "Liên hệ tới đặc điểm stateless của JWT đã học ở Day 22.",
+      "sourceUsage": [
+        "day24-src-1"
+      ]
+    },
+    {
+      "id": "day24-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Sửa một repository method đang gây N+1 khi nạp Product kèm Category bằng @EntityGraph.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng @EntityGraph(attributePaths = \"category\") trên method findAll().",
+      "solution": "@EntityGraph(attributePaths = \"category\")\nList<ProductEntity> findAll();",
+      "explanation": "Áp dụng lại mẫu @EntityGraph đã học trong bài để gộp việc nạp Category vào cùng truy vấn Product.",
+      "rubric": "Đánh giá đúng: có @EntityGraph với attributePaths trỏ đúng field category.",
+      "sourceUsage": [
+        "day24-src-3"
+      ]
+    },
+    {
+      "id": "day24-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao hibernate.order_inserts/order_updates cần bật cùng với hibernate.jdbc.batch_size để batch thực sự hiệu quả?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc JDBC driver chỉ gộp được batch khi các câu lệnh liền kề cùng loại entity.",
+      "solution": "batch_size chỉ cho phép Hibernate gộp các câu lệnh INSERT/UPDATE thành lô, nhưng nếu thứ tự các câu lệnh bị xen kẽ giữa nhiều loại entity khác nhau, JDBC driver không gộp được các câu lệnh không liền kề cùng loại vào một batch hiệu quả. order_inserts/order_updates sắp xếp lại thứ tự theo entity type trước khi gửi xuống database, đảm bảo các câu lệnh cùng loại đứng liền kề để batch_size phát huy tác dụng.",
+      "explanation": "Liên hệ giữa 'sắp xếp thứ tự theo loại' và khả năng JDBC driver gộp batch hiệu quả.",
+      "rubric": "Đánh giá học viên nêu đúng vai trò sắp xếp liền kề của order_inserts/order_updates với batch_size.",
+      "sourceUsage": [
+        "day24-src-7",
+        "day24-src-9"
+      ]
+    },
+    {
+      "id": "day24-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "@NotFound(action = NotFoundAction.IGNORE) trên một @ManyToOne LAZY dùng để làm gì?",
+      "choices": [
+        {
+          "id": "day24-prac-4-a",
+          "text": "Trả về null thay vì ném EntityNotFoundException khi entity liên kết không còn tồn tại/đã bị soft-delete"
+        },
+        {
+          "id": "day24-prac-4-b",
+          "text": "Tự động xoá bản ghi cha nếu entity liên kết không tồn tại"
+        },
+        {
+          "id": "day24-prac-4-c",
+          "text": "Chuyển field đó từ LAZY sang EAGER"
+        },
+        {
+          "id": "day24-prac-4-d",
+          "text": "Bỏ qua hoàn toàn việc kiểm tra khoá ngoại ở tầng database"
+        }
+      ],
+      "correctChoiceIds": [
+        "day24-prac-4-a"
+      ],
+      "hint": "Xem lại phần soft delete và @NotFound trong bài.",
+      "solution": "day24-prac-4-a",
+      "explanation": "Khi entity liên kết có thể bị soft-delete (@SoftDelete của Hibernate 6.4), proxy lazy mặc định sẽ ném EntityNotFoundException nếu bản ghi không còn 'sống'; @NotFound(action = NotFoundAction.IGNORE) khiến Hibernate trả về null thay vì ném exception trong tình huống này.",
+      "rubric": "Liên hệ @NotFound với tình huống entity liên kết bị soft-delete, không phải xoá cứng khỏi database.",
+      "sourceUsage": [
+        "day24-src-5",
+        "day24-src-6"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 42,
+      "text": "- Lab 8: Auth Service + Performance Optimization\n  - Register + Login + Refresh + Logout (Redis blacklist)\n  - @PreAuthorize role-based: CUSTOMER vs ADMIN\n  - Product list API: fix N+1 when load category\n  - Benchmark before/after optimize\n  - Security integration test with @WithMockUser"
+    }
+  ],
+  "enhancedExercises": [
+    "Thêm TTL cho từng entry trong Redis blacklist đúng bằng thời gian còn lại tới exp của token, tránh blacklist phình to vô hạn.",
+    "Đo và ghi lại số câu truy vấn SQL (qua log Hibernate) trước và sau khi áp dụng @EntityGraph cho Product list API với 100 sản phẩm mẫu."
+  ],
+  "references": [
+    {
+      "id": "day24-ref-1",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day24-src-1"
+    },
+    {
+      "id": "day24-ref-2",
+      "type": "external",
+      "resourceId": "res-ce09de5e928a",
+      "citationId": "day24-src-3"
+    },
+    {
+      "id": "day24-ref-3",
+      "type": "external",
+      "resourceId": "res-8437fa16cd25",
+      "citationId": "day24-src-5"
+    },
+    {
+      "id": "day24-ref-4",
+      "type": "external",
+      "resourceId": "res-28c8c8bc71df",
+      "citationId": "day24-src-7"
+    },
+    {
+      "id": "day24-ref-5",
+      "type": "internal",
+      "description": "Ghép toàn bộ kiến thức xác thực JWT (Day 22), authorization/N+1 (Day 23) thành một Auth Service hoàn chỉnh có tối ưu hiệu năng - hoàn tất Unit 8."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day24-src-1",
+      "resourceId": "res-65703b737426",
+      "locator": "How JWT Authentication Works",
+      "topic": "JwtAuthenticationProvider xác thực Bearer token mỗi request"
+    },
+    {
+      "id": "day24-src-2",
+      "resourceId": "res-65703b737426",
+      "locator": "Runtime Expectations",
+      "topic": "Xử lý request có Bearer token lúc runtime"
+    },
+    {
+      "id": "day24-src-3",
+      "resourceId": "res-ce09de5e928a",
+      "locator": "What is the N+1 query problem",
+      "topic": "Định nghĩa N+1 áp dụng cho Product list API"
+    },
+    {
+      "id": "day24-src-4",
+      "resourceId": "res-ce09de5e928a",
+      "locator": "Second-level cache",
+      "topic": "N+1 với second-level cache"
+    },
+    {
+      "id": "day24-src-5",
+      "resourceId": "res-8437fa16cd25",
+      "locator": "Introduction",
+      "topic": "@SoftDelete là cơ chế native của Hibernate 6.4"
+    },
+    {
+      "id": "day24-src-6",
+      "resourceId": "res-8437fa16cd25",
+      "locator": "The post_comments table is mapped to the PostComment entity as follows",
+      "topic": "Cần @NotFound cho @ManyToOne LAZY khi entity liên kết có thể bị soft-delete"
+    },
+    {
+      "id": "day24-src-7",
+      "resourceId": "res-28c8c8bc71df",
+      "locator": "Default batch support",
+      "topic": "Mặc định Hibernate không tự động batch"
+    },
+    {
+      "id": "day24-src-8",
+      "resourceId": "res-28c8c8bc71df",
+      "locator": "Configuring hibernate.jdbc.batch_size",
+      "topic": "Cấu hình hibernate.jdbc.batch_size"
+    },
+    {
+      "id": "day24-src-9",
+      "resourceId": "res-28c8c8bc71df",
+      "locator": "Ordering statements",
+      "topic": "hibernate.order_inserts / order_updates"
+    },
+    {
+      "id": "day24-src-10",
+      "resourceId": "res-28c8c8bc71df",
+      "locator": "Benchmark",
+      "topic": "Hiệu năng đo được qua benchmark"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Redis blacklist cho refresh/logout (lưu token bị thu hồi, kiểm tra trước khi chấp nhận token, TTL theo thời gian hết hạn còn lại): không có resource nào trong resourceIds của Day 24 mô tả kỹ thuật này - trình bày bằng kỹ thuật bổ sung phổ biến cho hệ thống JWT stateless trong khối note không yêu cầu trích dẫn.",
+      "Method Security cụ thể (@PreAuthorize chi tiết) và @WithMockUser: resource mô tả các chủ đề này (res-fa00cc21947b) thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 theo nguyên tắc không mượn citation chéo giữa các bài - Day 24 chỉ áp dụng lại mẫu đã học, trình bày trong khối note không yêu cầu trích dẫn riêng cho Day 24."
+    ]
+  }
+}

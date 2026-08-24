@@ -1,0 +1,455 @@
+{
+  "schemaVersion": 1,
+  "id": "day-19",
+  "catalogRef": {
+    "unitId": "unit-07",
+    "group": "spring",
+    "title": "Entity Design & Relationships",
+    "objectives": [
+      "LO7"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      33,
+      34
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 34,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-01d4c9bc1c9c",
+      "res-d20f2a5470d7",
+      "res-cf695e39df80",
+      "res-749fa81acd48"
+    ]
+  },
+  "unitId": "unit-07",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Entity Design & Relationships",
+  "summary": "Entity mapping trong JPA: @Entity/@Id/@Table/@Column, @Transient/@Temporal/@Enumerated, quan hệ một chiều và hai chiều (bao gồm @ManyToMany với @JoinTable), CascadeType và orphanRemoval, và FetchType (eager/lazy) cùng cơ chế proxy lazy loading của Hibernate.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO7"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Unit 6 (Spring Data JPA cơ bản: Repository, @Query, kết nối database) - bài này đào sâu vào entity mapping và quan hệ mà Unit 6 giả định đã biết ở mức cơ bản."
+  ],
+  "outcomes": [
+    "Ánh xạ đúng entity JPA bằng @Entity/@Id/@GeneratedValue/@Table/@Column.",
+    "Thiết kế đúng quan hệ một chiều, hai chiều, và @ManyToMany với @JoinTable.",
+    "Chọn đúng CascadeType và biết khi nào an toàn dùng orphanRemoval.",
+    "Giải thích đúng FetchType mặc định theo từng loại quan hệ và rủi ro LazyInitializationException."
+  ],
+  "sections": [
+    {
+      "id": "day19-sec-brief",
+      "title": "Đề bài và phạm vi bài học",
+      "blocks": [
+        {
+          "id": "day19-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day19-blk-2",
+          "type": "note",
+          "text": "Bài học mở đầu Unit 7 (JPA/Hibernate nâng cao): entity mapping bằng các annotation JPA cốt lõi, các kiểu quan hệ một chiều/hai chiều (bao gồm @ManyToMany), cascade type và orphan removal, và chiến lược fetch (eager/lazy). Assignment của ngày này không có đề bài chi tiết riêng (lịch học chỉ ghi 'Assignment') - học viên ôn tập và thực hành lại các ví dụ trong bài để chuẩn bị cho Assignment 7 (E-Commerce Data Layer) ở Day 21.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day19-sec-entity",
+      "title": "Entity Mapping: @Entity, @Id, @Table, @Column",
+      "blocks": [
+        {
+          "id": "day19-blk-3",
+          "type": "paragraph",
+          "text": "Annotation @Entity đánh dấu một class POJO là entity JPA - class phải có constructor không tham số (public hoặc protected), không được là final, và mọi persistent field/property nên có getter/setter phù hợp. Mỗi entity bắt buộc có annotation @Id để xác định trường khóa chính; chiến lược sinh giá trị khóa chính được khai báo qua @GeneratedValue với các strategy như IDENTITY (dựa vào cột auto-increment của database), SEQUENCE, TABLE, hoặc AUTO (để provider tự chọn chiến lược phù hợp với database đang dùng).",
+          "citations": [
+            "day19-src-1",
+            "day19-src-2"
+          ]
+        },
+        {
+          "id": "day19-blk-4",
+          "type": "paragraph",
+          "text": "@Table cho phép chỉ định tên bảng thực tế trong database khi tên này khác tên class (mặc định nếu không khai báo, provider dùng tên entity làm tên bảng); @Column tuỳ chỉnh ánh xạ một field tới cột cụ thể - tên cột, độ dài, nullable, và các ràng buộc khác. @Transient đánh dấu một field không được persist xuống database (ví dụ giá trị cache tính toán tạm thời); @Temporal chỉ định độ chính xác lưu trữ (DATE/TIME/TIMESTAMP) cho các field kiểu java.util.Date/Calendar; @Enumerated chọn cách lưu enum xuống database - ORDINAL (lưu số thứ tự, dễ vỡ khi thêm/sắp xếp lại hằng số enum) hoặc STRING (lưu tên hằng số, an toàn hơn khi tiến hoá schema).",
+          "citations": [
+            "day19-src-3",
+            "day19-src-4"
+          ]
+        },
+        {
+          "id": "day19-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.*;\n\n@Entity\n@Table(name = \"products\")\npublic class Product {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @Column(name = \"name\", nullable = false, length = 150)\n    private String name;\n\n    @Column(name = \"unit_price\", nullable = false)\n    private java.math.BigDecimal unitPrice;\n\n    @Temporal(TemporalType.TIMESTAMP)\n    @Column(name = \"created_at\")\n    private java.util.Date createdAt;\n\n    @Enumerated(EnumType.STRING)\n    @Column(name = \"status\", nullable = false)\n    private ProductStatus status;\n\n    @Transient\n    private java.math.BigDecimal discountedPriceCache;\n\n    protected Product() {\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day19-src-1",
+            "day19-src-2",
+            "day19-src-3",
+            "day19-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day19-sec-relationships",
+      "title": "Quan hệ một chiều, hai chiều và @ManyToMany",
+      "blocks": [
+        {
+          "id": "day19-blk-6",
+          "type": "paragraph",
+          "text": "Quan hệ một chiều (unidirectional) chỉ có một phía entity biết về entity còn lại - ví dụ ProductEntity giữ tham chiếu tới Category qua @ManyToOne và @JoinColumn, nhưng Category không có field nào trỏ ngược lại danh sách Product. Quan hệ hai chiều (bidirectional) khai báo cả hai phía, và phía 'inverse' (thường là phía @OneToMany) dùng thuộc tính mappedBy để chỉ ra field ở phía sở hữu (owning side) chịu trách nhiệm ánh xạ khoá ngoại - tránh JPA tạo nhầm bảng join trung gian không cần thiết.",
+          "citations": [
+            "day19-src-5",
+            "day19-src-6"
+          ]
+        },
+        {
+          "id": "day19-blk-7",
+          "type": "paragraph",
+          "text": "Với quan hệ nhiều-nhiều (@ManyToMany), một bảng join trung gian là bắt buộc để lưu các cặp khoá ngoại; phía sở hữu khai báo @JoinTable với joinColumns (khoá ngoại trỏ về entity hiện tại) và inverseJoinColumns (khoá ngoại trỏ về entity phía kia), còn phía nghịch đảo chỉ cần mappedBy trỏ về field @ManyToMany của phía sở hữu. So với quan hệ một chiều, quan hệ hai chiều linh hoạt hơn khi cần truy vấn từ cả hai phía nhưng đòi hỏi lập trình viên tự đồng bộ cả hai field khi thêm/xoá phần tử (ví dụ qua các helper method addProduct()/removeProduct()) để tránh trạng thái không nhất quán giữa hai phía trong bộ nhớ.",
+          "citations": [
+            "day19-src-7",
+            "day19-src-8"
+          ]
+        },
+        {
+          "id": "day19-blk-8",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.*;\nimport java.util.ArrayList;\nimport java.util.List;\n\n@Entity\npublic class Category {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @OneToMany(mappedBy = \"category\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<Product> products = new ArrayList<>();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    private Category category;\n\n    @ManyToMany\n    @JoinTable(\n        name = \"product_tag\",\n        joinColumns = @JoinColumn(name = \"product_id\"),\n        inverseJoinColumns = @JoinColumn(name = \"tag_id\")\n    )\n    private List<TagEntity> tags = new ArrayList<>();\n}\n\n@Entity\nclass TagEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToMany(mappedBy = \"tags\")\n    private List<ProductEntity> products = new ArrayList<>();\n}\n",
+          "compile": false,
+          "citations": [
+            "day19-src-5",
+            "day19-src-6",
+            "day19-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day19-sec-cascade",
+      "title": "Cascade Type và Orphan Removal",
+      "blocks": [
+        {
+          "id": "day19-blk-9",
+          "type": "paragraph",
+          "text": "CascadeType điều khiển việc một thao tác persistence trên entity cha có được lan truyền (cascade) sang các entity con liên kết hay không. Jakarta Persistence chuẩn hoá sáu loại: ALL (lan truyền mọi thao tác), PERSIST, MERGE, REMOVE, REFRESH, và DETACH. CascadeType.PERSIST lan truyền việc lưu entity con khi entity cha được persist (tiện lợi khi tạo cha-con trong cùng một giao dịch), còn CascadeType.REMOVE lan truyền việc xoá entity con khi entity cha bị xoá - cần cân nhắc kỹ vì có thể xoá nhầm dữ liệu vẫn còn được tham chiếu ở nơi khác.",
+          "citations": [
+            "day19-src-9",
+            "day19-src-10"
+          ]
+        },
+        {
+          "id": "day19-blk-10",
+          "type": "table",
+          "columns": [
+            "CascadeType",
+            "Ý nghĩa"
+          ],
+          "rows": [
+            [
+              "ALL",
+              "Lan truyền mọi thao tác persistence sang entity con"
+            ],
+            [
+              "PERSIST",
+              "Lan truyền thao tác lưu (persist/save) mới"
+            ],
+            [
+              "MERGE",
+              "Lan truyền thao tác merge trạng thái detached"
+            ],
+            [
+              "REMOVE",
+              "Lan truyền thao tác xoá entity con khi cha bị xoá"
+            ],
+            [
+              "REFRESH",
+              "Lan truyền thao tác nạp lại dữ liệu từ database"
+            ],
+            [
+              "DETACH",
+              "Lan truyền thao tác tách entity khỏi persistence context"
+            ]
+          ],
+          "citations": [
+            "day19-src-9"
+          ]
+        },
+        {
+          "id": "day19-blk-11",
+          "type": "warning",
+          "text": "orphanRemoval = true (thuộc tính riêng của @OneToMany/@OneToOne, không phải một CascadeType) khiến provider tự xoá entity con khỏi database ngay khi nó bị gỡ khỏi collection của entity cha - kể cả khi không gọi remove() tường minh trên entity con. Kết hợp CascadeType.REMOVE với orphanRemoval=true trên một quan hệ có nhiều entity cha có thể trỏ tới cùng entity con (ví dụ quan hệ chia sẻ) sẽ xoá nhầm dữ liệu vẫn đang được entity cha khác tham chiếu - chỉ nên dùng khi entity con thực sự chỉ thuộc về một entity cha duy nhất (quan hệ composition, không phải aggregation).",
+          "citations": [
+            "day19-src-9",
+            "day19-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day19-sec-fetch",
+      "title": "FetchType: Eager và Lazy Loading",
+      "blocks": [
+        {
+          "id": "day19-blk-12",
+          "type": "paragraph",
+          "text": "FetchType quyết định thời điểm dữ liệu liên kết được nạp: EAGER nạp ngay cùng lúc với entity chủ (một hoặc nhiều câu SQL bổ sung được thực thi ngay lập tức), còn LAZY trì hoãn việc nạp tới khi field đó thực sự được truy cập lần đầu trong code. Jakarta Persistence quy định FetchType mặc định khác nhau theo loại quan hệ: @ManyToOne và @OneToOne mặc định là EAGER, còn @OneToMany và @ManyToMany mặc định là LAZY - vì quan hệ 'nhiều' tiềm ẩn nguy cơ nạp một tập dữ liệu rất lớn nếu nạp eager.",
+          "citations": [
+            "day19-src-11",
+            "day19-src-12"
+          ]
+        },
+        {
+          "id": "day19-blk-13",
+          "type": "note",
+          "text": "Hibernate hiện thực lazy loading bằng cách trả về một proxy (hoặc collection wrapper) thay vì entity/tập dữ liệu thật; proxy này chỉ truy vấn database khi một phương thức trên nó được gọi lần đầu. Vì cơ chế này gắn với persistence context đang mở, truy cập một field lazy sau khi session/EntityManager đã đóng sẽ ném LazyInitializationException - một trong những lỗi runtime phổ biến nhất khi làm việc với JPA/Hibernate.",
+          "citations": [
+            "day19-src-13"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng CascadeType.REMOVE hoặc orphanRemoval=true trên quan hệ mà entity con thực chất được nhiều entity cha chia sẻ (aggregation, không phải composition).",
+    "Truy cập field @ManyToOne/@OneToMany LAZY sau khi persistence context đã đóng, gây LazyInitializationException.",
+    "Không đồng bộ cả hai phía của quan hệ hai chiều khi thêm/xoá phần tử, dẫn tới trạng thái không nhất quán trong bộ nhớ dù database đã đúng."
+  ],
+  "practices": [
+    {
+      "id": "day19-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Trong quan hệ @OneToMany/@ManyToOne hai chiều, thuộc tính mappedBy được khai báo ở đâu và có ý nghĩa gì?",
+      "choices": [
+        {
+          "id": "day19-prac-1-a",
+          "text": "Khai báo ở phía @OneToMany (phía nghịch đảo), trỏ tên field ở phía sở hữu (@ManyToOne) chịu trách nhiệm ánh xạ khoá ngoại"
+        },
+        {
+          "id": "day19-prac-1-b",
+          "text": "Khai báo ở phía @ManyToOne, trỏ tên cột khoá ngoại trong database"
+        },
+        {
+          "id": "day19-prac-1-c",
+          "text": "mappedBy chỉ dùng cho @ManyToMany, không dùng cho @OneToMany"
+        },
+        {
+          "id": "day19-prac-1-d",
+          "text": "mappedBy thay thế hoàn toàn cho @JoinColumn ở cả hai phía"
+        }
+      ],
+      "correctChoiceIds": [
+        "day19-prac-1-a"
+      ],
+      "hint": "Xem lại phần so sánh quan hệ một chiều và hai chiều trong bài.",
+      "solution": "day19-prac-1-a",
+      "explanation": "mappedBy được khai báo ở phía nghịch đảo (thường là @OneToMany) và trỏ tới tên field ở phía sở hữu quan hệ (thường là @ManyToOne cùng @JoinColumn) - phía sở hữu mới là phía JPA dùng để ánh xạ khoá ngoại thực tế.",
+      "rubric": "Chọn đúng phía khai báo mappedBy và vai trò 'chỉ tên field phía sở hữu' thay vì nhầm với tên cột database.",
+      "sourceUsage": [
+        "day19-src-6"
+      ]
+    },
+    {
+      "id": "day19-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một entity Order có quan hệ @OneToMany hai chiều tới entity OrderItem (mappedBy phù hợp), dùng CascadeType.PERSIST và orphanRemoval=true vì OrderItem chỉ thuộc về đúng một Order.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "OrderItem là composition của Order (không entity cha nào khác chia sẻ nó) nên orphanRemoval an toàn ở đây.",
+      "solution": "@Entity\nclass Order {\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @OneToMany(mappedBy = \"order\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<OrderItem> items = new ArrayList<>();\n}\n\n@Entity\nclass OrderItem {\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"order_id\")\n    private Order order;\n}",
+      "explanation": "Áp dụng lại mẫu quan hệ hai chiều mappedBy kèm cascade/orphanRemoval đã học trong bài.",
+      "rubric": "Đánh giá đúng: mappedBy trỏ đúng field 'order' ở OrderItem, orphanRemoval=true chỉ dùng vì quan hệ composition, @ManyToOne khai báo fetch LAZY tường minh.",
+      "sourceUsage": [
+        "day19-src-6",
+        "day19-src-9"
+      ]
+    },
+    {
+      "id": "day19-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "orphanRemoval khác CascadeType.REMOVE ở điểm nào, và tại sao kết hợp cả hai lại nguy hiểm với entity con được nhiều entity cha chia sẻ?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về sự khác biệt giữa 'entity cha bị xoá' và 'entity con bị gỡ khỏi collection'.",
+      "solution": "CascadeType.REMOVE chỉ lan truyền việc xoá entity con khi chính entity cha bị xoá; orphanRemoval xoá entity con ngay khi nó bị gỡ khỏi collection của cha, kể cả khi cha không bị xoá. Nếu entity con thực chất được nhiều entity cha tham chiếu (aggregation thay vì composition), kết hợp cả hai sẽ xoá nhầm dữ liệu đang còn được cha khác dùng chỉ vì nó bị gỡ khỏi collection của một cha.",
+      "explanation": "Phân biệt rõ mốc kích hoạt: xoá cha (CascadeType.REMOVE) so với gỡ khỏi collection (orphanRemoval).",
+      "rubric": "Đánh giá học viên nêu đúng hai mốc kích hoạt khác nhau và rủi ro với quan hệ chia sẻ.",
+      "sourceUsage": [
+        "day19-src-9",
+        "day19-src-10"
+      ]
+    },
+    {
+      "id": "day19-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Theo Jakarta Persistence, FetchType mặc định của @OneToMany và @ManyToMany là gì, và vì sao?",
+      "choices": [
+        {
+          "id": "day19-prac-4-a",
+          "text": "LAZY, vì quan hệ 'nhiều' có thể chứa tập dữ liệu lớn nên tránh nạp toàn bộ ngay lập tức"
+        },
+        {
+          "id": "day19-prac-4-b",
+          "text": "EAGER, giống hệt @ManyToOne và @OneToOne"
+        },
+        {
+          "id": "day19-prac-4-c",
+          "text": "Không có mặc định, bắt buộc phải khai báo fetch tường minh"
+        },
+        {
+          "id": "day19-prac-4-d",
+          "text": "LAZY chỉ áp dụng cho @ManyToMany, còn @OneToMany mặc định EAGER"
+        }
+      ],
+      "correctChoiceIds": [
+        "day19-prac-4-a"
+      ],
+      "hint": "Đối chiếu bảng FetchType mặc định theo từng loại quan hệ trong bài.",
+      "solution": "day19-prac-4-a",
+      "explanation": "Jakarta Persistence quy định @OneToMany và @ManyToMany mặc định LAZY (khác với @ManyToOne/@OneToOne mặc định EAGER) vì phía 'nhiều' tiềm ẩn nguy cơ nạp một tập dữ liệu rất lớn nếu nạp eager ngay lập tức.",
+      "rubric": "Chọn đúng giá trị mặc định LAZY và lý do liên quan tới kích thước tập dữ liệu tiềm năng.",
+      "sourceUsage": [
+        "day19-src-12"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 34,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viết helper method addProduct()/removeProduct() trên Category để đồng bộ cả hai phía của quan hệ @OneToMany/@ManyToOne khi thêm/xoá.",
+    "Thử đổi @Enumerated từ STRING sang ORDINAL trên một entity có sẵn, thêm một hằng số enum mới vào giữa danh sách, và quan sát dữ liệu cũ bị đọc sai nghĩa."
+  ],
+  "references": [
+    {
+      "id": "day19-ref-1",
+      "type": "external",
+      "resourceId": "res-01d4c9bc1c9c",
+      "citationId": "day19-src-1"
+    },
+    {
+      "id": "day19-ref-2",
+      "type": "external",
+      "resourceId": "res-d20f2a5470d7",
+      "citationId": "day19-src-5"
+    },
+    {
+      "id": "day19-ref-3",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day19-src-9"
+    },
+    {
+      "id": "day19-ref-4",
+      "type": "internal",
+      "description": "Chuẩn bị nền tảng entity/quan hệ trước khi học query, transaction và auditing ở Day 20, rồi áp dụng trực tiếp vào Assignment 7 (E-Commerce Data Layer) ở Day 21."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day19-src-1",
+      "resourceId": "res-01d4c9bc1c9c",
+      "locator": "2.1. The Entity Annotation",
+      "topic": "@Entity annotation"
+    },
+    {
+      "id": "day19-src-2",
+      "resourceId": "res-01d4c9bc1c9c",
+      "locator": "2.2. The Id Annotation",
+      "topic": "Chiến lược sinh khóa chính"
+    },
+    {
+      "id": "day19-src-3",
+      "resourceId": "res-01d4c9bc1c9c",
+      "locator": "2.3. The Table Annotation / 2.4. The Column Annotation",
+      "topic": "@Table và @Column"
+    },
+    {
+      "id": "day19-src-4",
+      "resourceId": "res-01d4c9bc1c9c",
+      "locator": "2.5. The Transient Annotation / 2.6. The Temporal Annotation / 2.7. The Enumerated Annotation",
+      "topic": "@Transient, @Temporal, @Enumerated"
+    },
+    {
+      "id": "day19-src-5",
+      "resourceId": "res-d20f2a5470d7",
+      "locator": "2. Unidirectional Associations",
+      "topic": "Quan hệ một chiều"
+    },
+    {
+      "id": "day19-src-6",
+      "resourceId": "res-d20f2a5470d7",
+      "locator": "3.1. One-To-Many Bidirectional Association",
+      "topic": "Quan hệ hai chiều dùng mappedBy"
+    },
+    {
+      "id": "day19-src-7",
+      "resourceId": "res-d20f2a5470d7",
+      "locator": "3.2. Many-To-Many Bidirectional Association",
+      "topic": "Many-to-many hai chiều"
+    },
+    {
+      "id": "day19-src-8",
+      "resourceId": "res-d20f2a5470d7",
+      "locator": "4. Unidirectional vs. Bidirectional Association",
+      "topic": "Đánh đổi giữa hai kiểu quan hệ"
+    },
+    {
+      "id": "day19-src-9",
+      "resourceId": "res-cf695e39df80",
+      "locator": "2.1. JPA Cascade Type / 3.1. CascadeType.ALL",
+      "topic": "CascadeType chuẩn JPA"
+    },
+    {
+      "id": "day19-src-10",
+      "resourceId": "res-cf695e39df80",
+      "locator": "3.2. CascadeType.PERSIST / 3.4. CascadeType.REMOVE",
+      "topic": "CascadeType.PERSIST và CascadeType.REMOVE"
+    },
+    {
+      "id": "day19-src-11",
+      "resourceId": "res-749fa81acd48",
+      "locator": "3. Eager and Lazy Loading / 4. Loading Configuration",
+      "topic": "Khái niệm eager và lazy loading"
+    },
+    {
+      "id": "day19-src-12",
+      "resourceId": "res-749fa81acd48",
+      "locator": "7. JPA Default FetchType",
+      "topic": "FetchType mặc định theo Jakarta Persistence"
+    },
+    {
+      "id": "day19-src-13",
+      "resourceId": "res-749fa81acd48",
+      "locator": "8. Lazy Loading in Hibernate",
+      "topic": "Cơ chế proxy của lazy loading"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Cơ chế chi tiết bên trong của proxy Hibernate (bytecode enhancement, CGLIB/ByteBuddy) không được trình bày sâu - resource res-749fa81acd48 chỉ mô tả proxy ở mức khái niệm (nạp trì hoãn, LazyInitializationException khi session đóng), đủ cho mục tiêu LO7 của bài mà không cần đi sâu vào cơ chế sinh bytecode."
+    ]
+  }
+}

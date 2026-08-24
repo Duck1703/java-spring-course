@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 1,
+  "id": "day-23",
+  "catalogRef": {
+    "unitId": "unit-08",
+    "group": "spring",
+    "title": "Authorization & JPA Performance",
+    "objectives": [
+      "LO8"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      40,
+      41
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-fa00cc21947b",
+      "res-d1d09e3813e4",
+      "res-1559f0cd62e7",
+      "res-ce09de5e928a"
+    ]
+  },
+  "unitId": "unit-08",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Authorization & JPA Performance",
+  "summary": "Method Security (@EnableMethodSecurity, @PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter, hạn chế self-invocation, test bằng @WithMockUser); CORS/CSRF và quyết định bật/tắt CSRF phụ thuộc cơ chế xác thực; và vấn đề hiệu năng N+1 - vì sao cả FetchType.EAGER lẫn LAZY đều không tự động tránh được.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO8"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 22 (Authentication with Spring Security + JWT) - bài này xây tiếp authorization trên nền xác thực JWT đã cấu hình, và Day 19-20 (entity/fetch/relationship) để hiểu vấn đề N+1."
+  ],
+  "outcomes": [
+    "Cấu hình đúng @PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter và biết hạn chế self-invocation.",
+    "Quyết định đúng khi nào cần/không cần bật CSRF dựa trên cơ chế xác thực đang dùng.",
+    "Giải thích đúng vì sao FetchType không tự tránh được N+1 và nhận diện N+1 trong code."
+  ],
+  "sections": [
+    {
+      "id": "day23-sec-brief",
+      "title": "Phạm vi buổi Guides/Review",
+      "blocks": [
+        {
+          "id": "day23-blk-1",
+          "type": "note",
+          "text": "Ngày học không có Assignment riêng (lịch chỉ ghi 'Guides/Review') - buổi ôn tập tổng hợp Method Security (@PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter), CORS/CSRF, và vấn đề hiệu năng N+1 - cả ba mảng kiến thức sẽ được áp dụng trực tiếp vào Lab 8 (Auth Service + Performance Optimization) ở Day 24.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day23-sec-method-security",
+      "title": "Method Security: @PreAuthorize, @PostAuthorize, @PreFilter, @PostFilter",
+      "blocks": [
+        {
+          "id": "day23-blk-2",
+          "type": "paragraph",
+          "text": "Method Security cho phép kiểm soát truy cập ở mức method thay vì chỉ ở mức URL; phải bật tường minh bằng @EnableMethodSecurity trên một class cấu hình trước khi các annotation bảo mật trên method có hiệu lực. @PreAuthorize đánh giá biểu thức SpEL (ví dụ \"hasRole('ADMIN')\") trước khi method được gọi, chặn hoàn toàn lời gọi nếu điều kiện không thoả; @PostAuthorize đánh giá sau khi method đã chạy xong, dựa trên cả kết quả trả về (biến 'returnObject') - phù hợp khi quyền truy cập phụ thuộc vào chính dữ liệu vừa được nạp.",
+          "citations": [
+            "day23-src-1",
+            "day23-src-2"
+          ]
+        },
+        {
+          "id": "day23-blk-3",
+          "type": "paragraph",
+          "text": "@PreFilter lọc bớt phần tử khỏi một collection tham số trước khi method thực thi (dựa trên biểu thức SpEL với biến 'filterObject' đại diện từng phần tử); @PostFilter lọc bớt phần tử khỏi collection kết quả trả về sau khi method chạy xong. Cả hai đều hữu ích khi quyền truy cập áp dụng ở mức từng phần tử trong danh sách, thay vì chặn/cho phép toàn bộ lời gọi method.",
+          "citations": [
+            "day23-src-3"
+          ]
+        },
+        {
+          "id": "day23-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.security.access.prepost.PreFilter;\n\nclass ProductAdminService {\n\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    void deleteProduct(Long productId) {\n        // chi ADMIN moi goi duoc method nay tu ben ngoai bean\n    }\n\n    @PreFilter(\"filterObject.ownerId == authentication.name\")\n    void bulkUpdate(java.util.List<OrderEntity> orders) {\n        // orders bi loc truoc, chi giu phan tu ma\n        // filterObject.ownerId khop voi nguoi dang dang nhap\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day23-src-2",
+            "day23-src-3"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day23-blk-5",
+          "type": "warning",
+          "text": "Method Security dựa trên cơ chế AOP proxy của Spring - annotation bảo mật chỉ có hiệu lực khi method được gọi từ BÊN NGOÀI bean (qua proxy), không có hiệu lực khi một method trong cùng class tự gọi method khác của chính nó (self-invocation) vì lời gọi nội bộ bỏ qua proxy hoàn toàn. Không nên giả định @PreAuthorize luôn được kiểm tra - cần thiết kế lại (ví dụ tách logic ra bean riêng) nếu có self-invocation cần bảo vệ.",
+          "citations": [
+            "day23-src-4"
+          ]
+        },
+        {
+          "id": "day23-blk-6",
+          "type": "note",
+          "text": "Có thể kiểm thử method security bằng annotation @WithMockUser trên test method (khai báo username/roles giả lập) kết hợp Spring Security Test, cho phép xác minh @PreAuthorize/@PostAuthorize chặn hoặc cho phép đúng theo vai trò mà không cần dựng toàn bộ luồng xác thực JWT thật trong test.",
+          "citations": [
+            "day23-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day23-sec-cors-csrf",
+      "title": "CORS và CSRF",
+      "blocks": [
+        {
+          "id": "day23-blk-7",
+          "type": "note",
+          "text": "Cấu hình CORS (Cross-Origin Resource Sharing) qua CorsConfigurationSource để cho phép front-end ở domain khác gọi API không có resource nào trong resourceIds của Day 23 mô tả trực tiếp (xem authoring.limitations) - trình bày bằng kiến thức chuẩn của Spring: khai báo allowedOrigins/allowedMethods/allowedHeaders trong một @Bean CorsConfigurationSource, rồi bật http.cors() trong SecurityFilterChain.",
+          "citations": []
+        },
+        {
+          "id": "day23-blk-8",
+          "type": "paragraph",
+          "text": "CSRF (Cross-Site Request Forgery) là tấn công lừa trình duyệt của nạn nhân (đã đăng nhập, còn cookie session hợp lệ) gửi một request không mong muốn tới ứng dụng - có thể qua form ẩn tự submit (POST) hoặc qua request GET có side-effect (ví dụ link GET /transfer?amount=1000 nhúng trong ảnh). Spring Security bật bảo vệ CSRF theo mặc định từ phiên bản 4.x cho các request có side-effect (POST/PUT/DELETE), yêu cầu một CSRF token hợp lệ kèm theo request.",
+          "citations": [
+            "day23-src-6",
+            "day23-src-7"
+          ]
+        },
+        {
+          "id": "day23-blk-9",
+          "type": "warning",
+          "text": "Việc có cần bật CSRF hay không phụ thuộc vào cơ chế xác thực: CSRF là rủi ro khi trình duyệt tự động đính kèm thông tin xác thực (cookie session) vào mọi request tới domain đó, kể cả request do trang khác khởi tạo. Với API stateless xác thực bằng Bearer token (JWT gửi qua header Authorization, không dùng cookie), trình duyệt KHÔNG tự đính kèm token này nên CSRF không còn là vector tấn công khả thi - lúc đó tắt CSRF (http.csrf().disable()) là hợp lý. Ngược lại, nếu ứng dụng còn dùng cookie/session ở bất kỳ phần nào (kể cả một endpoint quản trị dùng session truyền thống), tắt CSRF cho toàn bộ ứng dụng chỉ vì API chính dùng JWT là một quyết định KHÔNG an toàn - đây là quyết định phụ thuộc ngữ cảnh xác thực thực tế, không phải một mẹo 'tắt CSRF cho gọn' áp dụng chung cho mọi API.",
+          "citations": [
+            "day23-src-8"
+          ]
+        },
+        {
+          "id": "day23-blk-10",
+          "type": "note",
+          "text": "Với ứng dụng vẫn cần CSRF, CsrfFilter kết hợp với CsrfTokenRequestHandler để sinh và xác minh token; CsrfTokenRepository chịu trách nhiệm lưu trữ token (mặc định trong HttpSession, có thể đổi sang CookieCsrfTokenRepository). Để chống lại tấn công BREACH (suy luận token qua độ dài response khi nén), Spring Security khuyến nghị dùng XorCsrfTokenRequestAttributeHandler - XOR token thật với một giá trị ngẫu nhiên trước khi đưa vào response, khiến độ dài token quan sát được không còn tương quan trực tiếp với giá trị token thật.",
+          "citations": [
+            "day23-src-9",
+            "day23-src-10",
+            "day23-src-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day23-sec-n1",
+      "title": "Vấn đề hiệu năng N+1",
+      "blocks": [
+        {
+          "id": "day23-blk-11",
+          "type": "paragraph",
+          "text": "Vấn đề N+1 xảy ra khi code thực thi 1 câu truy vấn để lấy N bản ghi, rồi thực thi thêm N câu truy vấn riêng lẻ (một cho mỗi bản ghi) để lấy dữ liệu liên kết - tổng cộng N+1 câu truy vấn thay vì có thể gộp lại chỉ còn 1-2 câu. Đây là một trong những nguyên nhân phổ biến nhất gây chậm hiệu năng ứng dụng dùng ORM khi làm việc với danh sách lớn.",
+          "citations": [
+            "day23-src-12"
+          ]
+        },
+        {
+          "id": "day23-blk-12",
+          "type": "table",
+          "columns": [
+            "FetchType",
+            "Có tự tránh N+1 không?"
+          ],
+          "rows": [
+            [
+              "EAGER",
+              "Không - vẫn có thể gây N+1 nếu Hibernate chọn chiến lược nạp riêng lẻ (select) cho từng bản ghi thay vì join"
+            ],
+            [
+              "LAZY",
+              "Không - chỉ trì hoãn thời điểm nạp, nếu code truy cập field lazy trong vòng lặp thì vẫn phát sinh N truy vấn riêng lẻ"
+            ]
+          ],
+          "citations": [
+            "day23-src-13",
+            "day23-src-14"
+          ]
+        },
+        {
+          "id": "day23-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.*;\nimport java.util.List;\n\nclass N1ProblemDemo {\n\n    // Neu category la @ManyToOne(fetch = FetchType.LAZY), vong lap\n    // duoi day van gay N+1: 1 query lay danh sach Product, roi\n    // them 1 query rieng cho moi lan p.getCategory().getName() duoc\n    // goi lan dau (proxy lazy tu tai du lieu ngay khi truy cap).\n    void printCategoryNamesNaively(List<ProductEntity> products) {\n        for (ProductEntity p : products) {\n            System.out.println(p.getCategory().getName());\n        }\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day23-src-13",
+            "day23-src-14"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day23-blk-14",
+          "type": "note",
+          "text": "Cả FetchType.EAGER lẫn FetchType.LAZY đều KHÔNG tự động giải quyết N+1 - FetchType chỉ quyết định thời điểm nạp (ngay lập tức hay trì hoãn), không quyết định chiến lược nạp (join một lần hay truy vấn riêng lẻ nhiều lần). Cách khắc phục thực sự (JOIN FETCH, @EntityGraph, batch fetching) sẽ được trình bày ở Day 24 khi áp dụng trực tiếp vào việc sửa N+1 cho API danh sách sản phẩm trong Lab 8.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Giả định @PreAuthorize luôn được kiểm tra kể cả khi method tự gọi method khác trong cùng class (self-invocation bỏ qua AOP proxy).",
+    "Tắt CSRF cho toàn bộ ứng dụng chỉ vì API chính dùng JWT, trong khi vẫn còn phần dùng session/cookie.",
+    "Cho rằng đổi FetchType từ EAGER sang LAZY là đã giải quyết xong N+1, mà không kiểm tra cách field lazy được truy cập trong vòng lặp."
+  ],
+  "practices": [
+    {
+      "id": "day23-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khác biệt chính giữa @PreAuthorize và @PostAuthorize là gì?",
+      "choices": [
+        {
+          "id": "day23-prac-1-a",
+          "text": "@PreAuthorize đánh giá trước khi method chạy (chặn hoàn toàn nếu không thoả); @PostAuthorize đánh giá sau khi method chạy, có thể dựa vào kết quả trả về"
+        },
+        {
+          "id": "day23-prac-1-b",
+          "text": "@PreAuthorize chỉ dùng cho method void, @PostAuthorize chỉ dùng cho method có giá trị trả về"
+        },
+        {
+          "id": "day23-prac-1-c",
+          "text": "Hai annotation này hoàn toàn tương đương, chỉ khác tên gọi"
+        },
+        {
+          "id": "day23-prac-1-d",
+          "text": "@PostAuthorize chạy trước @PreAuthorize theo thứ tự bảng chữ cái"
+        }
+      ],
+      "correctChoiceIds": [
+        "day23-prac-1-a"
+      ],
+      "hint": "Xem lại phần Method Security trong bài.",
+      "solution": "day23-prac-1-a",
+      "explanation": "@PreAuthorize đánh giá biểu thức SpEL trước khi method được gọi, chặn hoàn toàn lời gọi nếu không thoả; @PostAuthorize đánh giá sau khi method đã chạy xong, có thể dựa vào cả kết quả trả về (returnObject) - phù hợp khi quyền truy cập phụ thuộc chính dữ liệu vừa nạp.",
+      "rubric": "Chọn đúng mốc thời điểm đánh giá (trước/sau khi method chạy) và khả năng dùng returnObject.",
+      "sourceUsage": [
+        "day23-src-2"
+      ]
+    },
+    {
+      "id": "day23-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một method deleteOrder(Long orderId) chỉ cho phép role ADMIN gọi, dùng @PreAuthorize.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng biểu thức SpEL hasRole('ADMIN') trong @PreAuthorize.",
+      "solution": "@PreAuthorize(\"hasRole('ADMIN')\")\nvoid deleteOrder(Long orderId) {\n    // chi ADMIN moi goi duoc\n}",
+      "explanation": "Áp dụng lại mẫu @PreAuthorize(\"hasRole(...)\") đã học trong bài vào một method mới.",
+      "rubric": "Đánh giá đúng: có @PreAuthorize với biểu thức hasRole('ADMIN') trên method.",
+      "sourceUsage": [
+        "day23-src-2"
+      ]
+    },
+    {
+      "id": "day23-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao không nên tắt CSRF cho toàn bộ ứng dụng chỉ vì API chính dùng JWT, nếu ứng dụng vẫn còn một phần dùng session/cookie?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc CSRF khai thác cookie mà trình duyệt tự động đính kèm, không liên quan tới Bearer token.",
+      "solution": "CSRF là rủi ro khi trình duyệt tự động đính kèm cookie session vào request, kể cả request do trang khác khởi tạo. Phần dùng JWT qua header Authorization không bị ảnh hưởng vì trình duyệt không tự đính kèm header đó, nhưng phần còn dùng cookie/session vẫn có nguy cơ bị giả mạo request nếu tắt CSRF toàn cục - CSRF cần được bật/tắt theo đúng cơ chế xác thực của từng phần, không phải một quyết định áp dụng chung cho toàn ứng dụng.",
+      "explanation": "Liên hệ CSRF với cơ chế trình duyệt tự động đính kèm cookie, không phải header Authorization.",
+      "rubric": "Đánh giá học viên nêu đúng lý do CSRF gắn với cookie/session, không phải Bearer token qua header.",
+      "sourceUsage": [
+        "day23-src-8"
+      ]
+    },
+    {
+      "id": "day23-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "FetchType.LAZY có tự động tránh được vấn đề N+1 không?",
+      "choices": [
+        {
+          "id": "day23-prac-4-a",
+          "text": "Không - LAZY chỉ trì hoãn thời điểm nạp; nếu code truy cập field lazy bên trong vòng lặp thì vẫn phát sinh N truy vấn riêng lẻ"
+        },
+        {
+          "id": "day23-prac-4-b",
+          "text": "Có - LAZY luôn gộp tất cả truy vấn liên kết thành một câu JOIN duy nhất"
+        },
+        {
+          "id": "day23-prac-4-c",
+          "text": "Có, nhưng chỉ khi dùng chung với @Transactional"
+        },
+        {
+          "id": "day23-prac-4-d",
+          "text": "N+1 chỉ xảy ra với FetchType.EAGER, không bao giờ xảy ra với LAZY"
+        }
+      ],
+      "correctChoiceIds": [
+        "day23-prac-4-a"
+      ],
+      "hint": "Xem lại bảng so sánh FetchType và N+1 trong bài.",
+      "solution": "day23-prac-4-a",
+      "explanation": "FetchType chỉ quyết định thời điểm nạp (ngay lập tức hay trì hoãn), không quyết định chiến lược nạp; LAZY vẫn gây N+1 nếu code truy cập field lazy của từng phần tử bên trong vòng lặp, vì mỗi lần truy cập lần đầu sẽ phát sinh một truy vấn riêng.",
+      "rubric": "Phân biệt rõ 'thời điểm nạp' (FetchType) với 'chiến lược nạp' (nguyên nhân thực sự của N+1).",
+      "sourceUsage": [
+        "day23-src-13",
+        "day23-src-14"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viết một test dùng @WithMockUser(roles = \"ADMIN\") xác minh deleteOrder() cho phép ADMIN gọi và một test khác xác minh vai trò khác bị chặn.",
+    "Cấu hình CookieCsrfTokenRepository thay cho lưu trong HttpSession, và giải thích khi nào lựa chọn này phù hợp hơn cho một front-end SPA."
+  ],
+  "references": [
+    {
+      "id": "day23-ref-1",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day23-src-2"
+    },
+    {
+      "id": "day23-ref-2",
+      "type": "external",
+      "resourceId": "res-d1d09e3813e4",
+      "citationId": "day23-src-8"
+    },
+    {
+      "id": "day23-ref-3",
+      "type": "external",
+      "resourceId": "res-ce09de5e928a",
+      "citationId": "day23-src-12"
+    },
+    {
+      "id": "day23-ref-4",
+      "type": "internal",
+      "description": "Chuẩn bị kiến thức authorization/CSRF/N+1 trước khi áp dụng vào Lab 8 (Auth Service + Performance Optimization) ở Day 24, nơi N+1 sẽ được sửa thực tế bằng JOIN FETCH/@EntityGraph/batch fetching."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day23-src-1",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "2. Enabling Method Security",
+      "topic": "Bật Method Security bằng @EnableMethodSecurity"
+    },
+    {
+      "id": "day23-src-2",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "3.3. Using @PreAuthorize and @PostAuthorize Annotations",
+      "topic": "@PreAuthorize và @PostAuthorize"
+    },
+    {
+      "id": "day23-src-3",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "3.4. Using @PreFilter and @PostFilter Annotations",
+      "topic": "@PreFilter và @PostFilter"
+    },
+    {
+      "id": "day23-src-4",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "4. Important Considerations",
+      "topic": "Hạn chế do AOP proxy (self-invocation không được chặn)"
+    },
+    {
+      "id": "day23-src-5",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "5.2. Testing Username and Roles",
+      "topic": "Test bằng @WithMockUser"
+    },
+    {
+      "id": "day23-src-6",
+      "resourceId": "res-d1d09e3813e4",
+      "locator": "2.1. GET Examples / 2.2. POST Example",
+      "topic": "Hai kiểu tấn công CSRF cơ bản"
+    },
+    {
+      "id": "day23-src-7",
+      "resourceId": "res-d1d09e3813e4",
+      "locator": "3.1. Spring Security Configuration",
+      "topic": "CSRF bật mặc định từ Spring Security 4.x"
+    },
+    {
+      "id": "day23-src-8",
+      "resourceId": "res-d1d09e3813e4",
+      "locator": "4. Stateless Spring API / 4.1. Back-end Configuration",
+      "topic": "Khi nào cần/không cần CSRF cho API stateless"
+    },
+    {
+      "id": "day23-src-9",
+      "resourceId": "res-1559f0cd62e7",
+      "locator": "Understanding CSRF Protection's Components",
+      "topic": "CsrfFilter và CsrfTokenRequestHandler"
+    },
+    {
+      "id": "day23-src-10",
+      "resourceId": "res-1559f0cd62e7",
+      "locator": "Persisting the CsrfToken",
+      "topic": "CsrfTokenRepository"
+    },
+    {
+      "id": "day23-src-11",
+      "resourceId": "res-1559f0cd62e7",
+      "locator": "Using the XorCsrfTokenRequestAttributeHandler (BREACH)",
+      "topic": "Bảo vệ BREACH bằng XorCsrfTokenRequestAttributeHandler"
+    },
+    {
+      "id": "day23-src-12",
+      "resourceId": "res-ce09de5e928a",
+      "locator": "What is the N+1 query problem",
+      "topic": "Định nghĩa N+1"
+    },
+    {
+      "id": "day23-src-13",
+      "resourceId": "res-ce09de5e928a",
+      "locator": "FetchType.EAGER",
+      "topic": "FetchType.EAGER vẫn có thể gây N+1"
+    },
+    {
+      "id": "day23-src-14",
+      "resourceId": "res-ce09de5e928a",
+      "locator": "FetchType.LAZY",
+      "topic": "FetchType.LAZY không tự động tránh N+1"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Cấu hình CORS (CorsConfigurationSource, allowedOrigins/allowedMethods/allowedHeaders): không có resource nào trong resourceIds của Day 23 mô tả trực tiếp - trình bày bằng kiến thức chuẩn của Spring Security trong khối note không yêu cầu trích dẫn.",
+      "Cách khắc phục N+1 cụ thể (JOIN FETCH, @EntityGraph, batch fetching): các resource của Day 23 (res-ce09de5e928a) chỉ mô tả định nghĩa và nguyên nhân N+1, chưa mô tả cách khắc phục - cách khắc phục cụ thể được để lại cho Day 24, nơi có resource res-28c8c8bc71df (batch fetching) trong resourceIds phù hợp hơn để trích dẫn."
+    ]
+  }
+}

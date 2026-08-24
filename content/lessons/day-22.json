@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 1,
+  "id": "day-22",
+  "catalogRef": {
+    "unitId": "unit-08",
+    "group": "spring",
+    "title": "Authentication with Spring Security + JWT",
+    "objectives": [
+      "LO8"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      38,
+      39
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 39,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-65703b737426",
+      "res-d5aebfb9d1ed",
+      "res-f301a3d0645a"
+    ]
+  },
+  "unitId": "unit-08",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Authentication with Spring Security + JWT",
+  "summary": "Xác thực stateless bằng JWT qua Spring Security OAuth2 Resource Server: quy trình discovery JWK Set, JwtAuthenticationProvider xác thực mỗi request, cấu hình SessionCreationPolicy.STATELESS, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO8"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Unit 5-7 (Spring Boot, DI, Spring MVC, Spring Data JPA) - bài này bắt đầu Unit 8 (bảo mật), giả định đã quen với cấu hình @Bean và @Configuration của Spring."
+  ],
+  "outcomes": [
+    "Giải thích đúng luồng xác thực JWT qua OAuth2 Resource Server (discovery, JwtAuthenticationProvider, kiểm tra claim).",
+    "Cấu hình đúng SessionCreationPolicy.STATELESS cho API xác thực bằng JWT.",
+    "Cấu hình đúng DelegatingPasswordEncoder và giải thích định dạng {id}encodedPassword.",
+    "Nhận diện đúng vì sao User.withDefaultPasswordEncoder() không an toàn cho production."
+  ],
+  "sections": [
+    {
+      "id": "day22-sec-brief",
+      "title": "Đề bài và phạm vi bài học",
+      "blocks": [
+        {
+          "id": "day22-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day22-blk-2",
+          "type": "note",
+          "text": "Bài học mở đầu Unit 8 (bảo mật): xác thực stateless bằng JWT qua Spring Security OAuth2 Resource Server, cấu hình session stateless, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder. Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - học viên ôn tập và thực hành lại các cấu hình trong bài để chuẩn bị cho Lab 8 (Auth Service) ở Day 24.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day22-sec-architecture",
+      "title": "Kiến trúc xác thực JWT với Spring Security",
+      "blocks": [
+        {
+          "id": "day22-blk-3",
+          "type": "note",
+          "text": "Kiến trúc filter chain tổng quát của Spring Security (thứ tự các filter mặc định, SecurityContextHolder) không có resource nào trong resourceIds của Day 22 mô tả trực tiếp (xem authoring.limitations) - phần dưới đây tập trung vào phần kiến trúc có nguồn: xác thực JWT qua cơ chế OAuth2 Resource Server.",
+          "citations": []
+        },
+        {
+          "id": "day22-blk-4",
+          "type": "paragraph",
+          "text": "Khi cấu hình oauth2ResourceServer().jwt() với một issuer-uri, Spring Security tự động suy ra địa chỉ JWK Set endpoint của authorization server (theo chuẩn OpenID Connect Discovery) và tải bộ khoá công khai ngay khi ứng dụng khởi động - đây là quy trình 'startup expectations'. Nếu authorization server không sẵn sàng lúc khởi động, Spring Security vẫn cho phép ứng dụng khởi động thành công nhưng sẽ thử tải lại JWK Set khi có request đầu tiên cần xác thực.",
+          "citations": [
+            "day22-src-1",
+            "day22-src-2"
+          ]
+        },
+        {
+          "id": "day22-blk-5",
+          "type": "paragraph",
+          "text": "Ở thời điểm runtime, với mỗi request mang Bearer token, JwtAuthenticationProvider chịu trách nhiệm giải mã và xác thực chữ ký JWT bằng khoá công khai đã tải, kiểm tra các claim bắt buộc (như exp - thời điểm hết hạn, iss - issuer), rồi tạo ra một đối tượng Authentication đã xác thực để lưu vào SecurityContext cho phần còn lại của request xử lý.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        },
+        {
+          "id": "day22-blk-6",
+          "type": "warning",
+          "text": "Không bao giờ tự viết logic 'giải mã JWT' thủ công mà bỏ qua bước xác thực chữ ký (signature verification) - một JWT chỉ đáng tin khi chữ ký được xác minh khớp với khoá công khai của authorization server và các claim bắt buộc (đặc biệt exp) được kiểm tra còn hiệu lực. Luôn để JwtAuthenticationProvider (hoặc cơ chế tương đương của Spring Security) đảm nhiệm việc xác thực này thay vì parse JWT bằng tay rồi tin tưởng payload mà không kiểm tra chữ ký.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day22-sec-stateless",
+      "title": "Stateless Session",
+      "blocks": [
+        {
+          "id": "day22-blk-7",
+          "type": "paragraph",
+          "text": "Với xác thực dựa trên JWT, mỗi request tự chứa đủ thông tin xác thực trong token nên không cần Spring Security tạo hoặc duy trì HttpSession phía server - cấu hình sessionCreationPolicy(SessionCreationPolicy.STATELESS) tắt hoàn toàn việc tạo mới session cho request, giúp ứng dụng dễ scale ngang (không cần sticky session hay session replication giữa các instance).",
+          "citations": [
+            "day22-src-9"
+          ]
+        },
+        {
+          "id": "day22-blk-8",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day22-src-9"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day22-blk-9",
+          "type": "note",
+          "text": "Từ Spring Security 6, requireExplicitSave mặc định là true - SecurityContext chỉ được lưu vào session (nếu có) khi có yêu cầu tường minh, thay vì tự động lưu như các phiên bản trước; điều này phù hợp tự nhiên với kiến trúc stateless vì không có session nào để lưu vào. Bảo vệ session fixation (đổi session ID sau khi đăng nhập thành công) vẫn là kiến thức nền tảng quan trọng cho các phần của hệ thống còn dùng session truyền thống (ví dụ trang quản trị dùng cookie), dù không áp dụng trực tiếp cho luồng API stateless bằng JWT.",
+          "citations": [
+            "day22-src-10",
+            "day22-src-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day22-sec-password",
+      "title": "Mã hoá mật khẩu với DelegatingPasswordEncoder",
+      "blocks": [
+        {
+          "id": "day22-blk-10",
+          "type": "paragraph",
+          "text": "Cách lưu mật khẩu đã tiến hoá qua nhiều giai đoạn: từ lưu plaintext (không an toàn), sang hash một chiều đơn giản như MD5/SHA (dễ bị tấn công bằng rainbow table), tới các thuật toán hash chuyên biệt cho mật khẩu có salt và chi phí tính toán cao như BCrypt, PBKDF2, SCrypt, Argon2 - các thuật toán này cố tình làm chậm quá trình hash để tăng chi phí tấn công brute-force.",
+          "citations": [
+            "day22-src-5"
+          ]
+        },
+        {
+          "id": "day22-blk-11",
+          "type": "paragraph",
+          "text": "DelegatingPasswordEncoder là PasswordEncoder mặc định của Spring Security (tạo qua PasswordEncoderFactories.createDelegatingPasswordEncoder()): mật khẩu được lưu theo định dạng {id}encodedPassword, trong đó {id} là tiền tố xác định thuật toán đã dùng (ví dụ {bcrypt}). Khi kiểm tra đăng nhập, DelegatingPasswordEncoder đọc tiền tố này để chọn đúng encoder tương ứng xác minh mật khẩu - cho phép hệ thống hỗ trợ nhiều định dạng hash cùng lúc (ví dụ khi nâng cấp thuật toán mà không cần migrate toàn bộ dữ liệu ngay lập tức).",
+          "citations": [
+            "day22-src-6",
+            "day22-src-7"
+          ]
+        },
+        {
+          "id": "day22-blk-12",
+          "type": "important",
+          "text": "User.withDefaultPasswordEncoder() chỉ được tài liệu Spring Security giới thiệu cho mục đích 'getting started' (thử nghiệm nhanh, demo) - KHÔNG được dùng trong môi trường production vì mật khẩu mẫu được hash bằng một khoá cố định công khai trong mã nguồn Spring Security, hoàn toàn không an toàn khi dùng cho tài khoản thật. Trong production, luôn dùng PasswordEncoderFactories.createDelegatingPasswordEncoder() (hoặc BCryptPasswordEncoder tường minh) và không bao giờ dùng NoOpPasswordEncoder.",
+          "citations": [
+            "day22-src-8"
+          ]
+        },
+        {
+          "id": "day22-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.security.crypto.factory.PasswordEncoderFactories;\nimport org.springframework.security.crypto.password.PasswordEncoder;\n\nclass PasswordConfig {\n\n    PasswordEncoder passwordEncoder() {\n        return PasswordEncoderFactories.createDelegatingPasswordEncoder();\n    }\n\n    void registerExample(PasswordEncoder encoder) {\n        String stored = encoder.encode(\"my-plain-password\");\n        // stored co dang \"{bcrypt}$2a$10$...\" - tien to {id} xac dinh\n        // encoder nao da dung, DelegatingPasswordEncoder tu chon lai\n        // dung encoder khi kiem tra matches().\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day22-src-6",
+            "day22-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Tự viết logic giải mã JWT thủ công mà bỏ qua bước xác thực chữ ký hoặc kiểm tra claim exp.",
+    "Dùng User.withDefaultPasswordEncoder() hoặc NoOpPasswordEncoder trong môi trường production.",
+    "Bật session thông thường (không STATELESS) cho một API chỉ dùng JWT, gây tốn tài nguyên và khó scale ngang không cần thiết."
+  ],
+  "practices": [
+    {
+      "id": "day22-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao xác thực bằng JWT thường kết hợp với SessionCreationPolicy.STATELESS?",
+      "choices": [
+        {
+          "id": "day22-prac-1-a",
+          "text": "Vì mỗi JWT đã tự chứa đủ thông tin xác thực, không cần server tạo/duy trì HttpSession, giúp dễ scale ngang"
+        },
+        {
+          "id": "day22-prac-1-b",
+          "text": "Vì JWT bắt buộc phải dùng chung với HttpSession để lưu chữ ký"
+        },
+        {
+          "id": "day22-prac-1-c",
+          "text": "Vì STATELESS làm JWT không cần xác thực chữ ký nữa"
+        },
+        {
+          "id": "day22-prac-1-d",
+          "text": "Vì STATELESS chỉ áp dụng được khi không dùng Spring Security"
+        }
+      ],
+      "correctChoiceIds": [
+        "day22-prac-1-a"
+      ],
+      "hint": "Xem lại phần Stateless Session trong bài.",
+      "solution": "day22-prac-1-a",
+      "explanation": "JWT tự chứa đủ thông tin xác thực trong token nên không cần server tạo/duy trì session; SessionCreationPolicy.STATELESS tắt việc tạo session, giúp ứng dụng dễ scale ngang mà không cần sticky session.",
+      "rubric": "Chọn đúng lý do kỹ thuật (JWT tự chứa thông tin) thay vì nhầm lẫn về vai trò của session.",
+      "sourceUsage": [
+        "day22-src-9"
+      ]
+    },
+    {
+      "id": "day22-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một @Bean SecurityFilterChain cấu hình sessionCreationPolicy STATELESS và bật oauth2ResourceServer().jwt() với cấu hình mặc định.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Kết hợp sessionManagement(...) và oauth2ResourceServer(...) trên cùng builder HttpSecurity.",
+      "solution": "@Bean\nSecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n        .build();\n}",
+      "explanation": "Áp dụng lại mẫu cấu hình stateless + JWT resource server đã học trong bài.",
+      "rubric": "Đánh giá đúng: sessionCreationPolicy là STATELESS, oauth2ResourceServer bật jwt().",
+      "sourceUsage": [
+        "day22-src-9",
+        "day22-src-3"
+      ]
+    },
+    {
+      "id": "day22-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Định dạng {id}encodedPassword của DelegatingPasswordEncoder giải quyết vấn đề gì khi hệ thống cần nâng cấp thuật toán hash mật khẩu?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc hệ thống có thể có mật khẩu cũ được hash bằng thuật toán khác mật khẩu mới.",
+      "solution": "Tiền tố {id} cho biết mật khẩu được hash bằng thuật toán nào (ví dụ {bcrypt}); khi kiểm tra đăng nhập, DelegatingPasswordEncoder đọc tiền tố này để chọn đúng encoder xác minh, nên hệ thống có thể hỗ trợ nhiều định dạng hash song song - mật khẩu cũ vẫn xác thực được bằng encoder cũ, còn mật khẩu mới dùng encoder mới, không cần migrate toàn bộ dữ liệu ngay lập tức.",
+      "explanation": "Liên hệ tới khả năng cùng tồn tại nhiều định dạng hash trong cùng hệ thống.",
+      "rubric": "Đánh giá học viên nêu đúng cơ chế tiền tố {id} cho phép hỗ trợ song song nhiều thuật toán hash.",
+      "sourceUsage": [
+        "day22-src-6",
+        "day22-src-7"
+      ]
+    },
+    {
+      "id": "day22-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao User.withDefaultPasswordEncoder() không được dùng trong production?",
+      "choices": [
+        {
+          "id": "day22-prac-4-a",
+          "text": "Vì mật khẩu mẫu được hash bằng một khoá cố định công khai trong mã nguồn Spring Security, không an toàn cho tài khoản thật"
+        },
+        {
+          "id": "day22-prac-4-b",
+          "text": "Vì phương thức này đã bị xoá khỏi Spring Security 6"
+        },
+        {
+          "id": "day22-prac-4-c",
+          "text": "Vì phương thức này chỉ hoạt động với database, không hoạt động với in-memory user"
+        },
+        {
+          "id": "day22-prac-4-d",
+          "text": "Vì phương thức này không tương thích với DelegatingPasswordEncoder"
+        }
+      ],
+      "correctChoiceIds": [
+        "day22-prac-4-a"
+      ],
+      "hint": "Xem lại khối important về User.withDefaultPasswordEncoder() trong bài.",
+      "solution": "day22-prac-4-a",
+      "explanation": "Tài liệu Spring Security xác nhận User.withDefaultPasswordEncoder() chỉ dành cho mục đích getting-started/demo; mật khẩu mẫu được hash bằng khoá cố định công khai trong mã nguồn, hoàn toàn không an toàn để dùng cho tài khoản thật trong production.",
+      "rubric": "Chọn đúng lý do bảo mật (khoá cố định công khai) thay vì các lý do kỹ thuật không chính xác.",
+      "sourceUsage": [
+        "day22-src-8"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 39,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viết một filter tuỳ chỉnh kiểm tra thêm claim 'roles' trong JWT trước khi cho phép truy cập endpoint /admin/**.",
+    "Thử đăng ký một mật khẩu bằng BCryptPasswordEncoder tường minh, in ra chuỗi kết quả, và so sánh tiền tố {id} với kết quả từ DelegatingPasswordEncoder mặc định."
+  ],
+  "references": [
+    {
+      "id": "day22-ref-1",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day22-src-3"
+    },
+    {
+      "id": "day22-ref-2",
+      "type": "external",
+      "resourceId": "res-d5aebfb9d1ed",
+      "citationId": "day22-src-6"
+    },
+    {
+      "id": "day22-ref-3",
+      "type": "external",
+      "resourceId": "res-f301a3d0645a",
+      "citationId": "day22-src-9"
+    },
+    {
+      "id": "day22-ref-4",
+      "type": "internal",
+      "description": "Chuẩn bị nền tảng xác thực JWT trước khi học authorization (@PreAuthorize, CORS/CSRF) và tối ưu hiệu năng ở Day 23, rồi ghép thành Auth Service hoàn chỉnh ở Lab 8 (Day 24)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day22-src-1",
+      "resourceId": "res-65703b737426",
+      "locator": "Specifying the Authorization Server",
+      "topic": "Cấu hình OAuth2 Resource Server qua issuer-uri"
+    },
+    {
+      "id": "day22-src-2",
+      "resourceId": "res-65703b737426",
+      "locator": "Startup Expectations",
+      "topic": "Quy trình discovery lúc khởi động (JWK Set)"
+    },
+    {
+      "id": "day22-src-3",
+      "resourceId": "res-65703b737426",
+      "locator": "Runtime Expectations",
+      "topic": "Xử lý mỗi request có Bearer token"
+    },
+    {
+      "id": "day22-src-4",
+      "resourceId": "res-65703b737426",
+      "locator": "How JWT Authentication Works",
+      "topic": "JwtAuthenticationProvider và luồng xác thực JWT"
+    },
+    {
+      "id": "day22-src-5",
+      "resourceId": "res-d5aebfb9d1ed",
+      "locator": "Password Storage History",
+      "topic": "Lịch sử tiến hoá cách lưu mật khẩu"
+    },
+    {
+      "id": "day22-src-6",
+      "resourceId": "res-d5aebfb9d1ed",
+      "locator": "DelegatingPasswordEncoder",
+      "topic": "DelegatingPasswordEncoder là PasswordEncoder mặc định"
+    },
+    {
+      "id": "day22-src-7",
+      "resourceId": "res-d5aebfb9d1ed",
+      "locator": "Password Storage Format / Password Matching",
+      "topic": "Định dạng lưu trữ {id}encodedPassword"
+    },
+    {
+      "id": "day22-src-8",
+      "resourceId": "res-d5aebfb9d1ed",
+      "locator": "Getting Started Experience",
+      "topic": "User.withDefaultPasswordEncoder() chỉ dùng cho demo, không production"
+    },
+    {
+      "id": "day22-src-9",
+      "resourceId": "res-f301a3d0645a",
+      "locator": "Configuring Persistence for Stateless Authentication",
+      "topic": "SessionCreationPolicy.STATELESS"
+    },
+    {
+      "id": "day22-src-10",
+      "resourceId": "res-f301a3d0645a",
+      "locator": "Understanding Require Explicit Save",
+      "topic": "requireExplicitSave trong Spring Security 6"
+    },
+    {
+      "id": "day22-src-11",
+      "resourceId": "res-f301a3d0645a",
+      "locator": "Understanding Session Fixation Attack Protection",
+      "topic": "Bảo vệ tấn công session fixation"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Kiến trúc filter chain tổng quát của Spring Security (thứ tự filter mặc định, SecurityContextHolder) và cấu trúc thô của một JWT (header.payload.signature, base64url encoding, danh sách claim chuẩn): không có resource nào trong resourceIds của Day 22 mô tả hai chủ đề này trực tiếp - trình bày bằng kiến thức chuẩn của Spring Security/JWT trong khối note không yêu cầu trích dẫn, tập trung phần có nguồn vào luồng xác thực (JwtAuthenticationProvider) và cấu hình cụ thể (stateless, password encoding)."
+    ]
+  }
+}

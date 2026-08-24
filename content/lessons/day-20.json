@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "id": "day-20",
+  "catalogRef": {
+    "unitId": "unit-07",
+    "group": "spring",
+    "title": "Query, Transaction & Patterns",
+    "objectives": [
+      "LO7"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      35,
+      36
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-cf695e39df80",
+      "res-749fa81acd48",
+      "res-2e4a3dd62ec7",
+      "res-82b36b19c96f"
+    ]
+  },
+  "unitId": "unit-07",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Query, Transaction & Patterns",
+  "summary": "Repository nâng cao với PagingAndSortingRepository, PageRequest/Pageable, so sánh Page<T> và Slice<T>; nền tảng quản lý giao dịch bằng @Transactional; và ba cách ghi lại lịch sử thay đổi dữ liệu (callback JPA thuần, Spring Data JPA auditing, Hibernate Envers).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO7"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 19 (Entity Design & Relationships) - bài này dùng lại các entity/quan hệ đã thiết kế để minh hoạ truy vấn, giao dịch, và auditing."
+  ],
+  "outcomes": [
+    "Viết đúng repository dùng PagingAndSortingRepository và chọn Page<T> hoặc Slice<T> phù hợp ngữ cảnh.",
+    "Giải thích đúng vai trò của @Transactional và quy tắc rollback mặc định của Spring.",
+    "So sánh được ba cách auditing (callback JPA, Spring Data auditing, Envers) và biết khi nào dùng cách nào."
+  ],
+  "sections": [
+    {
+      "id": "day20-sec-brief",
+      "title": "Phạm vi buổi Guides/Review",
+      "blocks": [
+        {
+          "id": "day20-blk-1",
+          "type": "note",
+          "text": "Ngày học không có Assignment riêng (lịch chỉ ghi 'Guides/Review') - đây là buổi ôn tập có trainer đồng hành, tổng hợp lại các mẫu truy vấn/giao dịch/auditing sẽ dùng trực tiếp trong Assignment 7 (E-Commerce Data Layer) ở Day 21: repository nâng cao với phân trang/sắp xếp, quản lý giao dịch với @Transactional, và các chiến lược ghi lại lịch sử thay đổi dữ liệu (auditing).",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day20-sec-repository",
+      "title": "Repository nâng cao: Pagination và Sorting",
+      "blocks": [
+        {
+          "id": "day20-blk-2",
+          "type": "paragraph",
+          "text": "PagingAndSortingRepository mở rộng CrudRepository, bổ sung khả năng truy vấn theo trang thông qua tham số Pageable - một đối tượng gói số trang (page, bắt đầu từ 0), kích thước trang (size), và tuỳ chọn sắp xếp (Sort). PageRequest.of(page, size, sort) là cách phổ biến nhất để tạo Pageable; kết quả trả về kiểu Page<T> mang theo cả nội dung trang hiện tại lẫn metadata (tổng số phần tử, tổng số trang) - để tính được tổng số trang, Page<T> phải thực thi thêm một câu truy vấn COUNT.",
+          "citations": [
+            "day20-src-1",
+            "day20-src-2"
+          ]
+        },
+        {
+          "id": "day20-blk-3",
+          "type": "paragraph",
+          "text": "Slice<T> là lựa chọn nhẹ hơn Page<T> khi không cần biết tổng số phần tử/trang: Slice chỉ truy vấn thêm đúng một phần tử để biết 'còn trang tiếp theo hay không' (hasNext()), tránh câu truy vấn COUNT tốn kém trên bảng lớn - phù hợp cho các giao diện 'tải thêm' (infinite scroll) thay vì hiển thị số trang cụ thể. Có thể kết hợp Sort trực tiếp vào PageRequest.of(...) hoặc truyền riêng Sort.by(...).ascending()/descending() khi cần sắp xếp nhiều tiêu chí.",
+          "citations": [
+            "day20-src-3",
+            "day20-src-4"
+          ]
+        },
+        {
+          "id": "day20-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageRequest;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.data.domain.Sort;\nimport org.springframework.data.repository.PagingAndSortingRepository;\n\ninterface ProductRepository extends PagingAndSortingRepository<Product, Long> {\n    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);\n}\n\nclass ProductQueryService {\n    private final ProductRepository repository;\n\n    ProductQueryService(ProductRepository repository) {\n        this.repository = repository;\n    }\n\n    Page<Product> topOfCategory(Long categoryId, int page, int size) {\n        Pageable pageable = PageRequest.of(page, size, Sort.by(\"unitPrice\").descending());\n        return repository.findByCategoryId(categoryId, pageable);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day20-src-1",
+            "day20-src-2",
+            "day20-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day20-sec-transaction",
+      "title": "Quản lý giao dịch với @Transactional",
+      "blocks": [
+        {
+          "id": "day20-blk-5",
+          "type": "note",
+          "text": "Chủ đề @Transactional (ranh giới giao dịch, propagation, isolation, quy tắc rollback) không có resource nào trong resourceIds của Day 20 mô tả trực tiếp (xem authoring.limitations). Kiến thức chuẩn của Spring: @Transactional đặt trên method (hoặc class) của tầng service để Spring tự mở giao dịch trước khi method chạy và commit/rollback sau khi method kết thúc; mặc định Spring rollback khi gặp RuntimeException hoặc Error (không tự rollback với checked exception trừ khi khai báo rollbackFor tường minh). Propagation mặc định là REQUIRED (tham gia giao dịch hiện có nếu có, hoặc tạo mới nếu chưa có); các giá trị khác như REQUIRES_NEW (luôn tạo giao dịch mới, tạm dừng giao dịch hiện tại) phù hợp khi cần một thao tác ghi log độc lập, không bị rollback theo giao dịch cha.",
+          "citations": []
+        },
+        {
+          "id": "day20-blk-6",
+          "type": "important",
+          "text": "CascadeType.LOCK là một giá trị mở rộng riêng của Hibernate (không thuộc chuẩn Jakarta Persistence), dùng để lan truyền thao tác lock (khoá bi quan) sang entity con trong cùng một persistence context. Vì đây là API riêng của Hibernate, dùng nó sẽ làm giảm khả năng chuyển đổi provider JPA khác nếu cần trong tương lai - nên cân nhắc dùng khoá tường minh qua EntityManager.lock() thay vì gắn cứng CascadeType.LOCK vào định nghĩa quan hệ khi không thực sự cần lan truyền tự động.",
+          "citations": [
+            "day20-src-8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day20-sec-auditing",
+      "title": "Auditing: callback JPA, Spring Data, và Envers",
+      "blocks": [
+        {
+          "id": "day20-blk-7",
+          "type": "paragraph",
+          "text": "JPA chuẩn cung cấp các callback vòng đời entity @PrePersist, @PreUpdate, @PreRemove - có thể dùng để tự set field created_at/updated_at ngay trước khi entity được lưu/cập nhật, không cần thư viện bổ sung. Spring Data JPA cung cấp một lớp tiện lợi hơn: bật @EnableJpaAuditing, gắn @EntityListeners(AuditingEntityListener.class) lên entity, rồi dùng @CreatedDate/@LastModifiedDate (và @CreatedBy/@LastModifiedBy khi tích hợp với Spring Security để ghi lại người thực hiện thay đổi) - Spring tự động điền các field này mà không cần viết callback thủ công.",
+          "citations": [
+            "day20-src-5",
+            "day20-src-6"
+          ]
+        },
+        {
+          "id": "day20-blk-8",
+          "type": "note",
+          "text": "Khi cần lưu lại toàn bộ lịch sử thay đổi của một entity (không chỉ lần thay đổi gần nhất) - ví dụ để phục vụ audit log chi tiết hoặc khôi phục dữ liệu về một phiên bản trước - Hibernate Envers cung cấp cơ chế versioning tự động: mỗi lần entity được insert/update/delete, Envers tạo một bản ghi 'revision' trong bảng audit riêng (thường có hậu tố _AUD), cho phép truy vấn lại trạng thái entity tại bất kỳ revision nào trong quá khứ.",
+          "citations": [
+            "day20-src-7"
+          ]
+        },
+        {
+          "id": "day20-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.*;\nimport org.springframework.data.annotation.CreatedDate;\nimport org.springframework.data.annotation.LastModifiedDate;\nimport org.springframework.data.jpa.domain.support.AuditingEntityListener;\nimport java.time.Instant;\n\n@Entity\n@EntityListeners(AuditingEntityListener.class)\nclass Order {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @CreatedDate\n    @Column(name = \"created_at\", updatable = false)\n    private Instant createdAt;\n\n    @LastModifiedDate\n    @Column(name = \"updated_at\")\n    private Instant updatedAt;\n}\n",
+          "compile": false,
+          "citations": [
+            "day20-src-6"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Luôn dùng Page<T> ngay cả khi không cần tổng số trang, gây câu truy vấn COUNT không cần thiết trên bảng lớn.",
+    "Kỳ vọng Spring tự rollback với checked exception mà không khai báo rollbackFor tường minh trên @Transactional.",
+    "Dùng callback @PrePersist/@PreUpdate khi thực chất cần lưu lại toàn bộ lịch sử thay đổi - chỉ Envers mới lưu từng revision."
+  ],
+  "practices": [
+    {
+      "id": "day20-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khác biệt chính giữa Page<T> và Slice<T> trong Spring Data JPA là gì?",
+      "choices": [
+        {
+          "id": "day20-prac-1-a",
+          "text": "Page<T> chạy thêm một câu truy vấn COUNT để biết tổng số phần tử/trang; Slice<T> chỉ kiểm tra 'còn trang tiếp theo hay không' nên rẻ hơn"
+        },
+        {
+          "id": "day20-prac-1-b",
+          "text": "Slice<T> chỉ dùng được với @Query, còn Page<T> chỉ dùng được với derived query method"
+        },
+        {
+          "id": "day20-prac-1-c",
+          "text": "Page<T> và Slice<T> hoàn toàn giống nhau, chỉ khác tên kiểu trả về"
+        },
+        {
+          "id": "day20-prac-1-d",
+          "text": "Slice<T> luôn trả về toàn bộ dữ liệu, không phân trang thật"
+        }
+      ],
+      "correctChoiceIds": [
+        "day20-prac-1-a"
+      ],
+      "hint": "Xem lại phần so sánh Page<T> và Slice<T> trong bài.",
+      "solution": "day20-prac-1-a",
+      "explanation": "Page<T> cần biết tổng số phần tử/trang nên phải chạy thêm truy vấn COUNT; Slice<T> chỉ truy vấn thêm đúng một phần tử để biết hasNext(), tránh COUNT tốn kém trên bảng lớn.",
+      "rubric": "Chọn đúng lý do kỹ thuật (truy vấn COUNT bổ sung) thay vì nhầm lẫn về cách khai báo repository.",
+      "sourceUsage": [
+        "day20-src-3"
+      ]
+    },
+    {
+      "id": "day20-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một phương thức repository trả về Page<Order> theo customerId, sắp xếp theo createdAt giảm dần, dùng PageRequest.of.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Kết hợp Sort.by(...).descending() vào PageRequest.of(page, size, sort).",
+      "solution": "interface OrderRepository extends PagingAndSortingRepository<Order, Long> {\n    Page<Order> findByCustomerId(Long customerId, Pageable pageable);\n}\n\nPageable pageable = PageRequest.of(0, 20, Sort.by(\"createdAt\").descending());\nPage<Order> result = orderRepository.findByCustomerId(customerId, pageable);",
+      "explanation": "Áp dụng lại mẫu PageRequest.of kèm Sort đã học trong bài vào một entity khác (Order thay vì Product).",
+      "rubric": "Đánh giá đúng: derived query method nhận Pageable, PageRequest.of có tham số sort theo createdAt descending.",
+      "sourceUsage": [
+        "day20-src-1",
+        "day20-src-4"
+      ]
+    },
+    {
+      "id": "day20-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "So sánh dùng callback @PrePersist/@PreUpdate thuần JPA với dùng Spring Data JPA auditing (@CreatedDate/@LastModifiedDate) để tự động set thời gian tạo/sửa - khi nào nên chọn cách nào?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc có cần tích hợp với Spring Security (ghi người thực hiện) hay không, và mức độ phụ thuộc Spring Data.",
+      "solution": "Callback @PrePersist/@PreUpdate là chuẩn JPA thuần, không phụ thuộc Spring Data - phù hợp khi muốn giữ entity độc lập với framework. Spring Data JPA auditing (@CreatedDate/@LastModifiedDate cùng AuditingEntityListener) tiện lợi hơn khi đã dùng Spring Data, và dễ mở rộng thêm @CreatedBy/@LastModifiedBy để ghi người thực hiện khi tích hợp Spring Security - đổi lại entity phụ thuộc vào Spring Data.",
+      "explanation": "So sánh mức độ phụ thuộc framework và khả năng ghi lại tác giả thay đổi.",
+      "rubric": "Đánh giá học viên nêu đúng sự đánh đổi giữa tính độc lập framework và tiện ích tích hợp Spring Security.",
+      "sourceUsage": [
+        "day20-src-5",
+        "day20-src-6"
+      ]
+    },
+    {
+      "id": "day20-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao Hibernate Envers phù hợp hơn callback @PrePersist/@PreUpdate khi cần xem lại toàn bộ lịch sử thay đổi (không chỉ lần sửa gần nhất) của một entity?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc callback chỉ ghi đè field trên chính bản ghi hiện tại, không lưu bản sao từng phiên bản.",
+      "solution": "Callback @PrePersist/@PreUpdate chỉ set giá trị lên chính bản ghi hiện tại (mỗi lần update sẽ ghi đè giá trị cũ) nên không giữ được lịch sử các phiên bản trước. Hibernate Envers tạo một bản ghi 'revision' riêng trong bảng audit (_AUD) cho mỗi lần insert/update/delete, cho phép truy vấn lại trạng thái entity tại bất kỳ revision nào trong quá khứ.",
+      "explanation": "So sánh 'ghi đè tại chỗ' của callback với 'lưu từng revision riêng' của Envers.",
+      "rubric": "Đánh giá học viên nêu đúng cơ chế bảng _AUD lưu từng revision thay vì chỉ ghi đè.",
+      "sourceUsage": [
+        "day20-src-7"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm interface-based projection (ví dụ ProductSummary chỉ có getName()/getUnitPrice()) cho một derived query method và so sánh SQL sinh ra với việc trả về full entity.",
+    "Cấu hình Hibernate Envers cho entity Order, thực hiện vài lần update, rồi truy vấn lại lịch sử các revision bằng AuditReader."
+  ],
+  "references": [
+    {
+      "id": "day20-ref-1",
+      "type": "external",
+      "resourceId": "res-2e4a3dd62ec7",
+      "citationId": "day20-src-1"
+    },
+    {
+      "id": "day20-ref-2",
+      "type": "external",
+      "resourceId": "res-82b36b19c96f",
+      "citationId": "day20-src-5"
+    },
+    {
+      "id": "day20-ref-3",
+      "type": "internal",
+      "description": "Tổng hợp trực tiếp các mẫu repository/transaction/auditing đã học ở Day 19-20 để dùng cho Assignment 7 (E-Commerce Data Layer) ở Day 21."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day20-src-1",
+      "resourceId": "res-2e4a3dd62ec7",
+      "locator": "3. Creating a Repository",
+      "topic": "PagingAndSortingRepository"
+    },
+    {
+      "id": "day20-src-2",
+      "resourceId": "res-2e4a3dd62ec7",
+      "locator": "4. Pagination",
+      "topic": "PageRequest.of và Pageable"
+    },
+    {
+      "id": "day20-src-3",
+      "resourceId": "res-2e4a3dd62ec7",
+      "locator": "4. Pagination",
+      "topic": "Page<T> so với Slice<T>"
+    },
+    {
+      "id": "day20-src-4",
+      "resourceId": "res-2e4a3dd62ec7",
+      "locator": "5. Pagination and Sorting",
+      "topic": "Kết hợp Sort vào PageRequest"
+    },
+    {
+      "id": "day20-src-5",
+      "resourceId": "res-82b36b19c96f",
+      "locator": "2.1. @PrePersist, @PreUpdate, and @PreRemove",
+      "topic": "Auditing thuần JPA bằng callback"
+    },
+    {
+      "id": "day20-src-6",
+      "resourceId": "res-82b36b19c96f",
+      "locator": "4.1. Enabling JPA Auditing / 4.4. Auditing the Author of Changes With Spring Security",
+      "topic": "Spring Data JPA auditing"
+    },
+    {
+      "id": "day20-src-7",
+      "resourceId": "res-82b36b19c96f",
+      "locator": "3.1. Getting Started with Envers / 3.2. Creating Audit Log Tables",
+      "topic": "Hibernate Envers cho audit log chi tiết"
+    },
+    {
+      "id": "day20-src-8",
+      "resourceId": "res-cf695e39df80",
+      "locator": "3.6. CascadeType.LOCK",
+      "topic": "CascadeType.LOCK (mở rộng riêng của Hibernate)"
+    },
+    {
+      "id": "day20-src-9",
+      "resourceId": "res-749fa81acd48",
+      "locator": "6. Advantages and Disadvantages",
+      "topic": "Cân nhắc fetch khi thiết kế projection/query"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "@Transactional (ranh giới giao dịch, propagation, isolation, quy tắc rollback): không có resource nào trong resourceIds của Day 20 mô tả chủ đề này - trình bày bằng kiến thức chuẩn của Spring Framework trong khối note không yêu cầu trích dẫn.",
+      "Interface-based projection (DTO projection qua interface repository): không có resource nào trong resourceIds của Day 20 mô tả riêng chủ đề này - chỉ đưa vào enhancedExercises như bài tập mở rộng dựa trên kiến thức chuẩn của Spring Data, không gắn citation cho một khối nội dung riêng."
+    ]
+  }
+}
