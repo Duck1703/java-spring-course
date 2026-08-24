@@ -89,6 +89,50 @@ def _normalize_heading(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", stripped)
 
 
+def _strip_locator_prefix(text: str) -> str:
+    """Drop the Vietnamese section-word prefix some locators carry.
+
+    The production.json read notes write locators like 'phan Create a File
+    Upload Controller' or 'muc 3, Enable Caching'; the leading 'phần'/'mục'
+    word is locator vocabulary, not part of the page heading itself.
+    """
+    return re.sub(r"^(?:mục|muc|phần|phan|section|§)\s+", "", text.strip(), flags=re.IGNORECASE)
+
+
+def _locator_candidates(raw_locator: str) -> list[str]:
+    """All comparable forms of one locator, best match first.
+
+    Besides the full normalized text this yields:
+    - the prefix-stripped form ('phan X' -> 'X');
+    - each segment of multi-section locators split on '/' and ';'
+      ('A / B' -> A, B) with comma annotations dropped after the first;
+    - bare section-number keys ('muc 6.1, ...' -> '61') matched as prefixes.
+    """
+    stripped = _strip_locator_prefix(raw_locator)
+    candidates = []
+    for text in (raw_locator, stripped):
+        normalized = _normalize_heading(text)
+        if normalized and normalized not in candidates:
+            candidates.append(normalized)
+    parts = re.split(r"\s+/\s+|\s*;\s*", stripped)
+    for part in parts:
+        head = part.split(",")[0].strip()
+        normalized = _normalize_heading(head)
+        if normalized and normalized not in candidates:
+            candidates.append(normalized)
+    for token in re.findall(r"\d+(?:\.\d+)*", stripped[:24]):
+        key = token.replace(".", "")
+        if key not in candidates:
+            candidates.append(key)
+        # A sub-section locator ('muc 6.1, ...') lives inside the top-level
+        # section its first number names; the read notes may only record the
+        # top-level heading, so also allow matching on that ancestor number.
+        root = key[0]
+        if len(key) > 1 and root not in candidates:
+            candidates.append(root)
+    return [c for c in candidates if c]
+
+
 def _citation_locator_matches(record: dict, ref: dict, read: dict) -> bool:
     """A citation is publishable when its sourceUsage entry carries a locator
     that corresponds to a heading recorded in the source's read notes.
@@ -105,20 +149,28 @@ def _citation_locator_matches(record: dict, ref: dict, read: dict) -> bool:
         if su.get("id") != ref.get("citationId"):
             continue
         raw_locator = (su.get("locator") or "").strip()
-        locator = _normalize_heading(raw_locator)
-        if not locator:
+        if not raw_locator:
             continue
+        locator = _normalize_heading(raw_locator)
         # Series/TOC pages: the locator explicitly declares the whole page's
         # table of contents ('mục lục'), which the read headings enumerate.
         if "mucluc" in locator or "toc" == locator:
             return True
-        for heading in headings:
-            if (
-                locator == heading
-                or heading.endswith(locator)
-                or locator.startswith(heading)
-            ):
-                return True
+        candidates = _locator_candidates(raw_locator)
+        for candidate in candidates:
+            for heading in headings:
+                if candidate.isdigit() or len(candidate) <= 4:
+                    # Section-number keys only prefix-match their own heading
+                    # ('41' -> '41cachable'); short text keys must still match
+                    # a whole heading so noise cannot pass.
+                    if heading.startswith(candidate):
+                        return True
+                elif (
+                    candidate == heading
+                    or heading.endswith(candidate)
+                    or candidate.startswith(heading)
+                ):
+                    return True
     return False
 
 
