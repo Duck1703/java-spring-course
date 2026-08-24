@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "id": "day-37",
+  "catalogRef": {
+    "unitId": "unit-13",
+    "group": "completion",
+    "title": "Final theory",
+    "objectives": [
+      "LO1",
+      "LO2",
+      "LO3",
+      "LO4",
+      "LO5",
+      "LO6",
+      "LO7",
+      "LO8",
+      "LO9",
+      "LO10"
+    ],
+    "durationMinutes": 60.0,
+    "sourceRows": [
+      59
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-004dba8a7332",
+      "res-f023c0083770",
+      "res-56b8234cf832",
+      "res-d5dfac91a451",
+      "res-8fc303d6f753"
+    ]
+  },
+  "unitId": "unit-13",
+  "group": "completion",
+  "kind": "exam",
+  "title": "Final theory",
+  "summary": "Bài thi lý thuyết cuối khóa (60 phút, offline): bản đồ ôn tập LO1-LO10 theo giai đoạn (nền tảng Java, Spring Core/Data, Spring Web/Security, Testing/tối ưu/triển khai), dựa trên cấu trúc JLS 17, mục tiêu Spring Boot và Spring Framework Reference.",
+  "durationMinutes": 60.0,
+  "objectives": [
+    "LO1",
+    "LO2",
+    "LO3",
+    "LO4",
+    "LO5",
+    "LO6",
+    "LO7",
+    "LO8",
+    "LO9",
+    "LO10"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành toàn bộ Day 1-36 (Java Core, Spring Core/Data, Spring Web/Security, dự án capstone) - đây là buổi ôn tập/kiểm tra tổng hợp, không giới thiệu kiến thức mới."
+  ],
+  "outcomes": [
+    "Hệ thống hóa được kiến thức LO1-LO10 theo 4 giai đoạn lớn của khóa học.",
+    "Xác định được các chủ đề trọng tâm cần ôn tập kỹ trước bài thi lý thuyết."
+  ],
+  "sections": [
+    {
+      "id": "day37-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day37-blk-1",
+          "type": "deliverable",
+          "text": "Bài thi lý thuyết cuối khóa (offline, 60 phút): ôn tập tổng hợp LO1-LO10 - từ nền tảng Java (LO1-LO5) đến Spring Core/Data (LO6-LO8) và Spring Web/Security (LO9-LO10).",
+          "citations": []
+        },
+        {
+          "id": "day37-blk-2",
+          "type": "note",
+          "text": "Định dạng offline, 60 phút, thường gồm câu hỏi trắc nghiệm và/ hoặc tự luận ngắn bao trùm toàn bộ nội dung đã học từ Day 1 đến Day 36; đây KHÔNG phải buổi học nội dung mới mà là buổi kiểm tra ôn tập.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day37-sec-map",
+      "title": "Ban do on tap theo Learning Outcome",
+      "blocks": [
+        {
+          "id": "day37-blk-3",
+          "type": "table",
+          "columns": [
+            "LO",
+            "Giai doan on tap",
+            "Trong tam kien thuc"
+          ],
+          "rows": [
+            [
+              "LO1-LO2",
+              "Nền tảng Java (Java Core)",
+              "Cú pháp/ngữ nghĩa Java 17 theo JLS: kiểu dữ liệu, biến, package/module, class/interface - JLS 17 chia 19 chương từ Introduction đến Syntax Summary"
+            ],
+            [
+              "LO3-LO5",
+              "Java nâng cao (OOP, Collections, Exception)",
+              "Kế thừa/đa hình, Collections Framework, xử lý ngoại lệ - vẫn nằm trong phạm vi cú pháp/ngôn ngữ do JLS 17 định nghĩa"
+            ],
+            [
+              "LO6-LO7",
+              "Spring Core & Data",
+              "IoC Container, Spring Data JPA, Transaction - theo cấu trúc phần Core Technologies và Data Access của Spring Framework Reference"
+            ],
+            [
+              "LO8-LO9",
+              "Spring Web & Security",
+              "Spring MVC, DispatcherServlet, REST API, Spring Security/JWT - theo phần Web Servlet của Spring Framework Reference"
+            ],
+            [
+              "LO10",
+              "Testing, tối ưu & triển khai",
+              "Testing (@DataJpaTest/@WebMvcTest/Testcontainers), caching, async, Docker - kết hợp 3 mục tiêu cốt lõi của Spring Boot (khởi động nhanh, opinionated defaults, non-functional features có sẵn)"
+            ]
+          ],
+          "citations": [
+            "day37-src-1",
+            "day37-src-2",
+            "day37-src-3",
+            "day37-src-4"
+          ]
+        },
+        {
+          "id": "day37-blk-4",
+          "type": "note",
+          "text": "Bảng trên nhóm LO1-LO10 theo giai đoạn học chung (không map chính xác từng LO vào một Day cụ thể, vì tài liệu này không có một bảng đối chiếu LO-to-Day chính thức) - dùng để định hướng ôn tập theo mảng kiến thức lớn, không thay thế đề cương chi tiết từng buổi học.",
+          "citations": []
+        },
+        {
+          "id": "day37-blk-5",
+          "type": "note",
+          "text": "Hai resource dạng series landing page (Java Tutorial và Java Back to Basics) không chứa nội dung kỹ thuật sâu - đây là các trang mục lục (TOC) điều hướng đến từng bài viết con, phù hợp làm nguồn tra cứu bổ sung khi tự ôn tập LO1-LO5, không phải nguồn trích dẫn kỹ thuật chi tiết cho bất kỳ chủ đề cụ thể nào.",
+          "citations": [
+            "day37-src-5",
+            "day37-src-6"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Chỉ ôn phần Spring nâng cao (LO6-LO10) mà bỏ qua nền tảng Java (LO1-LO5) - JLS 17 vẫn là phần kiến thức nền cho toàn bộ cú pháp Java sử dụng xuyên suốt khóa học.",
+    "Nhầm lẫn phạm vi giữa Spring Framework (IoC, AOP, MVC...) và Spring Boot (khởi động nhanh, opinionated defaults, auto-configuration) khi trả lời câu hỏi lý thuyết."
+  ],
+  "practices": [
+    {
+      "id": "day37-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "JLS 17 (Java SE 17 Edition) định nghĩa phạm vi nội dung nào?",
+      "choices": [
+        {
+          "id": "day37-prac-1-a",
+          "text": "Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks"
+        },
+        {
+          "id": "day37-prac-1-b",
+          "text": "Chỉ các API của thư viện chuẩn java.util"
+        },
+        {
+          "id": "day37-prac-1-c",
+          "text": "Chỉ cú pháp cũ trước Java 8, không bao gồm tính năng mới"
+        },
+        {
+          "id": "day37-prac-1-d",
+          "text": "Chỉ đặc tả JVM bytecode, không liên quan cú pháp ngôn ngữ"
+        }
+      ],
+      "correctChoiceIds": [
+        "day37-prac-1-a"
+      ],
+      "hint": "JLS là 'Language Specification', không phải đặc tả JVM hay tài liệu API.",
+      "solution": "day37-prac-1-a",
+      "explanation": "The Java Language Specification, Java SE 17 Edition (JLS 17) định nghĩa toàn bộ cú pháp và ngôn ngữ Java 17, bao gồm các tính năng mới nhất như sealed classes, pattern matching for switch, records, text blocks.",
+      "rubric": "Liên hệ đúng phạm vi của JLS: ngôn ngữ Java, không phải thư viện hay JVM bytecode.",
+      "sourceUsage": [
+        "day37-src-1"
+      ]
+    },
+    {
+      "id": "day37-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "3 mục tiêu chính của Spring Boot là gì?",
+      "choices": [
+        {
+          "id": "day37-prac-2-a",
+          "text": "Khởi động nhanh cho Spring development; opinionated defaults nhưng vẫn tùy chỉnh được; cung cấp sẵn các tính năng non-functional (embedded server, health check, externalized config)"
+        },
+        {
+          "id": "day37-prac-2-b",
+          "text": "Thay thế hoàn toàn Spring Framework; bắt buộc dùng XML config; chỉ chạy được trên Tomcat"
+        },
+        {
+          "id": "day37-prac-2-c",
+          "text": "Sinh code tự động cho mọi ứng dụng; không cần viết Java; tối ưu cho microservice duy nhất"
+        },
+        {
+          "id": "day37-prac-2-d",
+          "text": "Chỉ tập trung vào testing, không liên quan tới cấu hình hay triển khai"
+        }
+      ],
+      "correctChoiceIds": [
+        "day37-prac-2-a"
+      ],
+      "hint": "Nghĩ về trải nghiệm 'getting started' và triết lý 'opinionated' của Spring Boot.",
+      "solution": "day37-prac-2-a",
+      "explanation": "Spring Boot có 3 mục tiêu: getting-started experience nhanh hơn; opinionated out-of-the-box nhưng get out of the way khi cần tùy chỉnh; cung cấp sẵn các tính năng non-functional chung (embedded server, security, metrics, health checks, externalized config).",
+      "rubric": "Liên hệ đúng 3 mục tiêu: khởi động nhanh, opinionated + tùy chỉnh được, non-functional features có sẵn.",
+      "sourceUsage": [
+        "day37-src-3"
+      ]
+    },
+    {
+      "id": "day37-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Spring Framework Reference Documentation chia thành mấy phần chính? Liệt kê.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nhớ lại cấu trúc: Overview, Core, Testing, Data Access, Web Servlet, Web Reactive, Integration.",
+      "solution": "7 phần: Overview (History, Design Philosophy), Core Technologies (IoC Container, AOP, Validation, SpEL...), Testing (Mock Objects, TestContext Framework...), Data Access (Transactions, JDBC, R2DBC, O/R Mapping), Web Servlet (Spring MVC, WebSocket), Web Reactive (WebFlux, WebClient), Integration (REST Clients, JMS, Caching, Observability).",
+      "explanation": "Đối chiếu đúng thứ tự và tên gọi 7 phần theo tài liệu chính thức, không bỏ sót phần nào.",
+      "rubric": "Đánh giá đúng: liệt kê đủ 7 phần theo đúng thứ tự tài liệu chính thức.",
+      "sourceUsage": [
+        "day37-src-4"
+      ]
+    },
+    {
+      "id": "day37-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Lập danh sách 3 chủ đề bạn cảm thấy chưa vững nhất trong LO1-LO10 và kế hoạch ôn tập 60 phút trước khi vào phòng thi.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Ưu tiên chủ đề xuất hiện nhiều nhất trong dự án capstone (Auth JWT, Transaction, Testing).",
+      "solution": "Không có đáp án cố định - câu trả lời tốt nêu rõ 3 chủ đề cụ thể, lý do chọn (tần suất xuất hiện trong dự án hoặc mức độ tự tin thấp), và phân bổ thời gian ôn tập hợp lý trong 60 phút.",
+      "explanation": "Tự đánh giá trung thực mức độ tự tin theo từng chủ đề là bước quan trọng nhất - tránh chỉ ôn lại phần đã vững để có cảm giác an tâm giả.",
+      "rubric": "Đánh giá đúng: có 3 chủ đề cụ thể (không chung chung), có lý do chọn, có phân bổ thời gian rõ ràng.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Tự vẽ sơ đồ tư duy tổng hợp LO1-LO10 dựa trên bảng ôn tập trong bài.",
+    "Ôn lại các annotation Spring đã dùng trong dự án capstone (Day 33-36) và giải thích ý nghĩa từng annotation không cần nhìn tài liệu."
+  ],
+  "references": [
+    {
+      "id": "day37-ref-1",
+      "type": "external",
+      "resourceId": "res-004dba8a7332",
+      "citationId": "day37-src-2"
+    },
+    {
+      "id": "day37-ref-2",
+      "type": "external",
+      "resourceId": "res-f023c0083770",
+      "citationId": "day37-src-3"
+    },
+    {
+      "id": "day37-ref-3",
+      "type": "external",
+      "resourceId": "res-56b8234cf832",
+      "citationId": "day37-src-4"
+    },
+    {
+      "id": "day37-ref-4",
+      "type": "external",
+      "resourceId": "res-d5dfac91a451",
+      "citationId": "day37-src-5"
+    },
+    {
+      "id": "day37-ref-5",
+      "type": "external",
+      "resourceId": "res-8fc303d6f753",
+      "citationId": "day37-src-6"
+    },
+    {
+      "id": "day37-ref-6",
+      "type": "internal",
+      "description": "Phạm vi ôn tập bao trùm toàn bộ Day 1-36 của khóa học, không chỉ giới hạn ở các resource được trích dẫn trực tiếp trong bài thi này."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day37-src-1",
+      "resourceId": "res-004dba8a7332",
+      "locator": "Trang bia: 'Java SE 17 Edition' + Table of Contents chay tu Chapter 1 den Chapter 19",
+      "topic": "Phạm vi JLS 17"
+    },
+    {
+      "id": "day37-src-2",
+      "resourceId": "res-004dba8a7332",
+      "locator": "Table of Contents, cac chuong 1-19",
+      "topic": "Cấu trúc chuẩn JLS 17 (19 chương)"
+    },
+    {
+      "id": "day37-src-3",
+      "resourceId": "res-f023c0083770",
+      "locator": "muc 'Overview', 'Spring Boot helps you to create stand-alone...', 3 primary goals",
+      "topic": "3 mục tiêu chính của Spring Boot"
+    },
+    {
+      "id": "day37-src-4",
+      "resourceId": "res-56b8234cf832",
+      "locator": "muc 'Overview', 'Spring Framework Documentation' + cac phan Core/Testing/Data Access/Web Servlet/Web Reactive/Integration",
+      "topic": "Cấu trúc Spring Framework Reference (7 phần)"
+    },
+    {
+      "id": "day37-src-5",
+      "resourceId": "res-d5dfac91a451",
+      "locator": "muc 'Series', trang chi chua danhsach link den cac tutorial",
+      "topic": "Java Tutorial series landing page"
+    },
+    {
+      "id": "day37-src-6",
+      "resourceId": "res-8fc303d6f753",
+      "locator": "muc 'Series', danh sach 6 sub-series",
+      "topic": "Java Back to Basics series landing page"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Bảng ánh xạ LO1-LO10 theo 'giai đoạn ôn tập' là tổng hợp sư phạm cho mục đích ôn tập, không phải bảng đối chiếu LO-to-Day chính thức từ course-catalog.json - course-catalog.json không cung cấp một bảng như vậy nên không thể trích dẫn cụ thể hơn mà không suy diễn ngoài phạm vi tài liệu đã đọc.",
+      "2 trong 5 resource của Day 37 (Java Tutorial, Java Back to Basics) chỉ là series landing page (trang mục lục), không có nội dung kỹ thuật sâu để trích dẫn chi tiết - được trình bày trung thực như nguồn tra cứu bổ sung, không dùng làm cơ sở cho các khẳng định kỹ thuật cụ thể."
+    ]
+  }
+}

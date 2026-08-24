@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "id": "day-33",
+  "catalogRef": {
+    "unitId": "unit-11",
+    "group": "spring",
+    "title": "Development Sprint 1",
+    "objectives": [
+      "LO6",
+      "LO7",
+      "LO8",
+      "LO11"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      55
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-afbebe6cf212",
+      "res-cf695e39df80",
+      "res-65703b737426",
+      "res-553bbd92e5d0",
+      "res-aa4cbb2b9a5c"
+    ]
+  },
+  "unitId": "unit-11",
+  "group": "spring",
+  "kind": "project",
+  "title": "Development Sprint 1",
+  "summary": "Sprint 1 của dự án capstone: hiện thực Category entity kế thừa BaseEntity, quan hệ User-UserProfile với CascadeType.ALL, cấu hình Spring Security OAuth2 Resource Server xác thực JWT qua issuer-uri, User profile API, Category CRUD, và daily standup.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO6",
+    "LO7",
+    "LO8",
+    "LO11"
+  ],
+  "prerequisites": [
+    "Đã thống nhất kiến trúc, API contract (Day 31), ERD, BaseEntity và GlobalExceptionHandler (Day 32) - bài này bắt đầu Sprint 1, hiện thực code thật đầu tiên của dự án."
+  ],
+  "outcomes": [
+    "Hiện thực entity kế thừa BaseEntity và hiểu đúng hành vi persist/merge của save().",
+    "Cấu hình đúng quan hệ cascade (CascadeType.ALL, orphanRemoval) cho User-UserProfile.",
+    "Cấu hình Spring Security OAuth2 Resource Server xác thực JWT chỉ qua issuer-uri.",
+    "Hiện thực đầy đủ Category CRUD và User profile API theo API contract đã thống nhất."
+  ],
+  "sections": [
+    {
+      "id": "day33-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day33-blk-1",
+          "type": "deliverable",
+          "text": "Sprint 1: hiện thực core entity + repository + migration, module Auth (đăng ký/đăng nhập/JWT), User profile API, Category CRUD, và daily standup đánh giá tiến độ.",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-2",
+          "type": "note",
+          "text": "Buổi học dạng Assignment/Lab trực tuyến 150 phút - áp dụng BaseEntity và GlobalExceptionHandler đã thiết kế ở Day 32 vào code thật lần đầu tiên.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day33-sec-entities",
+      "title": "Entity, repository va migration",
+      "blocks": [
+        {
+          "id": "day33-blk-3",
+          "type": "paragraph",
+          "text": "Mọi entity (Category, User, ...) đều kế thừa BaseEntity đã thiết kế ở Day 32 - save() sẽ gọi persist() cho entity mới hoặc merge() cho entity đã tồn tại, dựa trên isNew() được BaseEntity kiểm soát.",
+          "citations": [
+            "day33-src-1",
+            "day33-src-2"
+          ]
+        },
+        {
+          "id": "day33-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.Entity;\nimport jakarta.persistence.Id;\nimport jakarta.persistence.GeneratedValue;\n\n@Entity\nclass Category extends BaseEntity<Long> {\n    @Id\n    @GeneratedValue\n    private Long id;\n    private String name;\n    private String slug;\n\n    @Override\n    public Long getId() {\n        return id;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day33-blk-5",
+          "type": "paragraph",
+          "text": "Quan hệ User-UserProfile (1-1) dùng CascadeType.ALL: jakarta.persistence.CascadeType định nghĩa 6 giá trị chuẩn (ALL, PERSIST, MERGE, REMOVE, REFRESH, DETACH) - CascadeType.ALL lan truyền mọi thao tác từ User sang UserProfile liên kết, kể cả REMOVE.",
+          "citations": [
+            "day33-src-3",
+            "day33-src-5"
+          ]
+        },
+        {
+          "id": "day33-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.CascadeType;\nimport jakarta.persistence.Entity;\nimport jakarta.persistence.OneToOne;\n\n@Entity\nclass User extends BaseEntity<Long> {\n    private String email;\n    private String passwordHash;\n    private String role;\n\n    // Xoa/luu User se tu dong lan truyen sang UserProfile lien ket.\n    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)\n    private UserProfile profile;\n}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-3",
+            "day33-src-5"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day33-blk-7",
+          "type": "note",
+          "text": "Ngoài 6 giá trị chuẩn JPA, Hibernate còn hỗ trợ 3 loại riêng trong org.hibernate.annotations.CascadeType (REPLICATE, SAVE_UPDATE, LOCK) - CascadeType.LOCK không khóa dữ liệu như tên gọi mà thực chất gắn lại (reattach) entity đã bị detach vào persistence context.",
+          "citations": [
+            "day33-src-4",
+            "day33-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day33-sec-auth",
+      "title": "Module Auth: JWT resource server",
+      "blocks": [
+        {
+          "id": "day33-blk-8",
+          "type": "paragraph",
+          "text": "Sau khi user đăng nhập và nhận JWT, mọi request tới API bảo vệ kèm Bearer token được xác thực bằng cách chỉ khai báo spring.security.oauth2.resourceserver.jwt.issuer-uri - Resource Server tự khám phá public key của authorization server dựa trên claim iss.",
+          "citations": [
+            "day33-src-7"
+          ]
+        },
+        {
+          "id": "day33-blk-9",
+          "type": "paragraph",
+          "text": "Việc khám phá cấu hình (jwks_url, thuật toán hỗ trợ) diễn ra trễ, ở request đầu tiên có JWT - nhờ vậy ứng dụng khởi động được ngay cả khi authorization server chưa sẵn sàng.",
+          "citations": [
+            "day33-src-8"
+          ]
+        },
+        {
+          "id": "day33-blk-10",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        http.authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/auth/**\").permitAll()\n                .anyRequest().authenticated())\n            // Resource Server: xac thuc JWT dua tren issuer-uri, khong tu quan ly session.\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));\n        return http.build();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day33-blk-11",
+          "type": "paragraph",
+          "text": "Với mỗi request có JWT hợp lệ, Resource Server xác thực chữ ký bằng public key lấy từ jwks_url, kiểm tra exp/nbf/iss, rồi ánh xạ từng scope trong token thành granted authority có tiền tố SCOPE_.",
+          "citations": [
+            "day33-src-9"
+          ]
+        },
+        {
+          "id": "day33-blk-12",
+          "type": "important",
+          "text": "Khi viết @PreAuthorize cho các endpoint Category/Product CRUD (chỉ Admin), phải dùng đúng tiền tố SCOPE_ (ví dụ hasAuthority('SCOPE_admin')) - JwtAuthenticationProvider tạo JwtAuthenticationToken với authority theo đúng quy ước này, không phải role thuần túy.",
+          "citations": [
+            "day33-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day33-sec-profile-category",
+      "title": "User profile API va Category CRUD",
+      "blocks": [
+        {
+          "id": "day33-blk-13",
+          "type": "template",
+          "text": "User profile API: GET /api/users/me (trả UserDto kèm profile), PUT /api/users/me (cập nhật profile). Category CRUD: hiện thực đầy đủ 4 endpoint đã thống nhất trong API contract ở Day 31 (GET/POST/PUT/DELETE /api/categories), dùng GlobalExceptionHandler của Day 32 để trả lỗi khi category không tồn tại.",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-14",
+          "type": "template",
+          "text": "Daily standup cuối mỗi buổi Sprint - 3 câu hỏi chuẩn: (1) Hôm nay đã hoàn thành gì? (2) Buổi tới sẽ làm gì? (3) Đang bị chặn ở đâu, cần hỗ trợ gì?",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-15",
+          "type": "note",
+          "text": "Hai resource được gán cho Day 33 (repository query methods, Spring Data JPA sort) trả về HTTP 404 tại thời điểm khảo sát - phần User profile API/Category CRUD tái sử dụng quy ước REST đã thống nhất ở Day 31/32 thay vì trích dẫn thêm.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng hasRole('admin') thay vì hasAuthority('SCOPE_admin') khi bảo vệ endpoint Category/Product CRUD, khiến phân quyền JWT-based không hoạt động đúng.",
+    "Quên orphanRemoval=true trên quan hệ User-UserProfile, để lại UserProfile mồ côi trong DB khi gỡ liên kết.",
+    "Bỏ qua daily standup, khiến các thành viên không phát hiện sớm việc entity/API bị lệch khỏi contract đã thống nhất ở Day 31."
+  ],
+  "practices": [
+    {
+      "id": "day33-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khi gọi categoryRepository.save(existingCategory) với một Category đã tồn tại trong DB, Spring Data JPA gọi phương thức nào của EntityManager?",
+      "choices": [
+        {
+          "id": "day33-prac-1-a",
+          "text": "entityManager.merge()"
+        },
+        {
+          "id": "day33-prac-1-b",
+          "text": "entityManager.persist()"
+        },
+        {
+          "id": "day33-prac-1-c",
+          "text": "entityManager.detach()"
+        },
+        {
+          "id": "day33-prac-1-d",
+          "text": "entityManager.remove()"
+        }
+      ],
+      "correctChoiceIds": [
+        "day33-prac-1-a"
+      ],
+      "hint": "Category đã tồn tại nghĩa là isNew() == false.",
+      "solution": "day33-prac-1-a",
+      "explanation": "Vì isNew() trả về false với entity đã tồn tại (BaseEntity đánh dấu isNew=false sau @PostLoad/@PostPersist), save() sẽ gọi entityManager.merge() để cập nhật dữ liệu.",
+      "rubric": "Liên hệ đúng giữa trạng thái isNew()==false và việc gọi merge().",
+      "sourceUsage": [
+        "day33-src-1"
+      ]
+    },
+    {
+      "id": "day33-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao quan hệ User-UserProfile trong bài dùng CascadeType.ALL kèm orphanRemoval = true?",
+      "choices": [
+        {
+          "id": "day33-prac-2-a",
+          "text": "Để lưu/xóa User tự động lan truyền sang UserProfile liên kết, tránh phải quản lý vòng đời UserProfile thủ công riêng"
+        },
+        {
+          "id": "day33-prac-2-b",
+          "text": "Để tăng tốc độ truy vấn UserProfile"
+        },
+        {
+          "id": "day33-prac-2-c",
+          "text": "Vì JPA bắt buộc mọi quan hệ @OneToOne phải có cascade"
+        },
+        {
+          "id": "day33-prac-2-d",
+          "text": "Để mã hóa passwordHash của User"
+        }
+      ],
+      "correctChoiceIds": [
+        "day33-prac-2-a"
+      ],
+      "hint": "Nghĩ về ý nghĩa CascadeType.ALL kết hợp với orphanRemoval.",
+      "solution": "day33-prac-2-a",
+      "explanation": "CascadeType.ALL lan truyền mọi thao tác (persist, merge, remove...) từ User sang UserProfile liên kết - kết hợp orphanRemoval=true đảm bảo khi User bị xóa hoặc profile bị gỡ liên kết, UserProfile không còn chủ sở hữu cũng bị xóa theo, tránh dữ liệu mồ côi.",
+      "rubric": "Liên hệ đúng lợi ích: quản lý vòng đời UserProfile tự động theo User.",
+      "sourceUsage": [
+        "day33-src-5"
+      ]
+    },
+    {
+      "id": "day33-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Trong JwtAuthenticationToken, một scope 'admin' trong JWT được ánh xạ thành granted authority nào?",
+      "choices": [
+        {
+          "id": "day33-prac-3-a",
+          "text": "SCOPE_admin"
+        },
+        {
+          "id": "day33-prac-3-b",
+          "text": "ROLE_admin"
+        },
+        {
+          "id": "day33-prac-3-c",
+          "text": "admin"
+        },
+        {
+          "id": "day33-prac-3-d",
+          "text": "AUTHORITY_admin"
+        }
+      ],
+      "correctChoiceIds": [
+        "day33-prac-3-a"
+      ],
+      "hint": "Nhớ lại tiền tố mặc định mà JwtAuthenticationConverter dùng cho scope.",
+      "solution": "day33-prac-3-a",
+      "explanation": "JwtAuthenticationProvider dùng JwtAuthenticationConverter để ánh xạ mỗi scope trong JWT thành granted authority có tiền tố SCOPE_ - vì vậy @PreAuthorize phải dùng hasAuthority('SCOPE_admin') chứ không phải hasRole('admin').",
+      "rubric": "Liên hệ đúng tiền tố SCOPE_ mặc định cho scope-based authority.",
+      "sourceUsage": [
+        "day33-src-10"
+      ]
+    },
+    {
+      "id": "day33-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Viết 3 câu hỏi chuẩn cho daily standup cuối buổi Sprint 1 và tự trả lời chúng cho tiến độ hôm nay của bạn.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Áp dụng lại 3 câu hỏi chuẩn đã thống nhất trong bài.",
+      "solution": "1) Hôm nay đã hoàn thành: Category entity + repository.\n2) Buổi tới sẽ làm: Category CRUD controller + test.\n3) Đang bị chặn: chưa rõ format lỗi validation cho DTO.",
+      "explanation": "Áp dụng lại mẫu 3 câu hỏi standup đã học vào tiến độ cá nhân của Sprint 1.",
+      "rubric": "Đánh giá đúng: trả lời đủ 3 câu hỏi, cụ thể và gắn với công việc thật của Sprint 1.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viết test cho GlobalExceptionHandler khi Category không tồn tại (mong đợi ProblemDetail 404).",
+    "Thêm endpoint đổi mật khẩu vào User profile API, tái sử dụng GlobalExceptionHandler cho lỗi mật khẩu cũ không khớp."
+  ],
+  "references": [
+    {
+      "id": "day33-ref-1",
+      "type": "external",
+      "resourceId": "res-afbebe6cf212",
+      "citationId": "day33-src-1"
+    },
+    {
+      "id": "day33-ref-2",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day33-src-5"
+    },
+    {
+      "id": "day33-ref-3",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day33-src-9"
+    },
+    {
+      "id": "day33-ref-4",
+      "type": "internal",
+      "description": "API contract (Day 31) và BaseEntity/GlobalExceptionHandler (Day 32) là nền tảng trực tiếp cho toàn bộ code hiện thực ở Sprint 1 này."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day33-src-1",
+      "resourceId": "res-afbebe6cf212",
+      "locator": "muc 'Saving Entities', 'Entity State-detection Strategies', Option 1",
+      "topic": "save() behavior áp dụng cho Category/User"
+    },
+    {
+      "id": "day33-src-2",
+      "resourceId": "res-afbebe6cf212",
+      "locator": "muc 'Entity State-detection Strategies', Option 2, vi du AbstractEntity",
+      "topic": "Persistable cho BaseEntity của dự án"
+    },
+    {
+      "id": "day33-src-3",
+      "resourceId": "res-cf695e39df80",
+      "locator": "2.1. JPA Cascade Type / 3.1. CascadeType.ALL",
+      "topic": "CascadeType chuẩn JPA"
+    },
+    {
+      "id": "day33-src-4",
+      "resourceId": "res-cf695e39df80",
+      "locator": "2.2. Hibernate Cascade Type",
+      "topic": "CascadeType riêng của Hibernate"
+    },
+    {
+      "id": "day33-src-5",
+      "resourceId": "res-cf695e39df80",
+      "locator": "3.2. CascadeType.PERSIST / 3.4. CascadeType.REMOVE",
+      "topic": "CascadeType.PERSIST và REMOVE"
+    },
+    {
+      "id": "day33-src-6",
+      "resourceId": "res-cf695e39df80",
+      "locator": "3.6. CascadeType.LOCK",
+      "topic": "CascadeType.LOCK"
+    },
+    {
+      "id": "day33-src-7",
+      "resourceId": "res-65703b737426",
+      "locator": "Specifying the Authorization Server",
+      "topic": "Cấu hình JWT tối thiểu qua issuer-uri"
+    },
+    {
+      "id": "day33-src-8",
+      "resourceId": "res-65703b737426",
+      "locator": "Startup Expectations",
+      "topic": "Quy trình discovery lúc khởi động"
+    },
+    {
+      "id": "day33-src-9",
+      "resourceId": "res-65703b737426",
+      "locator": "Runtime Expectations",
+      "topic": "Xử lý mỗi request có Bearer token"
+    },
+    {
+      "id": "day33-src-10",
+      "resourceId": "res-65703b737426",
+      "locator": "How JWT Authentication Works",
+      "topic": "JwtAuthenticationProvider"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Hướng dẫn Spring Data JPA repository query methods (res-553bbd92e5d0): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
+      "Bài viết về Spring Data JPA sort (res-aa4cbb2b9a5c): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
+      "Chi tiết endpoint User profile API và Category CRUD: không có resource riêng nào trong resourceIds của Day 33 mô tả các endpoint này - tái sử dụng quy ước REST chung đã thống nhất (có trích dẫn đầy đủ) ở Day 31/32, trình bày dưới dạng template không yêu cầu trích dẫn mới."
+    ]
+  }
+}

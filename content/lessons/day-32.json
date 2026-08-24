@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "id": "day-32",
+  "catalogRef": {
+    "unitId": "unit-11",
+    "group": "spring",
+    "title": "System Design & Project Kickoff",
+    "objectives": [
+      "LO11"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      54
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-553bbd92e5d0",
+      "res-afbebe6cf212",
+      "res-b307e54a2685",
+      "res-af7171222f9a"
+    ]
+  },
+  "unitId": "unit-11",
+  "group": "spring",
+  "kind": "project",
+  "title": "System Design & Project Kickoff",
+  "summary": "Hoàn thiện thiết kế database (ERD 7 entity cho hệ thống thương mại điện tử), BaseEntity implements Persistable để kiểm soát logic persist/merge, GlobalExceptionHandler thống nhất trả ProblemDetail, và quy ước dev workflow (branch/commit/PR/standup) cho Sprint 1-3.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO11"
+  ],
+  "prerequisites": [
+    "Đã thống nhất kiến trúc tổng thể và API contract ở Day 31 - bài này hoàn thiện phần database/error-handling/workflow trước khi vào Sprint 1."
+  ],
+  "outcomes": [
+    "Vẽ được ERD sơ bộ cho hệ thống thương mại điện tử với 7 entity chính.",
+    "Cài đặt được BaseEntity implements Persistable để kiểm soát logic persist/merge.",
+    "Viết được một GlobalExceptionHandler dùng chung trả về ProblemDetail cho toàn bộ API.",
+    "Thống nhất được quy ước git workflow (branch/commit/PR) cho làm việc nhóm."
+  ],
+  "sections": [
+    {
+      "id": "day32-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day32-blk-1",
+          "type": "deliverable",
+          "text": "Hoàn thiện thiết kế database (ERD sơ bộ), chiến lược xử lý lỗi toàn cục, và quy trình làm việc (dev workflow) cho dự án capstone trước khi bắt đầu Sprint 1 (Day 33).",
+          "citations": []
+        },
+        {
+          "id": "day32-blk-2",
+          "type": "note",
+          "text": "Buổi học dạng Assignment/Lab trực tuyến 150 phút, tiếp nối phần kiến trúc và API contract đã thống nhất ở Day 31.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day32-sec-db",
+      "title": "Thiet ke database (ERD so bo)",
+      "blocks": [
+        {
+          "id": "day32-blk-3",
+          "type": "template",
+          "text": "User        (id, email, passwordHash, role)\nCategory    (id, name, slug)\nProduct     (id, name, price, stock, categoryId -> Category)\nCart        (id, userId -> User)\nCartItem    (id, cartId -> Cart, productId -> Product, quantity)\nOrder       (id, userId -> User, status, total, createdAt)\nOrderItem   (id, orderId -> Order, productId -> Product, quantity, price)\n",
+          "citations": []
+        },
+        {
+          "id": "day32-blk-4",
+          "type": "paragraph",
+          "text": "CrudRepository.save(entity) gọi entityManager.persist() nếu entity chưa được persist (isNew() == true), ngược lại gọi entityManager.merge(); mặc định Spring Data JPA phát hiện entity mới dựa trên version-property hoặc id-property (null nghĩa là mới) - áp dụng cho toàn bộ 7 entity trong ERD trên.",
+          "citations": [
+            "day32-src-1"
+          ]
+        },
+        {
+          "id": "day32-blk-5",
+          "type": "paragraph",
+          "text": "Để chủ động kiểm soát logic phát hiện entity mới (thay vì phụ thuộc suy đoán từ id null), toàn bộ entity của dự án kế thừa một BaseEntity chung implements Persistable<ID>.",
+          "citations": [
+            "day32-src-2"
+          ]
+        },
+        {
+          "id": "day32-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.MappedSuperclass;\nimport jakarta.persistence.PostLoad;\nimport jakarta.persistence.PostPersist;\nimport jakarta.persistence.Transient;\nimport org.springframework.data.domain.Persistable;\n\n@MappedSuperclass\nabstract class BaseEntity<ID> implements Persistable<ID> {\n\n    @Transient\n    private boolean isNew = true;\n\n    @Override\n    public boolean isNew() {\n        return isNew;\n    }\n\n    // Sau khi entity duoc luu lan dau hoac duoc load tu DB, danh dau la \"khong con moi\".\n    @PostPersist\n    @PostLoad\n    void markNotNew() {\n        this.isNew = false;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day32-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day32-sec-error",
+      "title": "Chien luoc xu ly loi toan cuc",
+      "blocks": [
+        {
+          "id": "day32-blk-7",
+          "type": "paragraph",
+          "text": "@ExceptionHandler có thể trả về ProblemDetail (chuẩn RFC 7807) thay vì tự định nghĩa DTO lỗi riêng - từ Spring 6.2 còn hỗ trợ content negotiation qua produces.",
+          "citations": [
+            "day32-src-3"
+          ]
+        },
+        {
+          "id": "day32-blk-8",
+          "type": "paragraph",
+          "text": "Toàn bộ @ExceptionHandler của dự án được gom vào một @RestControllerAdvice duy nhất (GlobalExceptionHandler trong package common) thay vì rải rác theo từng controller, đảm bảo định dạng lỗi nhất quán cho mọi module.",
+          "citations": [
+            "day32-src-4"
+          ]
+        },
+        {
+          "id": "day32-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\n\n@RestControllerAdvice\nclass GlobalExceptionHandler {\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n    }\n\n    @ExceptionHandler(ValidationException.class)\n    ProblemDetail handleValidation(ValidationException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day32-src-3",
+            "day32-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day32-blk-10",
+          "type": "note",
+          "text": "Với các lỗi không được bắt bởi GlobalExceptionHandler (ví dụ 404 do sai route hoàn toàn), Spring Boot vẫn có BasicErrorController làm lớp bảo vệ cuối - tùy chỉnh qua server.error.include-message, server.error.include-stacktrace thay vì để lộ stacktrace mặc định.",
+          "citations": [
+            "day32-src-5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day32-sec-workflow",
+      "title": "Quy trinh lam viec (dev workflow)",
+      "blocks": [
+        {
+          "id": "day32-blk-11",
+          "type": "template",
+          "text": "Quy ước làm việc nhóm cho Sprint 1-3:\n- Nhánh: main (ổn định) / develop (tích hợp) / feature/<ten-module> (vd feature/cart-management).\n- Commit message: <module>: <mo ta ngan> (vd 'category: them CRUD controller').\n- Pull Request: tối thiểu 1 reviewer duyệt trước khi merge vào develop.\n- Daily standup cuối mỗi buổi Sprint: đã làm gì / sẽ làm gì / đang bị chặn ở đâu.",
+          "citations": []
+        },
+        {
+          "id": "day32-blk-12",
+          "type": "note",
+          "text": "Hai resource được gán cho Day 32 (repository query methods, Baeldung ProblemDetail) trả về HTTP 404 tại thời điểm khảo sát - không có nội dung cache hợp lệ để trích dẫn thêm cho phần ERD/workflow.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Để Spring Data JPA tự suy đoán entity mới từ id null trong khi dự án dùng id do client sinh sẵn, dẫn tới gọi nhầm merge() thay vì persist().",
+    "Viết @ExceptionHandler rải rác trong từng controller thay vì gom vào một @RestControllerAdvice chung, khiến định dạng lỗi không nhất quán giữa các module.",
+    "Không thống nhất quy ước nhánh/commit trước khi vào Sprint, dẫn tới xung đột merge và lịch sử git khó theo dõi."
+  ],
+  "practices": [
+    {
+      "id": "day32-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "CrudRepository.save(entity) gọi entityManager.merge() khi nào?",
+      "choices": [
+        {
+          "id": "day32-prac-1-a",
+          "text": "Khi entity đã được xác định là KHÔNG mới (isNew() == false), ví dụ id đã có giá trị"
+        },
+        {
+          "id": "day32-prac-1-b",
+          "text": "Luôn luôn, bất kể entity mới hay đã tồn tại"
+        },
+        {
+          "id": "day32-prac-1-c",
+          "text": "Chỉ khi gọi trong một @Transactional method"
+        },
+        {
+          "id": "day32-prac-1-d",
+          "text": "Không bao giờ, save() chỉ gọi persist()"
+        }
+      ],
+      "correctChoiceIds": [
+        "day32-prac-1-a"
+      ],
+      "hint": "Liên hệ với cơ chế Entity State-detection Strategies.",
+      "solution": "day32-prac-1-a",
+      "explanation": "save() gọi persist() khi isNew() == true (entity mới); ngược lại gọi merge() khi entity đã được xác định là không mới - mặc định dựa trên version/id property, hoặc tường minh qua Persistable.isNew().",
+      "rubric": "Liên hệ đúng điều kiện gọi merge() với trạng thái 'không mới' của entity.",
+      "sourceUsage": [
+        "day32-src-1"
+      ]
+    },
+    {
+      "id": "day32-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Vì sao dự án chọn cho toàn bộ entity implements Persistable<ID> qua BaseEntity thay vì để Spring Data JPA tự suy đoán entity mới từ id null?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về trường hợp entity được gán id thủ công trước khi lưu (ví dụ UUID sinh phía client).",
+      "solution": "Nếu entity dùng id do client sinh sẵn (không phải @GeneratedValue auto-increment), id sẽ khác null ngay cả khi entity chưa từng được lưu - khiến Spring Data JPA suy đoán nhầm là 'đã tồn tại' và gọi merge() thay vì persist(). Implements Persistable tự kiểm soát logic này bằng field @Transient isNew, tránh phụ thuộc suy đoán từ id.",
+      "explanation": "Liên hệ đúng: id không null không đồng nghĩa entity đã tồn tại khi id được sinh sẵn phía client - Persistable tách bạch hai khái niệm này.",
+      "rubric": "Đánh giá đúng lý do: tránh suy đoán sai khi id được gán thủ công trước khi persist.",
+      "sourceUsage": [
+        "day32-src-2"
+      ]
+    },
+    {
+      "id": "day32-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao GlobalExceptionHandler nên là MỘT @RestControllerAdvice duy nhất thay vì mỗi controller tự viết @ExceptionHandler riêng?",
+      "choices": [
+        {
+          "id": "day32-prac-3-a",
+          "text": "Đảm bảo định dạng lỗi (ProblemDetail) nhất quán cho toàn bộ API, tránh mỗi module trả lỗi một kiểu khác nhau"
+        },
+        {
+          "id": "day32-prac-3-b",
+          "text": "Vì @ExceptionHandler cục bộ trong controller không hợp lệ về mặt cú pháp"
+        },
+        {
+          "id": "day32-prac-3-c",
+          "text": "Vì @RestControllerAdvice chạy nhanh hơn @ExceptionHandler cục bộ"
+        },
+        {
+          "id": "day32-prac-3-d",
+          "text": "Không có lý do kỹ thuật, chỉ là quy ước tùy chọn"
+        }
+      ],
+      "correctChoiceIds": [
+        "day32-prac-3-a"
+      ],
+      "hint": "Nghĩ về việc dự án có nhiều module (Category/Product/Cart/Order) phát triển song song.",
+      "solution": "day32-prac-3-a",
+      "explanation": "@ExceptionHandler cục bộ vẫn hợp lệ về cú pháp, nhưng khi nhiều người phát triển song song nhiều module, để mỗi controller tự định nghĩa cách trả lỗi riêng dễ dẫn tới định dạng không nhất quán; gom vào một @RestControllerAdvice chung đảm bảo mọi lỗi trả về cùng cấu trúc ProblemDetail.",
+      "rubric": "Liên hệ đúng lý do nhất quán định dạng lỗi khi làm việc nhóm nhiều module.",
+      "sourceUsage": [
+        "day32-src-4"
+      ]
+    },
+    {
+      "id": "day32-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Viết quy ước đặt tên nhánh git và commit message cho một tính năng bạn sẽ làm ở Sprint 1 (ví dụ: Category CRUD).",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Áp dụng quy ước feature/<ten-module> và <module>: <mo ta ngan> đã thống nhất trong bài.",
+      "solution": "Nhánh: feature/category-crud\nCommit: 'category: them entity va repository', 'category: them controller CRUD'",
+      "explanation": "Áp dụng lại quy ước dev workflow đã thống nhất trong bài cho một tính năng cụ thể của Sprint 1.",
+      "rubric": "Đánh giá đúng: tên nhánh có prefix feature/, commit message có prefix module rõ ràng.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Vẽ ERD đầy đủ (kèm kiểu dữ liệu từng cột) cho 7 entity và kiểm tra lại tính chuẩn hóa (không lặp dữ liệu không cần thiết).",
+    "Viết thêm một ExceptionHandler cho trường hợp lỗi trùng dữ liệu (ví dụ email đã tồn tại khi đăng ký)."
+  ],
+  "references": [
+    {
+      "id": "day32-ref-1",
+      "type": "external",
+      "resourceId": "res-afbebe6cf212",
+      "citationId": "day32-src-2"
+    },
+    {
+      "id": "day32-ref-2",
+      "type": "external",
+      "resourceId": "res-b307e54a2685",
+      "citationId": "day32-src-4"
+    },
+    {
+      "id": "day32-ref-3",
+      "type": "internal",
+      "description": "BaseEntity và GlobalExceptionHandler thiết kế ở bài này được toàn bộ entity/controller của Sprint 1-3 (Day 33-35) kế thừa/sử dụng lại."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day32-src-1",
+      "resourceId": "res-afbebe6cf212",
+      "locator": "muc 'Saving Entities', 'Entity State-detection Strategies', Option 1",
+      "topic": "save() behavior (persist vs merge)"
+    },
+    {
+      "id": "day32-src-2",
+      "resourceId": "res-afbebe6cf212",
+      "locator": "muc 'Entity State-detection Strategies', Option 2, vi du AbstractEntity",
+      "topic": "Implement Persistable để tùy chỉnh"
+    },
+    {
+      "id": "day32-src-3",
+      "resourceId": "res-b307e54a2685",
+      "locator": "muc 2, vi du handleException2 tra ve ProblemDetail",
+      "topic": "@ExceptionHandler cơ bản trả về ProblemDetail"
+    },
+    {
+      "id": "day32-src-4",
+      "resourceId": "res-b307e54a2685",
+      "locator": "muc 2.2, vi du MyGlobalExceptionHandler + MyCustomResponseEntityExceptionHandler",
+      "topic": "Global handling với @RestControllerAdvice"
+    },
+    {
+      "id": "day32-src-5",
+      "resourceId": "res-b307e54a2685",
+      "locator": "muc 6.2, vi du MyCustomErrorAttributes, MyErrorController",
+      "topic": "Spring Boot ErrorController & properties"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Hướng dẫn Spring Data JPA repository query methods (res-553bbd92e5d0): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
+      "Bài viết về ProblemDetail của Baeldung (res-af7171222f9a): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
+      "Thiết kế ERD/chuẩn hóa dữ liệu quan hệ: không có resource nào trong resourceIds của Day 32 mô tả lý thuyết chuẩn hóa CSDL - ERD được trình bày như một khối template (thiết kế nghiệp vụ áp dụng) không yêu cầu trích dẫn, dựa trên facts về persist/merge (res-afbebe6cf212) để giải thích hành vi lưu entity.",
+      "Quy ước git workflow (branch/commit/PR/standup): không có resource nào trong resourceIds của Day 32 mô tả quy trình làm việc nhóm - trình bày như một khối template dựa trên quy ước thực hành phổ biến, không yêu cầu trích dẫn."
+    ]
+  }
+}

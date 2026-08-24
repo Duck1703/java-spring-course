@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 1,
+  "id": "day-38",
+  "catalogRef": {
+    "unitId": "unit-13",
+    "group": "completion",
+    "title": "Final practice",
+    "objectives": [
+      "LO5",
+      "LO6",
+      "LO7",
+      "LO8",
+      "LO9",
+      "LO10",
+      "LO11",
+      "LO12"
+    ],
+    "durationMinutes": 300.0,
+    "sourceRows": [
+      60
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": []
+  },
+  "unitId": "unit-13",
+  "group": "completion",
+  "kind": "exam",
+  "title": "Final practice",
+  "summary": "Bài thi thực hành cuối khóa (300 phút, offline): xây dựng bổ sung một tính năng nghiệp vụ mới cho hệ thống e-commerce capstone, áp dụng lại toàn bộ kỹ năng LO5-LO12 đã xây dựng ở Day 31-36 - không có resourceId ngoài, nội dung là ôn tập nội bộ.",
+  "durationMinutes": 300.0,
+  "objectives": [
+    "LO5",
+    "LO6",
+    "LO7",
+    "LO8",
+    "LO9",
+    "LO10",
+    "LO11",
+    "LO12"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Day 31-37: thiết kế kiến trúc/API, Sprint 1-3 (toàn bộ module e-commerce), Final Defense, và bài thi lý thuyết."
+  ],
+  "outcomes": [
+    "Áp dụng lại được toàn bộ kỹ năng LO5-LO12 để xây dựng một tính năng nghiệp vụ mới trong thời gian giới hạn.",
+    "Quản lý thời gian hiệu quả cho một bài thi thực hành kéo dài 300 phút."
+  ],
+  "sections": [
+    {
+      "id": "day38-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day38-blk-1",
+          "type": "deliverable",
+          "text": "Bài thi thực hành cuối khóa (offline, 300 phút): xây dựng bổ sung một tính năng nghiệp vụ mới cho hệ thống e-commerce capstone đã hoàn thiện ở Sprint 1-3 (Day 33-35), áp dụng lại toàn bộ kỹ năng LO5-LO12.",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-2",
+          "type": "note",
+          "text": "Day 38 không có resourceId nào được gán trong course-catalog.json (resourceIds rỗng) - toàn bộ nội dung bài này là ôn tập nội bộ (internal curriculum review) dựa trên các Day 31-36 đã được kiểm chứng trước đó, không có trích dẫn tài liệu ngoài nào cho riêng Day 38.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day38-sec-scope",
+      "title": "Pham vi LO5-LO12 va nguon noi dung goc",
+      "blocks": [
+        {
+          "id": "day38-blk-3",
+          "type": "paragraph",
+          "text": "LO5-LO7 (nền tảng entity/repository, Spring Data JPA, Auth JWT): được xây dựng tại Sprint 1, Day 33.",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-4",
+          "type": "paragraph",
+          "text": "LO8-LO9 (upload file, caching, transaction, @Async): được xây dựng tại Sprint 2-3, Day 34-35.",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-5",
+          "type": "paragraph",
+          "text": "LO10 (export CSV, Docker/docker-compose, CI pipeline, testing với Testcontainers): được xây dựng tại Sprint 3 và Final Defense, Day 35-36.",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-6",
+          "type": "paragraph",
+          "text": "LO11-LO12 (thiết kế kiến trúc/API, quy trình phát triển dự án thực tế): được thiết lập tại Day 31-32 (System Design & Project Kickoff) và áp dụng xuyên suốt Sprint 1-3.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day38-sec-checklist",
+      "title": "Checklist chuan bi truoc gio thi",
+      "blocks": [
+        {
+          "id": "day38-blk-7",
+          "type": "template",
+          "text": "Trước khi bắt đầu: (1) JDK 17 đã cài đặt và JAVA_HOME trỏ đúng; (2) IDE (IntelliJ/VS Code) mở sẵn project capstone; (3) Docker Desktop đang chạy (để dùng Testcontainers nếu cần); (4) Git đã cấu hình, có quyền commit/push vào repository nộp bài; (5) Postman hoặc Swagger UI sẵn sàng để test API thủ công; (6) đọc kỹ toàn bộ đề bài VÀ tiêu chí chấm điểm trước khi viết dòng code đầu tiên.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day38-sec-structure",
+      "title": "Cau truc de bai (du kien)",
+      "blocks": [
+        {
+          "id": "day38-blk-8",
+          "type": "code",
+          "language": "text",
+          "code": "De thi thuc hanh (300 phut, offline) - cau truc du kien:\n1. De bai nghiep vu bo sung cho he thong e-commerce da xay dung (Sprint 1-3)\n   - vi du: them tinh nang \"ma giam gia\" (coupon) hoac \"danh gia san pham\" (review).\n2. Yeu cau ky thuat cu the: entity/repository moi, endpoint REST theo dung\n   API contract style (Day 31), validation, xu ly loi qua GlobalExceptionHandler.\n3. Yeu cau kiem thu: it nhat 1 test (@DataJpaTest hoac @WebMvcTest) cho tinh\n   nang moi.\n4. Tieu chi cham diem duoc cong bo kem de bai - doc ky truoc khi bat dau code.\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Đây là bản mẫu cấu trúc/tiêu chí tham khảo (không phải mã nguồn), dùng ngôn ngữ 'text' nên không yêu cầu trích dẫn kỹ thuật hay biên dịch."
+        },
+        {
+          "id": "day38-blk-9",
+          "type": "note",
+          "text": "Đây là cấu trúc đề bài dự kiến mang tính minh họa (không phải đề thi chính thức) - giúp thí sinh hình dung dạng yêu cầu sẽ gặp, dựa trên chính các module đã xây dựng ở Sprint 1-3.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day38-sec-rubric",
+      "title": "Rubric tu danh gia",
+      "blocks": [
+        {
+          "id": "day38-blk-10",
+          "type": "template",
+          "text": "Tự chấm trước khi nộp theo 5 tiêu chí: (1) Tính đúng đắn - API hoạt động đúng yêu cầu đề bài; (2) Chất lượng code - đặt tên rõ ràng, tách layer Controller/Service/Repository; (3) Xử lý lỗi - dùng GlobalExceptionHandler/ProblemDetail nhất quán với phần còn lại của dự án; (4) Kiểm thử - có ít nhất một test pass cho tính năng mới; (5) Vệ sinh Git - commit rõ ràng, không commit file thừa (target/, .idea/...).",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Bắt đầu code ngay mà không đọc kỹ đề bài và tiêu chí chấm điểm, dẫn đến làm sai trọng tâm yêu cầu.",
+    "Không viết test nào cho tính năng mới vì thiếu thời gian - nên phân bổ thời gian kiểm thử ngay từ đầu thay vì để tới phút cuối.",
+    "Không tái sử dụng quy ước đã có của dự án (GlobalExceptionHandler, package layout, @Async) mà tạo cách làm mới không nhất quán."
+  ],
+  "practices": [
+    {
+      "id": "day38-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khi thêm một exception nghiệp vụ mới (ví dụ CouponExpiredException) cho tính năng bổ sung trong bài thi, nên xử lý nó ở đâu để nhất quán với kiến trúc đã xây dựng?",
+      "choices": [
+        {
+          "id": "day38-prac-1-a",
+          "text": "Thêm @ExceptionHandler cho nó trong GlobalExceptionHandler (@RestControllerAdvice) chung của dự án, trả về ProblemDetail"
+        },
+        {
+          "id": "day38-prac-1-b",
+          "text": "Viết try-catch riêng trong từng controller cần dùng"
+        },
+        {
+          "id": "day38-prac-1-c",
+          "text": "Bỏ qua, để exception tự lan ra ngoài thành lỗi 500 mặc định"
+        },
+        {
+          "id": "day38-prac-1-d",
+          "text": "Tạo một GlobalExceptionHandler mới riêng chỉ cho tính năng này"
+        }
+      ],
+      "correctChoiceIds": [
+        "day38-prac-1-a"
+      ],
+      "hint": "Nhớ lại quy ước xử lý lỗi thống nhất đã thiết lập từ Day 31 (kiến trúc tổng thể).",
+      "solution": "day38-prac-1-a",
+      "explanation": "Toàn bộ dự án dùng một GlobalExceptionHandler (@RestControllerAdvice) duy nhất trả về ProblemDetail cho mọi lỗi nghiệp vụ (quy ước từ Day 31) - exception mới nên được thêm @ExceptionHandler vào đúng class này để nhất quán, không tạo handler rải rác hay riêng lẻ.",
+      "rubric": "Liên hệ đúng quy ước xử lý lỗi tập trung đã thiết lập từ đầu dự án.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day38-prac-2",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Lập kế hoạch phân bổ 300 phút thi thực hành thành các mốc thời gian cụ thể.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dành thời gian đọc đề và tiêu chí chấm điểm trước khi code, và chừa thời gian kiểm thử/commit cuối buổi.",
+      "solution": "Gợi ý phân bổ: 15-20 phút đọc kỹ đề bài + tiêu chí chấm điểm; 180-200 phút hiện thực entity/repository/service/controller và test cho tính năng mới; 40-50 phút kiểm thử thủ công qua Postman/Swagger UI và sửa lỗi; 20-30 phút cuối để review lại code, dọn dẹp, commit và nộp bài đúng hạn.",
+      "explanation": "Chừa đủ thời gian cho kiểm thử và nộp bài ở cuối là điểm dễ bị bỏ qua nhất khi lập kế hoạch - tránh dồn hết 300 phút vào việc viết code.",
+      "rubric": "Đánh giá đúng: có mốc thời gian cụ thể cho từng giai đoạn, tổng cộng khớp 300 phút, có chừa thời gian kiểm thử/nộp bài.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day38-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Nếu tính năng bổ sung trong bài thi cần gửi thông báo (ví dụ email xác nhận coupon) mà không muốn chặn response API, nên áp dụng lại kỹ thuật nào đã học ở Sprint 3?",
+      "choices": [
+        {
+          "id": "day38-prac-3-a",
+          "text": "Đánh dấu method gửi thông báo bằng @Async (kèm @EnableAsync ở class cấu hình) để chạy trên luồng khác"
+        },
+        {
+          "id": "day38-prac-3-b",
+          "text": "Gọi trực tiếp method gửi email trong cùng luồng xử lý request"
+        },
+        {
+          "id": "day38-prac-3-c",
+          "text": "Dùng Thread.sleep() để trì hoãn response"
+        },
+        {
+          "id": "day38-prac-3-d",
+          "text": "Tạo một cron job riêng chạy mỗi phút để quét thông báo chưa gửi"
+        }
+      ],
+      "correctChoiceIds": [
+        "day38-prac-3-a"
+      ],
+      "hint": "Đây chính là kỹ thuật đã dùng cho NotificationService ở Sprint 3, Day 35.",
+      "solution": "day38-prac-3-a",
+      "explanation": "@Async (với @EnableAsync) cho phép method gửi thông báo chạy trên luồng riêng, không chặn luồng xử lý request chính - đúng kỹ thuật đã áp dụng cho NotificationService.sendOrderConfirmation() ở Sprint 3.",
+      "rubric": "Liên hệ đúng: tái sử dụng @Async đã học thay vì đề xuất giải pháp mới không nhất quán với kiến trúc dự án.",
+      "sourceUsage": []
+    },
+    {
+      "id": "day38-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Liệt kê 3 rủi ro lớn nhất bạn có thể gặp trong bài thi 300 phút này và cách phòng tránh từng rủi ro.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về rủi ro kỹ thuật (ví dụ quên migration, quên test) và rủi ro thời gian (dành quá nhiều thời gian cho một phần).",
+      "solution": "Không có đáp án cố định - câu trả lời tốt nêu 3 rủi ro cụ thể (ví dụ: quên cấu hình GlobalExceptionHandler cho exception mới; hết thời gian trước khi viết test; xung đột Git khi commit) kèm biện pháp phòng tránh cụ thể cho từng rủi ro, không chung chung.",
+      "explanation": "Rủi ro càng cụ thể (gắn với một bước thao tác thật) thì biện pháp phòng tránh càng khả thi hơn so với rủi ro nêu chung chung.",
+      "rubric": "Đánh giá đúng: 3 rủi ro cụ thể (không trùng lặp), mỗi rủi ro có biện pháp phòng tránh rõ ràng.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Tự đề ra một tính năng bổ sung khác (ngoài ví dụ coupon/review) và ước lượng thời gian cần thiết để hoàn thành trong 300 phút.",
+    "Diễn tập một lượt đầy đủ (setup - code - test - commit) cho một tính năng nhỏ trong đúng 60 phút để làm quen với tốc độ cần có."
+  ],
+  "references": [
+    {
+      "id": "day38-ref-1",
+      "type": "internal",
+      "description": "Day 33-35 (Sprint 1-3) là nguồn nội dung kỹ thuật chính được ôn tập lại trong bài thi này; không có resourceId ngoài nào được gán cho Day 38 trong course-catalog.json."
+    },
+    {
+      "id": "day38-ref-2",
+      "type": "internal",
+      "description": "Day 31-32 (System Design & Project Kickoff) cung cấp quy ước kiến trúc/API mà bài thi yêu cầu tuân thủ khi bổ sung tính năng mới."
+    },
+    {
+      "id": "day38-ref-3",
+      "type": "internal",
+      "description": "Day 36 (Final Defense) là nơi các kỹ thuật kiểm thử (@DataJpaTest/@WebMvcTest/Testcontainers) được trình bày chi tiết, áp dụng lại cho tiêu chí kiểm thử của bài thi này."
+    }
+  ],
+  "sourceUsage": [],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "resourceIds=[] là chủ đích theo course-catalog.json (Day 38 không được gán resource ngoài nào) - toàn bộ nội dung bài này được suy ra từ nội dung nội bộ đã kiểm chứng của Day 31-36, không có trích dẫn external nào khả dụng cho riêng Day 38."
+    ]
+  }
+}

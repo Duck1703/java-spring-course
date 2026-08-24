@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "id": "day-34",
+  "catalogRef": {
+    "unitId": "unit-12",
+    "group": "spring",
+    "title": "Development Sprint 2",
+    "objectives": [
+      "LO6",
+      "LO7",
+      "LO9",
+      "LO12"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      56
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-553bbd92e5d0",
+      "res-aa4cbb2b9a5c",
+      "res-74d398e3d23c",
+      "res-e95ba2d69401"
+    ]
+  },
+  "unitId": "unit-12",
+  "group": "spring",
+  "kind": "project",
+  "title": "Development Sprint 2",
+  "summary": "Sprint 2 của dự án capstone: Product CRUD với tìm kiếm/lọc/phân trang, upload ảnh sản phẩm qua MultipartFile, thiết kế Cart/CartItem, và caching cho Category/Product bằng @Cacheable/@CacheEvict với điều kiện unless.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO6",
+    "LO7",
+    "LO9",
+    "LO12"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Sprint 1 (Day 33): entity/repository, Auth JWT, User profile, Category CRUD - bài này mở rộng sang Product/Cart/caching."
+  ],
+  "outcomes": [
+    "Hiện thực được endpoint upload ảnh sản phẩm dùng MultipartFile và giới hạn dung lượng hợp lý.",
+    "Thiết kế được entity Cart/CartItem cho nghiệp vụ giỏ hàng.",
+    "Áp dụng đúng @Cacheable/@CacheEvict kèm điều kiện unless cho Category/Product."
+  ],
+  "sections": [
+    {
+      "id": "day34-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day34-blk-1",
+          "type": "deliverable",
+          "text": "Sprint 2: Product CRUD kèm tìm kiếm/lọc/phân trang, upload ảnh sản phẩm, quản lý Cart, và thiết lập caching cho Category/Product.",
+          "citations": []
+        },
+        {
+          "id": "day34-blk-2",
+          "type": "note",
+          "text": "Buổi học dạng Assignment/Lab trực tuyến 150 phút, tiếp nối Sprint 1 (Day 33) - bắt đầu Unit 12.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day34-sec-product",
+      "title": "Product CRUD: tim kiem, loc, phan trang",
+      "blocks": [
+        {
+          "id": "day34-blk-3",
+          "type": "template",
+          "text": "ProductController hiện thực đầy đủ CRUD theo API contract (Day 31): GET /api/products?search=&categoryId=&page= dùng Pageable + Specification để kết hợp tìm kiếm theo tên, lọc theo categoryId, và phân trang; POST/PUT/DELETE dành riêng cho Admin.",
+          "citations": []
+        },
+        {
+          "id": "day34-blk-4",
+          "type": "note",
+          "text": "Hai resource được gán cho Day 34 (repository query methods, Spring Data JPA sort - vốn là nơi thường mô tả Pageable/Sort) trả về HTTP 404 tại thời điểm khảo sát; phần tìm kiếm/lọc/phân trang trong bài dựa trên kiến thức Spring Data JPA đã có từ các Unit trước, không có trích dẫn riêng cho Day 34.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day34-sec-upload",
+      "title": "Upload anh san pham",
+      "blocks": [
+        {
+          "id": "day34-blk-5",
+          "type": "paragraph",
+          "text": "Với Spring Boot, không cần khai báo MultipartConfigElement hay StandardServletMultipartResolver thủ công như ứng dụng Servlet 3.0 thuần - chỉ cần spring-boot-starter-web trên classpath là đủ.",
+          "citations": [
+            "day34-src-1",
+            "day34-src-4"
+          ]
+        },
+        {
+          "id": "day34-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.multipart.MultipartFile;\n\n@RestController\nclass ProductImageController {\n\n    // Spring Boot khong can khai bao servlet thu cong, chi can starter-web tren classpath.\n    @PostMapping(\"/api/products/{id}/image\")\n    void uploadImage(@RequestParam(\"file\") MultipartFile file) {\n        String originalFilename = file.getOriginalFilename();\n        String contentType = file.getContentType();\n        // luu file, cap nhat Product.imageUrl...\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day34-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day34-blk-7",
+          "type": "paragraph",
+          "text": "Nếu cần cho phép upload nhiều ảnh cho một sản phẩm (gallery), dùng nhiều input cùng tên trong form và nhận trong controller qua @RequestParam(\"files\") MultipartFile[] files.",
+          "citations": [
+            "day34-src-3"
+          ]
+        },
+        {
+          "id": "day34-blk-8",
+          "type": "important",
+          "text": "Luôn giới hạn dung lượng upload qua spring.servlet.multipart.max-file-size và max-request-size - nếu bỏ mặc định, endpoint upload ảnh sản phẩm có thể bị lạm dụng để gửi file khổng lồ làm quá tải server.",
+          "citations": [
+            "day34-src-4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day34-sec-cart",
+      "title": "Quan ly Cart",
+      "blocks": [
+        {
+          "id": "day34-blk-9",
+          "type": "template",
+          "text": "Cart (1) - CartItem (nhiều): Cart gắn với User hiện tại (tạo tự động nếu chưa có), CartItem lưu productId + quantity. Endpoint: GET /api/cart/items (xem giỏ), POST /api/cart/items (thêm/cập nhật số lượng), DELETE /api/cart/items/{id} (xóa một dòng). Tổng tiền được tính động từ CartItem.quantity * Product.price, không lưu cứng trong Cart.",
+          "citations": []
+        },
+        {
+          "id": "day34-blk-10",
+          "type": "note",
+          "text": "Không có resource nào trong resourceIds của Day 34 mô tả riêng nghiệp vụ giỏ hàng - phần thiết kế Cart/CartItem ở trên là quyết định thiết kế nghiệp vụ (domain design) của dự án, không có nguồn trích dẫn kỹ thuật cụ thể.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day34-sec-cache",
+      "title": "Caching cho Category/Product",
+      "blocks": [
+        {
+          "id": "day34-blk-11",
+          "type": "paragraph",
+          "text": "Chỉ cần starter cache trên classpath cùng @EnableCaching là đủ để Spring Boot đăng ký ConcurrentMapCacheManager mặc định - áp dụng cho môi trường phát triển của dự án trước khi cân nhắc backend Redis.",
+          "citations": [
+            "day34-src-5"
+          ]
+        },
+        {
+          "id": "day34-blk-12",
+          "type": "paragraph",
+          "text": "Category.findAll() dùng @Cacheable (danh mục ít thay đổi, đọc nhiều) - bỏ qua gọi lại nếu đã có trong cache; ngược lại các thao tác ghi (tạo/sửa/xóa category hoặc product) dùng @CacheEvict(allEntries = true) để làm mới toàn bộ cache liên quan.",
+          "citations": [
+            "day34-src-6",
+            "day34-src-7"
+          ]
+        },
+        {
+          "id": "day34-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\nimport java.util.List;\n\n@Service\nclass CategoryService {\n\n    // Danh muc it thay doi -> cache theo key mac dinh (khong tham so).\n    @Cacheable(value = \"categories\", unless = \"#result.isEmpty()\")\n    public List<CategoryDto> findAll() {\n        return loadAllFromDatabase();\n    }\n\n    // Xoa toan bo cache \"categories\" khi co category moi/bi sua/bi xoa.\n    @CacheEvict(value = \"categories\", allEntries = true)\n    public void invalidateCache() {\n    }\n\n    private List<CategoryDto> loadAllFromDatabase() { return List.of(); }\n}\n",
+          "compile": false,
+          "citations": [
+            "day34-src-6",
+            "day34-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day34-blk-14",
+          "type": "note",
+          "text": "Dùng unless = \"#result.isEmpty()\" để tránh cache một kết quả rỗng (ví dụ chưa có category nào) - nếu không, cache sẽ giữ mãi danh sách rỗng cho tới lần @CacheEvict tiếp theo dù dữ liệu thật đã có.",
+          "citations": [
+            "day34-src-8"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Không giới hạn spring.servlet.multipart.max-file-size, để endpoint upload ảnh sản phẩm bị lạm dụng gửi file khổng lồ.",
+    "Lưu cứng giá sản phẩm trong CartItem tại thời điểm thêm vào giỏ, khiến giỏ hàng hiển thị sai giá khi Product.price thay đổi sau đó.",
+    "Dùng @Cacheable cho method ghi dữ liệu (tạo/sửa category) khiến lần ghi đầu tiên bị bỏ qua nếu cache đã có key trùng."
+  ],
+  "practices": [
+    {
+      "id": "day34-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao endpoint upload ảnh sản phẩm cần cấu hình spring.servlet.multipart.max-file-size?",
+      "choices": [
+        {
+          "id": "day34-prac-1-a",
+          "text": "Để tránh bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng"
+        },
+        {
+          "id": "day34-prac-1-b",
+          "text": "Vì Spring Boot không hỗ trợ upload file nếu không cấu hình thuộc tính này"
+        },
+        {
+          "id": "day34-prac-1-c",
+          "text": "Để tăng tốc độ upload file"
+        },
+        {
+          "id": "day34-prac-1-d",
+          "text": "Vì @RequestParam MultipartFile bắt buộc phải khai báo max-file-size"
+        }
+      ],
+      "correctChoiceIds": [
+        "day34-prac-1-a"
+      ],
+      "hint": "Nghĩ về rủi ro khi không giới hạn dung lượng file client gửi lên.",
+      "solution": "day34-prac-1-a",
+      "explanation": "Không giới hạn max-file-size/max-request-size khiến endpoint upload có thể bị lạm dụng để gửi file rất lớn, chiếm băng thông/bộ nhớ và có thể làm quá tải server.",
+      "rubric": "Liên hệ đúng lý do: phòng ngừa lạm dụng dung lượng upload.",
+      "sourceUsage": [
+        "day34-src-4"
+      ]
+    },
+    {
+      "id": "day34-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khác biệt cốt lõi giữa @Cacheable và @CachePut khi áp dụng cho CategoryService là gì?",
+      "choices": [
+        {
+          "id": "day34-prac-2-a",
+          "text": "@Cacheable bỏ qua gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
+        },
+        {
+          "id": "day34-prac-2-b",
+          "text": "@Cacheable dùng cho ghi dữ liệu, @CachePut dùng cho đọc dữ liệu"
+        },
+        {
+          "id": "day34-prac-2-c",
+          "text": "@CachePut xóa cache, @Cacheable ghi cache"
+        },
+        {
+          "id": "day34-prac-2-d",
+          "text": "Không có khác biệt, hai annotation tương đương nhau"
+        }
+      ],
+      "correctChoiceIds": [
+        "day34-prac-2-a"
+      ],
+      "hint": "So sánh hành vi khi cache đã có sẵn dữ liệu cho key đang truy vấn.",
+      "solution": "day34-prac-2-a",
+      "explanation": "@Cacheable kiểm tra cache trước, nếu có dữ liệu thì bỏ qua gọi method (phù hợp CategoryService.findAll() vì đọc nhiều); @CachePut luôn thực thi rồi mới cập nhật cache, phù hợp khi cần đảm bảo dữ liệu mới nhất sau mỗi lần ghi.",
+      "rubric": "Liên hệ đúng: @Cacheable = đọc có điều kiện bỏ qua, @CachePut = luôn ghi.",
+      "sourceUsage": [
+        "day34-src-6"
+      ]
+    },
+    {
+      "id": "day34-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết method dùng @CacheEvict để xóa toàn bộ entry trong cache 'categories' khi một category bị xóa.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng allEntries = true trên @CacheEvict, tương tự CategoryService.invalidateCache() trong bài.",
+      "solution": "@CacheEvict(value = \"categories\", allEntries = true)\npublic void onCategoryDeleted() {\n}",
+      "explanation": "Áp dụng lại mẫu @CacheEvict(allEntries = true) đã học trong bài cho nghiệp vụ xóa category.",
+      "rubric": "Đánh giá đúng: có @CacheEvict với allEntries = true, value trỏ đúng cache name 'categories'.",
+      "sourceUsage": [
+        "day34-src-7"
+      ]
+    },
+    {
+      "id": "day34-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Thiết kế entity CartItem: cần những field nào và quan hệ với Product/Cart ra sao?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về dữ liệu tối thiểu để tính tổng tiền giỏ hàng động.",
+      "solution": "CartItem cần: id, cartId (FK -> Cart), productId (FK -> Product), quantity. Không lưu cứng giá/tổng tiền trong CartItem - luôn tính động từ Product.price hiện tại * quantity để phản ánh đúng giá mới nhất khi hiển thị giỏ hàng.",
+      "explanation": "Tách CartItem khỏi giá trị tiền cụ thể giúp giỏ hàng luôn phản ánh đúng giá hiện tại của Product, khác với OrderItem (Sprint 3) vốn cần lưu cứng giá tại thời điểm checkout.",
+      "rubric": "Đánh giá đúng: liệt kê đủ field, không lưu cứng giá tại thời điểm thêm vào giỏ.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm condition/unless vào @Cacheable(\"products\") để chỉ cache khi sản phẩm đang ở trạng thái ACTIVE.",
+    "Viết test kiểm tra endpoint upload ảnh từ chối file vượt quá max-file-size với HTTP 413."
+  ],
+  "references": [
+    {
+      "id": "day34-ref-1",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day34-src-2"
+    },
+    {
+      "id": "day34-ref-2",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day34-src-6"
+    },
+    {
+      "id": "day34-ref-3",
+      "type": "internal",
+      "description": "Cart/CartItem thiết kế ở bài này sẽ được chuyển thành Order/OrderItem khi checkout ở Sprint 3 (Day 35)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day34-src-1",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 2, vi du MainWebAppInitializer + multipartResolver bean",
+      "topic": "Cấu hình multipart Servlet 3.0"
+    },
+    {
+      "id": "day34-src-2",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 3, vi du submit(@RequestParam(\"file\") MultipartFile file...)",
+      "topic": "Upload một file"
+    },
+    {
+      "id": "day34-src-3",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 4, vi du MultipartFile[] files",
+      "topic": "Upload nhiều file"
+    },
+    {
+      "id": "day34-src-4",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 6, Spring Boot File Upload",
+      "topic": "Cấu hình multipart trong Spring Boot"
+    },
+    {
+      "id": "day34-src-5",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 3, Enable Caching",
+      "topic": "Bật cache và CacheManager mặc định"
+    },
+    {
+      "id": "day34-src-6",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.1 va 4.3, @Cacheable va @CachePut",
+      "topic": "@Cacheable vs @CachePut"
+    },
+    {
+      "id": "day34-src-7",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.2, @CacheEvict",
+      "topic": "@CacheEvict"
+    },
+    {
+      "id": "day34-src-8",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 5, Conditional Caching",
+      "topic": "Cache có điều kiện"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Hướng dẫn Spring Data JPA repository query methods (res-553bbd92e5d0): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
+      "Bài viết về Spring Data JPA sort (res-aa4cbb2b9a5c): trả về HTTP 404 tại thời điểm khảo sát; đây cũng là resource thường mô tả Pageable/Sort nên phần tìm kiếm/lọc/phân trang sản phẩm trong bài không có trích dẫn kỹ thuật riêng cho Day 34.",
+      "Nghiệp vụ quản lý Cart/CartItem: không có resource nào trong resourceIds của Day 34 mô tả chủ đề này - trình bày như một khối template (quyết định thiết kế nghiệp vụ) không yêu cầu trích dẫn."
+    ]
+  }
+}

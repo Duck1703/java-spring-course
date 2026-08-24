@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 1,
+  "id": "day-35",
+  "catalogRef": {
+    "unitId": "unit-12",
+    "group": "spring",
+    "title": "Development Sprint 3",
+    "objectives": [
+      "LO8",
+      "LO9",
+      "LO10",
+      "LO12"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      57
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-2c011d89d6e0",
+      "res-033c4bfa05f5",
+      "res-e3236d24d45f",
+      "res-8d5e61cc0a53",
+      "res-ea68bcb99823"
+    ]
+  },
+  "unitId": "unit-12",
+  "group": "spring",
+  "kind": "project",
+  "title": "Development Sprint 3",
+  "summary": "Sprint 3 của dự án capstone: luồng checkout trong @Transactional(REQUIRED), gửi email xác nhận qua @Async với ThreadPoolTaskExecutor riêng, xuất CSV đơn hàng cho admin, và hoàn thiện Docker (layered jar + layertools) cùng docker-compose/CI.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO8",
+    "LO9",
+    "LO10",
+    "LO12"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Sprint 2 (Day 34): Product CRUD, upload ảnh, Cart - bài này chuyển Cart thành Order qua checkout và hoàn thiện phần vận hành (Docker/CI)."
+  ],
+  "outcomes": [
+    "Hiện thực checkout trong @Transactional với propagation/isolation phù hợp.",
+    "Tách xử lý gửi email khỏi luồng request chính bằng @Async và Executor riêng.",
+    "Xuất được CSV đơn hàng với escaping đúng chuẩn cho admin.",
+    "Đóng gói ứng dụng bằng Docker layered jar và cấu hình docker-compose cho môi trường dev."
+  ],
+  "sections": [
+    {
+      "id": "day35-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day35-blk-1",
+          "type": "deliverable",
+          "text": "Sprint 3: luồng checkout đơn hàng, quản lý order (user + admin), gửi email xác nhận bất đồng bộ, xuất CSV cho admin, hoàn thiện Docker/docker-compose, và kiểm tra CI pipeline.",
+          "citations": []
+        },
+        {
+          "id": "day35-blk-2",
+          "type": "note",
+          "text": "Buổi học dạng Assignment/Lab trực tuyến 150 phút, Sprint cuối cùng trước Final Defense (Day 36).",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day35-sec-checkout",
+      "title": "Luong checkout va quan ly order",
+      "blocks": [
+        {
+          "id": "day35-blk-3",
+          "type": "template",
+          "text": "Order (trạng thái PENDING -> PAID -> SHIPPED, hoặc CANCELLED), OrderItem sao chép productId/quantity/price TẠI THỜI ĐIỂM checkout (khác CartItem - không tính động) để lịch sử đơn hàng không đổi kể cả khi giá sản phẩm thay đổi sau đó.",
+          "citations": []
+        },
+        {
+          "id": "day35-blk-4",
+          "type": "paragraph",
+          "text": "checkout() bọc trong @Transactional với propagation mặc định REQUIRED - dùng transaction hiện có hoặc tạo mới nếu chưa có, đảm bảo việc tạo Order + xóa Cart diễn ra nguyên tử (cùng thành công hoặc cùng thất bại).",
+          "citations": [
+            "day35-src-1"
+          ]
+        },
+        {
+          "id": "day35-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\nclass OrderService {\n\n    // REQUIRED (mac dinh): dung transaction hien co hoac tao moi neu chua co.\n    @Transactional\n    public Order checkout(Long userId) {\n        Cart cart = loadCart(userId);\n        Order order = createOrderFromCart(cart);\n        clearCart(cart);\n        return order;\n    }\n\n    private Cart loadCart(Long userId) { return null; }\n    private Order createOrderFromCart(Cart cart) { return null; }\n    private void clearCart(Cart cart) { }\n}\n",
+          "compile": false,
+          "citations": [
+            "day35-src-1"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day35-blk-6",
+          "type": "important",
+          "text": "Khi nhiều user checkout đồng thời cùng một sản phẩm sắp hết hàng, cần chọn isolation phù hợp (ví dụ READ_COMMITTED trở lên) để tránh dirty read số lượng tồn kho; SERIALIZABLE ngăn được nhiều nhất nhưng đánh đổi giảm concurrency đáng kể.",
+          "citations": [
+            "day35-src-2"
+          ]
+        },
+        {
+          "id": "day35-blk-7",
+          "type": "note",
+          "text": "Không có resource nào trong resourceIds của Day 35 mô tả riêng nghiệp vụ order/checkout - phần thiết kế Order/OrderItem ở trên là quyết định thiết kế nghiệp vụ, chỉ phần @Transactional bao quanh checkout() có trích dẫn kỹ thuật.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day35-sec-async",
+      "title": "Gui email xac nhan bat dong bo (@Async)",
+      "blocks": [
+        {
+          "id": "day35-blk-8",
+          "type": "paragraph",
+          "text": "Gửi email xác nhận đơn hàng không nên chặn request checkout - NotificationService.sendOrderConfirmation() được đánh dấu @Async (class cấu hình phải có @EnableAsync) để chạy trên luồng khác.",
+          "citations": [
+            "day35-src-4"
+          ]
+        },
+        {
+          "id": "day35-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\nimport java.util.concurrent.CompletableFuture;\n\n@Service\nclass NotificationService {\n\n    // Chay tren luong khac; goi tu OrderService (Spring AOP proxy) moi co hieu luc.\n    @Async\n    public CompletableFuture<Void> sendOrderConfirmation(Long orderId) {\n        // gui email...\n        return CompletableFuture.completedFuture(null);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day35-src-4",
+            "day35-src-5"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day35-blk-10",
+          "type": "paragraph",
+          "text": "Method @Async trả về CompletableFuture<Void> (thay vì void) để OrderService có thể theo dõi khi cần, dùng CompletableFuture.completedFuture(null) khi không cần giá trị trả về cụ thể.",
+          "citations": [
+            "day35-src-5"
+          ]
+        },
+        {
+          "id": "day35-blk-11",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.scheduling.annotation.AsyncConfigurer;\nimport org.springframework.scheduling.annotation.EnableAsync;\nimport org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;\nimport java.util.concurrent.Executor;\n\n@Configuration\n@EnableAsync\nclass AsyncConfig implements AsyncConfigurer {\n\n    @Override\n    public Executor getAsyncExecutor() {\n        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();\n        executor.setCorePoolSize(4);\n        executor.setMaxPoolSize(8);\n        executor.setQueueCapacity(50);\n        executor.initialize();\n        return executor;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day35-src-6"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day35-blk-12",
+          "type": "note",
+          "text": "Vì SimpleAsyncTaskExecutor mặc định tạo thread mới cho mỗi lần gọi, dự án ghi đè bằng ThreadPoolTaskExecutor (implements AsyncConfigurer) để giới hạn corePoolSize/maxPoolSize/queueCapacity, tránh tạo thread không kiểm soát khi có nhiều đơn hàng cùng lúc.",
+          "citations": [
+            "day35-src-6"
+          ]
+        },
+        {
+          "id": "day35-blk-13",
+          "type": "note",
+          "text": "Vì method @Async trả void không thể ném exception ra ngoài caller, cần implement AsyncUncaughtExceptionHandler để log/xử lý lỗi gửi email thất bại - áp dụng cho các @Async method khác trả về void trong dự án.",
+          "citations": [
+            "day35-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day35-sec-csv",
+      "title": "Xuat CSV don hang (admin)",
+      "blocks": [
+        {
+          "id": "day35-blk-14",
+          "type": "paragraph",
+          "text": "GET /api/admin/orders/export ghi từng dòng Order ra CSV bằng PrintWriter thuần Java: escape từng phần tử rồi nối bằng dấu phẩy.",
+          "citations": [
+            "day35-src-16"
+          ]
+        },
+        {
+          "id": "day35-blk-15",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass OrderCsvExporter {\n\n    void writeCsv(PrintWriter writer, List<Order> orders) {\n        for (Order order : orders) {\n            String[] row = { String.valueOf(order.getId()), order.getStatus(), String.valueOf(order.getTotal()) };\n            writer.println(convertToCsvRow(row));\n        }\n    }\n\n    private String convertToCsvRow(String[] fields) {\n        return java.util.Arrays.stream(fields)\n                .map(this::escapeSpecialCharacters)\n                .collect(Collectors.joining(\",\"));\n    }\n\n    private String escapeSpecialCharacters(String field) {\n        String escaped = field.replace(\"\\n\", \" \");\n        if (escaped.contains(\",\") || escaped.contains(\"\\\"\")) {\n            escaped = \"\\\"\" + escaped.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return escaped;\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day35-src-16",
+            "day35-src-17"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day35-blk-16",
+          "type": "note",
+          "text": "Nếu trường dữ liệu chứa dấu phẩy hoặc dấu nháy kép, phải bao quanh cả trường bằng dấu nháy kép và nhân đôi mỗi dấu nháy kép bên trong (\"\" thay cho \") - thiếu bước này sẽ làm hỏng cấu trúc CSV khi mở bằng Excel.",
+          "citations": [
+            "day35-src-17"
+          ]
+        },
+        {
+          "id": "day35-blk-17",
+          "type": "note",
+          "text": "Với CSV phức tạp hơn (nhiều cột động, cần chuẩn RFC 4180 đầy đủ), nên cân nhắc Apache Commons CSV hoặc OpenCSV thay vì tự viết logic escape thủ công như trên.",
+          "citations": [
+            "day35-src-18"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day35-sec-docker",
+      "title": "Hoan thien Docker/docker-compose va CI pipeline",
+      "blocks": [
+        {
+          "id": "day35-blk-18",
+          "type": "paragraph",
+          "text": "Dockerfile truyền thống đóng gói toàn bộ fat jar vào một layer duy nhất - chỉ đổi một dòng code cũng buộc rebuild lại toàn bộ layer, mất lợi ích caching của Docker.",
+          "citations": [
+            "day35-src-8"
+          ]
+        },
+        {
+          "id": "day35-blk-19",
+          "type": "paragraph",
+          "text": "Bật layers trong spring-boot-maven-plugin tạo jar chia thành 4 layer mặc định (dependencies, snapshot-dependencies, resources, application) theo tần suất thay đổi; Dockerfile multi-stage dùng java -Djarmode=layertools -jar app.jar extract để tách rồi COPY từng layer riêng, giúp rebuild nhanh khi chỉ code ứng dụng thay đổi.",
+          "citations": [
+            "day35-src-10",
+            "day35-src-11"
+          ]
+        },
+        {
+          "id": "day35-blk-20",
+          "type": "code",
+          "language": "dockerfile",
+          "code": "# --- build stage: tach layer bang layertools ---\nFROM eclipse-temurin:17-jre AS builder\nWORKDIR application\nARG JAR_FILE=target/*.jar\nCOPY ${JAR_FILE} application.jar\nRUN java -Djarmode=layertools -jar application.jar extract\n\n# --- final stage: copy tung layer rieng, tan dung Docker layer cache ---\nFROM eclipse-temurin:17-jre\nWORKDIR application\nCOPY --from=builder application/dependencies/ ./\nCOPY --from=builder application/spring-boot-loader/ ./\nCOPY --from=builder application/snapshot-dependencies/ ./\nCOPY --from=builder application/application/ ./\nENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]\n",
+          "compile": false,
+          "citations": [
+            "day35-src-10",
+            "day35-src-11"
+          ],
+          "partialReason": "Minh họa cấu hình hạ tầng (Dockerfile/CI), không phải mã Java; không áp dụng được bước compile-check javac --release 17 của pipeline này."
+        },
+        {
+          "id": "day35-blk-21",
+          "type": "note",
+          "text": "Thay vì tự viết Dockerfile, lệnh ./mvnw spring-boot:build-image dùng Cloud Native Buildpacks (Paketo) để tự động tạo image nhiều layer mà không cần Dockerfile - phù hợp khi không cần tùy chỉnh sâu.",
+          "citations": [
+            "day35-src-9"
+          ]
+        },
+        {
+          "id": "day35-blk-22",
+          "type": "paragraph",
+          "text": "Dependency spring-boot-docker-compose cho phép Spring Boot tự động chạy 'docker compose up' khi ứng dụng khởi động và 'down' khi dừng, dựa trên docker-compose.yml có sẵn (Postgres cho DB, Redis cho cache) - tự phát hiện service phổ biến và tạo ConnectionDetails bean tương ứng, bỏ qua cấu hình datasource thủ công.",
+          "citations": [
+            "day35-src-12",
+            "day35-src-13"
+          ]
+        },
+        {
+          "id": "day35-blk-23",
+          "type": "note",
+          "text": "Spring Boot tự động chờ container 'ready' (dựa vào healthcheck) trước khi tiếp tục khởi động ứng dụng - tránh lỗi kết nối DB/Redis do container chưa sẵn sàng khi ứng dụng vừa start.",
+          "citations": [
+            "day35-src-15"
+          ]
+        },
+        {
+          "id": "day35-blk-24",
+          "type": "template",
+          "text": "CI pipeline verify - các bước chuẩn: (1) checkout code, (2) ./mvnw test (unit + integration test bằng Testcontainers), (3) ./mvnw spring-boot:build-image, (4) push image lên registry nếu build ở nhánh main. Không có resource nào trong resourceIds của Day 35 mô tả cấu hình CI cụ thể (GitHub Actions/GitLab CI) - trình bày như một khối template không trích dẫn.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Không bọc checkout() trong @Transactional, khiến Order được tạo nhưng Cart không được xóa nếu có lỗi giữa chừng.",
+    "Gọi trực tiếp method @Async từ cùng một class (không qua Spring AOP proxy) khiến annotation bị bỏ qua hoàn toàn, chạy đồng bộ như bình thường.",
+    "Không escape dấu phẩy/dấu nháy kép khi ghi CSV, làm hỏng cấu trúc file khi trường dữ liệu (ví dụ địa chỉ giao hàng) chứa các ký tự này."
+  ],
+  "practices": [
+    {
+      "id": "day35-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Propagation mặc định của @Transactional trong Spring là gì?",
+      "choices": [
+        {
+          "id": "day35-prac-1-a",
+          "text": "REQUIRED - dùng transaction hiện có hoặc tạo mới nếu chưa có"
+        },
+        {
+          "id": "day35-prac-1-b",
+          "text": "REQUIRES_NEW - luôn tạo transaction mới, suspend transaction cũ"
+        },
+        {
+          "id": "day35-prac-1-c",
+          "text": "NESTED - tạo savepoint trong transaction hiện có"
+        },
+        {
+          "id": "day35-prac-1-d",
+          "text": "MANDATORY - bắt buộc phải có transaction sẵn, nếu không ném exception"
+        }
+      ],
+      "correctChoiceIds": [
+        "day35-prac-1-a"
+      ],
+      "hint": "Đây là propagation phù hợp cho phần lớn method nghiệp vụ, kể cả checkout().",
+      "solution": "day35-prac-1-a",
+      "explanation": "REQUIRED là propagation mặc định của @Transactional: dùng transaction hiện có nếu đang trong một, hoặc tạo transaction mới nếu chưa có - phù hợp cho checkout() vì Order và Cart cần cùng nằm trong một transaction.",
+      "rubric": "Liên hệ đúng propagation mặc định với hành vi mong muốn của checkout().",
+      "sourceUsage": [
+        "day35-src-1"
+      ]
+    },
+    {
+      "id": "day35-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao sendOrderConfirmation() nên trả về CompletableFuture<Void> thay vì void?",
+      "choices": [
+        {
+          "id": "day35-prac-2-a",
+          "text": "Để caller (nếu cần) có thể theo dõi/chờ khi tác vụ bất đồng bộ hoàn thành, dù bản thân không cần lấy giá trị kết quả"
+        },
+        {
+          "id": "day35-prac-2-b",
+          "text": "Vì @Async bắt buộc method phải trả về CompletableFuture, không cho phép void"
+        },
+        {
+          "id": "day35-prac-2-c",
+          "text": "Để tăng tốc độ gửi email"
+        },
+        {
+          "id": "day35-prac-2-d",
+          "text": "Vì void không thể dùng chung với @Service"
+        }
+      ],
+      "correctChoiceIds": [
+        "day35-prac-2-a"
+      ],
+      "hint": "@Async cho phép cả void lẫn Future/CompletableFuture làm kiểu trả về.",
+      "solution": "day35-prac-2-a",
+      "explanation": "@Async hỗ trợ cả void lẫn Future/CompletableFuture; trả về CompletableFuture (dù completedFuture(null)) cho phép caller gọi .get() để chờ hoàn thành khi cần, điều mà void không hỗ trợ được.",
+      "rubric": "Liên hệ đúng lợi ích của CompletableFuture so với void cho @Async method.",
+      "sourceUsage": [
+        "day35-src-5"
+      ]
+    },
+    {
+      "id": "day35-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Layered jar mặc định của Spring Boot chia jar thành mấy layer?",
+      "choices": [
+        {
+          "id": "day35-prac-3-a",
+          "text": "4 layer: dependencies, snapshot-dependencies, resources, application"
+        },
+        {
+          "id": "day35-prac-3-b",
+          "text": "2 layer: code và dependencies"
+        },
+        {
+          "id": "day35-prac-3-c",
+          "text": "6 layer, tương ứng 6 loại dependency Maven scope"
+        },
+        {
+          "id": "day35-prac-3-d",
+          "text": "1 layer duy nhất, giống fat jar truyền thống"
+        }
+      ],
+      "correctChoiceIds": [
+        "day35-prac-3-a"
+      ],
+      "hint": "Các layer được phân tách theo tần suất thay đổi.",
+      "solution": "day35-prac-3-a",
+      "explanation": "Bật layers trong spring-boot-maven-plugin tạo file layers.idx chia jar thành 4 layer mặc định: dependencies, snapshot-dependencies, resources, application - tách theo tần suất thay đổi để Docker cache hiệu quả hơn fat jar truyền thống.",
+      "rubric": "Liên hệ đúng 4 layer mặc định và mục đích tách theo tần suất thay đổi.",
+      "sourceUsage": [
+        "day35-src-10"
+      ]
+    },
+    {
+      "id": "day35-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết method escapeSpecialCharacters cho một trường CSV có thể chứa dấu phẩy hoặc dấu nháy kép.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Bao quanh trường bằng dấu nháy kép nếu chứa dấu phẩy/nháy kép, và nhân đôi mỗi dấu nháy kép bên trong.",
+      "solution": "String escapeSpecialCharacters(String field) {\n    String escaped = field.replace(\"\\n\", \" \");\n    if (escaped.contains(\",\") || escaped.contains(\"\\\"\")) {\n        escaped = \"\\\"\" + escaped.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n    }\n    return escaped;\n}",
+      "explanation": "Áp dụng lại mẫu escapeSpecialCharacters đã học trong bài cho việc xuất CSV đơn hàng.",
+      "rubric": "Đánh giá đúng: xử lý xuống dòng, bao dấu nháy kép khi có dấu phẩy/nháy kép, nhân đôi dấu nháy kép bên trong.",
+      "sourceUsage": [
+        "day35-src-17"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Viết AsyncUncaughtExceptionHandler ghi log khi sendOrderConfirmation() thất bại.",
+    "Thêm bước 'docker compose up -d' vào CI pipeline trước khi chạy integration test bằng Testcontainers."
+  ],
+  "references": [
+    {
+      "id": "day35-ref-1",
+      "type": "external",
+      "resourceId": "res-2c011d89d6e0",
+      "citationId": "day35-src-1"
+    },
+    {
+      "id": "day35-ref-2",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day35-src-6"
+    },
+    {
+      "id": "day35-ref-3",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day35-src-10"
+    },
+    {
+      "id": "day35-ref-4",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day35-src-12"
+    },
+    {
+      "id": "day35-ref-5",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day35-src-17"
+    },
+    {
+      "id": "day35-ref-6",
+      "type": "internal",
+      "description": "Toàn bộ deliverable của Sprint 1-3 (Day 33-35) là nội dung được demo và bảo vệ ở Final Defense, Day 36."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day35-src-1",
+      "resourceId": "res-2c011d89d6e0",
+      "locator": "muc 3.1-3.7, cac vi du pseudo-code",
+      "topic": "7 loại propagation transaction"
+    },
+    {
+      "id": "day35-src-2",
+      "resourceId": "res-2c011d89d6e0",
+      "locator": "muc 4.1-4.5, bang tac dong side effects",
+      "topic": "5 mức isolation"
+    },
+    {
+      "id": "day35-src-3",
+      "resourceId": "res-2c011d89d6e0",
+      "locator": "muc 2.2, How to Use @Transactional",
+      "topic": "Thứ tự ưu tiên @Transactional"
+    },
+    {
+      "id": "day35-src-4",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 2-3, vi du @EnableAsync + method annotation",
+      "topic": "Kích hoạt @Async"
+    },
+    {
+      "id": "day35-src-5",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 3, vi du asynchronousMethodWithReturnType",
+      "topic": "Kiểu trả về bất đồng bộ"
+    },
+    {
+      "id": "day35-src-6",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 4, vi du AsyncConfig implements AsyncConfigurer",
+      "topic": "Ghi đè Executor mặc định"
+    },
+    {
+      "id": "day35-src-7",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 5, vi du CustomAsyncExceptionHandler",
+      "topic": "Xử lý exception cho method void"
+    },
+    {
+      "id": "day35-src-8",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 2, Traditional Docker Builds",
+      "topic": "Hạn chế của fat jar truyền thống"
+    },
+    {
+      "id": "day35-src-9",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 3, Buildpacks",
+      "topic": "Buildpacks"
+    },
+    {
+      "id": "day35-src-10",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 4, Layered Jars + 4 layer mac dinh",
+      "topic": "Layered jar - 4 layer mặc định"
+    },
+    {
+      "id": "day35-src-11",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 4.3, Creating the Docker Image",
+      "topic": "Dùng layertools trong Dockerfile"
+    },
+    {
+      "id": "day35-src-12",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 2, gioi thieu Docker Compose Support",
+      "topic": "Quản lý vòng đời container tự động"
+    },
+    {
+      "id": "day35-src-13",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 6.1, Service Connections",
+      "topic": "Service Connections"
+    },
+    {
+      "id": "day35-src-14",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 6.2, Custom Images",
+      "topic": "Ảnh Docker tùy chỉnh"
+    },
+    {
+      "id": "day35-src-15",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 6.3-6.4, Waiting for Container Readiness / Activating Docker Compose Profiles",
+      "topic": "Chờ container sẵn sàng và profile"
+    },
+    {
+      "id": "day35-src-16",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 2.1, Writing the CSV",
+      "topic": "Ghi CSV bằng PrintWriter thuần Java"
+    },
+    {
+      "id": "day35-src-17",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 2.2, escapeSpecialCharacters",
+      "topic": "Xử lý ký tự đặc biệt"
+    },
+    {
+      "id": "day35-src-18",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 3, Third-Party Libraries",
+      "topic": "Thư viện CSV bên thứ ba"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Nghiệp vụ checkout/quản lý order (trạng thái, chuyển Cart thành Order): không có resource nào trong resourceIds của Day 35 mô tả chủ đề này - trình bày như một khối template (quyết định thiết kế nghiệp vụ) không yêu cầu trích dẫn.",
+      "Cấu hình CI pipeline cụ thể (GitHub Actions/GitLab CI): không có resource nào trong resourceIds của Day 35 mô tả công cụ CI cụ thể - trình bày như một khối template liệt kê các bước chuẩn không trích dẫn."
+    ]
+  }
+}

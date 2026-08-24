@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "id": "day-31",
+  "catalogRef": {
+    "unitId": "unit-11",
+    "group": "spring",
+    "title": "System Design & Project Kickoff",
+    "objectives": [
+      "LO11"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      53
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-f023c0083770",
+      "res-06398bb0cc69",
+      "res-348a6a4cb0b8",
+      "res-39bc1924ee00"
+    ]
+  },
+  "unitId": "unit-11",
+  "group": "spring",
+  "kind": "project",
+  "title": "System Design & Project Kickoff",
+  "summary": "Kickoff dự án capstone thương mại điện tử: kiến trúc tổng thể theo package-per-module (không dùng default package), vai trò DispatcherServlet/Annotated Controllers, quy ước xử lý lỗi thống nhất, và bản thiết kế API contract dùng chung cho Sprint 1-3.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO11"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Unit 1-10 (Java core, Spring Core/Data/Security/Web, caching/async) - bài này bắt đầu Unit 11, áp dụng tổng hợp kiến thức vào một dự án capstone xuyên suốt Day 31-38."
+  ],
+  "outcomes": [
+    "Thiết kế được cấu trúc package theo module cho một ứng dụng Spring Boot nhiều tính năng.",
+    "Giải thích được vai trò DispatcherServlet và luồng xử lý của Annotated Controllers.",
+    "Soạn được bản API contract (method, path, mô tả, auth) cho toàn bộ capstone trước khi code."
+  ],
+  "sections": [
+    {
+      "id": "day31-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day31-blk-1",
+          "type": "deliverable",
+          "text": "Kickoff dự án capstone: thống nhất kiến trúc tổng thể và bản thiết kế API cho hệ thống thương mại điện tử (module Auth, Category, Product, Cart, Order) sẽ được xây dựng qua Sprint 1-3 (Day 33-35) và bảo vệ ở Final Defense (Day 36).",
+          "citations": []
+        },
+        {
+          "id": "day31-blk-2",
+          "type": "note",
+          "text": "Buổi học mở đầu Unit 11 (Project Planning & Implementation), tổ chức dạng Class Meeting trực tuyến 150 phút - trọng tâm là ra quyết định thiết kế trước khi bắt tay viết code ở Sprint 1.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day31-sec-arch",
+      "title": "Kien truc tong the",
+      "blocks": [
+        {
+          "id": "day31-blk-3",
+          "type": "paragraph",
+          "text": "Dự án dùng Spring Boot làm nền tảng vì ba mục tiêu cốt lõi của framework: trải nghiệm khởi động nhanh, cấu hình mặc định hợp lý (opinionated) nhưng vẫn cho phép tùy chỉnh khi cần, và sẵn có các tính năng non-functional (embedded server, health check, externalized config) không phải tự xây dựng.",
+          "citations": [
+            "day31-src-1"
+          ]
+        },
+        {
+          "id": "day31-blk-4",
+          "type": "paragraph",
+          "text": "Package gốc com.example.ecommerce chứa class @SpringBootApplication và KHÔNG dùng default package - mọi class con nằm trong sub-package theo module nghiệp vụ để @ComponentScan/@EntityScan quét đúng phạm vi thay vì quét toàn bộ classpath.",
+          "citations": [
+            "day31-src-2",
+            "day31-src-3"
+          ]
+        },
+        {
+          "id": "day31-blk-5",
+          "type": "code",
+          "language": "text",
+          "code": "com.example.ecommerce\n├── EcommerceApplication.java        (@SpringBootApplication, o root package)\n├── category/  (controller, service, repository, entity, dto)\n├── product/   (controller, service, repository, entity, dto)\n├── cart/      (controller, service, repository, entity, dto)\n├── order/     (controller, service, repository, entity, dto)\n├── auth/      (controller, service, security config, dto)\n└── common/    (GlobalExceptionHandler, BaseEntity, ProblemDetail helpers)\n",
+          "compile": false,
+          "citations": [
+            "day31-src-2",
+            "day31-src-3"
+          ],
+          "partialReason": "Đây là bản mẫu cấu trúc/tiêu chí tham khảo (không phải mã nguồn), dùng ngôn ngữ 'text' nên không yêu cầu trích dẫn kỹ thuật hay biên dịch."
+        },
+        {
+          "id": "day31-blk-6",
+          "type": "paragraph",
+          "text": "Mỗi module có Controller riêng (@RestController), theo đúng mô hình Spring MVC: request đi qua DispatcherServlet (front controller duy nhất của toàn ứng dụng) rồi được định tuyến tới handler method dựa trên @RequestMapping/@GetMapping/@PostMapping và các tham số @RequestParam/@RequestBody/@PathVariable.",
+          "citations": [
+            "day31-src-4",
+            "day31-src-5"
+          ]
+        },
+        {
+          "id": "day31-blk-7",
+          "type": "important",
+          "text": "Quy ước xử lý lỗi áp dụng thống nhất cho TOÀN BỘ project ngay từ kiến trúc: một GlobalExceptionHandler (@RestControllerAdvice) duy nhất trong package common, trả về ProblemDetail cho mọi lỗi nghiệp vụ; không viết @ExceptionHandler cục bộ rải rác trong từng controller.",
+          "citations": [
+            "day31-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day31-sec-api",
+      "title": "Ban thiet ke API (API contract)",
+      "blocks": [
+        {
+          "id": "day31-blk-8",
+          "type": "deliverable",
+          "text": "API contract template cho toàn bộ capstone - dùng làm điểm tham chiếu chung khi các module được hiện thực ở Sprint 1-3.",
+          "citations": []
+        },
+        {
+          "id": "day31-blk-9",
+          "type": "table",
+          "columns": [
+            "Method",
+            "Path",
+            "Mo ta",
+            "Auth"
+          ],
+          "rows": [
+            [
+              "POST",
+              "/api/auth/register",
+              "Đăng ký tài khoản mới",
+              "Không"
+            ],
+            [
+              "POST",
+              "/api/auth/login",
+              "Đăng nhập, trả về JWT",
+              "Không"
+            ],
+            [
+              "GET/POST/PUT/DELETE",
+              "/api/categories[/{id}]",
+              "CRUD danh mục",
+              "Admin (write)"
+            ],
+            [
+              "GET",
+              "/api/products?search=&categoryId=&page=",
+              "Tìm kiếm/lọc/phân trang sản phẩm",
+              "Không"
+            ],
+            [
+              "POST/PUT/DELETE",
+              "/api/products[/{id}]",
+              "CRUD sản phẩm",
+              "Admin"
+            ],
+            [
+              "GET/POST/DELETE",
+              "/api/cart/items[/{id}]",
+              "Quản lý giỏ hàng của user hiện tại",
+              "User"
+            ],
+            [
+              "POST",
+              "/api/orders",
+              "Checkout: tạo order từ cart",
+              "User"
+            ],
+            [
+              "GET",
+              "/api/orders[/{id}]",
+              "Xem đơn hàng của user hiện tại",
+              "User"
+            ],
+            [
+              "GET",
+              "/api/admin/orders/export",
+              "Xuất CSV danh sách đơn hàng",
+              "Admin"
+            ]
+          ],
+          "citations": [
+            "day31-src-4",
+            "day31-src-5"
+          ]
+        },
+        {
+          "id": "day31-blk-10",
+          "type": "note",
+          "text": "Resource hướng dẫn dựng RESTful web service kèm ví dụ cụ thể (res-39bc1924ee00) trả về HTTP 404 tại thời điểm khảo sát - bản thiết kế API trên chỉ dựa trên 3 resource còn lại đọc được của Day 31.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Đặt tất cả entity/controller trong default package hoặc một package phẳng duy nhất, gây khó bảo trì khi dự án lớn dần qua các Sprint.",
+    "Mỗi controller tự viết @ExceptionHandler riêng thay vì dùng một GlobalExceptionHandler chung, dẫn tới định dạng lỗi không nhất quán giữa các module.",
+    "Bắt đầu code ngay mà không thống nhất API contract trước, khiến các module phát triển song song ở Sprint 1-3 không khớp interface với nhau."
+  ],
+  "practices": [
+    {
+      "id": "day31-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao Spring Boot khuyến cáo KHÔNG đặt class @SpringBootApplication trong default package?",
+      "choices": [
+        {
+          "id": "day31-prac-1-a",
+          "text": "Vì @ComponentScan/@ConfigurationPropertiesScan/@EntityScan sẽ quét TẤT CẢ class từ mọi jar trên classpath, không giới hạn được phạm vi"
+        },
+        {
+          "id": "day31-prac-1-b",
+          "text": "Vì Java không cho phép class không có package declaration"
+        },
+        {
+          "id": "day31-prac-1-c",
+          "text": "Vì Maven yêu cầu bắt buộc phải có package"
+        },
+        {
+          "id": "day31-prac-1-d",
+          "text": "Vì default package làm chậm tốc độ khởi động ứng dụng"
+        }
+      ],
+      "correctChoiceIds": [
+        "day31-prac-1-a"
+      ],
+      "hint": "Nghĩ về phạm vi quét (scan scope) khi package rỗng.",
+      "solution": "day31-prac-1-a",
+      "explanation": "Class không có package declaration khiến các cơ chế auto-scan (@ComponentScan, @EntityScan, @ConfigurationPropertiesScan) mất điểm neo (base package) để giới hạn phạm vi, dẫn tới quét toàn bộ mọi class từ mọi jar - vừa chậm vừa dễ nạp nhầm bean ngoài ý muốn.",
+      "rubric": "Liên hệ đúng nguyên nhân: mất base package cho auto-scan.",
+      "sourceUsage": [
+        "day31-src-2"
+      ]
+    },
+    {
+      "id": "day31-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Phác thảo cấu trúc package cho module 'category' (controller, service, repository, entity, dto) theo quy ước đã thống nhất ở bài này.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Mỗi module nghiệp vụ là một sub-package của com.example.ecommerce.",
+      "solution": "com.example.ecommerce.category\n├── CategoryController.java\n├── CategoryService.java\n├── CategoryRepository.java\n├── Category.java (entity)\n└── CategoryDto.java",
+      "explanation": "Áp dụng lại quy ước package-per-module đã học trong bài để chuẩn bị cho Sprint 1 (Day 33).",
+      "rubric": "Đánh giá đúng: đủ 5 thành phần, đặt đúng sub-package category, không dùng default package.",
+      "sourceUsage": [
+        "day31-src-3"
+      ]
+    },
+    {
+      "id": "day31-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Thành phần nào đóng vai trò 'front controller' tiếp nhận TẤT CẢ request trong Spring MVC?",
+      "choices": [
+        {
+          "id": "day31-prac-3-a",
+          "text": "DispatcherServlet"
+        },
+        {
+          "id": "day31-prac-3-b",
+          "text": "@RestControllerAdvice"
+        },
+        {
+          "id": "day31-prac-3-c",
+          "text": "CategoryController"
+        },
+        {
+          "id": "day31-prac-3-d",
+          "text": "ApplicationContext"
+        }
+      ],
+      "correctChoiceIds": [
+        "day31-prac-3-a"
+      ],
+      "hint": "Đây là servlet trung tâm được đăng ký tự động bởi Spring Boot.",
+      "solution": "day31-prac-3-a",
+      "explanation": "DispatcherServlet là front controller duy nhất của Spring MVC: mọi request đều qua nó trước, sau đó nó delegate tới handler mapping tương ứng rồi tới controller method cụ thể.",
+      "rubric": "Liên hệ đúng vai trò DispatcherServlet với mô hình front controller.",
+      "sourceUsage": [
+        "day31-src-4"
+      ]
+    },
+    {
+      "id": "day31-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Ba mục tiêu chính của Spring Boot ảnh hưởng thế nào tới quyết định 'không viết XML config, ưu tiên annotation + application.yml' cho dự án capstone?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Liên hệ mục tiêu 'opinionated defaults, get out of the way when cần tùy chỉnh'.",
+      "solution": "Spring Boot ưu tiên cấu hình mặc định hợp lý qua annotation và property file thay vì XML - giúp nhóm khởi động nhanh, tập trung vào logic nghiệp vụ (Category/Product/Cart/Order) thay vì viết cấu hình boilerplate; khi cần tùy chỉnh sâu (ví dụ CacheManager riêng), vẫn có thể override bằng @Bean tường minh.",
+      "explanation": "Liên hệ đúng cả hai vế: opinionated defaults giúp khởi động nhanh, và 'get out of the way' vẫn cho phép override tường minh khi cần.",
+      "rubric": "Đánh giá học viên nêu đúng liên hệ giữa 'opinionated + escape hatch' và quyết định dùng annotation-based config.",
+      "sourceUsage": [
+        "day31-src-1"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Vẽ sơ đồ kiến trúc tổng thể (module + luồng request) cho dự án capstone và trình bày lại bằng lời trong 5 phút.",
+    "Viết OpenAPI/Swagger stub (chỉ path + method, chưa cần implement) cho toàn bộ bảng API contract ở bài này."
+  ],
+  "references": [
+    {
+      "id": "day31-ref-1",
+      "type": "external",
+      "resourceId": "res-f023c0083770",
+      "citationId": "day31-src-1"
+    },
+    {
+      "id": "day31-ref-2",
+      "type": "external",
+      "resourceId": "res-06398bb0cc69",
+      "citationId": "day31-src-2"
+    },
+    {
+      "id": "day31-ref-3",
+      "type": "external",
+      "resourceId": "res-348a6a4cb0b8",
+      "citationId": "day31-src-6"
+    },
+    {
+      "id": "day31-ref-4",
+      "type": "internal",
+      "description": "Bản thiết kế API contract ở bài này được hiện thực dần qua Sprint 1-3 (Day 33-35)."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day31-src-1",
+      "resourceId": "res-f023c0083770",
+      "locator": "muc 'Overview', 'Spring Boot helps you to create stand-alone...', 3 primary goals",
+      "topic": "3 mục tiêu chính của Spring Boot"
+    },
+    {
+      "id": "day31-src-2",
+      "resourceId": "res-06398bb0cc69",
+      "locator": "muc 'Using the default Package'",
+      "topic": "Không dùng default package"
+    },
+    {
+      "id": "day31-src-3",
+      "resourceId": "res-06398bb0cc69",
+      "locator": "muc 'Locating the Main Application Class', vi du layout com.example.myapplication",
+      "topic": "Vị trí Main Application Class"
+    },
+    {
+      "id": "day31-src-4",
+      "resourceId": "res-348a6a4cb0b8",
+      "locator": "muc 'DispatcherServlet', 'Spring Web MVC is the original web framework built on the Servlet API'",
+      "topic": "DispatcherServlet là front controller"
+    },
+    {
+      "id": "day31-src-5",
+      "resourceId": "res-348a6a4cb0b8",
+      "locator": "muc 'Annotated Controllers Declaration' den 'Handler Methods Method Arguments'",
+      "topic": "Annotated Controllers"
+    },
+    {
+      "id": "day31-src-6",
+      "resourceId": "res-348a6a4cb0b8",
+      "locator": "muc 'Error Responses', 'Controller Advice', va Spring Boot ErrorController",
+      "topic": "Error Responses & ControllerAdvice"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Hướng dẫn dựng RESTful web service với ví dụ cụ thể (res-39bc1924ee00): trả về HTTP 404 tại thời điểm khảo sát (checkedAt trong content/source-manifest.json), không có nội dung cache hợp lệ để đọc. Bản thiết kế API trong bài chỉ dựa trên 3 resource còn lại (Spring Boot goals, package structure, Spring Web MVC)."
+    ]
+  }
+}

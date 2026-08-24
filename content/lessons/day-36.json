@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "id": "day-36",
+  "catalogRef": {
+    "unitId": "unit-12",
+    "group": "spring",
+    "title": "Final Defense",
+    "objectives": [
+      "LO10",
+      "LO11",
+      "LO12"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      58
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-ae66be8c9f5f",
+      "res-be79b4f73d01",
+      "res-e3236d24d45f",
+      "res-79cbefdda273"
+    ]
+  },
+  "unitId": "unit-12",
+  "group": "spring",
+  "kind": "project",
+  "title": "Final Defense",
+  "summary": "Final Defense: trình bày và demo dự án e-commerce capstone, kèm bằng chứng kiểm thử (@DataJpaTest, @WebMvcTest, Testcontainers @ServiceConnection), tài liệu API (springdoc-openapi) và checklist/rubric đánh giá.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO10",
+    "LO11",
+    "LO12"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Sprint 1-3 (Day 33-35): toàn bộ module Auth/ Category/Product/Cart/Order, Docker/docker-compose - bài này là buổi trình bày/bảo vệ kết quả, không giới thiệu tính năng nghiệp vụ mới."
+  ],
+  "outcomes": [
+    "Trình bày được kiến trúc và demo trực tiếp các luồng nghiệp vụ chính của dự án.",
+    "Chuẩn bị được bằng chứng kiểm thử dùng @DataJpaTest/@WebMvcTest và Testcontainers.",
+    "Public API documentation qua springdoc-openapi và trả lời được câu hỏi phản biện về quyết định thiết kế."
+  ],
+  "sections": [
+    {
+      "id": "day36-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day36-blk-1",
+          "type": "deliverable",
+          "text": "Final Defense: mỗi nhóm/cá nhân trình bày và demo trực tiếp dự án e-commerce capstone đã xây dựng qua Sprint 1-3 (Day 33-35), kèm bằng chứng kiểm thử (unit/integration test, Testcontainers) và tài liệu API (springdoc-openapi).",
+          "citations": []
+        },
+        {
+          "id": "day36-blk-2",
+          "type": "note",
+          "text": "Buổi học được xếp lịch dạng Exam (150 phút, Online) trong course-catalog.json, nhưng về bản chất là buổi bảo vệ dự án có hướng dẫn/tiêu chí đánh giá (không phải bài kiểm tra viết) - nội dung được biên soạn theo kind=\"project\" để phản ánh đúng hoạt động thực tế.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-structure",
+      "title": "Cau truc bai trinh bay",
+      "blocks": [
+        {
+          "id": "day36-blk-3",
+          "type": "template",
+          "text": "Agenda đề xuất cho mỗi lượt bảo vệ (10-15 phút/nhóm): (1) Vấn đề & phạm vi dự án (1 phút), (2) Kiến trúc tổng thể - package layout, luồng request qua DispatcherServlet, error handling chung (2 phút), (3) Demo trực tiếp các luồng chính: đăng ký/ đăng nhập JWT, CRUD category/product, thêm giỏ hàng, checkout tạo order, xuất CSV (5-6 phút), (4) Bằng chứng kiểm thử & CI/CD (2 phút), (5) Bài học rút ra & hạn chế còn tồn đọng (2 phút).",
+          "citations": []
+        },
+        {
+          "id": "day36-blk-4",
+          "type": "note",
+          "text": "Không có resource nào trong resourceIds của Day 36 mô tả cấu trúc một buổi bảo vệ dự án cụ thể - agenda trên là khung tổ chức do giảng viên biên soạn, không trích dẫn kỹ thuật.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-demo",
+      "title": "Checklist demo",
+      "blocks": [
+        {
+          "id": "day36-blk-5",
+          "type": "table",
+          "columns": [
+            "Hang muc",
+            "Yeu cau toi thieu",
+            "Ghi chu"
+          ],
+          "rows": [
+            [
+              "Auth JWT",
+              "Đăng ký + đăng nhập trả JWT hợp lệ, demo trên Swagger UI",
+              "Xem mục Tài liệu/Triển khai"
+            ],
+            [
+              "Category/Product CRUD",
+              "Tạo/sửa/xóa qua Admin, tìm kiếm/lọc/phân trang qua GET",
+              "Đối chiếu API contract Day 31"
+            ],
+            [
+              "Cart & Checkout",
+              "Thêm sản phẩm vào giỏ, checkout tạo Order thành công",
+              "Kiểm tra @Transactional không để sót dữ liệu"
+            ],
+            [
+              "Unit/Integration test",
+              "Ít nhất 1 @DataJpaTest + 1 @WebMvcTest chạy pass trực tiếp",
+              "Xem mục Bằng chứng kiểm thử"
+            ],
+            [
+              "Testcontainers",
+              "Ít nhất 1 test dùng @ServiceConnection với DB thật (không H2)",
+              "Xem mục Bằng chứng kiểm thử"
+            ],
+            [
+              "API docs",
+              "Swagger UI truy cập được, liệt kê đủ endpoint chính",
+              "Mặc định tại /swagger-ui.html"
+            ],
+            [
+              "Docker",
+              "docker build chạy thành công, container khởi động và phục vụ request",
+              "Ưu tiên layered jar (Day 35)"
+            ]
+          ],
+          "citations": [
+            "day36-src-3",
+            "day36-src-4",
+            "day36-src-8",
+            "day36-src-15"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-evidence",
+      "title": "Bang chung kiem thu",
+      "blocks": [
+        {
+          "id": "day36-blk-6",
+          "type": "paragraph",
+          "text": "@SpringBootTest(webEnvironment = WebEnvironment.MOCK) khởi động toàn bộ ApplicationContext trong môi trường servlet giả lập, kết hợp @AutoConfigureMockMvc - phù hợp để test end-to-end một luồng nghiệp vụ (ví dụ checkout) mà không cần server thật.",
+          "citations": [
+            "day36-src-1"
+          ]
+        },
+        {
+          "id": "day36-blk-7",
+          "type": "paragraph",
+          "text": "@MockBean thay thế một bean (ví dụ ProductRepository) bằng mock trong context, cho phép test riêng tầng Service mà không cần persistence layer thật - hữu ích khi muốn cô lập logic nghiệp vụ.",
+          "citations": [
+            "day36-src-2"
+          ]
+        },
+        {
+          "id": "day36-blk-8",
+          "type": "paragraph",
+          "text": "@DataJpaTest tự động cấu hình H2 in-memory, Hibernate/Spring Data/DataSource, bật SQL logging và cung cấp TestEntityManager để chuẩn bị dữ liệu trước khi gọi repository cần test - phù hợp để kiểm tra query method tùy biến như findByName().",
+          "citations": [
+            "day36-src-3"
+          ]
+        },
+        {
+          "id": "day36-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.junit.jupiter.api.Test;\nimport static org.assertj.core.api.Assertions.assertThat;\n\n@DataJpaTest\nclass CategoryRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private CategoryRepository categoryRepository;\n\n    @Test\n    void findByName_returnsPersistedCategory() {\n        Category saved = entityManager.persistFlushFind(new Category(\"Electronics\"));\n\n        Category found = categoryRepository.findByName(\"Electronics\").orElseThrow();\n\n        assertThat(found.getId()).isEqualTo(saved.getId());\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day36-src-3"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day36-blk-10",
+          "type": "paragraph",
+          "text": "@WebMvcTest(Controller.class) chỉ bootstrap một controller cụ thể, auto-config MockMvc và thường đi kèm @MockBean cho Service layer để test riêng tầng Controller mà không khởi động toàn bộ context.",
+          "citations": [
+            "day36-src-4"
+          ]
+        },
+        {
+          "id": "day36-blk-11",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.mock.mockito.MockBean;\nimport org.springframework.test.web.servlet.MockMvc;\nimport org.junit.jupiter.api.Test;\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n@WebMvcTest(ProductController.class)\nclass ProductControllerTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    @MockBean\n    private ProductService productService;\n\n    @Test\n    void getProducts_returnsOk() throws Exception {\n        mockMvc.perform(get(\"/api/products\"))\n                .andExpect(status().isOk());\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day36-src-2",
+            "day36-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day36-blk-12",
+          "type": "note",
+          "text": "Ngoài @DataJpaTest/@WebMvcTest, còn có thêm các annotation chuyên biệt khác: @WebFluxTest, @JdbcTest, @DataMongoTest, @DataRedisTest, @RestClientTest, @JsonTest - mỗi loại chỉ load phần context cần thiết cho tầng tương ứng (dự án capstone không dùng Mongo/Redis nên chỉ áp dụng @DataJpaTest/@WebMvcTest).",
+          "citations": [
+            "day36-src-5"
+          ]
+        },
+        {
+          "id": "day36-blk-13",
+          "type": "paragraph",
+          "text": "Với integration test cần dữ liệu thật (không phải H2 giả lập), container Testcontainers có thể được quản lý bằng Spring Bean (@Bean trả về container trong @TestConfiguration) hoặc bằng JUnit extension (@Testcontainers trên test class + @Container trên static field).",
+          "citations": [
+            "day36-src-6",
+            "day36-src-7"
+          ]
+        },
+        {
+          "id": "day36-blk-14",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n@Testcontainers\n@SpringBootTest\nclass OrderServiceIntegrationTest {\n\n    // Container thật, chạy song song với ApplicationContext trong test.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16\");\n\n    // Spring Boot tu dong tao JdbcConnectionDetails tu container nay,\n    // khong can khai bao spring.datasource.url thu cong.\n}\n",
+          "compile": false,
+          "citations": [
+            "day36-src-8"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day36-blk-15",
+          "type": "important",
+          "text": "Ưu tiên gắn @ServiceConnection trực tiếp lên @Container field thay vì tự khai báo @DynamicPropertySource - Spring Boot sẽ tự động tạo ConnectionDetails bean (ví dụ JdbcConnectionDetails) và override cấu hình datasource, giảm code lặp lại giữa các test class.",
+          "citations": [
+            "day36-src-8"
+          ]
+        },
+        {
+          "id": "day36-blk-16",
+          "type": "note",
+          "text": "spring-boot-testcontainers cung cấp factory sẵn cho nhiều loại ConnectionDetails (Jdbc/R2dbc, Mongo, Redis, Kafka, Elasticsearch, Neo4j...); nếu loại container không có factory sẵn, dùng @DynamicPropertySource để đăng ký thủ công property lấy trực tiếp từ container.",
+          "citations": [
+            "day36-src-9",
+            "day36-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-docs",
+      "title": "Tai lieu API va trien khai",
+      "blocks": [
+        {
+          "id": "day36-blk-17",
+          "type": "paragraph",
+          "text": "Chỉ cần thêm dependency springdoc-openapi-starter-webmvc-ui vào pom.xml là đủ để sinh tài liệu OpenAPI 3 cho toàn bộ REST API của dự án, không cần cấu hình thêm cho trường hợp cơ bản.",
+          "citations": [
+            "day36-src-14"
+          ]
+        },
+        {
+          "id": "day36-blk-18",
+          "type": "paragraph",
+          "text": "Mặc định Swagger UI được phục vụ tại /swagger-ui.html và đặc tả OpenAPI dạng JSON tại /v3/api-docs - đây là hai địa chỉ nên demo trực tiếp khi trình bày phần tài liệu API.",
+          "citations": [
+            "day36-src-15"
+          ]
+        },
+        {
+          "id": "day36-blk-19",
+          "type": "note",
+          "text": "Có thể phối hợp với Spring Boot Actuator (springdoc.show-actuator=true) để đưa endpoint OpenAPI/swagger-ui vào dưới /actuator/, và dùng springdoc.packagesToScan/pathsToMatch hoặc springdoc.api-docs.enabled=false để giới hạn/tắt hẳn tài liệu ở môi trường production nếu cần.",
+          "citations": [
+            "day36-src-16",
+            "day36-src-17"
+          ]
+        },
+        {
+          "id": "day36-blk-20",
+          "type": "paragraph",
+          "text": "Nhắc lại phần đóng gói từ Sprint 3 (Day 35): Dockerfile truyền thống đóng gói fat jar vào một layer duy nhất nên mất lợi ích caching của Docker khi rebuild; dự án ưu tiên layered jar (4 layer mặc định: dependencies, snapshot-dependencies, resources, application) hoặc buildpacks (./mvnw spring-boot:build-image) để build nhanh hơn.",
+          "citations": [
+            "day36-src-11",
+            "day36-src-12",
+            "day36-src-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-rubric",
+      "title": "Rubric cham diem",
+      "blocks": [
+        {
+          "id": "day36-blk-21",
+          "type": "table",
+          "columns": [
+            "Tieu chi",
+            "Trong so",
+            "Mo ta"
+          ],
+          "rows": [
+            [
+              "Chức năng đầy đủ (Auth/Category/Product/Cart/Order)",
+              "30%",
+              "Đúng theo API contract Day 31, demo chạy được trực tiếp"
+            ],
+            [
+              "Chất lượng kiểm thử",
+              "25%",
+              "Có @DataJpaTest/@WebMvcTest và ít nhất một test dùng Testcontainers @ServiceConnection"
+            ],
+            [
+              "Kiến trúc & xử lý lỗi",
+              "20%",
+              "Package theo module, GlobalExceptionHandler thống nhất, ProblemDetail nhất quán"
+            ],
+            [
+              "Tài liệu & triển khai",
+              "15%",
+              "Swagger UI truy cập được, Docker image chạy thành công"
+            ],
+            [
+              "Trình bày & trả lời câu hỏi",
+              "10%",
+              "Trình bày rõ ràng, trả lời đúng trọng tâm câu hỏi phản biện"
+            ]
+          ],
+          "citations": [
+            "day36-src-3",
+            "day36-src-4",
+            "day36-src-8",
+            "day36-src-15",
+            "day36-src-13"
+          ]
+        },
+        {
+          "id": "day36-blk-22",
+          "type": "note",
+          "text": "Trọng số cụ thể của từng tiêu chí (30/25/20/15/10%) là quyết định sư phạm của giảng viên cho môn học này, không đến từ một resource kỹ thuật cụ thể - các cột 'Tiêu chí' phản ánh đúng nội dung kỹ thuật đã dạy trong Unit 11-12 nên bảng vẫn được gắn trích dẫn liên quan.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day36-sec-questions",
+      "title": "Ngan hang cau hoi phan bien",
+      "blocks": [
+        {
+          "id": "day36-blk-23",
+          "type": "template",
+          "text": "Câu hỏi mẫu cho phần phản biện: (1) Vì sao chọn @ServiceConnection thay vì cấu hình datasource thủ công cho test? (2) Điều gì xảy ra nếu hai request checkout cùng một sản phẩm sắp hết hàng chạy đồng thời - hệ thống xử lý thế nào? (3) Vì sao GlobalExceptionHandler nằm ở package common thay vì từng controller? (4) Nếu cần thêm một service mới (ví dụ payment), sẽ tích hợp vào kiến trúc hiện tại ra sao? (5) Layered jar giúp gì cho tốc độ build Docker so với fat jar truyền thống?",
+          "citations": []
+        },
+        {
+          "id": "day36-blk-24",
+          "type": "note",
+          "text": "Ngân hàng câu hỏi trên là tổng hợp sư phạm dựa trên nội dung đã dạy xuyên suốt Unit 11-12 (không trích dẫn một resource đơn lẻ nào), nhằm kiểm tra khả năng giải thích quyết định thiết kế của người trình bày chứ không kiểm tra ghi nhớ tài liệu.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng @SpringBootTest cho mọi test thay vì @DataJpaTest/@WebMvcTest phù hợp, khiến test chậm vì khởi động toàn bộ context không cần thiết.",
+    "Không có test nào dùng Testcontainers với DB thật, chỉ test trên H2 nên không phát hiện được lỗi cú pháp SQL đặc thù của PostgreSQL.",
+    "Không giới hạn/tắt springdoc-openapi ở môi trường production, để lộ toàn bộ tài liệu API ra ngoài không cần thiết."
+  ],
+  "practices": [
+    {
+      "id": "day36-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "@DataJpaTest khác @WebMvcTest ở điểm cốt lõi nào?",
+      "choices": [
+        {
+          "id": "day36-prac-1-a",
+          "text": "@DataJpaTest cấu hình H2 in-memory + repository layer; @WebMvcTest chỉ bootstrap một controller cụ thể cùng MockMvc"
+        },
+        {
+          "id": "day36-prac-1-b",
+          "text": "@DataJpaTest dùng để test Controller, @WebMvcTest dùng để test Repository"
+        },
+        {
+          "id": "day36-prac-1-c",
+          "text": "Không có khác biệt, hai annotation tương đương nhau"
+        },
+        {
+          "id": "day36-prac-1-d",
+          "text": "@WebMvcTest khởi động toàn bộ ApplicationContext còn @DataJpaTest thì không"
+        }
+      ],
+      "correctChoiceIds": [
+        "day36-prac-1-a"
+      ],
+      "hint": "Nghĩ về tầng nào (Controller hay Repository) mỗi annotation nhắm tới.",
+      "solution": "day36-prac-1-a",
+      "explanation": "@DataJpaTest tự động cấu hình H2 in-memory và các bean liên quan tới persistence (Hibernate/Spring Data/DataSource) cùng TestEntityManager; @WebMvcTest chỉ bootstrap một controller cụ thể với MockMvc, không khởi động toàn bộ context.",
+      "rubric": "Liên hệ đúng: mỗi annotation chỉ load phần context cần thiết cho tầng tương ứng.",
+      "sourceUsage": [
+        "day36-src-3",
+        "day36-src-4"
+      ]
+    },
+    {
+      "id": "day36-prac-2",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao nên ưu tiên @ServiceConnection trên @Container field thay vì tự khai báo @DynamicPropertySource?",
+      "choices": [
+        {
+          "id": "day36-prac-2-a",
+          "text": "Spring Boot tự động tạo ConnectionDetails bean và override cấu hình datasource, giảm code lặp lại giữa các test class"
+        },
+        {
+          "id": "day36-prac-2-b",
+          "text": "@ServiceConnection chạy nhanh hơn @DynamicPropertySource"
+        },
+        {
+          "id": "day36-prac-2-c",
+          "text": "@DynamicPropertySource không hoạt động với Testcontainers"
+        },
+        {
+          "id": "day36-prac-2-d",
+          "text": "@ServiceConnection bắt buộc phải dùng khi test với H2"
+        }
+      ],
+      "correctChoiceIds": [
+        "day36-prac-2-a"
+      ],
+      "hint": "So sánh lượng code cần viết thủ công giữa hai cách tiếp cận.",
+      "solution": "day36-prac-2-a",
+      "explanation": "@ServiceConnection tự động tạo ConnectionDetails bean (ví dụ JdbcConnectionDetails) từ container và override datasource, trong khi @DynamicPropertySource đòi hỏi tự viết static method đăng ký từng property - @ServiceConnection gọn hơn cho các loại container có factory sẵn.",
+      "rubric": "Liên hệ đúng lợi ích giảm code lặp lại của @ServiceConnection.",
+      "sourceUsage": [
+        "day36-src-8"
+      ]
+    },
+    {
+      "id": "day36-prac-3",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một test @WebMvcTest kiểm tra GET /api/categories trả về HTTP 200.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng @WebMvcTest(CategoryController.class) + MockMvc + @MockBean cho CategoryService, theo đúng mẫu ProductControllerTest trong bài.",
+      "solution": "@WebMvcTest(CategoryController.class)\nclass CategoryControllerTest {\n    @Autowired private MockMvc mockMvc;\n    @MockBean private CategoryService categoryService;\n\n    @Test\n    void getCategories_returnsOk() throws Exception {\n        mockMvc.perform(get(\"/api/categories\")).andExpect(status().isOk());\n    }\n}",
+      "explanation": "Áp dụng lại mẫu @WebMvcTest/@MockBean/MockMvc đã học trong bài cho endpoint categories.",
+      "rubric": "Đánh giá đúng: @WebMvcTest trỏ đúng Controller, @MockBean cho Service, assertion status().isOk().",
+      "sourceUsage": [
+        "day36-src-4"
+      ]
+    },
+    {
+      "id": "day36-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Chuẩn bị 2 phút trả lời cho câu hỏi phản biện: 'Điều gì xảy ra nếu hai request checkout cùng một sản phẩm sắp hết hàng chạy đồng thời?'",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Liên hệ lại phần @Transactional/isolation đã học ở Sprint 3 (Day 35).",
+      "solution": "Câu trả lời nên đề cập: propagation REQUIRED đảm bảo tạo Order + xóa Cart nguyên tử trong một transaction; isolation level phù hợp (ví dụ READ_COMMITTED trở lên, hoặc khóa bi quan/optimistic locking trên tồn kho) để tránh dirty read/oversell khi nhiều request đồng thời trừ cùng một số lượng tồn kho.",
+      "explanation": "Liên hệ đúng cặp khái niệm propagation (nguyên tử hóa Order/Cart) và isolation/locking (tránh oversell) cho cùng một tình huống concurrency.",
+      "rubric": "Đánh giá đúng: liên hệ được @Transactional + isolation/locking cho tình huống concurrency cụ thể.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm một test dùng @DynamicPropertySource cho một loại container không có ConnectionDetails factory sẵn (ví dụ RabbitMQ).",
+    "Cấu hình springdoc.show-actuator=true và demo endpoint /actuator/openapi."
+  ],
+  "references": [
+    {
+      "id": "day36-ref-1",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day36-src-3"
+    },
+    {
+      "id": "day36-ref-2",
+      "type": "external",
+      "resourceId": "res-be79b4f73d01",
+      "citationId": "day36-src-8"
+    },
+    {
+      "id": "day36-ref-3",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day36-src-13"
+    },
+    {
+      "id": "day36-ref-4",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day36-src-15"
+    },
+    {
+      "id": "day36-ref-5",
+      "type": "internal",
+      "description": "Toàn bộ deliverable của Sprint 1-3 (Day 33-35) và bản thiết kế kiến trúc/API (Day 31-32) là nội dung được demo và bảo vệ trong buổi này."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day36-src-1",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 4, vi du EmployeeRestControllerIntegrationTest",
+      "topic": "@SpringBootTest voi webEnvironment.MOCK"
+    },
+    {
+      "id": "day36-src-2",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 6, vi du @MockBean EmployeeRepository",
+      "topic": "Mock dependency voi @MockBean"
+    },
+    {
+      "id": "day36-src-3",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 7, Integration Testing With @DataJpaTest",
+      "topic": "@DataJpaTest"
+    },
+    {
+      "id": "day36-src-4",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 8, Unit Testing With @WebMvcTest",
+      "topic": "@WebMvcTest"
+    },
+    {
+      "id": "day36-src-5",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 9, bang Auto-Configured Tests",
+      "topic": "Bảng các annotation auto-configured khác"
+    },
+    {
+      "id": "day36-src-6",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Using Spring Beans, vi du @Bean MongoDBContainer",
+      "topic": "Quản lý container bằng Spring Bean"
+    },
+    {
+      "id": "day36-src-7",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Using the JUnit Extension, vi du @Testcontainers @SpringBootTest",
+      "topic": "Quản lý container bằng JUnit Extension"
+    },
+    {
+      "id": "day36-src-8",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Service Connections, vi du @Container @ServiceConnection Neo4jContainer",
+      "topic": "Service Connection tự động"
+    },
+    {
+      "id": "day36-src-9",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Service Connections, bang Connection Details Matched on",
+      "topic": "Các loại ConnectionDetails hỗ trợ sẵn"
+    },
+    {
+      "id": "day36-src-10",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Dynamic Properties, vi du neo4jProperties(DynamicPropertyRegistry registry)",
+      "topic": "@DynamicPropertySource"
+    },
+    {
+      "id": "day36-src-11",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 2, Traditional Docker Builds",
+      "topic": "Hạn chế của fat jar truyền thống"
+    },
+    {
+      "id": "day36-src-12",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 3, Buildpacks",
+      "topic": "Buildpacks"
+    },
+    {
+      "id": "day36-src-13",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 4, Layered Jars + 4 layer mac dinh",
+      "topic": "Layered jar - 4 layer mặc định"
+    },
+    {
+      "id": "day36-src-14",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, dependency Maven",
+      "topic": "Dependency springdoc-openapi cơ bản"
+    },
+    {
+      "id": "day36-src-15",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, duong dan mac dinh",
+      "topic": "Đường dẫn mặc định /swagger-ui.html"
+    },
+    {
+      "id": "day36-src-16",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Actuator support",
+      "topic": "Tích hợp Actuator"
+    },
+    {
+      "id": "day36-src-17",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Disable springdoc-openapi endpoints / Include and Exclude endpoints",
+      "topic": "Tắt/lọc endpoint"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Cấu trúc agenda buổi bảo vệ và ngân hàng câu hỏi phản biện: không có resource nào trong resourceIds của Day 36 mô tả chủ đề này - trình bày như khối template do giảng viên biên soạn, không trích dẫn.",
+      "Trọng số rubric (30/25/20/15/10%): là quyết định sư phạm của giảng viên cho môn học này, không đến từ một resource kỹ thuật cụ thể; các tiêu chí nội dung trong bảng vẫn được gắn trích dẫn vì phản ánh đúng nội dung kỹ thuật đã dạy trong Unit 11-12."
+    ]
+  }
+}
