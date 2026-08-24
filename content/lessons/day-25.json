@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "id": "day-25",
+  "catalogRef": {
+    "unitId": "unit-09",
+    "group": "spring",
+    "title": "Caching & Async Processing",
+    "objectives": [
+      "LO9"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      43,
+      44
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 44,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-e95ba2d69401",
+      "res-347895e9400e",
+      "res-710573bd4385",
+      "res-1c6109c5ec54"
+    ]
+  },
+  "unitId": "unit-09",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Caching & Async Processing",
+  "summary": "Spring Cache abstraction (@Cacheable/@CachePut/@CacheEvict, cache có điều kiện qua SpEL), Redis làm backend cache (RedisCacheManager, RedisCacheConfiguration, TTL/TTI), và giới thiệu khái niệm @Async/@Scheduled sẽ được áp dụng có trích dẫn ở Assignment 9 (Day 27).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO9"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Unit 7-8 (JPA, Spring Security) - bài này chuyển sang chủ đề tối ưu hiệu năng và tích hợp bên ngoài của Unit 9."
+  ],
+  "outcomes": [
+    "Phân biệt đúng @Cacheable/@CachePut/@CacheEvict và biết dùng condition/unless.",
+    "Cấu hình được RedisCacheManager với TTL/TTI phù hợp.",
+    "Giải thích được vai trò của @Async và @Scheduled trong việc tách xử lý khỏi luồng request chính."
+  ],
+  "sections": [
+    {
+      "id": "day25-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day25-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-2",
+          "type": "note",
+          "text": "Bài học mở đầu Unit 9 (tối ưu hiệu năng/tích hợp bên ngoài): cơ chế cache của Spring, backend Redis cho cache, và xử lý bất đồng bộ/định kỳ (@Async/@Scheduled). Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - học viên ôn tập và thực hành lại các kỹ thuật trong bài để chuẩn bị cho Assignment 9 (Product & Order Features) ở Day 27.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day25-sec-cache",
+      "title": "Spring Cache Abstraction",
+      "blocks": [
+        {
+          "id": "day25-blk-3",
+          "type": "paragraph",
+          "text": "Spring Boot tự đăng ký một CacheManager mặc định (ConcurrentMapCacheManager, dựa trên ConcurrentHashMap trong bộ nhớ tiến trình) chỉ cần có starter cache trên classpath cùng @EnableCaching - không cần cấu hình thêm gì cho môi trường phát triển/demo.",
+          "citations": [
+            "day25-src-1",
+            "day25-src-6"
+          ]
+        },
+        {
+          "id": "day25-blk-4",
+          "type": "paragraph",
+          "text": "Ba annotation cache chính có ngữ nghĩa khác nhau: @Cacheable kiểm tra cache trước, nếu đã có dữ liệu thì BỎ QUA không gọi method (phù hợp truy vấn đọc); @CachePut LUÔN gọi method rồi cập nhật kết quả vào cache, dùng khi cần đảm bảo dữ liệu cache mới nhất sau mỗi lần ghi; @CacheEvict xoá entry (hoặc toàn bộ cache với allEntries=true) khi dữ liệu gốc thay đổi lớn. Cả ba đều hỗ trợ tham số condition (SpEL, đánh giá trước khi gọi method, dựa trên input) và unless (SpEL, đánh giá sau khi có kết quả, dựa trên output như #result) để chỉ cache khi thoả điều kiện cụ thể.",
+          "citations": [
+            "day25-src-2",
+            "day25-src-3",
+            "day25-src-4",
+            "day25-src-5"
+          ]
+        },
+        {
+          "id": "day25-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.CachePut;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass ProductQueryService {\n\n    // Kiem tra cache truoc; neu co du lieu thi BO QUA khong goi method.\n    @Cacheable(value = \"products\", key = \"#id\", unless = \"#result == null\")\n    public ProductDTO findById(Long id) {\n        return loadFromDatabase(id);\n    }\n\n    // LUON goi method, roi cap nhat ket qua vao cache - dung khi ghi du lieu.\n    @CachePut(value = \"products\", key = \"#result.id\")\n    public ProductDTO update(ProductDTO updated) {\n        return saveToDatabase(updated);\n    }\n\n    // Xoa toan bo entry trong cache \"products\" khi can lam moi hang loat.\n    @CacheEvict(value = \"products\", allEntries = true)\n    public void evictAllProducts() {\n        // Spring xoa cache SAU KHI method chay xong; khong can code them trong body.\n    }\n\n    private ProductDTO loadFromDatabase(Long id) { return null; }\n\n    private ProductDTO saveToDatabase(ProductDTO dto) { return dto; }\n}\n",
+          "compile": false,
+          "citations": [
+            "day25-src-2",
+            "day25-src-3",
+            "day25-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day25-sec-redis",
+      "title": "Redis lam backend cache",
+      "blocks": [
+        {
+          "id": "day25-blk-6",
+          "type": "paragraph",
+          "text": "Chỉ cần thêm spring-boot-starter-data-redis và spring-boot-starter-cache vào classpath cùng @EnableCaching, Spring Boot tự động cấu hình RedisCacheManager kết nối Redis mặc định tại localhost:6379 - có thể tuỳ chỉnh sâu hơn bằng RedisCacheManager.builder(connectionFactory) kết hợp RedisCacheConfiguration (entryTtl, disableCachingNullValues, prefixCacheNameWith).",
+          "citations": [
+            "day25-src-7",
+            "day25-src-8",
+            "day25-src-10"
+          ]
+        },
+        {
+          "id": "day25-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "import java.time.Duration;\nimport org.springframework.cache.annotation.EnableCaching;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.data.redis.cache.RedisCacheConfiguration;\nimport org.springframework.data.redis.cache.RedisCacheManager;\nimport org.springframework.data.redis.connection.RedisConnectionFactory;\n\n@Configuration\n@EnableCaching\nclass CacheConfig {\n\n    @Bean\n    public RedisCacheManager cacheManager(RedisConnectionFactory factory) {\n        RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()\n                .entryTtl(Duration.ofMinutes(10))   // TTL: het han 10 phut sau lan ghi/cap nhat gan nhat\n                .disableCachingNullValues();          // khong cache gia tri null\n\n        return RedisCacheManager.builder(factory)\n                .cacheDefaults(defaults)\n                .transactionAware()\n                .build();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day25-src-7",
+            "day25-src-8"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day25-blk-8",
+          "type": "note",
+          "text": "TTL (entryTtl) được reset mỗi khi ghi/cập nhật entry, còn TTI (time-to-idle, bật qua enableTimeToIdle()) cần Redis từ 6.2.0 trở lên vì Spring Data Redis dùng lệnh GETEX để reset TTL mỗi lần đọc, tạo hiệu ứng 'gần giống' time-to-idle chứ Redis không có TTI gốc.",
+          "citations": [
+            "day25-src-9"
+          ]
+        },
+        {
+          "id": "day25-blk-9",
+          "type": "note",
+          "text": "Mặc định RedisCacheWriter dùng lệnh KEYS+DEL để xoá cache (có thể chậm với keyspace lớn); có thể đổi sang BatchStrategies.scan(batchSize) để dùng SCAN, nhưng Jedis chỉ hỗ trợ SCAN ở chế độ non-cluster.",
+          "citations": [
+            "day25-src-9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day25-sec-async",
+      "title": "@Async - xu ly bat dong bo",
+      "blocks": [
+        {
+          "id": "day25-blk-10",
+          "type": "note",
+          "text": "@Async (kích hoạt bằng @EnableAsync trên class cấu hình, cho phép một method chạy trên luồng khác thay vì chặn luồng xử lý request chính) không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource về @Async thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (gửi email xác nhận đơn hàng, cập nhật tồn kho) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day25-sec-scheduled",
+      "title": "@Scheduled - tac vu dinh ky",
+      "blocks": [
+        {
+          "id": "day25-blk-11",
+          "type": "note",
+          "text": "@Scheduled (kích hoạt bằng @EnableScheduling, method phải trả về void và không nhận tham số; fixedDelay tính khoảng cách từ lúc KẾT THÚC lần chạy trước, fixedRate chạy theo chu kỳ cố định không quan tâm lần trước đã xong hay chưa, hoặc dùng biểu thức cron cho lịch phức tạp hơn) cũng không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource tương ứng thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (huỷ đơn hàng chờ quá 30 phút) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng @Cacheable cho method ghi dữ liệu (insert/update) khiến lần ghi đầu tiên bị bỏ qua nếu cache đã có key trùng - phải dùng @CachePut cho thao tác ghi.",
+    "Quên @EnableCaching trên class cấu hình, khiến mọi @Cacheable/@CachePut/@CacheEvict bị bỏ qua hoàn toàn mà không có lỗi rõ ràng.",
+    "Dùng CacheManager mặc định (trong bộ nhớ) cho ứng dụng chạy nhiều instance, dẫn tới dữ liệu cache không nhất quán giữa các instance."
+  ],
+  "practices": [
+    {
+      "id": "day25-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khác biệt cốt lõi giữa @Cacheable và @CachePut là gì?",
+      "choices": [
+        {
+          "id": "day25-prac-1-a",
+          "text": "@Cacheable bỏ qua việc gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
+        },
+        {
+          "id": "day25-prac-1-b",
+          "text": "@Cacheable dùng cho Redis, @CachePut chỉ dùng cho cache trong bộ nhớ"
+        },
+        {
+          "id": "day25-prac-1-c",
+          "text": "@CachePut xoá cache, còn @Cacheable ghi cache"
+        },
+        {
+          "id": "day25-prac-1-d",
+          "text": "Không có khác biệt, hai annotation này tương đương nhau"
+        }
+      ],
+      "correctChoiceIds": [
+        "day25-prac-1-a"
+      ],
+      "hint": "So sánh hành vi khi cache đã có sẵn dữ liệu cho key đang truy vấn.",
+      "solution": "day25-prac-1-a",
+      "explanation": "@Cacheable kiểm tra cache trước; nếu đã có dữ liệu thì bỏ qua việc gọi method (phù hợp đọc dữ liệu). @CachePut luôn thực thi method rồi mới cập nhật kết quả vào cache, đảm bảo cache phản ánh đúng dữ liệu vừa ghi.",
+      "rubric": "Liên hệ đúng: @Cacheable = đọc có điều kiện bỏ qua, @CachePut = luôn ghi.",
+      "sourceUsage": [
+        "day25-src-2"
+      ]
+    },
+    {
+      "id": "day25-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một method dùng @CacheEvict để xoá toàn bộ entry trong cache 'categories' khi danh mục sản phẩm bị xoá.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng allEntries = true trên @CacheEvict.",
+      "solution": "@CacheEvict(value = \"categories\", allEntries = true)\npublic void evictAllCategories() {\n}",
+      "explanation": "Áp dụng lại mẫu @CacheEvict(allEntries = true) đã học trong bài để làm mới toàn bộ cache liên quan.",
+      "rubric": "Đánh giá đúng: có @CacheEvict với allEntries = true, value trỏ đúng cache name.",
+      "sourceUsage": [
+        "day25-src-3"
+      ]
+    },
+    {
+      "id": "day25-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao TTI (time-to-idle) trong Spring Data Redis cần Redis từ phiên bản 6.2.0 trở lên?",
+      "choices": [
+        {
+          "id": "day25-prac-3-a",
+          "text": "Vì Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle"
+        },
+        {
+          "id": "day25-prac-3-b",
+          "text": "Vì Redis chỉ hỗ trợ TTL, không có khái niệm TTI nên phải nâng cấp phiên bản để bổ sung tính năng mới"
+        },
+        {
+          "id": "day25-prac-3-c",
+          "text": "Vì RedisCacheManager.builder chỉ hoạt động từ Redis 6.2.0"
+        },
+        {
+          "id": "day25-prac-3-d",
+          "text": "Vì Spring Boot yêu cầu tối thiểu Redis 6.2.0 cho mọi tính năng cache"
+        }
+      ],
+      "correctChoiceIds": [
+        "day25-prac-3-a"
+      ],
+      "hint": "Nhớ lại lệnh Redis nào được dùng để vừa đọc vừa reset thời hạn.",
+      "solution": "day25-prac-3-a",
+      "explanation": "Redis không có TTI (time-to-idle) như một khái niệm gốc; Spring Data Redis mô phỏng nó bằng cách gọi GETEX (lệnh đọc kèm reset TTL) mỗi lần đọc entry, và GETEX chỉ có từ Redis 6.2.0.",
+      "rubric": "Liên hệ đúng lệnh GETEX với yêu cầu phiên bản Redis tối thiểu.",
+      "sourceUsage": [
+        "day25-src-9"
+      ]
+    },
+    {
+      "id": "day25-prac-4",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao CacheManager mặc định (ConcurrentMapCacheManager) không phù hợp khi ứng dụng chạy nhiều instance?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về nơi lưu trữ dữ liệu cache của ConcurrentMapCacheManager.",
+      "solution": "ConcurrentMapCacheManager lưu cache trong bộ nhớ (ConcurrentHashMap) của TỪNG tiến trình JVM riêng lẻ - mỗi instance có một bản cache độc lập, không chia sẻ được, dẫn tới dữ liệu không nhất quán giữa các instance. Cần một backend cache chia sẻ ngoài tiến trình như Redis để mọi instance đọc/ghi cùng một nơi.",
+      "explanation": "Liên hệ giữa 'cache trong bộ nhớ tiến trình' và bài toán nhất quán khi scale ngang nhiều instance.",
+      "rubric": "Đánh giá học viên nêu đúng lý do: cache cục bộ theo tiến trình không chia sẻ được giữa nhiều instance.",
+      "sourceUsage": [
+        "day25-src-1"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 44,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Thêm condition/unless SpEL vào @Cacheable(\"products\") để chỉ cache khi sản phẩm đang ở trạng thái ACTIVE.",
+    "Đo thời gian phản hồi trước/sau khi bật cache Redis cho một truy vấn danh mục sản phẩm."
+  ],
+  "references": [
+    {
+      "id": "day25-ref-1",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day25-src-2"
+    },
+    {
+      "id": "day25-ref-2",
+      "type": "external",
+      "resourceId": "res-347895e9400e",
+      "citationId": "day25-src-5"
+    },
+    {
+      "id": "day25-ref-3",
+      "type": "external",
+      "resourceId": "res-710573bd4385",
+      "citationId": "day25-src-7"
+    },
+    {
+      "id": "day25-ref-4",
+      "type": "external",
+      "resourceId": "res-1c6109c5ec54",
+      "citationId": "day25-src-10"
+    },
+    {
+      "id": "day25-ref-5",
+      "type": "internal",
+      "description": "@Async và @Scheduled sẽ được áp dụng có trích dẫn đầy đủ ở Assignment 9, Day 27."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day25-src-1",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 3, Enable Caching",
+      "topic": "@EnableCaching bat ConcurrentMapCacheManager mac dinh"
+    },
+    {
+      "id": "day25-src-2",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.1 va 4.3, @Cacheable va @CachePut",
+      "topic": "Phan biet @Cacheable (bo qua khi co cache) va @CachePut (luon goi method)"
+    },
+    {
+      "id": "day25-src-3",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.2, @CacheEvict",
+      "topic": "@CacheEvict(allEntries=true) xoa toan bo entry"
+    },
+    {
+      "id": "day25-src-4",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 5, Conditional Caching",
+      "topic": "condition/unless SpEL cho cache co dieu kien"
+    },
+    {
+      "id": "day25-src-5",
+      "resourceId": "res-347895e9400e",
+      "locator": "phan Add a Simple Book Repository, method getByIsbn",
+      "topic": "Gan @Cacheable len method truy van cham"
+    },
+    {
+      "id": "day25-src-6",
+      "resourceId": "res-347895e9400e",
+      "locator": "phan Enable Caching",
+      "topic": "@EnableCaching tren class @SpringBootApplication"
+    },
+    {
+      "id": "day25-src-7",
+      "resourceId": "res-710573bd4385",
+      "locator": "phan Redis Cache, vi du RedisCacheManager.builder",
+      "topic": "RedisCacheManager.builder tuy chinh cacheDefaults"
+    },
+    {
+      "id": "day25-src-8",
+      "resourceId": "res-710573bd4385",
+      "locator": "phan Redis Cache, vi du RedisCacheConfiguration",
+      "topic": "RedisCacheConfiguration.entryTtl/disableCachingNullValues"
+    },
+    {
+      "id": "day25-src-9",
+      "resourceId": "res-710573bd4385",
+      "locator": "phan Time-To-Live (TTL) Expiration / Time-To-Idle (TTI) Expiration",
+      "topic": "TTL reset khi ghi, TTI can GETEX tu Redis 6.2.0"
+    },
+    {
+      "id": "day25-src-10",
+      "resourceId": "res-1c6109c5ec54",
+      "locator": "muc 2-3, dependencies + @EnableCaching",
+      "topic": "Chi can starter-data-redis + starter-cache + @EnableCaching"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "@Async (kích hoạt qua @EnableAsync, CompletableFuture, tuỳ chỉnh Executor, xử lý exception cho method void): không có resource nào trong resourceIds của Day 25 mô tả chủ đề này - resource dành cho chủ đề này (res-033c4bfa05f5) thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp vào Assignment 9 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn.",
+      "@Scheduled (kích hoạt qua @EnableScheduling, fixedDelay/fixedRate/cron, chạy song song): tương tự, resource dành cho chủ đề này (res-97fce5fda99a) thuộc resourceIds của Day 27, không lặp lại trong resourceIds của Day 25 theo nguyên tắc không mượn citation chéo giữa các bài. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn."
+    ]
+  }
+}

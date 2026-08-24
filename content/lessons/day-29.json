@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "id": "day-29",
+  "catalogRef": {
+    "unitId": "unit-10",
+    "group": "spring",
+    "title": "Documentation, Logging, Monitoring & Docker",
+    "objectives": [
+      "LO10"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      50,
+      51
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-79cbefdda273",
+      "res-93813d9b62f4",
+      "res-fa57300ac53c",
+      "res-84fc38d27c0a",
+      "res-be79b4f73d01"
+    ]
+  },
+  "unitId": "unit-10",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Documentation, Logging, Monitoring & Docker",
+  "summary": "Tài liệu API tự động với OpenAPI/Swagger, structured logging (ECS/GELF/Logstash + MDC), Actuator (health indicator, health group, expose mặc định giới hạn), và Testcontainers (quản lý container thật cho test tích hợp) - nền tảng cho Lab 10 (Day 30).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO10"
+  ],
+  "prerequisites": [
+    "Đã học các kỹ thuật testing ở Day 28 - bài này mở rộng sang tài liệu hoá, giám sát, và container hoá cho môi trường production."
+  ],
+  "outcomes": [
+    "Tích hợp được tài liệu API tự động (OpenAPI/Swagger) vào ứng dụng Spring Boot.",
+    "Bật được structured logging và thêm trường tuỳ chỉnh qua MDC.",
+    "Viết được HealthIndicator tuỳ chỉnh và hiểu phạm vi expose mặc định của Actuator.",
+    "Dùng được Testcontainers (@Testcontainers, @ServiceConnection, @DynamicPropertySource) cho test tích hợp."
+  ],
+  "sections": [
+    {
+      "id": "day29-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day29-blk-1",
+          "type": "note",
+          "text": "Không có assignment riêng cho ngày này - nội dung là các kỹ thuật 'production readiness' (tài liệu API, logging có cấu trúc, giám sát, container hoá) sẽ được áp dụng đầy đủ, có trích dẫn, vào Lab 10 ở Day 30.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day29-sec-openapi",
+      "title": "Tai lieu API voi OpenAPI/Swagger",
+      "blocks": [
+        {
+          "id": "day29-blk-2",
+          "type": "paragraph",
+          "text": "Thêm springdoc-openapi-starter-webmvc-ui vào classpath, Spring Boot tự động sinh tài liệu OpenAPI tại /v3/api-docs (JSON) và giao diện Swagger UI tại /swagger-ui.html - không cần viết tài liệu API thủ công. Có thể tích hợp thông tin OpenAPI vào endpoint Actuator, và lọc/loại trừ những endpoint không muốn xuất hiện trong tài liệu qua springdoc.packages-to-scan/springdoc.paths-to-match.",
+          "citations": [
+            "day29-src-1",
+            "day29-src-2",
+            "day29-src-3",
+            "day29-src-4"
+          ]
+        },
+        {
+          "id": "day29-blk-3",
+          "type": "code",
+          "language": "text",
+          "code": "# pom.xml: them dependency springdoc-openapi-starter-webmvc-ui\n# <dependency>\n#   <groupId>org.springdoc</groupId>\n#   <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\n#   <version>2.6.0</version>\n# </dependency>\n\n# application.properties - mac dinh khong can cau hinh gi them:\n#   /v3/api-docs        -> JSON dac ta OpenAPI\n#   /swagger-ui.html     -> giao dien Swagger UI\n\n# Loc bot endpoint duoc dua vao tai lieu, chi lay nhung API cong khai:\nspringdoc.packages-to-scan=com.example.shop.api\nspringdoc.paths-to-match=/api/**\n\n# Tat han che documentation cho mot nhom endpoint noi bo:\n# springdoc.show-actuator=false\n",
+          "compile": false,
+          "citations": [
+            "day29-src-1",
+            "day29-src-2",
+            "day29-src-4"
+          ],
+          "partialReason": "Tep cau hinh application.properties/pom.xml, khong phai ma nguon Java bien dich duoc."
+        }
+      ]
+    },
+    {
+      "id": "day29-sec-logging",
+      "title": "Structured logging",
+      "blocks": [
+        {
+          "id": "day29-blk-4",
+          "type": "paragraph",
+          "text": "Từ Spring Boot 3.4.0, có thể bật structured logging (log dạng JSON, dễ phân tích bằng công cụ log tập trung) chỉ bằng một dòng cấu hình logging.structured.format.console, với 3 định dạng dựng sẵn: ecs (Elastic Common Schema), gelf (Graylog Extended Log Format), logstash. MDC (Mapped Diagnostic Context) cho phép thêm trường tuỳ chỉnh (như orderId, customerId) vào mọi dòng log ghi trong phạm vi đang xử lý.",
+          "citations": [
+            "day29-src-5",
+            "day29-src-6",
+            "day29-src-7"
+          ]
+        },
+        {
+          "id": "day29-blk-5",
+          "type": "code",
+          "language": "text",
+          "code": "# application.properties - bat structured logging dinh dang ECS cho console (Spring Boot 3.4+)\nlogging.structured.format.console=ecs\n\n# Cac dinh dang dung san khac: gelf, logstash\n# logging.structured.format.console=logstash\n",
+          "compile": false,
+          "citations": [
+            "day29-src-5",
+            "day29-src-6"
+          ],
+          "partialReason": "Tep cau hinh application.properties, khong phai ma nguon Java bien dich duoc."
+        },
+        {
+          "id": "day29-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import org.slf4j.MDC;\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\nclass OrderProcessingService {\n\n    private static final Logger log = LoggerFactory.getLogger(OrderProcessingService.class);\n\n    void process(Long orderId, String customerId) {\n        // Them truong tuy chinh vao MDC - se tu dong xuat hien trong moi\n        // dong log structured (JSON) ghi ra trong pham vi nay.\n        MDC.put(\"orderId\", String.valueOf(orderId));\n        MDC.put(\"customerId\", customerId);\n        try {\n            log.info(\"Bat dau xu ly don hang\");\n            // ... xu ly nghiep vu ...\n            log.info(\"Xu ly don hang thanh cong\");\n        } finally {\n            MDC.clear();\n        }\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day29-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day29-blk-7",
+          "type": "note",
+          "text": "Việc lan truyền traceId xuyên suốt một request qua nhiều service (distributed tracing, ví dụ với Micrometer Tracing) không có resource nào trong resourceIds của Day 29 (hay bất kỳ lesson nào khác trong bộ nguồn hiện có) mô tả - đây là khoảng trống kiến thức thật sự. Trình bày dưới dạng ghi chú không trích dẫn.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day29-sec-actuator",
+      "title": "Actuator va giam sat",
+      "blocks": [
+        {
+          "id": "day29-blk-8",
+          "type": "paragraph",
+          "text": "Spring Boot Actuator cung cấp các endpoint sẵn có để theo dõi và quản lý ứng dụng đang chạy (health, metrics, env, loggers...) qua HTTP hoặc JMX. Mặc định chỉ expose /health và /info qua HTTP (vì lý do bảo mật) - cần bật thêm các endpoint khác qua management.endpoints.web.exposure.include khi cần. Có thể viết HealthIndicator tuỳ chỉnh để kiểm tra tình trạng của một phụ thuộc cụ thể (như payment gateway), và nhóm các health indicator liên quan lại bằng health group (ví dụ readiness/liveness).",
+          "citations": [
+            "day29-src-8",
+            "day29-src-9",
+            "day29-src-10",
+            "day29-src-11"
+          ]
+        },
+        {
+          "id": "day29-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.boot.actuate.health.Health;\nimport org.springframework.boot.actuate.health.HealthIndicator;\nimport org.springframework.stereotype.Component;\n\n// Actuator mac dinh chi expose /health va /info; can bat them cac endpoint\n// khac qua management.endpoints.web.exposure.include neu can (vi du /metrics,/loggers).\n@Component\nclass PaymentGatewayHealthIndicator implements HealthIndicator {\n\n    @Override\n    public Health health() {\n        boolean reachable = pingPaymentGateway();\n        if (reachable) {\n            return Health.up().withDetail(\"paymentGateway\", \"reachable\").build();\n        }\n        return Health.down().withDetail(\"paymentGateway\", \"unreachable\").build();\n    }\n\n    private boolean pingPaymentGateway() {\n        return true;\n    }\n}\n\n// application.properties tuong ung:\n// management.endpoints.web.exposure.include=health,info,metrics\n// management.endpoint.health.group.readiness.include=paymentGateway,db\n",
+          "compile": false,
+          "citations": [
+            "day29-src-9",
+            "day29-src-11"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day29-blk-10",
+          "type": "note",
+          "text": "Xuất metrics theo định dạng Prometheus (thường qua micrometer-registry-prometheus và endpoint /actuator/prometheus) không có resource nào trong resourceIds của Day 29 (hay Day 30) mô tả - đây là khoảng trống kiến thức thật sự trong bộ nguồn hiện có. Trình bày dưới dạng ghi chú không trích dẫn.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day29-sec-docker",
+      "title": "Docker va docker-compose (gioi thieu)",
+      "blocks": [
+        {
+          "id": "day29-blk-11",
+          "type": "note",
+          "text": "Đóng gói ứng dụng bằng Docker (layered jar, Dockerfile) và chạy phụ thuộc (DB, Redis) bằng docker-compose không có resource nào trong resourceIds của Day 29 - hai resource tương ứng thuộc resourceIds của Day 30, nơi kỹ thuật này được áp dụng trực tiếp vào Lab 10 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day29-sec-testcontainers",
+      "title": "Testcontainers",
+      "blocks": [
+        {
+          "id": "day29-blk-12",
+          "type": "paragraph",
+          "text": "Testcontainers chạy các phụ thuộc thật (database, message broker...) trong Docker container dành riêng cho test tích hợp, thay vì H2 in-memory hay mock - đảm bảo test chạy sát với môi trường production hơn. @Testcontainers kết hợp @Container quản lý vòng đời container theo vòng đời test class (JUnit Extension). @ServiceConnection tự động tạo ConnectionDetails và trỏ Spring Boot vào container mà không cần cấu hình thủ công; @DynamicPropertySource chỉ cần dùng cho những cấu hình mà @ServiceConnection chưa hỗ trợ sẵn.",
+          "citations": [
+            "day29-src-12",
+            "day29-src-13",
+            "day29-src-14"
+          ]
+        },
+        {
+          "id": "day29-blk-13",
+          "type": "code",
+          "language": "java",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.test.context.DynamicPropertyRegistry;\nimport org.springframework.test.context.DynamicPropertySource;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n// @Testcontainers quan ly vong doi container (start/stop) theo vong doi test class.\n@Testcontainers\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass OrderApiIntegrationTest {\n\n    // @ServiceConnection tu dong tao ConnectionDetails va tro Spring Boot vao\n    // container nay - khong can @DynamicPropertySource thu cong cho cau hinh datasource pho bien.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\");\n\n    // Chi can dung @DynamicPropertySource cho cau hinh KHONG duoc @ServiceConnection ho tro san.\n    @DynamicPropertySource\n    static void extraProperties(DynamicPropertyRegistry registry) {\n        registry.add(\"app.feature-flag.new-checkout\", () -> \"true\");\n    }\n\n    @Test\n    void containerStartsAndAppConnects() {\n        // RestAssured/WebTestClient goi API that qua RANDOM_PORT o day.\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day29-src-12",
+            "day29-src-13",
+            "day29-src-15",
+            "day29-src-16"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Bật toàn bộ endpoint Actuator (management.endpoints.web.exposure.include=*) trên môi trường production mà không kiểm soát truy cập - lộ thông tin nhạy cảm như biến môi trường, bean nội bộ.",
+    "Dùng @DynamicPropertySource thủ công cho mọi container thay vì @ServiceConnection khi container đó đã được hỗ trợ sẵn - dư thừa code không cần thiết.",
+    "Quên MDC.clear() sau khi xử lý xong, khiến trường log của request trước rò rỉ sang request/luồng xử lý sau (đặc biệt khi dùng thread pool tái sử dụng luồng)."
+  ],
+  "practices": [
+    {
+      "id": "day29-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Mặc định, Actuator expose những endpoint HTTP nào?",
+      "choices": [
+        {
+          "id": "day29-prac-1-a",
+          "text": "Chỉ /health và /info"
+        },
+        {
+          "id": "day29-prac-1-b",
+          "text": "Tất cả endpoint (bao gồm /beans, /env, /loggers)"
+        },
+        {
+          "id": "day29-prac-1-c",
+          "text": "Chỉ /metrics"
+        },
+        {
+          "id": "day29-prac-1-d",
+          "text": "Không expose endpoint nào cho tới khi được bật thủ công"
+        }
+      ],
+      "correctChoiceIds": [
+        "day29-prac-1-a"
+      ],
+      "hint": "Nhớ lại lý do bảo mật khiến Spring Boot không mở rộng mặc định.",
+      "solution": "day29-prac-1-a",
+      "explanation": "Vì lý do bảo mật, Actuator mặc định chỉ expose /health và /info qua HTTP - các endpoint nhạy cảm hơn (như /env, /beans, /loggers) cần được bật rõ ràng qua management.endpoints.web.exposure.include.",
+      "rubric": "Liên hệ đúng lý do bảo mật với việc giới hạn expose mặc định.",
+      "sourceUsage": [
+        "day29-src-9"
+      ]
+    },
+    {
+      "id": "day29-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết khung một HealthIndicator tuỳ chỉnh kiểm tra kết nối tới một dịch vụ bên ngoài.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Implement interface HealthIndicator, trả về Health.up()/Health.down().",
+      "solution": "@Component\nclass ExternalServiceHealthIndicator implements HealthIndicator {\n    @Override\n    public Health health() {\n        return isReachable() ? Health.up().build() : Health.down().build();\n    }\n}",
+      "explanation": "Áp dụng lại khung HealthIndicator đã học trong bài.",
+      "rubric": "Đánh giá đúng: implements HealthIndicator, override health(), trả về Health.up()/down().",
+      "sourceUsage": [
+        "day29-src-11"
+      ]
+    },
+    {
+      "id": "day29-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "@ServiceConnection khác @DynamicPropertySource ở điểm nào?",
+      "choices": [
+        {
+          "id": "day29-prac-3-a",
+          "text": "@ServiceConnection tự động tạo ConnectionDetails cho các loại container phổ biến (không cần cấu hình thủ công), @DynamicPropertySource cần khai báo tay từng property"
+        },
+        {
+          "id": "day29-prac-3-b",
+          "text": "@DynamicPropertySource chỉ dùng được với PostgreSQL, @ServiceConnection dùng cho mọi database"
+        },
+        {
+          "id": "day29-prac-3-c",
+          "text": "Hai annotation này không thể dùng cùng lúc trong một test class"
+        },
+        {
+          "id": "day29-prac-3-d",
+          "text": "@ServiceConnection chỉ hoạt động khi không dùng @Testcontainers"
+        }
+      ],
+      "correctChoiceIds": [
+        "day29-prac-3-a"
+      ],
+      "hint": "Nghĩ về việc annotation nào tự động hoá, annotation nào cần khai báo thủ công từng property.",
+      "solution": "day29-prac-3-a",
+      "explanation": "@ServiceConnection nhận diện loại container (Postgres, Redis, Neo4j...) và tự động tạo ConnectionDetails phù hợp, trỏ Spring Boot vào container mà không cần khai báo property thủ công. @DynamicPropertySource vẫn cần thiết cho những cấu hình mà @ServiceConnection chưa hỗ trợ sẵn.",
+      "rubric": "Liên hệ đúng mức độ tự động hoá giữa hai cơ chế.",
+      "sourceUsage": [
+        "day29-src-13",
+        "day29-src-14"
+      ]
+    },
+    {
+      "id": "day29-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết dòng cấu hình bật structured logging định dạng ECS cho console.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Property bắt đầu bằng logging.structured.format.",
+      "solution": "logging.structured.format.console=ecs",
+      "explanation": "Áp dụng lại đúng property đã học trong bài.",
+      "rubric": "Đánh giá đúng: property logging.structured.format.console với giá trị ecs.",
+      "sourceUsage": [
+        "day29-src-5"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm health group 'readiness' gồm HealthIndicator của database và payment gateway, kiểm tra qua /actuator/health/readiness.",
+    "Cấu hình springdoc để ẩn hoàn toàn các endpoint nội bộ (packagesToScan chỉ trỏ vào package api công khai)."
+  ],
+  "references": [
+    {
+      "id": "day29-ref-1",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day29-src-2"
+    },
+    {
+      "id": "day29-ref-2",
+      "type": "external",
+      "resourceId": "res-93813d9b62f4",
+      "citationId": "day29-src-6"
+    },
+    {
+      "id": "day29-ref-3",
+      "type": "external",
+      "resourceId": "res-fa57300ac53c",
+      "citationId": "day29-src-9"
+    },
+    {
+      "id": "day29-ref-4",
+      "type": "external",
+      "resourceId": "res-be79b4f73d01",
+      "citationId": "day29-src-13"
+    },
+    {
+      "id": "day29-ref-5",
+      "type": "external",
+      "resourceId": "res-84fc38d27c0a",
+      "citationId": "day29-src-15"
+    },
+    {
+      "id": "day29-ref-6",
+      "type": "internal",
+      "description": "Docker/docker-compose sẽ được áp dụng đầy đủ có trích dẫn ở Lab 10, Day 30."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day29-src-1",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, dependency Maven",
+      "topic": "springdoc-openapi-starter-webmvc-ui dependency"
+    },
+    {
+      "id": "day29-src-2",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, duong dan mac dinh",
+      "topic": "/v3/api-docs va /swagger-ui.html mac dinh"
+    },
+    {
+      "id": "day29-src-3",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Actuator support",
+      "topic": "Tich hop OpenAPI info vao endpoint Actuator"
+    },
+    {
+      "id": "day29-src-4",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Disable springdoc-openapi endpoints / Include and Exclude endpoints",
+      "topic": "Tat/loc endpoint qua packagesToScan/pathsToMatch"
+    },
+    {
+      "id": "day29-src-5",
+      "resourceId": "res-93813d9b62f4",
+      "locator": "muc 3-4, gioi thieu structured logging",
+      "topic": "logging.structured.format.console tu Spring Boot 3.4.0"
+    },
+    {
+      "id": "day29-src-6",
+      "resourceId": "res-93813d9b62f4",
+      "locator": "muc 4.1-4.3, ECS/GELF/Logstash",
+      "topic": "3 dinh dang JSON dung san: ecs/gelf/logstash"
+    },
+    {
+      "id": "day29-src-7",
+      "resourceId": "res-93813d9b62f4",
+      "locator": "muc 4.4, vi du MDC + fluent API",
+      "topic": "MDC.put them truong tuy chinh vao log"
+    },
+    {
+      "id": "day29-src-8",
+      "resourceId": "res-fa57300ac53c",
+      "locator": "muc 2, What Is an Actuator?",
+      "topic": "Actuator cung cap health/metrics qua HTTP/JMX"
+    },
+    {
+      "id": "day29-src-9",
+      "resourceId": "res-fa57300ac53c",
+      "locator": "muc 3.2 va 3.11, Important Changes / Enable All Endpoints",
+      "topic": "Mac dinh chi expose /health va /info"
+    },
+    {
+      "id": "day29-src-10",
+      "resourceId": "res-fa57300ac53c",
+      "locator": "muc 3.3, Predefined Endpoints",
+      "topic": "Cac endpoint pho bien: /beans, /env, /metrics, /loggers"
+    },
+    {
+      "id": "day29-src-11",
+      "resourceId": "res-fa57300ac53c",
+      "locator": "muc 3.5-3.6, Health Indicators / Health Groups",
+      "topic": "HealthIndicator tuy chinh va health group"
+    },
+    {
+      "id": "day29-src-12",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Using the JUnit Extension, vi du @Testcontainers @SpringBootTest",
+      "topic": "@Testcontainers + @Container quan ly vong doi container"
+    },
+    {
+      "id": "day29-src-13",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Service Connections, vi du @Container @ServiceConnection Neo4jContainer",
+      "topic": "@ServiceConnection tu dong tao ConnectionDetails"
+    },
+    {
+      "id": "day29-src-14",
+      "resourceId": "res-be79b4f73d01",
+      "locator": "phan Dynamic Properties, vi du neo4jProperties(DynamicPropertyRegistry registry)",
+      "topic": "@DynamicPropertySource dang ky property tu container"
+    },
+    {
+      "id": "day29-src-15",
+      "resourceId": "res-84fc38d27c0a",
+      "locator": "phan Write test for API endpoint, vi du PostgreSQLContainer",
+      "topic": "PostgreSQLContainer static field cho test tich hop"
+    },
+    {
+      "id": "day29-src-16",
+      "resourceId": "res-84fc38d27c0a",
+      "locator": "phan Write test for API endpoint, method shouldGetAllCustomers",
+      "topic": "RestAssured goi API qua RANDOM_PORT trong test tich hop"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Đóng gói ứng dụng bằng Docker (layered jar, Dockerfile) và chạy phụ thuộc qua docker-compose: hai resource tương ứng (res-e3236d24d45f, res-8d5e61cc0a53) thuộc resourceIds của Day 30, không lặp lại trong resourceIds của Day 29 theo nguyên tắc không mượn citation chéo giữa các bài. Giới thiệu khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+      "Lan truyền traceId xuyên suốt request (distributed tracing, ví dụ Micrometer Tracing): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn.",
+      "Metrics định dạng Prometheus (micrometer-registry-prometheus, endpoint /actuator/prometheus): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn."
+    ]
+  }
+}

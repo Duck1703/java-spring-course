@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "id": "day-30",
+  "catalogRef": {
+    "unitId": "unit-10",
+    "group": "spring",
+    "title": "- Lab 10: Production Readiness",
+    "objectives": [
+      "LO10"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      52
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 52,
+        "text": "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build"
+      }
+    ],
+    "resourceIds": [
+      "res-ae66be8c9f5f",
+      "res-84fc38d27c0a",
+      "res-79cbefdda273",
+      "res-e3236d24d45f",
+      "res-8d5e61cc0a53"
+    ]
+  },
+  "unitId": "unit-10",
+  "group": "spring",
+  "kind": "lab",
+  "title": "- Lab 10: Production Readiness",
+  "summary": "Lab tổng hợp Unit 10: unit/integration test với Testcontainers, JaCoCo coverage, tài liệu OpenAPI cho toàn bộ endpoint, structured logging, Actuator/Prometheus/HealthIndicator, Dockerfile + docker-compose (layered jar), và pipeline GitHub Actions CI - đưa dự án e-commerce đạt chuẩn production readiness.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO10"
+  ],
+  "prerequisites": [
+    "Đã học testing (Day 28) và tài liệu/logging/giám sát/Testcontainers (Day 29) - Lab này tổng hợp toàn bộ vào dự án e-commerce."
+  ],
+  "outcomes": [
+    "Xây dựng được bộ test hai tầng (unit @WebMvcTest + integration Testcontainers) cho service.",
+    "Đóng gói ứng dụng bằng Dockerfile layered jar và chạy phụ thuộc qua docker-compose.",
+    "Tích hợp tài liệu OpenAPI cho toàn bộ endpoint REST của dự án.",
+    "Nhận diện đúng những mảng cấu hình production readiness còn là khoảng trống kiến thức (JaCoCo, traceId, Prometheus, CI) cần tự nghiên cứu thêm."
+  ],
+  "sections": [
+    {
+      "id": "day30-sec-brief",
+      "title": "De bai Lab 10",
+      "blocks": [
+        {
+          "id": "day30-blk-1",
+          "type": "deliverable",
+          "text": "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build",
+          "citations": []
+        },
+        {
+          "id": "day30-blk-2",
+          "type": "note",
+          "text": "Lab tổng hợp cuối Unit 10 - đưa dự án e-commerce đã xây dựng xuyên suốt khoá học đạt chuẩn 'production readiness' bằng cách áp dụng đầy đủ các kỹ thuật testing (Day 28), tài liệu/logging/giám sát/Testcontainers (Day 29), và container hoá.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-testing",
+      "title": "Unit test + Integration test (Testcontainers)",
+      "blocks": [
+        {
+          "id": "day30-blk-3",
+          "type": "paragraph",
+          "text": "Mỗi service cần cả hai tầng test: unit test tầng controller bằng @WebMvcTest (nhanh, không cần container), và integration test bằng @SpringBootTest kết hợp Testcontainers - @ServiceConnection trỏ Spring Boot vào một PostgreSQLContainer thật, còn @DynamicPropertySource dùng cho cấu hình chưa được hỗ trợ sẵn; RestAssured qua webEnvironment RANDOM_PORT gọi API thật để xác nhận toàn bộ luồng từ HTTP tới database hoạt động đúng.",
+          "citations": [
+            "day30-src-1",
+            "day30-src-3",
+            "day30-src-4",
+            "day30-src-5"
+          ]
+        },
+        {
+          "id": "day30-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.boot.test.mock.mockito.MockBean;\nimport org.springframework.test.web.servlet.MockMvc;\n\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n// Unit test tang controller - nhanh, khong can container that.\n@WebMvcTest(OrderController.class)\nclass OrderControllerTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    @MockBean\n    private OrderService orderService;\n\n    @Test\n    void listOrdersReturnsOk() throws Exception {\n        mockMvc.perform(get(\"/api/orders\")).andExpect(status().isOk());\n    }\n\n    interface OrderService {}\n    interface OrderController {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day30-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day30-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import io.restassured.RestAssured;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.test.web.server.LocalServerPort;\nimport org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\nimport static io.restassured.RestAssured.given;\n\n// Test tich hop that: container Postgres that + server HTTP that tren cong ngau nhien.\n@Testcontainers\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass OrderApiIntegrationTest {\n\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\");\n\n    @LocalServerPort\n    private int port;\n\n    @BeforeEach\n    void setUp() {\n        RestAssured.port = port;\n    }\n\n    @Test\n    void listsOrdersFromRealDatabase() {\n        given()\n                .when().get(\"/api/orders\")\n                .then()\n                .statusCode(200);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day30-src-3",
+            "day30-src-4",
+            "day30-src-5"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day30-blk-6",
+          "type": "note",
+          "text": "Cơ chế Testcontainers chi tiết (@Testcontainers, @Container, @ServiceConnection tự động cho từng loại container) đã có trích dẫn đầy đủ ở Day 29 - resource tương ứng (res-be79b4f73d01) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30 theo nguyên tắc không mượn citation chéo. Ở đây áp dụng lại nguyên mẫu đã học vào ví dụ PostgreSQLContainer cụ thể (được trích dẫn qua resource riêng của Day 30).",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-jacoco",
+      "title": "JaCoCo coverage report >= 75%",
+      "blocks": [
+        {
+          "id": "day30-blk-7",
+          "type": "note",
+          "text": "Đo độ phủ test (code coverage) bằng JaCoCo và thiết lập ngưỡng tối thiểu (ví dụ 75%) qua jacoco-maven-plugin không có resource nào trong toàn bộ course-catalog mô tả - đây là khoảng trống kiến thức thật sự. Học viên tự tham khảo tài liệu chính thức của jacoco-maven-plugin (mục tiêu report và check với rule minimum coverage) khi triển khai; nội dung này không được trình bày có trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-openapi",
+      "title": "OpenAPI doc cho toan bo endpoint",
+      "blocks": [
+        {
+          "id": "day30-blk-8",
+          "type": "paragraph",
+          "text": "Áp dụng lại đúng cấu hình springdoc-openapi đã học ở Day 29 - resource này (res-79cbefdda273) nằm trong resourceIds của cả Day 29 và Day 30 nên được trích dẫn hợp lệ ở đây: thêm springdoc-openapi-starter-webmvc-ui, tài liệu tự sinh tại /v3/api-docs và giao diện Swagger UI tại /swagger-ui.html cho toàn bộ endpoint REST của dự án.",
+          "citations": [
+            "day30-src-6",
+            "day30-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-logging",
+      "title": "JSON structured logging + traceId propagation",
+      "blocks": [
+        {
+          "id": "day30-blk-9",
+          "type": "note",
+          "text": "Bật structured logging (logging.structured.format.console=ecs) áp dụng lại đúng cấu hình đã học có trích dẫn ở Day 29 - resource tương ứng (res-93813d9b62f4) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30. Riêng việc lan truyền traceId xuyên suốt nhiều service (distributed tracing) là khoảng trống kiến thức thật sự - không có resource nào trong toàn bộ course-catalog mô tả chủ đề này. Cả hai nội dung được trình bày không trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-actuator",
+      "title": "Actuator + Prometheus + custom HealthIndicator",
+      "blocks": [
+        {
+          "id": "day30-blk-10",
+          "type": "note",
+          "text": "HealthIndicator tuỳ chỉnh và phạm vi expose mặc định của Actuator (chỉ /health, /info) áp dụng lại đúng mẫu đã học có trích dẫn ở Day 29 - resource tương ứng (res-fa57300ac53c) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30. Riêng việc xuất metrics theo định dạng Prometheus (micrometer-registry-prometheus, endpoint /actuator/prometheus) là khoảng trống kiến thức thật sự - không có resource nào trong toàn bộ course-catalog mô tả chủ đề này. Cả hai nội dung được trình bày không trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-docker",
+      "title": "Dockerfile + docker-compose.yml",
+      "blocks": [
+        {
+          "id": "day30-blk-11",
+          "type": "paragraph",
+          "text": "Fat jar truyền thống (một layer JAR duy nhất) khiến mỗi lần build lại Docker image phải build lại toàn bộ layer kể cả khi chỉ code ứng dụng thay đổi (dependency không đổi) - lãng phí thời gian và băng thông. Layered jar tách JAR thành 4 layer mặc định (dependencies, snapshot-dependencies, spring-boot-loader, application), cho phép Docker cache riêng từng layer; lệnh java -Djarmode=layertools -jar app.jar extract trong Dockerfile nhiều giai đoạn (multi-stage) trích các layer này ra để COPY riêng lẻ.",
+          "citations": [
+            "day30-src-8",
+            "day30-src-9",
+            "day30-src-10"
+          ]
+        },
+        {
+          "id": "day30-blk-12",
+          "type": "code",
+          "language": "text",
+          "code": "# Dockerfile - multi-stage build su dung layered jar (Spring Boot Buildpacks/layertools)\nFROM eclipse-temurin:17-jre-alpine AS builder\nWORKDIR /application\nCOPY target/*.jar application.jar\n# Tach jar thanh 4 layer mac dinh: dependencies, spring-boot-loader,\n# snapshot-dependencies, application - de Docker cache rieng tung layer,\n# chi rebuild lai layer \"application\" (code cua chung ta) khi code thay doi.\nRUN java -Djarmode=layertools -jar application.jar extract\n\nFROM eclipse-temurin:17-jre-alpine\nWORKDIR /application\nCOPY --from=builder /application/dependencies/ ./\nCOPY --from=builder /application/spring-boot-loader/ ./\nCOPY --from=builder /application/snapshot-dependencies/ ./\nCOPY --from=builder /application/application/ ./\nENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]\n",
+          "compile": false,
+          "citations": [
+            "day30-src-9",
+            "day30-src-10"
+          ],
+          "partialReason": "Dockerfile, khong phai ma nguon Java bien dich duoc."
+        },
+        {
+          "id": "day30-blk-13",
+          "type": "paragraph",
+          "text": "docker-compose.yml định nghĩa toàn bộ dịch vụ (app, database, Redis) chạy cùng nhau; với spring-boot-docker-compose trên classpath, Spring Boot tự động chạy docker compose up/down khi khởi động/tắt ứng dụng ở chế độ dev, và tự động tạo ConnectionDetails cho các service phổ biến (cùng cơ chế Service Connections như Testcontainers) - image tuỳ chỉnh cần gắn nhãn org.springframework.boot.service-connection để được nhận diện đúng loại dịch vụ.",
+          "citations": [
+            "day30-src-11",
+            "day30-src-12",
+            "day30-src-13"
+          ]
+        },
+        {
+          "id": "day30-blk-14",
+          "type": "code",
+          "language": "text",
+          "code": "# docker-compose.yml\nservices:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    depends_on:\n      - db\n      - redis\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_DB: shop\n      POSTGRES_PASSWORD: secret\n    ports:\n      - \"5432:5432\"\n\n  redis:\n    image: redis:7-alpine\n    ports:\n      - \"6379:6379\"\n\n# Voi spring-boot-docker-compose tren classpath, Spring Boot tu dong chay\n# \"docker compose up\" khi khoi dong ung dung o che do dev, va tu dong tao\n# ConnectionDetails cho db/redis qua co che Service Connections (nhu Testcontainers).\n",
+          "compile": false,
+          "citations": [
+            "day30-src-11",
+            "day30-src-12"
+          ],
+          "partialReason": "docker-compose.yml, khong phai ma nguon Java bien dich duoc."
+        }
+      ]
+    },
+    {
+      "id": "day30-sec-ci",
+      "title": "GitHub Actions CI: build -> test -> docker build",
+      "blocks": [
+        {
+          "id": "day30-blk-15",
+          "type": "note",
+          "text": "Thiết lập pipeline GitHub Actions gồm 3 bước tuần tự (build → test → docker build) không có resource nào trong toàn bộ course-catalog mô tả - đây là khoảng trống kiến thức thật sự. Học viên tự tham khảo tài liệu chính thức của GitHub Actions (actions/setup-java, mvn verify, docker/build-push-action) khi triển khai; nội dung này không được trình bày có trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Chỉ viết unit test (@WebMvcTest) mà bỏ qua integration test với Testcontainers - không phát hiện được lỗi ở tầng persistence (query SQL sai, ràng buộc database).",
+    "Copy toàn bộ project vào Docker image thay vì dùng layered jar/multi-stage build - image nặng và build chậm không cần thiết mỗi khi code thay đổi.",
+    "Đặt bước docker build TRƯỚC bước test trong pipeline CI - lãng phí thời gian đóng gói image từ code chưa được kiểm chứng, và có thể publish image lỗi."
+  ],
+  "practices": [
+    {
+      "id": "day30-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao layered jar giúp Docker build nhanh hơn khi chỉ code ứng dụng thay đổi?",
+      "choices": [
+        {
+          "id": "day30-prac-1-a",
+          "text": "Vì 4 layer (dependencies/snapshot-dependencies/loader/application) được cache riêng - Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar"
+        },
+        {
+          "id": "day30-prac-1-b",
+          "text": "Vì layered jar nhỏ hơn fat jar về dung lượng đĩa"
+        },
+        {
+          "id": "day30-prac-1-c",
+          "text": "Vì layered jar không cần JDK để chạy"
+        },
+        {
+          "id": "day30-prac-1-d",
+          "text": "Vì Docker tự động nén layered jar tốt hơn fat jar"
+        }
+      ],
+      "correctChoiceIds": [
+        "day30-prac-1-a"
+      ],
+      "hint": "Nghĩ về việc Docker cache layer nào không đổi giữa các lần build.",
+      "solution": "day30-prac-1-a",
+      "explanation": "Layered jar tách jar thành 4 layer riêng biệt; layer dependencies hiếm khi đổi nên Docker cache lại, chỉ layer application (code của chúng ta) cần rebuild khi code thay đổi - nhanh hơn nhiều so với việc phải build lại toàn bộ fat jar một layer duy nhất.",
+      "rubric": "Liên hệ đúng cơ chế cache theo layer của Docker với cấu trúc 4 layer mặc định.",
+      "sourceUsage": [
+        "day30-src-9"
+      ]
+    },
+    {
+      "id": "day30-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một service trong docker-compose.yml chạy Redis cho ứng dụng, expose cổng mặc định.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng image chính thức redis, map cổng 6379.",
+      "solution": "redis:\n  image: redis:7-alpine\n  ports:\n    - \"6379:6379\"",
+      "explanation": "Áp dụng lại mẫu docker-compose.yml đã học trong bài.",
+      "rubric": "Đánh giá đúng: service dùng image redis, map cổng 6379:6379.",
+      "sourceUsage": [
+        "day30-src-11"
+      ]
+    },
+    {
+      "id": "day30-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao test tích hợp dùng PostgreSQLContainer (Testcontainers) đáng tin cậy hơn dùng H2 in-memory để kiểm tra tầng persistence?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về sự khác biệt hành vi SQL giữa H2 và PostgreSQL thật.",
+      "solution": "H2 mô phỏng hành vi của nhiều loại database khác nhau nhưng không hoàn toàn giống PostgreSQL thật (khác biệt về kiểu dữ liệu, hàm SQL, ràng buộc) - test có thể pass trên H2 nhưng lỗi khi chạy trên PostgreSQL thật ở production. PostgreSQLContainer chạy đúng phiên bản PostgreSQL thật trong Docker, nên test tích hợp phản ánh chính xác hành vi production hơn.",
+      "explanation": "Liên hệ đúng rủi ro khác biệt hành vi SQL giữa database giả lập và database thật.",
+      "rubric": "Đánh giá học viên nêu đúng: PostgreSQLContainer chạy database thật, tránh sai khác hành vi SQL so với H2 giả lập.",
+      "sourceUsage": [
+        "day30-src-3"
+      ]
+    },
+    {
+      "id": "day30-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Theo đề bài Lab 10, thứ tự đúng của pipeline GitHub Actions CI là gì?",
+      "choices": [
+        {
+          "id": "day30-prac-4-a",
+          "text": "build -> test -> docker build"
+        },
+        {
+          "id": "day30-prac-4-b",
+          "text": "docker build -> build -> test"
+        },
+        {
+          "id": "day30-prac-4-c",
+          "text": "test -> docker build -> build"
+        },
+        {
+          "id": "day30-prac-4-d",
+          "text": "Thứ tự không quan trọng, có thể chạy song song hoàn toàn"
+        }
+      ],
+      "correctChoiceIds": [
+        "day30-prac-4-a"
+      ],
+      "hint": "Nhớ lại đúng thứ tự được ghi trong đề bài Lab 10.",
+      "solution": "day30-prac-4-a",
+      "explanation": "Pipeline chạy tuần tự: build (biên dịch) trước, rồi test (chỉ test code đã build thành công), cuối cùng mới docker build (chỉ đóng gói image khi test đã pass) - tránh lãng phí thời gian đóng gói image từ code chưa được kiểm chứng.",
+      "rubric": "Liên hệ đúng thứ tự build -> test -> docker build như đề bài yêu cầu.",
+      "sourceUsage": []
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 52,
+      "text": "- Lab 10: Production Readiness\n  - Unit test + Integration test (Testcontainers) for all service\n  - JaCoCo coverage report ≥ 75%\n  - OpenAPI doc for all endpoint\n  - JSON structured logging + traceId propagation\n  - Actuator + Prometheus metrics + custom HealthIndicator\n  - Dockerfile + docker-compose.yml (app + DB + Redis)\n  - GitHub Actions CI: build → test → docker build"
+    }
+  ],
+  "enhancedExercises": [
+    "Thêm health group 'readiness' vào docker-compose healthcheck để container app chỉ được coi là sẵn sàng khi database/Redis đã kết nối được.",
+    "Đo thử JaCoCo coverage hiện tại của dự án và xác định những class nào cần thêm test để đạt ngưỡng 75%."
+  ],
+  "references": [
+    {
+      "id": "day30-ref-1",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day30-src-2"
+    },
+    {
+      "id": "day30-ref-2",
+      "type": "external",
+      "resourceId": "res-84fc38d27c0a",
+      "citationId": "day30-src-5"
+    },
+    {
+      "id": "day30-ref-3",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day30-src-7"
+    },
+    {
+      "id": "day30-ref-4",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day30-src-9"
+    },
+    {
+      "id": "day30-ref-5",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day30-src-12"
+    },
+    {
+      "id": "day30-ref-6",
+      "type": "internal",
+      "description": "Testcontainers chi tiết, structured logging, và Actuator/HealthIndicator áp dụng lại nguyên mẫu đã có trích dẫn đầy đủ ở Day 29."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day30-src-1",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 4, vi du EmployeeRestControllerIntegrationTest",
+      "topic": "@SpringBootTest(MOCK) cho test tich hop tang service"
+    },
+    {
+      "id": "day30-src-2",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 8, Unit Testing With @WebMvcTest",
+      "topic": "@WebMvcTest cho unit test tang controller"
+    },
+    {
+      "id": "day30-src-3",
+      "resourceId": "res-84fc38d27c0a",
+      "locator": "phan Write test for API endpoint, vi du PostgreSQLContainer",
+      "topic": "PostgreSQLContainer static field cho test tich hop that"
+    },
+    {
+      "id": "day30-src-4",
+      "resourceId": "res-84fc38d27c0a",
+      "locator": "phan Write test for API endpoint, method configureProperties",
+      "topic": "@DynamicPropertySource tro Spring context vao container"
+    },
+    {
+      "id": "day30-src-5",
+      "resourceId": "res-84fc38d27c0a",
+      "locator": "phan Write test for API endpoint, method shouldGetAllCustomers",
+      "topic": "RestAssured + RANDOM_PORT kiem tra endpoint that"
+    },
+    {
+      "id": "day30-src-6",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, dependency Maven",
+      "topic": "springdoc-openapi-starter-webmvc-ui cho tai lieu OpenAPI"
+    },
+    {
+      "id": "day30-src-7",
+      "resourceId": "res-79cbefdda273",
+      "locator": "phan Getting Started, duong dan mac dinh",
+      "topic": "/v3/api-docs va /swagger-ui.html cho toan bo endpoint"
+    },
+    {
+      "id": "day30-src-8",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 2, Traditional Docker Builds",
+      "topic": "Han che cua fat jar mot layer duy nhat"
+    },
+    {
+      "id": "day30-src-9",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 4, Layered Jars + 4 layer mac dinh",
+      "topic": "4 layer mac dinh: dependencies/snapshot-dependencies/resources/application"
+    },
+    {
+      "id": "day30-src-10",
+      "resourceId": "res-e3236d24d45f",
+      "locator": "muc 4.3, Creating the Docker Image",
+      "topic": "java -Djarmode=layertools -jar app.jar extract trong Dockerfile multi-stage"
+    },
+    {
+      "id": "day30-src-11",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 2, gioi thieu Docker Compose Support",
+      "topic": "spring-boot-docker-compose tu dong chay docker compose up/down"
+    },
+    {
+      "id": "day30-src-12",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 6.1, Service Connections",
+      "topic": "Tu dong tao ConnectionDetails cho service pho bien trong compose"
+    },
+    {
+      "id": "day30-src-13",
+      "resourceId": "res-8d5e61cc0a53",
+      "locator": "muc 6.2, Custom Images",
+      "topic": "Nhan org.springframework.boot.service-connection cho anh tuy chinh"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "JaCoCo coverage report (đo độ phủ test, ngưỡng tối thiểu 75%): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn.",
+      "traceId propagation (lan truyền traceId xuyên suốt nhiều service, distributed tracing): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn.",
+      "Prometheus metrics (micrometer-registry-prometheus, endpoint /actuator/prometheus): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn.",
+      "GitHub Actions CI (build -> test -> docker build): không có resource nào trong toàn bộ course-catalog mô tả chủ đề này - khoảng trống kiến thức thật sự, trình bày dưới dạng ghi chú không trích dẫn.",
+      "Structured logging cụ thể (logging.structured.format.console): resource tương ứng (res-93813d9b62f4) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30 theo nguyên tắc không mượn citation chéo giữa các bài - áp dụng lại như một ghi chú không trích dẫn, tham chiếu mẫu đã học có trích dẫn đầy đủ tại Day 29.",
+      "Actuator/HealthIndicator cụ thể: resource tương ứng (res-fa57300ac53c) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30 - áp dụng lại như một ghi chú không trích dẫn, tham chiếu mẫu đã học có trích dẫn đầy đủ tại Day 29.",
+      "Testcontainers cơ chế chi tiết (@Testcontainers, @Container, @ServiceConnection cho từng loại container): resource tương ứng (res-be79b4f73d01) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 30 - áp dụng lại như một ghi chú không trích dẫn; ví dụ code cụ thể với PostgreSQLContainer vẫn được trích dẫn qua resource riêng của Day 30 (res-84fc38d27c0a)."
+    ]
+  }
+}

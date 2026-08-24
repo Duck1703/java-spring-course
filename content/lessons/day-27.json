@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "id": "day-27",
+  "catalogRef": {
+    "unitId": "unit-09",
+    "group": "spring",
+    "title": "- Assignment 9: Product & Order Features",
+    "objectives": [
+      "LO9"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      47
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 47,
+        "text": "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+      }
+    ],
+    "resourceIds": [
+      "res-e95ba2d69401",
+      "res-1c6109c5ec54",
+      "res-033c4bfa05f5",
+      "res-97fce5fda99a",
+      "res-74d398e3d23c",
+      "res-b8b29a249f37",
+      "res-4b45b7c76586"
+    ]
+  },
+  "unitId": "unit-09",
+  "group": "spring",
+  "kind": "project",
+  "title": "- Assignment 9: Product & Order Features",
+  "summary": "Assignment 9: áp dụng cache Redis, @Async, @Scheduled, upload ảnh sản phẩm, gọi payment gateway (mock) qua WebClient với Circuit Breaker, và xuất CSV vào tính năng Product & Order của dự án e-commerce.",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO9"
+  ],
+  "prerequisites": [
+    "Đã học Spring Cache/Redis, @Async, @Scheduled (Day 25) và upload file, WebClient, resilience pattern, CSV (Day 26)."
+  ],
+  "outcomes": [
+    "Áp dụng đúng @Cacheable/@CacheEvict cho dữ liệu danh sách sản phẩm/danh mục.",
+    "Triển khai được xử lý bất đồng bộ (@Async) và tác vụ định kỳ (@Scheduled) trong luồng nghiệp vụ đơn hàng.",
+    "Gọi được dịch vụ bên ngoài có khả năng chịu lỗi bằng WebClient + Circuit Breaker."
+  ],
+  "sections": [
+    {
+      "id": "day27-sec-brief",
+      "title": "De bai Assignment 9",
+      "blocks": [
+        {
+          "id": "day27-blk-1",
+          "type": "deliverable",
+          "text": "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)",
+          "citations": []
+        },
+        {
+          "id": "day27-blk-2",
+          "type": "note",
+          "text": "Assignment tổng hợp mọi kỹ thuật đã học ở Day 25 (cache/Redis, @Async, @Scheduled) và Day 26 (upload file, WebClient, resilience pattern, CSV) - áp dụng trực tiếp vào tính năng Product & Order của dự án e-commerce đang xây dựng xuyên suốt khoá học.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-cache",
+      "title": "Cache danh sach san pham & cay danh muc",
+      "blocks": [
+        {
+          "id": "day27-blk-3",
+          "type": "paragraph",
+          "text": "Danh sách sản phẩm và cây danh mục là dữ liệu đọc nhiều, ghi ít - ứng viên lý tưởng cho @Cacheable. Bất kỳ thao tác tạo/sửa/xoá sản phẩm hoặc danh mục nào cũng cần làm mới toàn bộ cache liên quan bằng @CacheEvict(allEntries = true), vì việc tính toán chính xác key nào cần xoá riêng lẻ (theo trang, theo bộ lọc) phức tạp hơn nhiều so với lợi ích mang lại.",
+          "citations": [
+            "day27-src-1",
+            "day27-src-2",
+            "day27-src-3"
+          ]
+        },
+        {
+          "id": "day27-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\nimport java.util.List;\n\n@Service\nclass ProductCatalogService {\n\n    // Cache theo tung trang danh sach san pham (key gom ca tham so phan trang).\n    @Cacheable(value = \"products\", key = \"#page + '-' + #size\")\n    public List<ProductDTO> listProducts(int page, int size) {\n        return queryProducts(page, size);\n    }\n\n    @Cacheable(value = \"categoryTree\")\n    public List<CategoryDTO> categoryTree() {\n        return buildCategoryTree();\n    }\n\n    // Bat ky thay doi nao ve san pham/danh muc deu lam cache \"products\" cu -\n    // xoa toan bo thay vi tinh toan xoa tung key rieng le.\n    @CacheEvict(value = \"products\", allEntries = true)\n    public void onProductChanged() {\n    }\n\n    @CacheEvict(value = \"categoryTree\", allEntries = true)\n    public void onCategoryChanged() {\n    }\n\n    private List<ProductDTO> queryProducts(int page, int size) { return List.of(); }\n    private List<CategoryDTO> buildCategoryTree() { return List.of(); }\n\n    record ProductDTO(Long id, String name) {}\n    record CategoryDTO(Long id, String name) {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day27-src-1",
+            "day27-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-async",
+      "title": "Async: gui email xac nhan va cap nhat ton kho",
+      "blocks": [
+        {
+          "id": "day27-blk-5",
+          "type": "paragraph",
+          "text": "Gửi email xác nhận đơn hàng không cần chặn luồng xử lý request tạo đơn hàng - đánh dấu @Async để chạy trên luồng khác. Khi cần biết kết quả của một tác vụ bất đồng bộ (ví dụ cập nhật tồn kho có thành công hay không), method @Async phải trả về CompletableFuture thay vì kiểu dữ liệu thông thường.",
+          "citations": [
+            "day27-src-4",
+            "day27-src-5"
+          ]
+        },
+        {
+          "id": "day27-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.concurrent.CompletableFuture;\nimport org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass OrderNotificationService {\n\n    // Khong chan luong xu ly request tao don hang - gui email chay tren luong khac.\n    @Async\n    public void sendConfirmationEmail(Long orderId) {\n        emailClient.send(orderId);\n    }\n\n    // Method @Async tra ve gia tri phai dung CompletableFuture (khong duoc tra ve kieu thuong).\n    @Async\n    public CompletableFuture<Boolean> updateInventory(Long orderId) {\n        boolean updated = inventoryClient.reserve(orderId);\n        return CompletableFuture.completedFuture(updated);\n    }\n\n    private final EmailClient emailClient = new EmailClient();\n    private final InventoryClient inventoryClient = new InventoryClient();\n\n    static class EmailClient { void send(Long orderId) {} }\n    static class InventoryClient { boolean reserve(Long orderId) { return true; } }\n}\n",
+          "compile": false,
+          "citations": [
+            "day27-src-4",
+            "day27-src-5"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-scheduled",
+      "title": "Scheduled job: huy don hang cho qua 30 phut",
+      "blocks": [
+        {
+          "id": "day27-blk-7",
+          "type": "paragraph",
+          "text": "Job định kỳ quét các đơn hàng ở trạng thái PENDING quá 30 phút và tự động huỷ; dùng fixedDelay (tính từ lúc lần chạy trước KẾT THÚC) vì job này chỉ cần chạy định kỳ đều đặn, không bắt buộc đúng giờ tuyệt đối và không nên chồng lấp giữa các lần chạy.",
+          "citations": [
+            "day27-src-6",
+            "day27-src-7"
+          ]
+        },
+        {
+          "id": "day27-blk-8",
+          "type": "code",
+          "language": "java",
+          "code": "import java.time.Instant;\nimport java.time.temporal.ChronoUnit;\nimport java.util.List;\nimport org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass PendingOrderCleanupJob {\n\n    // Chay lai sau moi 5 phut TINH TU LUC LAN CHAY TRUOC KET THUC -\n    // phu hop vi job nay khong can chay dung gio tuyet doi, chi can dinh ky.\n    @Scheduled(fixedDelay = 5 * 60 * 1000)\n    public void cancelStalePendingOrders() {\n        Instant threshold = Instant.now().minus(30, ChronoUnit.MINUTES);\n        List<Long> staleOrderIds = findPendingOrdersOlderThan(threshold);\n        staleOrderIds.forEach(this::cancelOrder);\n    }\n\n    private List<Long> findPendingOrdersOlderThan(Instant threshold) { return List.of(); }\n    private void cancelOrder(Long orderId) { }\n}\n",
+          "compile": false,
+          "citations": [
+            "day27-src-6",
+            "day27-src-7"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-upload",
+      "title": "Upload anh san pham + thumbnail",
+      "blocks": [
+        {
+          "id": "day27-blk-9",
+          "type": "paragraph",
+          "text": "Ảnh sản phẩm được nhận qua @RequestParam MultipartFile, áp dụng lại đúng mẫu kiểm tra và lưu file an toàn đã học ở Day 26 (chuẩn hoá đường dẫn, kiểm tra nằm trong thư mục gốc).",
+          "citations": [
+            "day27-src-8"
+          ]
+        },
+        {
+          "id": "day27-blk-10",
+          "type": "note",
+          "text": "Tạo thumbnail (ảnh thu nhỏ) từ ảnh gốc sau khi upload là một yêu cầu thực tế của đề bài, nhưng không có resource nào trong bộ nguồn của khoá học (không riêng Day 27, toàn bộ course-catalog) mô tả kỹ thuật xử lý ảnh trong Java (ví dụ ImageIO/BufferedImage hoặc thư viện Thumbnailator). Đây là khoảng trống kiến thức thật sự - trình bày như một ghi chú không trích dẫn, học viên tự tham khảo tài liệu thư viện xử lý ảnh khi triển khai.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-payment",
+      "title": "Goi payment gateway (mock) qua WebClient + Circuit Breaker",
+      "blocks": [
+        {
+          "id": "day27-blk-11",
+          "type": "paragraph",
+          "text": "Gọi cổng thanh toán (mock) là một lời gọi HTTP ra ngoài có thể thất bại hoặc chậm bất thường - dùng WebClient để gọi và bọc trong Circuit Breaker (Resilience4j) với fallbackMethod để xử lý khi cổng thanh toán không phản hồi, thay vì để lỗi lan ra toàn bộ luồng tạo đơn hàng.",
+          "citations": [
+            "day27-src-9",
+            "day27-src-10"
+          ]
+        },
+        {
+          "id": "day27-blk-12",
+          "type": "code",
+          "language": "java",
+          "code": "import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.reactive.function.client.WebClient;\n\n@Service\nclass PaymentGatewayClient {\n\n    private final WebClient webClient;\n\n    PaymentGatewayClient(WebClient.Builder builder) {\n        this.webClient = builder.baseUrl(\"https://payments.example.com\").build();\n    }\n\n    @CircuitBreaker(name = \"paymentGateway\", fallbackMethod = \"paymentUnavailable\")\n    public PaymentResult charge(Long orderId, java.math.BigDecimal amount) {\n        return webClient.post()\n                .uri(\"/charge\")\n                .bodyValue(new ChargeRequest(orderId, amount))\n                .retrieve()\n                .bodyToMono(PaymentResult.class)\n                .block();\n    }\n\n    // Fallback PHAI cung chu ky tra ve + them tham so Throwable o cuoi.\n    private PaymentResult paymentUnavailable(Long orderId, java.math.BigDecimal amount, Throwable t) {\n        return new PaymentResult(orderId, \"PENDING_MANUAL_REVIEW\");\n    }\n\n    record ChargeRequest(Long orderId, java.math.BigDecimal amount) {}\n    record PaymentResult(Long orderId, String status) {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day27-src-9",
+            "day27-src-10"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day27-sec-export",
+      "title": "Xuat don hang ra CSV (tinh nang admin)",
+      "blocks": [
+        {
+          "id": "day27-blk-13",
+          "type": "note",
+          "text": "Xuất danh sách đơn hàng ra CSV cho tính năng quản trị áp dụng lại đúng mẫu ghi CSV + escape ký tự đặc biệt đã học có trích dẫn ở Day 26 (resource về CSV thuộc resourceIds của Day 26, không lặp lại trong resourceIds của Day 27 theo nguyên tắc không mượn citation chéo giữa các bài) - không lặp lại code mẫu ở đây.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Đánh @CachePut riêng cho từng sản phẩm thay đổi trong khi cache danh sách được key theo trang/bộ lọc - dữ liệu cache cũ vẫn còn hiển thị sai.",
+    "Method @Async khai báo trả về kiểu thường (không phải CompletableFuture) - Spring bỏ qua giá trị trả về, gây khó debug khi cần biết kết quả tác vụ bất đồng bộ.",
+    "Không có fallbackMethod cho @CircuitBreaker - khi payment gateway lỗi, exception lan thẳng ra và làm hỏng toàn bộ request tạo đơn hàng."
+  ],
+  "practices": [
+    {
+      "id": "day27-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao dùng @CacheEvict(allEntries = true) trên toàn bộ cache 'products' khi tạo/sửa/xoá sản phẩm, thay vì @CachePut cho từng sản phẩm thay đổi?",
+      "choices": [
+        {
+          "id": "day27-prac-1-a",
+          "text": "Vì cache danh sách được key theo trang/bộ lọc - việc tính chính xác những key nào bị ảnh hưởng bởi một thay đổi phức tạp hơn nhiều so với việc xoá toàn bộ và để lần đọc kế tiếp nạp lại"
+        },
+        {
+          "id": "day27-prac-1-b",
+          "text": "Vì @CachePut không tồn tại trong Spring Cache"
+        },
+        {
+          "id": "day27-prac-1-c",
+          "text": "Vì allEntries = true chạy nhanh hơn nên luôn nên dùng thay cho mọi annotation khác"
+        },
+        {
+          "id": "day27-prac-1-d",
+          "text": "Vì Redis không hỗ trợ @CachePut"
+        }
+      ],
+      "correctChoiceIds": [
+        "day27-prac-1-a"
+      ],
+      "hint": "Nghĩ về việc cache 'products' được key theo trang/bộ lọc, không theo từng sản phẩm riêng lẻ.",
+      "solution": "day27-prac-1-a",
+      "explanation": "Cache danh sách sản phẩm được key theo tham số phân trang/bộ lọc, không theo từng ID sản phẩm - một thay đổi (tạo/sửa/xoá) có thể ảnh hưởng tới nhiều key khác nhau, nên xoá toàn bộ cache đơn giản và an toàn hơn nhiều so với cố tính chính xác key nào cần cập nhật.",
+      "rubric": "Liên hệ đúng lý do: cache theo trang/bộ lọc khiến việc evict chọn lọc phức tạp không đáng.",
+      "sourceUsage": [
+        "day27-src-2"
+      ]
+    },
+    {
+      "id": "day27-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết một method @Async trả về CompletableFuture<Void> dùng để gửi email xác nhận đơn hàng.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Method @Async trả về giá trị (kể cả Void) phải dùng CompletableFuture.",
+      "solution": "@Async\npublic CompletableFuture<Void> sendConfirmationEmailAsync(Long orderId) {\n    emailClient.send(orderId);\n    return CompletableFuture.completedFuture(null);\n}",
+      "explanation": "Áp dụng lại mẫu @Async trả về CompletableFuture đã học trong bài.",
+      "rubric": "Đánh giá đúng: có @Async, chữ ký trả về CompletableFuture<Void>, gọi completedFuture(null) ở cuối.",
+      "sourceUsage": [
+        "day27-src-5"
+      ]
+    },
+    {
+      "id": "day27-prac-3",
+      "type": "concept",
+      "interaction": "self-check",
+      "prompt": "Vì sao job huỷ đơn hàng chờ quá 30 phút nên dùng fixedDelay thay vì fixedRate?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nghĩ về việc job này có cần chạy đúng giờ tuyệt đối, và điều gì xảy ra nếu một lần chạy mất nhiều thời gian hơn chu kỳ.",
+      "solution": "fixedDelay tính khoảng cách kể từ lúc lần chạy TRƯỚC kết thúc, nên đảm bảo không có hai lần chạy chồng lấp nhau - phù hợp với job quét/dọn dẹp định kỳ không cần đúng giờ tuyệt đối. fixedRate có thể khởi động lần chạy mới trong khi lần trước chưa xong nếu xử lý mất nhiều thời gian hơn chu kỳ, gây chồng lấp không mong muốn.",
+      "explanation": "Liên hệ đúng đặc điểm không chồng lấp của fixedDelay với bản chất job dọn dẹp định kỳ.",
+      "rubric": "Đánh giá học viên nêu đúng: fixedDelay tránh chồng lấp giữa các lần chạy, phù hợp job dọn dẹp không cần đúng giờ tuyệt đối.",
+      "sourceUsage": [
+        "day27-src-7"
+      ]
+    },
+    {
+      "id": "day27-prac-4",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "fallbackMethod trong @CircuitBreaker dùng để làm gì?",
+      "choices": [
+        {
+          "id": "day27-prac-4-a",
+          "text": "Cung cấp hành vi thay thế khi lời gọi tới payment gateway thất bại hoặc circuit đang ở trạng thái Open, thay vì để lỗi lan ra toàn bộ luồng tạo đơn hàng"
+        },
+        {
+          "id": "day27-prac-4-b",
+          "text": "Tự động thử lại lời gọi vô hạn lần cho tới khi thành công"
+        },
+        {
+          "id": "day27-prac-4-c",
+          "text": "Ghi log lỗi rồi vẫn ném exception như bình thường"
+        },
+        {
+          "id": "day27-prac-4-d",
+          "text": "Tăng timeout của WebClient lên gấp đôi"
+        }
+      ],
+      "correctChoiceIds": [
+        "day27-prac-4-a"
+      ],
+      "hint": "Nhớ lại vai trò của Circuit Breaker: ngăn lỗi từ hệ thống ngoài lan rộng.",
+      "solution": "day27-prac-4-a",
+      "explanation": "fallbackMethod cung cấp một đường xử lý thay thế (ví dụ đánh dấu đơn hàng cần review thủ công) khi lời gọi payment gateway thất bại hoặc circuit đang mở, giúp luồng tạo đơn hàng không bị crash toàn bộ vì một dịch vụ bên ngoài gặp sự cố.",
+      "rubric": "Liên hệ đúng vai trò cách ly lỗi của fallbackMethod.",
+      "sourceUsage": [
+        "day27-src-10"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 47,
+      "text": "- Assignment 9: Product & Order Features\n  - Cache product list, category tree. Evict on create/update/delete.\n  - @Async: order confirmation email, inventory update\n  - @Scheduled: cancel pending orders > 30 min\n  - Product image upload + thumbnail\n  - WebClient call payment gateway (mock) with circuit breaker\n  - Export orders CSV (admin)"
+    }
+  ],
+  "enhancedExercises": [
+    "Thêm health check định kỳ cho payment gateway bằng @Scheduled, cập nhật trạng thái circuit breaker vào bảng giám sát nội bộ.",
+    "Viết test cho fallbackMethod bằng cách giả lập payment gateway trả lỗi (WireMock hoặc MockWebServer)."
+  ],
+  "references": [
+    {
+      "id": "day27-ref-1",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day27-src-1"
+    },
+    {
+      "id": "day27-ref-2",
+      "type": "external",
+      "resourceId": "res-1c6109c5ec54",
+      "citationId": "day27-src-3"
+    },
+    {
+      "id": "day27-ref-3",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day27-src-5"
+    },
+    {
+      "id": "day27-ref-4",
+      "type": "external",
+      "resourceId": "res-97fce5fda99a",
+      "citationId": "day27-src-7"
+    },
+    {
+      "id": "day27-ref-5",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day27-src-8"
+    },
+    {
+      "id": "day27-ref-6",
+      "type": "external",
+      "resourceId": "res-b8b29a249f37",
+      "citationId": "day27-src-9"
+    },
+    {
+      "id": "day27-ref-7",
+      "type": "external",
+      "resourceId": "res-4b45b7c76586",
+      "citationId": "day27-src-10"
+    },
+    {
+      "id": "day27-ref-8",
+      "type": "internal",
+      "description": "Kỹ thuật upload/CSV áp dụng lại nguyên mẫu đã học có trích dẫn ở Day 26."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day27-src-1",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.1 va 4.3, @Cacheable va @CachePut",
+      "topic": "Ap dung @Cacheable cho truy van danh sach san pham"
+    },
+    {
+      "id": "day27-src-2",
+      "resourceId": "res-e95ba2d69401",
+      "locator": "muc 4.2, @CacheEvict",
+      "topic": "@CacheEvict(allEntries=true) khi tao/sua/xoa san pham hoac danh muc"
+    },
+    {
+      "id": "day27-src-3",
+      "resourceId": "res-1c6109c5ec54",
+      "locator": "muc 3, vi du @Cacheable(\"addresses\")",
+      "topic": "Cache backend Redis cho danh sach san pham/cay danh muc"
+    },
+    {
+      "id": "day27-src-4",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 2-3, vi du @EnableAsync + method annotation",
+      "topic": "@Async cho gui email xac nhan don hang"
+    },
+    {
+      "id": "day27-src-5",
+      "resourceId": "res-033c4bfa05f5",
+      "locator": "muc 3, vi du asynchronousMethodWithReturnType",
+      "topic": "Method @Async tra ve CompletableFuture cho cap nhat ton kho"
+    },
+    {
+      "id": "day27-src-6",
+      "resourceId": "res-97fce5fda99a",
+      "locator": "muc 2, @EnableScheduling",
+      "topic": "@EnableScheduling bat scheduled job"
+    },
+    {
+      "id": "day27-src-7",
+      "resourceId": "res-97fce5fda99a",
+      "locator": "muc 3-5, fixedDelay/fixedRate va so sanh",
+      "topic": "fixedDelay cho job huy don hang cho qua 30 phut"
+    },
+    {
+      "id": "day27-src-8",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 3, vi du submit(@RequestParam(\"file\") MultipartFile file...)",
+      "topic": "Upload anh san pham qua MultipartFile"
+    },
+    {
+      "id": "day27-src-9",
+      "resourceId": "res-b8b29a249f37",
+      "locator": "muc 4.3-4.7, chuoi method/uri/body/header/retrieve",
+      "topic": "WebClient goi payment gateway mock"
+    },
+    {
+      "id": "day27-src-10",
+      "resourceId": "res-4b45b7c76586",
+      "locator": "muc 2, cau hinh circuitbreaker + fallback",
+      "topic": "@CircuitBreaker fallbackMethod cho payment gateway call"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Tạo thumbnail từ ảnh sản phẩm sau khi upload: đây là khoảng trống kiến thức thật sự - không có resource nào trong toàn bộ course-catalog (không riêng Day 27) mô tả xử lý ảnh trong Java (ImageIO/BufferedImage hoặc thư viện như Thumbnailator). Trình bày dưới dạng ghi chú không trích dẫn.",
+      "Xuất đơn hàng ra CSV: resource về CSV (res-ea68bcb99823) thuộc resourceIds của Day 26, không lặp lại trong resourceIds của Day 27 theo nguyên tắc không mượn citation chéo giữa các bài - trình bày dưới dạng ghi chú không trích dẫn, tham chiếu lại mẫu đã học ở Day 26 (đã có trích dẫn đầy đủ tại đó)."
+    ]
+  }
+}

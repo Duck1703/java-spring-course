@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 1,
+  "id": "day-26",
+  "catalogRef": {
+    "unitId": "unit-09",
+    "group": "spring",
+    "title": "File Upload/Download & External API",
+    "objectives": [
+      "LO9"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      45,
+      46
+    ],
+    "syllabusAssignments": [],
+    "resourceIds": [
+      "res-74d398e3d23c",
+      "res-6543ba492a80",
+      "res-b8b29a249f37",
+      "res-f6c8ab355f09",
+      "res-ea68bcb99823"
+    ]
+  },
+  "unitId": "unit-09",
+  "group": "spring",
+  "kind": "theory",
+  "title": "File Upload/Download & External API",
+  "summary": "Upload/download file với MultipartFile (kèm phòng chống path traversal), gọi API bên ngoài bằng WebClient, khái niệm Retry/Circuit Breaker để chịu lỗi, và xuất dữ liệu CSV - các kỹ thuật sẽ áp dụng trực tiếp vào Assignment 9 (Day 27).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO9"
+  ],
+  "prerequisites": [
+    "Đã học Spring Cache/Redis ở Day 25 - bài này tiếp tục chủ đề tích hợp bên ngoài của Unit 9."
+  ],
+  "outcomes": [
+    "Xây dựng được endpoint upload/download file an toàn (chống path traversal).",
+    "Gọi được API bên ngoài bằng WebClient và giải thích khi nào dùng Retry so với Circuit Breaker.",
+    "Xuất được dữ liệu ra CSV với escaping đúng chuẩn."
+  ],
+  "sections": [
+    {
+      "id": "day26-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day26-blk-1",
+          "type": "note",
+          "text": "Buổi Guides/Review - lịch không ghi assignment riêng cho ngày này. Nội dung tập trung vào bốn kỹ thuật sẽ được áp dụng trực tiếp (có trích dẫn đầy đủ) vào Assignment 9 ở Day 27: upload/download file, gọi API bên ngoài bằng WebClient kèm khả năng chịu lỗi (Retry/Circuit Breaker), và xuất dữ liệu ra CSV.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day26-sec-upload",
+      "title": "Upload file voi MultipartFile",
+      "blocks": [
+        {
+          "id": "day26-blk-2",
+          "type": "paragraph",
+          "text": "Spring MVC nhận file tải lên qua tham số @RequestParam kiểu MultipartFile (đại diện cho một phần dữ liệu multipart/form-data); để nhận nhiều file cùng lúc, khai báo tham số kiểu mảng MultipartFile[] ứng với nhiều input file cùng name trong form. Spring Boot cấu hình sẵn multipart resolver, chỉ cần chỉnh giới hạn dung lượng qua spring.servlet.multipart.max-file-size và spring.servlet.multipart.max-request-size khi cần.",
+          "citations": [
+            "day26-src-1",
+            "day26-src-2",
+            "day26-src-3",
+            "day26-src-6"
+          ]
+        },
+        {
+          "id": "day26-blk-3",
+          "type": "warning",
+          "text": "Không bao giờ dùng trực tiếp originalFilename từ client để ghép đường dẫn lưu file - tên file có thể chứa \"../\" để ghi đè file ngoài ý muốn (path traversal). Phải chuẩn hoá (normalize) đường dẫn đích rồi kiểm tra nó thực sự nằm bên trong thư mục gốc được phép trước khi ghi.",
+          "citations": [
+            "day26-src-5"
+          ]
+        },
+        {
+          "id": "day26-blk-4",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.multipart.MultipartFile;\n\n@Service\nclass FileSystemStorageService {\n\n    private final Path rootLocation;\n\n    FileSystemStorageService(Path rootLocation) {\n        this.rootLocation = rootLocation;\n    }\n\n    public void store(MultipartFile file) {\n        try {\n            if (file.isEmpty()) {\n                throw new StorageException(\"Khong the luu file rong\");\n            }\n            // Chuan hoa duong dan dich, roi kiem tra no PHAI nam trong rootLocation\n            // de chong tan cong path traversal (vi du ten file \"../../etc/passwd\").\n            Path destination = rootLocation.resolve(file.getOriginalFilename()).normalize().toAbsolutePath();\n            if (!destination.getParent().equals(rootLocation.toAbsolutePath())) {\n                throw new StorageException(\"Khong the luu file ngoai thu muc duoc phep\");\n            }\n            try (var inputStream = file.getInputStream()) {\n                Files.copy(inputStream, destination);\n            }\n        } catch (IOException e) {\n            throw new StorageException(\"That bai khi luu file\", e);\n        }\n    }\n\n    static class StorageException extends RuntimeException {\n        StorageException(String message) { super(message); }\n        StorageException(String message, Throwable cause) { super(message, cause); }\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day26-src-5"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day26-blk-5",
+          "type": "note",
+          "text": "Có thể kiểm thử luồng upload mà không cần chạy server thật, bằng MockMvc kết hợp MockMultipartFile để giả lập một file tải lên trong request test.",
+          "citations": [
+            "day26-src-7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day26-sec-download",
+      "title": "Download file",
+      "blocks": [
+        {
+          "id": "day26-blk-6",
+          "type": "paragraph",
+          "text": "Endpoint tải file trả về ResponseEntity<Resource> kèm header Content-Disposition: attachment để trình duyệt hiểu đây là file cần tải xuống (không hiển thị trực tiếp) - cùng controller có thể có thêm endpoint liệt kê danh sách file và endpoint tải lên trong một chỗ.",
+          "citations": [
+            "day26-src-4"
+          ]
+        },
+        {
+          "id": "day26-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.core.io.Resource;\nimport org.springframework.http.HttpHeaders;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.GetMapping;\nimport org.springframework.web.bind.annotation.PathVariable;\nimport org.springframework.web.bind.annotation.RestController;\n\n@RestController\nclass FileDownloadController {\n\n    private final StorageService storageService;\n\n    FileDownloadController(StorageService storageService) {\n        this.storageService = storageService;\n    }\n\n    @GetMapping(\"/files/{filename:.+}\")\n    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {\n        Resource file = storageService.loadAsResource(filename);\n        return ResponseEntity.ok()\n                .header(HttpHeaders.CONTENT_DISPOSITION, \"attachment; filename=\\\"\" + file.getFilename() + \"\\\"\")\n                .body(file);\n    }\n\n    interface StorageService {\n        Resource loadAsResource(String filename);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day26-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day26-sec-webclient",
+      "title": "Goi API ben ngoai voi WebClient",
+      "blocks": [
+        {
+          "id": "day26-blk-8",
+          "type": "paragraph",
+          "text": "WebClient là HTTP client reactive được Spring giới thiệu để thay thế RestTemplate (đã ở chế độ bảo trì); tạo instance qua WebClient.create(), WebClient.create(baseUrl), hoặc WebClient.builder() để cấu hình sâu hơn (base URL, header mặc định, timeout).",
+          "citations": [
+            "day26-src-8",
+            "day26-src-9"
+          ]
+        },
+        {
+          "id": "day26-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import java.time.Duration;\nimport org.springframework.web.reactive.function.client.WebClient;\n\nclass ProductPriceClient {\n\n    private final WebClient webClient;\n\n    ProductPriceClient(WebClient.Builder builder) {\n        this.webClient = builder\n                .baseUrl(\"https://supplier.example.com/api\")\n                .build();\n    }\n\n    public PriceDTO fetchPrice(String sku) {\n        return webClient.get()\n                .uri(\"/prices/{sku}\", sku)\n                .header(\"X-Api-Key\", \"demo-key\")\n                .retrieve()\n                .bodyToMono(PriceDTO.class)\n                .timeout(Duration.ofSeconds(3))\n                .block();\n    }\n\n    record PriceDTO(String sku, java.math.BigDecimal price) {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day26-src-10"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day26-blk-10",
+          "type": "note",
+          "text": "Có thể kiểm thử code gọi WebClient bằng WebTestClient mà không cần gọi API thật.",
+          "citations": [
+            "day26-src-11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day26-sec-resilience",
+      "title": "Chiu loi khi goi API ben ngoai",
+      "blocks": [
+        {
+          "id": "day26-blk-11",
+          "type": "paragraph",
+          "text": "Circuit Breaker có 3 trạng thái: Closed (bình thường, request đi qua như thường lệ), Open (sau khi tỉ lệ lỗi vượt ngưỡng, mọi request bị chặn ngay lập tức không gọi tới hệ thống đích), và Half-Open (sau một khoảng thời gian, cho thử một số request để kiểm tra hệ thống đích đã hồi phục chưa).",
+          "citations": [
+            "day26-src-12"
+          ]
+        },
+        {
+          "id": "day26-blk-12",
+          "type": "table",
+          "columns": [
+            "Tieu chi",
+            "Retry",
+            "Circuit Breaker"
+          ],
+          "rows": [
+            [
+              "Trang thai",
+              "Khong luu trang thai (stateless) - moi loi xu ly doc lap",
+              "Co trang thai (Closed/Open/Half-Open) theo doi ti le loi qua thoi gian"
+            ],
+            [
+              "Muc dich",
+              "Thu lai ngay khi loi la tam thoi (mang chap chon)",
+              "Ngan chan goi lien tuc toi he thong dang gap su co"
+            ],
+            [
+              "Rui ro neu dung sai",
+              "Thu lai qua nhieu lam nang them he thong dang loi",
+              "Khong phu hop voi loi tam thoi ngan han, don gian mot lan retry la du"
+            ]
+          ],
+          "citations": [
+            "day26-src-13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day26-sec-csv",
+      "title": "Xuat du lieu CSV/Excel",
+      "blocks": [
+        {
+          "id": "day26-blk-13",
+          "type": "paragraph",
+          "text": "Có thể ghi CSV thuần Java bằng PrintWriter, nối các trường bằng dấu phẩy và dòng bằng Collectors.joining; theo quy ước CSV/RFC 4180, trường nào chứa dấu phẩy, dấu nháy kép hoặc ký tự xuống dòng phải được bao trong dấu nháy kép và nhân đôi mọi dấu nháy kép bên trong. Với nhu cầu phức tạp hơn (nhiều cột động, escape đầy đủ theo chuẩn), các thư viện bên thứ ba như Apache Commons CSV, OpenCSV hoặc Jackson dataformat CSV thường được dùng thay vì tự viết logic ghi file.",
+          "citations": [
+            "day26-src-14",
+            "day26-src-15",
+            "day26-src-16"
+          ]
+        },
+        {
+          "id": "day26-blk-14",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Neu truong chua dau phay, dau nhay kep, hoac xuong dong: bao trong nhay kep\n    // va nhan doi moi dau nhay kep ben trong (theo quy uoc CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\") || value.contains(\"\\n\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day26-src-14",
+            "day26-src-15"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day26-blk-15",
+          "type": "note",
+          "text": "Xuất Excel (.xlsx) không nằm trong resourceIds của bài này - không có tài liệu tham khảo nào trong bộ nguồn của khoá học mô tả thư viện xử lý Excel (ví dụ Apache POI). Nếu cần xuất Excel thay vì CSV, học viên tự tham khảo tài liệu chính thức của thư viện được chọn; nội dung này không được trình bày có trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Ghép trực tiếp originalFilename từ client vào đường dẫn lưu file mà không chuẩn hoá/kiểm tra - mở lỗ hổng path traversal.",
+    "Dùng block() trên WebClient trong luồng reactive mà không hiểu đây là thao tác chặn (blocking) - chỉ chấp nhận được trong code không-reactive (MVC truyền thống).",
+    "Ghi CSV bằng cách nối chuỗi thủ công mà quên escape dấu phẩy/dấu nháy kép trong dữ liệu, làm hỏng cấu trúc file khi mở bằng Excel."
+  ],
+  "practices": [
+    {
+      "id": "day26-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Vì sao FileSystemStorageService phải kiểm tra đường dẫn đích thực sự nằm trong rootLocation trước khi ghi file?",
+      "choices": [
+        {
+          "id": "day26-prac-1-a",
+          "text": "Để chống tấn công path traversal (tên file như \"../../etc/passwd\" có thể ghi đè file ngoài thư mục cho phép)"
+        },
+        {
+          "id": "day26-prac-1-b",
+          "text": "Để tăng tốc độ ghi file"
+        },
+        {
+          "id": "day26-prac-1-c",
+          "text": "Vì Spring Boot bắt buộc phải có bước kiểm tra này mới khởi động được"
+        },
+        {
+          "id": "day26-prac-1-d",
+          "text": "Để tự động nén file trước khi lưu"
+        }
+      ],
+      "correctChoiceIds": [
+        "day26-prac-1-a"
+      ],
+      "hint": "Nghĩ về việc tên file gốc (originalFilename) đến từ client, không đáng tin cậy.",
+      "solution": "day26-prac-1-a",
+      "explanation": "originalFilename do client gửi lên, không đáng tin cậy - nếu ghép trực tiếp vào đường dẫn lưu mà không chuẩn hoá và kiểm tra, kẻ tấn công có thể dùng \"../\" để ghi file ra ngoài thư mục được phép (path traversal).",
+      "rubric": "Liên hệ đúng rủi ro bảo mật path traversal với bước kiểm tra rootLocation.",
+      "sourceUsage": [
+        "day26-src-5"
+      ]
+    },
+    {
+      "id": "day26-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết chữ ký method controller nhận nhiều file tải lên cùng lúc từ cùng một tên input 'files'.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Dùng MultipartFile[] thay vì MultipartFile đơn.",
+      "solution": "@PostMapping(\"/upload-many\")\npublic ResponseEntity<Void> uploadMany(@RequestParam(\"files\") MultipartFile[] files) {\n    return ResponseEntity.ok().build();\n}",
+      "explanation": "Áp dụng lại mẫu MultipartFile[] đã học để nhận nhiều file cùng name trong form.",
+      "rubric": "Đánh giá đúng: tham số kiểu MultipartFile[] gắn @RequestParam đúng tên input.",
+      "sourceUsage": [
+        "day26-src-2"
+      ]
+    },
+    {
+      "id": "day26-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "Khác biệt cốt lõi giữa Retry và Circuit Breaker là gì?",
+      "choices": [
+        {
+          "id": "day26-prac-3-a",
+          "text": "Retry không lưu trạng thái (thử lại ngay khi lỗi tạm thời), còn Circuit Breaker theo dõi trạng thái theo thời gian để chặn hẳn khi hệ thống đích đang gặp sự cố"
+        },
+        {
+          "id": "day26-prac-3-b",
+          "text": "Retry chỉ dùng cho WebClient, Circuit Breaker chỉ dùng cho RestTemplate"
+        },
+        {
+          "id": "day26-prac-3-c",
+          "text": "Circuit Breaker luôn thử lại vô hạn, Retry chỉ thử một lần duy nhất"
+        },
+        {
+          "id": "day26-prac-3-d",
+          "text": "Không có khác biệt, hai khái niệm này tương đương nhau"
+        }
+      ],
+      "correctChoiceIds": [
+        "day26-prac-3-a"
+      ],
+      "hint": "So sánh việc có/không lưu trạng thái theo thời gian giữa hai cơ chế.",
+      "solution": "day26-prac-3-a",
+      "explanation": "Retry stateless, xử lý từng lỗi độc lập, phù hợp lỗi tạm thời ngắn hạn. Circuit Breaker có trạng thái (Closed/Open/Half-Open), theo dõi tỉ lệ lỗi qua thời gian để chủ động chặn request khi hệ thống đích đang gặp sự cố kéo dài, tránh làm nặng thêm.",
+      "rubric": "Liên hệ đúng khái niệm stateless vs có trạng thái theo thời gian.",
+      "sourceUsage": [
+        "day26-src-13"
+      ]
+    },
+    {
+      "id": "day26-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Theo quy ước CSV/RFC 4180, một trường dữ liệu chứa dấu phẩy cần được xử lý escape như thế nào trước khi ghi vào file CSV?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nhớ lại cách CsvExporter.escape xử lý trường có dấu phẩy/dấu nháy kép.",
+      "solution": "Bao toàn bộ giá trị trong dấu nháy kép (\"...\"); nếu bên trong giá trị đã có dấu nháy kép thì phải nhân đôi mỗi dấu nháy kép đó (\" thành \"\") trước khi ghi.",
+      "explanation": "Áp dụng lại logic escape đã học: bọc trong dấu nháy kép + nhân đôi dấu nháy kép bên trong.",
+      "rubric": "Đánh giá đúng hai bước: bọc dấu nháy kép và nhân đôi dấu nháy kép bên trong giá trị.",
+      "sourceUsage": [
+        "day26-src-15"
+      ]
+    }
+  ],
+  "syllabusAssignments": [],
+  "enhancedExercises": [
+    "Thêm kiểm tra loại file (whitelist content-type) trước khi lưu trong FileSystemStorageService.",
+    "Cấu hình WebClient với retry (spring-retry hoặc Resilience4j) khi gọi API bên ngoài thất bại tạm thời."
+  ],
+  "references": [
+    {
+      "id": "day26-ref-1",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day26-src-2"
+    },
+    {
+      "id": "day26-ref-2",
+      "type": "external",
+      "resourceId": "res-6543ba492a80",
+      "citationId": "day26-src-5"
+    },
+    {
+      "id": "day26-ref-3",
+      "type": "external",
+      "resourceId": "res-b8b29a249f37",
+      "citationId": "day26-src-10"
+    },
+    {
+      "id": "day26-ref-4",
+      "type": "external",
+      "resourceId": "res-f6c8ab355f09",
+      "citationId": "day26-src-13"
+    },
+    {
+      "id": "day26-ref-5",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day26-src-15"
+    },
+    {
+      "id": "day26-ref-6",
+      "type": "internal",
+      "description": "Cả bốn kỹ thuật (upload, WebClient, resilience, CSV) sẽ được áp dụng trực tiếp có trích dẫn vào Assignment 9, Day 27."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day26-src-1",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 3, vi du submit(@RequestParam(\"file\") MultipartFile file...)",
+      "topic": "Nhan mot file qua @RequestParam MultipartFile"
+    },
+    {
+      "id": "day26-src-2",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 4, vi du MultipartFile[] files",
+      "topic": "Upload nhieu file cung ten input"
+    },
+    {
+      "id": "day26-src-3",
+      "resourceId": "res-74d398e3d23c",
+      "locator": "muc 6, Spring Boot File Upload",
+      "topic": "Cau hinh multipart trong Spring Boot (max-file-size/max-request-size)"
+    },
+    {
+      "id": "day26-src-4",
+      "resourceId": "res-6543ba492a80",
+      "locator": "phan Create a File Upload Controller",
+      "topic": "Controller GET / (danh sach), GET /files/{filename} (tai xuong), POST / (tai len)"
+    },
+    {
+      "id": "day26-src-5",
+      "resourceId": "res-6543ba492a80",
+      "locator": "phan Create a File Upload Controller, class FileSystemStorageService",
+      "topic": "Chuan hoa duong dan va kiem tra nam trong rootLocation de chong path traversal"
+    },
+    {
+      "id": "day26-src-6",
+      "resourceId": "res-6543ba492a80",
+      "locator": "phan Tuning File Upload Limits",
+      "topic": "Gioi han dung luong upload qua spring.servlet.multipart.*"
+    },
+    {
+      "id": "day26-src-7",
+      "resourceId": "res-6543ba492a80",
+      "locator": "phan Testing Your Application",
+      "topic": "Test upload bang MockMvc + MockMultipartFile"
+    },
+    {
+      "id": "day26-src-8",
+      "resourceId": "res-b8b29a249f37",
+      "locator": "muc 2, What Is the WebClient?",
+      "topic": "WebClient la reactive HTTP client thay the RestTemplate"
+    },
+    {
+      "id": "day26-src-9",
+      "resourceId": "res-b8b29a249f37",
+      "locator": "muc 4.1-4.2, tao WebClient va timeout",
+      "topic": "Tao instance qua create()/create(baseUrl)/builder(), timeout mac dinh"
+    },
+    {
+      "id": "day26-src-10",
+      "resourceId": "res-b8b29a249f37",
+      "locator": "muc 4.3-4.7, chuoi method/uri/body/header/retrieve",
+      "topic": "Chuoi goi method/uri/body/header/retrieve()"
+    },
+    {
+      "id": "day26-src-11",
+      "resourceId": "res-b8b29a249f37",
+      "locator": "muc 5, Working with the WebTestClient",
+      "topic": "WebTestClient de test WebClient call"
+    },
+    {
+      "id": "day26-src-12",
+      "resourceId": "res-f6c8ab355f09",
+      "locator": "muc 3, What Is a Circuit Breaker Pattern? + 3 trang thai",
+      "topic": "3 trang thai Closed/Open/Half-Open"
+    },
+    {
+      "id": "day26-src-13",
+      "resourceId": "res-f6c8ab355f09",
+      "locator": "muc 4, bang so sanh Retry vs Circuit Breaker",
+      "topic": "Retry khong trang thai (stateless) vs Circuit Breaker co trang thai"
+    },
+    {
+      "id": "day26-src-14",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 2.1, Writing the CSV",
+      "topic": "Ghi CSV bang PrintWriter thuan Java + Collectors.joining"
+    },
+    {
+      "id": "day26-src-15",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 2.2, escapeSpecialCharacters",
+      "topic": "Escape dau phay/dau nhay kep/xuong dong trong truong CSV"
+    },
+    {
+      "id": "day26-src-16",
+      "resourceId": "res-ea68bcb99823",
+      "locator": "muc 3, Third-Party Libraries",
+      "topic": "Cac lua chon thu vien CSV: Apache Commons CSV, OpenCSV, Jackson dataformat CSV"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Xuất Excel (.xlsx): không có resource nào trong resourceIds của Day 26 (hoặc bất kỳ lesson nào khác trong bộ nguồn hiện có) mô tả thư viện xử lý Excel như Apache POI - chỉ có resource về CSV. Trình bày dưới dạng một ghi chú không trích dẫn, khuyến nghị tự tham khảo tài liệu thư viện khi cần."
+    ]
+  }
+}

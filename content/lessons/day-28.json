@@ -1,0 +1,500 @@
+{
+  "schemaVersion": 1,
+  "id": "day-28",
+  "catalogRef": {
+    "unitId": "unit-10",
+    "group": "spring",
+    "title": "Testing Spring Boot",
+    "objectives": [
+      "LO10"
+    ],
+    "durationMinutes": 150.0,
+    "sourceRows": [
+      48,
+      49
+    ],
+    "syllabusAssignments": [
+      {
+        "row": 49,
+        "text": "Assignment"
+      }
+    ],
+    "resourceIds": [
+      "res-ae66be8c9f5f",
+      "res-31a2e0685799",
+      "res-bccebfeaf062",
+      "res-3807593857d1"
+    ]
+  },
+  "unitId": "unit-10",
+  "group": "spring",
+  "kind": "theory",
+  "title": "Testing Spring Boot",
+  "summary": "Nền tảng JUnit 5 (vòng đời, assertion, exception testing), các slice test của Spring Boot (@WebMvcTest, @DataJpaTest, @JsonTest), và @SpringBootTest với các chế độ webEnvironment (MOCK/RANDOM_PORT) - nền tảng cho bộ test tích hợp Testcontainers ở Lab 10 (Day 30).",
+  "durationMinutes": 150.0,
+  "objectives": [
+    "LO10"
+  ],
+  "prerequisites": [
+    "Đã hoàn thành Assignment 9 (Day 27) - bài này viết test cho các tính năng vừa xây dựng."
+  ],
+  "outcomes": [
+    "Viết được unit test với JUnit 5 (vòng đời, assertion, exception testing).",
+    "Phân biệt và sử dụng đúng các slice test: @WebMvcTest, @DataJpaTest, @JsonTest.",
+    "Chọn đúng chế độ webEnvironment của @SpringBootTest cho từng loại test tích hợp."
+  ],
+  "sections": [
+    {
+      "id": "day28-sec-brief",
+      "title": "Pham vi buoi hoc",
+      "blocks": [
+        {
+          "id": "day28-blk-1",
+          "type": "deliverable",
+          "text": "Assignment",
+          "citations": []
+        },
+        {
+          "id": "day28-blk-2",
+          "type": "note",
+          "text": "Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - học viên viết test cho các tính năng đã xây dựng ở Assignment 9 (Day 27) bằng các kỹ thuật trong bài này, chuẩn bị cho Lab 10 - Production Readiness ở Day 30 (nơi Testcontainers được áp dụng đầy đủ vào bộ test tích hợp cuối cùng).",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-junit5",
+      "title": "Nen tang JUnit 5",
+      "blocks": [
+        {
+          "id": "day28-blk-3",
+          "type": "paragraph",
+          "text": "JUnit 5 gồm 3 module chính: JUnit Platform (nền tảng chạy test, kết nối IDE/build tool), JUnit Jupiter (API viết test mới, các annotation @Test/@BeforeEach...), và JUnit Vintage (chạy tương thích test JUnit 3/4 cũ). Vòng đời một test class dùng @BeforeAll/@AfterAll (chạy một lần, method phải static trừ khi dùng @TestInstance(PER_CLASS)) và @BeforeEach/@AfterEach (chạy trước/sau mỗi test); @DisplayName đặt tên hiển thị dễ đọc, @Disabled tạm tắt một test.",
+          "citations": [
+            "day28-src-1",
+            "day28-src-2"
+          ]
+        },
+        {
+          "id": "day28-blk-4",
+          "type": "paragraph",
+          "text": "assertAll gom nhiều assertion vào một khối - tất cả đều được chạy và báo cáo lỗi cùng lúc thay vì dừng lại ở assertion đầu tiên thất bại; assumeTrue bỏ qua toàn bộ test nếu điều kiện giả định không đúng (thay vì báo lỗi). assertThrows kiểm tra một đoạn code có ném đúng loại exception mong đợi hay không; @TestFactory kết hợp DynamicTest cho phép sinh test động tại runtime.",
+          "citations": [
+            "day28-src-3",
+            "day28-src-4"
+          ]
+        },
+        {
+          "id": "day28-blk-5",
+          "type": "code",
+          "language": "java",
+          "code": "import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.Assertions;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.DisplayName;\nimport org.junit.jupiter.api.Test;\n\n@DisplayName(\"OrderCalculator\")\nclass OrderCalculatorTest {\n\n    private OrderCalculator calculator;\n\n    @BeforeEach\n    void setUp() {\n        calculator = new OrderCalculator();\n    }\n\n    @AfterEach\n    void tearDown() {\n        calculator = null;\n    }\n\n    @Test\n    @DisplayName(\"tinh tong don hang hop le\")\n    void calculatesTotalCorrectly() {\n        // assertAll gom nhieu assertion trong mot test - tat ca deu duoc chay\n        // va bao cao, khong dung lai o assertion loi dau tien.\n        Assertions.assertAll(\"order total\",\n                () -> Assertions.assertEquals(100, calculator.total(),\n                        \"tong phai la 100\"),\n                () -> Assertions.assertTrue(calculator.isValid(),\n                        \"don hang phai hop le\"));\n    }\n\n    @Test\n    void throwsWhenQuantityNegative() {\n        Assertions.assertThrows(IllegalArgumentException.class,\n                () -> calculator.addItem(-1, 10));\n    }\n\n    static class OrderCalculator {\n        int total() { return 100; }\n        boolean isValid() { return true; }\n        void addItem(int quantity, int price) {\n            if (quantity < 0) throw new IllegalArgumentException(\"quantity < 0\");\n        }\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day28-src-2",
+            "day28-src-3",
+            "day28-src-4"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-webmvctest",
+      "title": "@WebMvcTest + MockMvc",
+      "blocks": [
+        {
+          "id": "day28-blk-6",
+          "type": "paragraph",
+          "text": "@WebMvcTest(Controller.class) chỉ khởi tạo controller được chỉ định cùng hạ tầng MVC liên quan (không nạp toàn bộ Spring context, không có Service/Repository thật) - nhanh hơn nhiều so với @SpringBootTest. Các bean phụ thuộc (như Service) cần được thay thế bằng @MockBean (hoặc @MockitoBean/@MockitoSpyBean từ Spring Boot 3.4 trở đi, do @MockBean/@SpyBean đã deprecated). MockMvc được khởi tạo tự động qua SpringExtension + @WebAppConfiguration + MockMvcBuilders để giả lập request HTTP mà không cần mở cổng mạng thật.",
+          "citations": [
+            "day28-src-5",
+            "day28-src-6",
+            "day28-src-7",
+            "day28-src-8"
+          ]
+        },
+        {
+          "id": "day28-blk-7",
+          "type": "code",
+          "language": "java",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.boot.test.mock.mockito.MockBean;\nimport org.springframework.test.web.servlet.MockMvc;\n\nimport static org.mockito.BDDMockito.given;\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n// Chi khoi tao ProductController va cac thanh phan lien quan toi MVC\n// (khong nap toan bo Spring context nhu @SpringBootTest).\n@WebMvcTest(ProductController.class)\nclass ProductControllerTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    // Thay the ProductService that bang mot mock, vi @WebMvcTest khong tao bean tang service/repository.\n    @MockBean\n    private ProductService productService;\n\n    @Test\n    void returnsProductByIdAsJson() throws Exception {\n        given(productService.findById(1L)).willReturn(new ProductDTO(1L, \"Ban phim\"));\n\n        mockMvc.perform(get(\"/api/products/1\"))\n                .andExpect(status().isOk())\n                .andExpect(jsonPath(\"$.name\").value(\"Ban phim\"));\n    }\n\n    interface ProductService { ProductDTO findById(Long id); }\n    interface ProductController {}\n    record ProductDTO(Long id, String name) {}\n}\n",
+          "compile": false,
+          "citations": [
+            "day28-src-5",
+            "day28-src-6",
+            "day28-src-9"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day28-blk-8",
+          "type": "note",
+          "text": "MockMvc mô phỏng tầng Servlet trong bộ nhớ, không thực sự mở kết nối mạng - vì vậy không kiểm tra được các vấn đề chỉ xảy ra ở tầng HTTP thật (ví dụ cấu hình cổng, SSL, hoặc hành vi filter/server container thực tế). Với những trường hợp đó cần dùng @SpringBootTest kèm webEnvironment thật.",
+          "citations": [
+            "day28-src-10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-datajpatest",
+      "title": "@DataJpaTest",
+      "blocks": [
+        {
+          "id": "day28-blk-9",
+          "type": "paragraph",
+          "text": "@DataJpaTest chỉ khởi tạo các thành phần liên quan tới JPA (entity, repository), tự động cấu hình H2 in-memory database - cùng nguyên lý 'chỉ nạp slice cần thiết' như @WebMvcTest, giúp test chạy nhanh hơn nhiều so với @SpringBootTest đầy đủ. TestEntityManager cung cấp các thao tác tiện lợi cho test (ví dụ persistAndFlush) không có trong EntityManager thông thường.",
+          "citations": [
+            "day28-src-11",
+            "day28-src-12"
+          ]
+        },
+        {
+          "id": "day28-blk-10",
+          "type": "code",
+          "language": "java",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\n// Chi khoi tao lop JPA (entity, repository) voi H2 in-memory tu dong cau hinh,\n// khong nap Controller/Service - nhanh hon nhieu so voi @SpringBootTest day du.\n@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        Product saved = entityManager.persistAndFlush(new Product(\"SKU-001\", \"Ban phim\"));\n\n        Product found = productRepository.findBySku(\"SKU-001\").orElseThrow();\n\n        assertEquals(saved.getId(), found.getId());\n    }\n\n    interface ProductRepository {\n        java.util.Optional<Product> findBySku(String sku);\n    }\n\n    static class Product {\n        private Long id;\n        private final String sku;\n        private final String name;\n        Product(String sku, String name) { this.sku = sku; this.name = name; }\n        Long getId() { return id; }\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day28-src-11"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-springboottest",
+      "title": "@SpringBootTest va webEnvironment",
+      "blocks": [
+        {
+          "id": "day28-blk-11",
+          "type": "paragraph",
+          "text": "@SpringBootTest nạp toàn bộ Spring context như ứng dụng thật - tham số webEnvironment quyết định môi trường web: MOCK (mặc định, dùng DispatcherServlet giả lập, không mở cổng mạng thật), RANDOM_PORT (khởi động server HTTP thật trên cổng ngẫu nhiên), DEFINED_PORT (dùng cổng cấu hình sẵn), hoặc NONE (không có môi trường web). Với RANDOM_PORT, có thể gọi API bằng client HTTP thật như RestAssured để kiểm tra toàn bộ luồng từ tầng mạng trở xuống.",
+          "citations": [
+            "day28-src-13",
+            "day28-src-14",
+            "day28-src-15"
+          ]
+        },
+        {
+          "id": "day28-blk-12",
+          "type": "code",
+          "language": "java",
+          "code": "import io.restassured.RestAssured;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.test.web.server.LocalServerPort;\n\nimport static io.restassured.RestAssured.given;\nimport static org.hamcrest.Matchers.equalTo;\n\n// RANDOM_PORT: khoi dong mot server HTTP that tren cong ngau nhien,\n// cho phep goi API qua HTTP client that (RestAssured) thay vi MockMvc gia lap.\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass ProductApiIntegrationTest {\n\n    @LocalServerPort\n    private int port;\n\n    @BeforeEach\n    void setUp() {\n        RestAssured.port = port;\n    }\n\n    @Test\n    void getProductReturnsOkStatus() {\n        given()\n                .when().get(\"/api/products/1\")\n                .then()\n                .statusCode(200)\n                .body(\"name\", equalTo(\"Ban phim\"));\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day28-src-15"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-testcontainers",
+      "title": "Testcontainers (gioi thieu)",
+      "blocks": [
+        {
+          "id": "day28-blk-13",
+          "type": "note",
+          "text": "Testcontainers (chạy database thật trong Docker container cho test tích hợp, thay vì H2 in-memory) không có resource nào trong resourceIds của Day 28 - resource tương ứng thuộc resourceIds của Day 29/30, nơi kỹ thuật này được áp dụng trực tiếp vào bộ test tích hợp của Lab 10. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day28-sec-slices",
+      "title": "Bang tham khao: cac slice test khac",
+      "blocks": [
+        {
+          "id": "day28-blk-14",
+          "type": "table",
+          "columns": [
+            "Annotation",
+            "Pham vi khoi tao"
+          ],
+          "rows": [
+            [
+              "@WebMvcTest",
+              "Controller + MVC infrastructure (khong nap Service/Repository)"
+            ],
+            [
+              "@DataJpaTest",
+              "Entity + Repository voi H2 in-memory (khong nap Controller/Service)"
+            ],
+            [
+              "@JsonTest",
+              "Chi khoi tao JacksonTester/GsonTester/JsonbTester de test serialize/deserialize JSON"
+            ],
+            [
+              "@WebFluxTest, @JdbcTest, @DataMongoTest, @DataRedisTest, @RestClientTest",
+              "Cac slice test tuong ung cho WebFlux, JDBC thuan, MongoDB, Redis, REST client"
+            ]
+          ],
+          "citations": [
+            "day28-src-16",
+            "day28-src-17"
+          ]
+        }
+      ]
+    }
+  ],
+  "commonMistakes": [
+    "Dùng @SpringBootTest cho mọi test (kể cả test controller đơn giản) thay vì @WebMvcTest - làm test chạy chậm không cần thiết vì nạp toàn bộ context.",
+    "Quên @MockBean/@MockitoBean cho dependency trong @WebMvcTest, khiến Spring không khởi tạo được context vì thiếu bean.",
+    "Dùng MockMvc để kiểm tra hành vi chỉ xảy ra ở tầng HTTP thật (ví dụ SSL, cấu hình server) - MockMvc không mở kết nối mạng thật nên không phát hiện được các vấn đề này."
+  ],
+  "practices": [
+    {
+      "id": "day28-prac-1",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "@WebMvcTest khác @SpringBootTest ở điểm nào?",
+      "choices": [
+        {
+          "id": "day28-prac-1-a",
+          "text": "@WebMvcTest chỉ khởi tạo controller + hạ tầng MVC (nhanh hơn), còn @SpringBootTest nạp toàn bộ Spring context như ứng dụng thật"
+        },
+        {
+          "id": "day28-prac-1-b",
+          "text": "@WebMvcTest chạy chậm hơn @SpringBootTest vì phải mở cổng mạng thật"
+        },
+        {
+          "id": "day28-prac-1-c",
+          "text": "Hai annotation này hoàn toàn tương đương nhau"
+        },
+        {
+          "id": "day28-prac-1-d",
+          "text": "@SpringBootTest chỉ dùng được cho ứng dụng không có controller"
+        }
+      ],
+      "correctChoiceIds": [
+        "day28-prac-1-a"
+      ],
+      "hint": "Nghĩ về khái niệm 'chỉ nạp slice cần thiết' đã học trong bài.",
+      "solution": "day28-prac-1-a",
+      "explanation": "@WebMvcTest chỉ khởi tạo controller được chỉ định cùng hạ tầng MVC liên quan, không nạp Service/Repository thật - nhanh hơn nhiều. @SpringBootTest nạp toàn bộ Spring context giống ứng dụng chạy thật, phù hợp kiểm tra tích hợp đầu-cuối.",
+      "rubric": "Liên hệ đúng khái niệm slice test (nạp một phần) với full context (nạp toàn bộ).",
+      "sourceUsage": [
+        "day28-src-5",
+        "day28-src-13"
+      ]
+    },
+    {
+      "id": "day28-prac-2",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "Viết khung một test class dùng @DataJpaTest với TestEntityManager để kiểm tra một repository.",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nhớ @Autowired cả TestEntityManager và repository cần test.",
+      "solution": "@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        // persistAndFlush du lieu test roi goi productRepository...\n    }\n}",
+      "explanation": "Áp dụng lại khung @DataJpaTest + TestEntityManager đã học trong bài.",
+      "rubric": "Đánh giá đúng: có @DataJpaTest trên class, @Autowired cả TestEntityManager và repository.",
+      "sourceUsage": [
+        "day28-src-11"
+      ]
+    },
+    {
+      "id": "day28-prac-3",
+      "type": "concept",
+      "interaction": "multiple-choice",
+      "prompt": "assertThrows trong JUnit 5 dùng để làm gì?",
+      "choices": [
+        {
+          "id": "day28-prac-3-a",
+          "text": "Kiểm tra một đoạn code có ném đúng loại exception mong đợi hay không"
+        },
+        {
+          "id": "day28-prac-3-b",
+          "text": "Bỏ qua test nếu điều kiện giả định không đúng"
+        },
+        {
+          "id": "day28-prac-3-c",
+          "text": "Gom nhiều assertion để chạy và báo cáo cùng lúc"
+        },
+        {
+          "id": "day28-prac-3-d",
+          "text": "Sinh test động tại runtime"
+        }
+      ],
+      "correctChoiceIds": [
+        "day28-prac-3-a"
+      ],
+      "hint": "Nhớ lại các dòng khối code kiểm tra exception trong ví dụ OrderCalculatorTest.",
+      "solution": "day28-prac-3-a",
+      "explanation": "assertThrows(ExceptionClass.class, executable) kiểm tra rằng đoạn code trong executable ném ra đúng loại exception được chỉ định, thất bại nếu không có exception nào hoặc sai loại.",
+      "rubric": "Liên hệ đúng mục đích kiểm tra exception của assertThrows.",
+      "sourceUsage": [
+        "day28-src-4"
+      ]
+    },
+    {
+      "id": "day28-prac-4",
+      "type": "coding",
+      "interaction": "self-check",
+      "prompt": "webEnvironment nào của @SpringBootTest nên dùng khi cần gọi API qua RestAssured tới một server HTTP thật?",
+      "choices": [],
+      "correctChoiceIds": [],
+      "hint": "Nhớ lại 4 giá trị webEnvironment và ý nghĩa của từng loại.",
+      "solution": "SpringBootTest.WebEnvironment.RANDOM_PORT - khởi động server HTTP thật trên một cổng ngẫu nhiên, cho phép client HTTP thật (RestAssured) gọi vào.",
+      "explanation": "Áp dụng lại kiến thức về 4 chế độ webEnvironment đã học trong bài.",
+      "rubric": "Đánh giá đúng: chọn RANDOM_PORT và giải thích được lý do (cần server HTTP thật, không phải MockMvc giả lập).",
+      "sourceUsage": [
+        "day28-src-15"
+      ]
+    }
+  ],
+  "syllabusAssignments": [
+    {
+      "row": 49,
+      "text": "Assignment"
+    }
+  ],
+  "enhancedExercises": [
+    "Viết bộ test đầy đủ 3 tầng (unit @WebMvcTest, integration @DataJpaTest, end-to-end @SpringBootTest RANDOM_PORT) cho một endpoint của Assignment 9.",
+    "Thêm @TestFactory với DynamicTest để sinh nhiều test case kiểm tra validate input theo bảng dữ liệu."
+  ],
+  "references": [
+    {
+      "id": "day28-ref-1",
+      "type": "external",
+      "resourceId": "res-bccebfeaf062",
+      "citationId": "day28-src-2"
+    },
+    {
+      "id": "day28-ref-2",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day28-src-5"
+    },
+    {
+      "id": "day28-ref-3",
+      "type": "external",
+      "resourceId": "res-31a2e0685799",
+      "citationId": "day28-src-14"
+    },
+    {
+      "id": "day28-ref-4",
+      "type": "external",
+      "resourceId": "res-3807593857d1",
+      "citationId": "day28-src-15"
+    },
+    {
+      "id": "day28-ref-5",
+      "type": "internal",
+      "description": "Testcontainers sẽ được áp dụng đầy đủ có trích dẫn vào bộ test tích hợp ở Lab 10, Day 30."
+    }
+  ],
+  "sourceUsage": [
+    {
+      "id": "day28-src-1",
+      "resourceId": "res-bccebfeaf062",
+      "locator": "muc 3, Architecture",
+      "topic": "3 module chinh: JUnit Platform/Jupiter/Vintage"
+    },
+    {
+      "id": "day28-src-2",
+      "resourceId": "res-bccebfeaf062",
+      "locator": "muc 4, Basic Annotations",
+      "topic": "@BeforeAll/@AfterAll/@BeforeEach/@AfterEach/@DisplayName/@Disabled"
+    },
+    {
+      "id": "day28-src-3",
+      "resourceId": "res-bccebfeaf062",
+      "locator": "muc 5, Assertions and Assumptions",
+      "topic": "assertAll gom nhieu assertion, assumeTrue bo qua test"
+    },
+    {
+      "id": "day28-src-4",
+      "resourceId": "res-bccebfeaf062",
+      "locator": "muc 6 va 8, Exception Testing / Dynamic Tests",
+      "topic": "assertThrows va @TestFactory DynamicTest"
+    },
+    {
+      "id": "day28-src-5",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 8, Unit Testing With @WebMvcTest",
+      "topic": "@WebMvcTest(Controller.class) chi khoi tao mot controller"
+    },
+    {
+      "id": "day28-src-6",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 6, vi du @MockBean EmployeeRepository",
+      "topic": "@MockBean thay the bean phu thuoc that"
+    },
+    {
+      "id": "day28-src-7",
+      "resourceId": "res-31a2e0685799",
+      "locator": "phan Mocking and Spying Beans",
+      "topic": "@MockitoBean/@MockitoSpyBean thay the @MockBean tu Spring Boot 3.4"
+    },
+    {
+      "id": "day28-src-8",
+      "resourceId": "res-3807593857d1",
+      "locator": "muc 3, vi du setup MockMvc",
+      "topic": "SpringExtension + @WebAppConfiguration + MockMvcBuilders"
+    },
+    {
+      "id": "day28-src-9",
+      "resourceId": "res-3807593857d1",
+      "locator": "muc 5, cac vi du testRequestParam/testPathVariable",
+      "topic": "perform(get()).andExpect(jsonPath...)"
+    },
+    {
+      "id": "day28-src-10",
+      "resourceId": "res-3807593857d1",
+      "locator": "muc 9, Limitations of MockMvc",
+      "topic": "MockMvc khong mo ket noi mang that"
+    },
+    {
+      "id": "day28-src-11",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 7, Integration Testing With @DataJpaTest",
+      "topic": "@DataJpaTest voi H2 in-memory + TestEntityManager"
+    },
+    {
+      "id": "day28-src-12",
+      "resourceId": "res-31a2e0685799",
+      "locator": "phan Auto-configured Spring MVC Tests / Auto-configured Data JPA Tests",
+      "topic": "@WebMvcTest va @DataJpaTest chi khoi tao slice can thiet"
+    },
+    {
+      "id": "day28-src-13",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 4, vi du EmployeeRestControllerIntegrationTest",
+      "topic": "@SpringBootTest voi webEnvironment.MOCK"
+    },
+    {
+      "id": "day28-src-14",
+      "resourceId": "res-31a2e0685799",
+      "locator": "phan Detecting Web Application Type",
+      "topic": "4 gia tri webEnvironment: MOCK/RANDOM_PORT/DEFINED_PORT/NONE"
+    },
+    {
+      "id": "day28-src-15",
+      "resourceId": "res-3807593857d1",
+      "locator": "muc 10, Full Integration Testing with RestAssured",
+      "topic": "RestAssured voi webEnvironment RANDOM_PORT"
+    },
+    {
+      "id": "day28-src-16",
+      "resourceId": "res-ae66be8c9f5f",
+      "locator": "muc 9, bang Auto-Configured Tests",
+      "topic": "Bang cac annotation slice test khac"
+    },
+    {
+      "id": "day28-src-17",
+      "resourceId": "res-31a2e0685799",
+      "locator": "phan Auto-configured JSON Tests",
+      "topic": "@JsonTest chi khoi tao JacksonTester/GsonTester/JsonbTester"
+    }
+  ],
+  "authoring": {
+    "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+    "reviewStatus": "reviewed",
+    "limitations": [
+      "Testcontainers (chạy database thật trong container cho test tích hợp): resource tương ứng (res-be79b4f73d01) thuộc resourceIds của Day 29, không lặp lại trong resourceIds của Day 28 theo nguyên tắc không mượn citation chéo giữa các bài. Giới thiệu khái niệm tổng quan trong khối note không yêu cầu trích dẫn; kỹ thuật đầy đủ có trích dẫn xuất hiện ở Day 29 và được áp dụng vào Lab 10 (Day 30)."
+    ]
+  }
+}
