@@ -104,7 +104,7 @@ searchLessons(lessons: object[], unitsById: Map<string,object>, query: string): 
 - Produces: `build_publication_model(catalog_path: Path, lesson_index_path: Path, lessons_dir: Path, manifest_path: Path, source_notes_dir: Path, built_at: str) -> dict` and `embed_course_data(index_html: str, model: dict) -> str`.
 - Produces CLI: `python tools/build_site.py --catalog course-catalog.json --lesson-index content/lesson-index.json --lessons-dir content/lessons --manifest content/source-manifest.json --source-notes-dir content/source-notes --output index.html`.
 
-- [ ] **Step 1: Write publication-model tests**
+- [x] **Step 1: Write publication-model tests**
 
 ```python
 # tests/test_build_site.py
@@ -129,12 +129,12 @@ class EmbedTests(unittest.TestCase):
 
 Add fixtures that assert 40 ordered lessons, Units 1–15, Java/Spring/Completion counts 12/24/4, all references reduced to supplied status/read metadata, and no source-note full body is embedded.
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [x] **Step 2: Run tests and confirm failure**
 
 Run: `python -m unittest tests.test_build_site -v`  
 Expected: missing module/functions.
 
-- [ ] **Step 3: Implement model assembly**
+- [x] **Step 3: Implement model assembly**
 
 `build_publication_model` must:
 
@@ -151,7 +151,7 @@ expected_ids = [f"day-{n:02d}" for n in range(1, 39)] + ["day-39-64", "day-65-66
 - Require every lesson citation resource to have `read.status="read"` and locator match.
 - Require exactly 40 lesson records and group counts 12/24/4.
 
-- [ ] **Step 4: Implement safe atomic embedding**
+- [x] **Step 4: Implement safe atomic embedding**
 
 Use exact marker regex:
 
@@ -164,7 +164,7 @@ DATA_RE = re.compile(
 
 Serialize with `ensure_ascii=False, separators=(",", ":")`, then replace `<` with `\u003c`, `>` with `\u003e`, `&` with `\u0026`. Require exactly one marker. Write to a sibling temporary file and `Path.replace()` output.
 
-- [ ] **Step 5: Create the initial valid document shell**
+- [x] **Step 5: Create the initial valid document shell**
 
 `index.html` must begin with:
 
@@ -190,7 +190,7 @@ Serialize with `ensure_ascii=False, separators=(",", ":")`, then replace `<` wit
 
 No external script, stylesheet, font or image request.
 
-- [ ] **Step 6: Run tests and full content validation**
+- [x] **Step 6: Run tests and full content validation**
 
 Run:
 
@@ -201,7 +201,7 @@ python tools/validate_lessons.py --catalog course-catalog.json --manifest conten
 
 Expected: all tests and lesson validation pass.
 
-- [ ] **Step 7: Build the real publication payload**
+- [x] **Step 7: Build the real publication payload**
 
 Run:
 
@@ -228,7 +228,7 @@ Expected: `PASS output=index.html units=15 lessons=40` followed by the observed 
 - Consumes: embedded course data and approved design spec.
 - Produces: CSS custom properties, semantic shell and stable DOM hooks used by later tasks.
 
-- [ ] **Step 1: Invoke the installed frontend design skill before editing**
+- [x] **Step 1: Invoke the installed frontend design skill before editing**
 
 Invoke `frontend-design` with this exact brief:
 
@@ -238,7 +238,7 @@ Design the implementation for the approved Java Spring Boot Course static docume
 
 Read and follow the skill output; preserve all global constraints in this plan.
 
-- [ ] **Step 2: Implement the visual token system**
+- [x] **Step 2: Implement the visual token system**
 
 Define at minimum:
 
@@ -279,7 +279,7 @@ html[data-theme="dark"] {
 
 Use a local system stack led by `"Segoe UI Variable Text"` for prose and `"Cascadia Code"` for code. No network fonts.
 
-- [ ] **Step 3: Implement semantic shell HTML through JavaScript**
+- [x] **Step 3: Implement semantic shell HTML through JavaScript**
 
 The app root renders these stable hooks:
 
@@ -294,7 +294,7 @@ The app root renders these stable hooks:
 
 Header contains hamburger, brand mark/name, `<label>`-backed search input, progress meter with text, and theme control. The brand mark uses CSS shapes/letterforms, not an external logo asset.
 
-- [ ] **Step 4: Implement responsive breakpoints and durable reading measure**
+- [x] **Step 4: Implement responsive breakpoints and durable reading measure**
 
 ```css
 @media (min-width: 64rem) {
@@ -312,11 +312,11 @@ pre { max-width: 100%; overflow-x: auto; }
 
 At ≤30rem, compact progress text without removing its accessible label. Never hide lesson navigation or Practice controls.
 
-- [ ] **Step 5: Add accessible state styles and reduced motion**
+- [x] **Step 5: Add accessible state styles and reduced motion**
 
 Include `:focus-visible`, selected/completed/current states that do not rely on color alone, skip-link behavior, `@media (prefers-reduced-motion: reduce)` and print styles that hide navigation/buttons while printing lesson content and expanded source URLs.
 
-- [ ] **Step 6: Static checkpoint**
+- [x] **Step 6: Static checkpoint**
 
 Run:
 
@@ -345,7 +345,7 @@ Expected: `PASS design-shell dependencies=0`.
 - Produces the `CourseCore` functions listed in the shared interface.
 - Produces UI functions: `renderApp()`, `renderHeader()`, `renderSidebar()`, `renderDashboard()`, `renderLesson(id)`, `renderResources()`.
 
-- [ ] **Step 1: Write pure-logic Node tests**
+- [x] **Step 1: Write pure-logic Node tests**
 
 The test reads `index.html`, extracts `#app-script`, evaluates only the block between `/* COURSE_CORE_START */` and `/* COURSE_CORE_END */` in `node:vm`, then asserts:
 
@@ -359,12 +359,12 @@ assert.equal(core.nextLessonId(lessons, "day-01", -1), null);
 assert.deepEqual(core.searchLessons(lessons, units, "kiem thu"), [lessons[1]]);
 ```
 
-- [ ] **Step 2: Run Node tests and confirm failure**
+- [x] **Step 2: Run Node tests and confirm failure**
 
 Run: `node --test tests/site_core.test.js`  
 Expected: missing core markers/functions.
 
-- [ ] **Step 3: Implement pure core functions without DOM dependencies**
+- [x] **Step 3: Implement pure core functions without DOM dependencies**
 
 Requirements:
 
@@ -388,12 +388,12 @@ Expose with:
 globalThis.CourseCore = Object.freeze({ normalizeSearch, parseRoute, calculateProgress, nextLessonId, sanitizeState, searchLessons });
 ```
 
-- [ ] **Step 4: Run pure tests and confirm pass**
+- [x] **Step 4: Run pure tests and confirm pass**
 
 Run: `node --test tests/site_core.test.js`  
 Expected: all tests pass.
 
-- [ ] **Step 5: Parse embedded data safely and build indices**
+- [x] **Step 5: Parse embedded data safely and build indices**
 
 ```javascript
 const courseData = JSON.parse(document.getElementById("course-data").textContent);
@@ -403,7 +403,7 @@ const unitsById = new Map(courseData.units.map(unit => [unit.id, unit]));
 
 On parse/model failure, replace app content with a semantic error panel and do not throw an uncaught loop.
 
-- [ ] **Step 6: Render collapsible curriculum from real data**
+- [x] **Step 6: Render collapsible curriculum from real data**
 
 Group order is `java`, `spring`, `completion`; sort Units by number and lessons by publication order. A module button uses:
 
@@ -413,7 +413,7 @@ Group order is `java`, `spring`, `completion`; sort Units by number and lessons 
 
 Lesson links include current `aria-current="page"` and visible completed indicator plus screen-reader text.
 
-- [ ] **Step 7: Implement hash routing and search behavior**
+- [x] **Step 7: Implement hash routing and search behavior**
 
 - `hashchange` renders route and moves focus to `#main-content` only after intentional navigation, not initial load.
 - Unknown lesson renders “Không tìm thấy bài học” with Dashboard and clear-search actions.
@@ -422,11 +422,11 @@ Lesson links include current `aria-current="page"` and visible completed indicat
 - Empty query closes results; no result state has a “Xóa tìm kiếm” button.
 - Selecting a result updates `lastLessonId` and closes the mobile drawer.
 
-- [ ] **Step 8: Render dashboard with real aggregates**
+- [x] **Step 8: Render dashboard with real aggregates**
 
 Dashboard includes total progress, completed/total, Continue Learning, Java progress, Spring progress and Unit overview. Continue Learning chooses `lastLessonId` when valid and unfinished, otherwise the first unfinished lesson, otherwise Day 1 with “Ôn tập lại”.
 
-- [ ] **Step 9: Routing/search checkpoint**
+- [x] **Step 9: Routing/search checkpoint**
 
 Run:
 
@@ -449,7 +449,7 @@ Expected: tests pass; builder preserves CSS/JS and reports 40 lessons.
 - Consumes the lesson body/practice/source interfaces.
 - Produces safe renderer helpers and delegated actions.
 
-- [ ] **Step 1: Add escaping and content-render tests**
+- [x] **Step 1: Add escaping and content-render tests**
 
 Test pure helpers:
 
@@ -461,11 +461,11 @@ assert.equal(core.safeExternalUrl('https://docs.spring.io/a'), 'https://docs.spr
 
 Add these functions to the core markers and run tests; expected initial failure, then pass.
 
-- [ ] **Step 2: Implement lesson header and breadcrumb**
+- [x] **Step 2: Implement lesson header and breadcrumb**
 
 Render group / Unit / Day breadcrumb, title, summary, duration, objective chips, prerequisites and outcomes. Use one page `<h1>` and logical `<h2>/<h3>` sequence.
 
-- [ ] **Step 3: Render typed body blocks safely**
+- [x] **Step 3: Render typed body blocks safely**
 
 Map only allowed types:
 
@@ -479,19 +479,19 @@ table -> accessible <table> with caption
 
 All prose/code passes `escapeHtml`; citations become numbered superscript links to source cards. Unknown block types render a visible authoring warning, never execute raw HTML.
 
-- [ ] **Step 4: Render Practice with independent disclosure state**
+- [x] **Step 4: Render Practice with independent disclosure state**
 
 Each Practice card includes type label, prompt, optional starter code, Hint button, Show Solution button and rubric. Use buttons with `aria-expanded`/`aria-controls`; solution starts hidden. For `multiple-choice`, render labeled checkbox/radio controls plus “Kiểm tra đáp án”; show correct/incorrect status and the authored explanation only after checking. For `self-check`, keep the learner's response external and reveal the explanation with Solution. Save selected choice IDs and checked/attempted state only under the stable practice ID.
 
-- [ ] **Step 5: Render assignments and distinguish enrichment**
+- [x] **Step 5: Render assignments and distinguish enrichment**
 
 Original syllabus assignments appear under “Bài tập trong syllabus” with an “Nội dung gốc” label and preserved requirement text. Enhanced exercises appear under “Luyện tập bổ sung”. Do not merge or rewrite them in the UI.
 
-- [ ] **Step 6: Render references and transparent status**
+- [x] **Step 6: Render references and transparent status**
 
 Every used source card shows label/title, domain, external URL, page heading locators, `đã đọc` badge and section backlinks. Supplied but inaccessible resources appear in a separate “Nguồn được cung cấp nhưng không truy cập được” disclosure with status/limitation and no `đã đọc` badge.
 
-- [ ] **Step 7: Implement Copy Code with fallback and toast**
+- [x] **Step 7: Implement Copy Code with fallback and toast**
 
 ```javascript
 async function copyText(text) {
@@ -514,11 +514,11 @@ async function copyText(text) {
 
 On success announce “Đã sao chép mã”; on failure announce “Không thể sao chép tự động — hãy chọn mã và sao chép thủ công.”
 
-- [ ] **Step 8: Render previous/completion/next navigation**
+- [x] **Step 8: Render previous/completion/next navigation**
 
 At lesson end, Previous/Next use actual ordered lesson IDs and show destination title. Center button toggles completion, reflects state with text/icon and never advances automatically.
 
-- [ ] **Step 9: Lesson-render checkpoint**
+- [x] **Step 9: Lesson-render checkpoint**
 
 Run Node tests and build. Open `#lesson/day-01`, `#lesson/day-15`, `#lesson/day-30`, `#lesson/day-39-64` manually and verify each typed block, Practice disclosure, source status and navigation.
 
@@ -534,7 +534,7 @@ Run Node tests and build. Open `#lesson/day-01`, `#lesson/day-15`, `#lesson/day-
 - Uses `STORAGE_KEY`/`DEFAULT_STATE` and `sanitizeState`.
 - Produces safe storage wrapper, progress updates, drawer focus lifecycle, export/import.
 
-- [ ] **Step 1: Add state-sanitization tests**
+- [x] **Step 1: Add state-sanitization tests**
 
 Assert that:
 
@@ -554,22 +554,22 @@ assert.equal(cleaned.theme, "system");
 assert.equal("extra" in cleaned, false);
 ```
 
-- [ ] **Step 2: Implement safe storage read/write**
+- [x] **Step 2: Implement safe storage read/write**
 
 - `loadState` catches parse/security/quota errors, sanitizes and returns defaults with a one-time warning.
 - `saveState` catches errors and keeps in-memory state functional.
 - Never put authored lesson content into localStorage.
 - Recompute progress from completion IDs; do not store a stale percentage.
 
-- [ ] **Step 3: Wire completion and last-lesson state**
+- [x] **Step 3: Wire completion and last-lesson state**
 
 Visiting a lesson updates `lastLessonId`. Completion toggle updates header, dashboard/sidebar and button without full page reload, then persists. Unknown/removed IDs are cleaned on next load.
 
-- [ ] **Step 4: Wire module collapse and theme**
+- [x] **Step 4: Wire module collapse and theme**
 
 Persist collapsed Unit IDs. Theme control cycles or selects `system|light|dark`; `system` follows `matchMedia('(prefers-color-scheme: dark)')`. Update `data-theme`, accessible label and `color-scheme` without flash by running a tiny theme bootstrap before first paint.
 
-- [ ] **Step 5: Implement mobile drawer focus behavior**
+- [x] **Step 5: Implement mobile drawer focus behavior**
 
 - Hamburger sets `body.drawer-open`, `aria-expanded=true`, unhides backdrop and focuses the close/current item.
 - Escape closes; backdrop closes; selecting a lesson closes.
@@ -577,7 +577,7 @@ Persist collapsed Unit IDs. Theme control cycles or selects `system|light|dark`;
 - Closing restores focus to hamburger.
 - At desktop breakpoint, clear drawer state and remove focus trap.
 
-- [ ] **Step 6: Implement reset, export and import**
+- [x] **Step 6: Implement reset, export and import**
 
 Dashboard settings disclosure contains:
 
@@ -589,7 +589,7 @@ Nhập tiến độ (.json)
 
 Export exact shape `{app:"java-spring-course", schemaVersion:1, exportedAt, state}`. Import requires app/schema match, parses text, sanitizes IDs and shows a confirmation preview with completed count before replacing current state. Reset uses a confirm dialog, clears only `STORAGE_KEY`, then rerenders.
 
-- [ ] **Step 7: Run Node and manual persistence checks**
+- [x] **Step 7: Run Node and manual persistence checks**
 
 Run Node tests. In browser: complete Day 1, collapse Unit 2, select dark theme, reload and verify; export, reset, import and verify restored state. Test with localStorage manually disabled and ensure reading/navigation still work.
 
@@ -605,11 +605,11 @@ Run Node tests. In browser: complete Day 1, collapse Unit 2, select dark theme, 
 - Produces `#resources` route and `?selftest=1` automated in-browser assertions.
 - `ui_smoke_test.py` serves localhost and launches installed Chrome Headless.
 
-- [ ] **Step 1: Implement resource view**
+- [x] **Step 1: Implement resource view**
 
 Show every supplied resource referenced by the published curriculum with filters `all|read|unavailable` and normalized search. Each card includes URL, linked lessons, latest check/read status and limitation. Totals must derive from embedded data.
 
-- [ ] **Step 2: Add in-browser self-test mode**
+- [x] **Step 2: Add in-browser self-test mode**
 
 When `new URLSearchParams(location.search).get("selftest") === "1"`, run after app initialization and append:
 
@@ -637,7 +637,7 @@ The 13 assertions must exercise actual DOM/actions:
 
 Use an in-memory storage adapter in self-test mode so tests never alter the learner’s real localStorage.
 
-- [ ] **Step 3: Write the Chrome smoke runner**
+- [x] **Step 3: Write the Chrome smoke runner**
 
 `tools/ui_smoke_test.py` must:
 
@@ -655,7 +655,7 @@ Use an in-memory storage adapter in self-test mode so tests never alter the lear
 5. Capture screenshots with matching sizes to `.course-cache/ui/desktop.png` and `mobile.png`.
 6. Always stop the server in `finally`.
 
-- [ ] **Step 4: Add static accessibility checks to the runner**
+- [x] **Step 4: Add static accessibility checks to the runner**
 
 Parse built HTML and fail unless it contains:
 
@@ -672,7 +672,7 @@ button labels for menu/search/theme/copy/disclosures
 
 Fail on inline event handler attributes (`onclick=`, etc.), duplicate static IDs, external stylesheet/script tags and HTTP mixed-content URLs in app chrome.
 
-- [ ] **Step 5: Run browser functional smoke tests**
+- [x] **Step 5: Run browser functional smoke tests**
 
 Run:
 
@@ -688,11 +688,11 @@ PASS mobile selftest=13/13 viewport=390x844
 PASS screenshots=.course-cache/ui/desktop.png,.course-cache/ui/mobile.png
 ```
 
-- [ ] **Step 6: Inspect desktop screenshot**
+- [x] **Step 6: Inspect desktop screenshot**
 
 Open `.course-cache/ui/desktop.png` with the image viewer. Verify sticky header, persistent sidebar, readable measure, visual hierarchy, real title/content, accents, current/completed states and no clipping. Correct CSS and rerun if any issue appears.
 
-- [ ] **Step 7: Inspect mobile screenshot**
+- [x] **Step 7: Inspect mobile screenshot**
 
 Open `.course-cache/ui/mobile.png`. Verify full-width content, compact header, hamburger, no page horizontal overflow, code horizontal scroll, touch target spacing and no content hidden by sticky header. Correct CSS and rerun if needed.
 
@@ -705,7 +705,7 @@ Open `.course-cache/ui/mobile.png`. Verify full-width content, compact header, h
 
 **Interfaces:** Produces final self-contained `index.html` plus verified content artifacts.
 
-- [ ] **Step 1: Run all unit tests**
+- [x] **Step 1: Run all unit tests**
 
 ```bash
 python -m unittest discover -s tests -p "test_*.py" -v
@@ -714,7 +714,7 @@ node --test tests/site_core.test.js
 
 Expected: all tests pass.
 
-- [ ] **Step 2: Revalidate sources and lessons**
+- [x] **Step 2: Revalidate sources and lessons**
 
 ```bash
 python tools/validate_sources.py --manifest content/source-manifest.json --notes-dir content/source-notes
@@ -723,7 +723,7 @@ python tools/validate_lessons.py --catalog course-catalog.json --manifest conten
 
 Expected: 111 source records accounted for and 40 lesson packages valid.
 
-- [ ] **Step 3: Rebuild and prove single-file deployment**
+- [x] **Step 3: Rebuild and prove single-file deployment**
 
 ```bash
 python tools/build_site.py --catalog course-catalog.json --lesson-index content/lesson-index.json --lessons-dir content/lessons --manifest content/source-manifest.json --source-notes-dir content/source-notes --output index.html
@@ -740,7 +740,7 @@ PY
 
 Expected: `PASS self-contained index.html`.
 
-- [ ] **Step 4: Run Chrome desktop/mobile smoke test after final build**
+- [x] **Step 4: Run Chrome desktop/mobile smoke test after final build**
 
 Run: `python tools/ui_smoke_test.py --file index.html --output-dir .course-cache/ui`  
 Expected: both viewports PASS 13/13.
@@ -763,7 +763,7 @@ Open the local site and verify:
 [ ] Resources view distinguishes read and inaccessible links
 ```
 
-- [ ] **Step 6: Report outcomes without overclaiming**
+- [x] **Step 6: Report outcomes without overclaiming**
 
 Delivery summary must state:
 

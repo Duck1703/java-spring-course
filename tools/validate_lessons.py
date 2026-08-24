@@ -47,6 +47,11 @@ BASELINE_LABELS = {
 
 DEFAULT_COURSE_CACHE_DIR = Path(".course-cache")
 
+# Canonical 40-lesson course sequence: Days 1-38 individually, then the two
+# combined range activities (OJT, then Evaluation). Index/report generation
+# sorts into this order regardless of load order (glob/dict iteration order).
+LESSON_ID_ORDER = [f"day-{n:02d}" for n in range(1, 39)] + ["day-39-64", "day-65-66"]
+
 
 def build_source_index(notes: list) -> dict:
     """Index source-note records by resourceId for cross-source validation.
@@ -691,6 +696,121 @@ def _select_lesson_ids(catalog: dict, selector: str | None) -> set[str] | None:
     return selected
 
 
+def _ordered_lessons(lessons: list[dict]) -> list[dict]:
+    """Sort lesson records into the canonical 40-lesson course sequence.
+
+    Lessons whose id is not part of the canonical sequence (e.g. a partial
+    or malformed fixture) are dropped rather than raising, so index/report
+    generation degrades gracefully on a `--only` subset.
+    """
+    position = {lesson_id: i for i, lesson_id in enumerate(LESSON_ID_ORDER)}
+    return sorted(
+        (lesson for lesson in lessons if isinstance(lesson, dict) and lesson.get("id") in position),
+        key=lambda lesson: position[lesson["id"]],
+    )
+
+
+def build_lesson_index(lessons: list[dict]) -> list[dict]:
+    """Project validated lesson records into the ordered summary index.
+
+    Each entry carries only cross-lesson catalog/summary fields (per the
+    lesson-authoring plan's Task 9 shape) - not full lesson content - so the
+    index stays a small manifest the static-site build can order lessons by.
+    """
+    index = []
+    for lesson in _ordered_lessons(lessons):
+        authoring = lesson.get("authoring") if isinstance(lesson.get("authoring"), dict) else {}
+        index.append({
+            "id": lesson.get("id"),
+            "unitId": lesson.get("unitId"),
+            "group": lesson.get("group"),
+            "kind": lesson.get("kind"),
+            "title": lesson.get("title"),
+            "durationMinutes": lesson.get("durationMinutes"),
+            "objectiveCount": len(lesson.get("objectives") or []),
+            "practiceCount": len(lesson.get("practices") or []),
+            "citationCount": len(lesson.get("sourceUsage") or []),
+            "sourceLimitations": len(authoring.get("limitations") or []),
+        })
+    return index
+
+
+def build_authoring_report(lessons: list[dict], source_index: dict) -> str:
+    """Render the human-readable per-lesson authoring report (Markdown).
+
+    One section per lesson (canonical course order) covering: source
+    resources actually cited, any catalog-assigned resource that could not
+    be read, the practice inventory, syllabus-assignment preservation and
+    the baseline (Java 17 / no legacy javax) lint result.
+    """
+    lines = ["# Lesson Authoring Report", ""]
+    for lesson in _ordered_lessons(lessons):
+        lesson_id = lesson.get("id", "unknown")
+        lines.append(f"## {lesson_id} - {lesson.get('title', '')}")
+        lines.append("")
+
+        source_usage = lesson.get("sourceUsage") or []
+        used_resource_ids = sorted({
+            entry.get("resourceId") for entry in source_usage
+            if isinstance(entry, dict) and isinstance(entry.get("resourceId"), str)
+        })
+        if used_resource_ids:
+            lines.append("Source resources used:")
+            for rid in used_resource_ids:
+                topics = sorted({
+                    entry.get("topic") for entry in source_usage
+                    if isinstance(entry, dict) and entry.get("resourceId") == rid and entry.get("topic")
+                })
+                lines.append(f"- {rid} ({'; '.join(topics) if topics else 'no topic recorded'})")
+        else:
+            lines.append(
+                "Source resources used: none (internal curriculum content, "
+                "no external resourceIds assigned for this lesson)."
+            )
+        lines.append("")
+
+        assigned_ids = (lesson.get("catalogRef") or {}).get("resourceIds") or []
+        unavailable = [
+            rid for rid in assigned_ids
+            if source_index.get(rid, {}).get("readStatus") != "read"
+        ]
+        if unavailable:
+            lines.append("Inaccessible supplied links:")
+            for rid in unavailable:
+                lines.append(f"- {rid}")
+        else:
+            lines.append("Inaccessible supplied links: none.")
+        lines.append("")
+
+        practices = lesson.get("practices") or []
+        lines.append(f"Practice inventory ({len(practices)} total):")
+        for practice in practices:
+            if isinstance(practice, dict):
+                lines.append(
+                    f"- {practice.get('id')}: type={practice.get('type')}, "
+                    f"interaction={practice.get('interaction')}"
+                )
+        lines.append("")
+
+        assignments = lesson.get("syllabusAssignments") or []
+        lines.append(f"Assignment preservation: {len(assignments)} syllabus assignment(s) carried over.")
+        for assignment in assignments:
+            if isinstance(assignment, dict):
+                lines.append(f"- row={assignment.get('row')}: {assignment.get('text')}")
+        lines.append("")
+
+        lint_errors = _validate_baseline_lint(lesson.get("sections"), lesson_id)
+        if lint_errors:
+            lines.append("Baseline lint: FAIL")
+            for error in lint_errors:
+                lines.append(f"- {error}")
+        else:
+            lines.append("Baseline lint: PASS (no post-17 Java syntax or legacy javax/Spring APIs detected).")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Validate lesson packages against the catalog and source notes"
@@ -703,6 +823,8 @@ def main(argv=None) -> int:
     parser.add_argument("--only")
     parser.add_argument("--compile-java", action="store_true")
     parser.add_argument("--course-cache-dir", type=Path, default=DEFAULT_COURSE_CACHE_DIR)
+    parser.add_argument("--write-index", type=Path)
+    parser.add_argument("--write-report", type=Path)
     args = parser.parse_args(argv)
 
     if hasattr(sys.stdout, "reconfigure"):
@@ -738,6 +860,18 @@ def main(argv=None) -> int:
         for error in errors:
             print(error)
         return 1
+
+    if args.write_index:
+        index = build_lesson_index(lessons)
+        args.write_index.parent.mkdir(parents=True, exist_ok=True)
+        args.write_index.write_text(
+            json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+
+    if args.write_report:
+        report = build_authoring_report(lessons, source_index)
+        args.write_report.parent.mkdir(parents=True, exist_ok=True)
+        args.write_report.write_text(report, encoding="utf-8")
 
     sections = sum(len(lesson.get("sections") or []) for lesson in lessons)
     practices = sum(len(lesson.get("practices") or []) for lesson in lessons)
@@ -779,6 +913,11 @@ def _load_lessons_dir(lessons_dir: Path, required_ids: set[str] | None):
             continue
         if isinstance(content, list):
             candidates = content
+        elif isinstance(content, dict) and "id" not in content and isinstance(content.get("lessons"), list):
+            # Combined range-activity packages (e.g. ojt-evaluation.json) wrap
+            # multiple lesson records as {"schemaVersion": 1, "lessons": [...]}
+            # instead of being a single lesson object or a bare list.
+            candidates = content["lessons"]
         else:
             candidates = [content]
         for lesson in candidates:

@@ -10,6 +10,8 @@ import unittest
 from pathlib import Path
 
 from tools.validate_lessons import (
+    build_authoring_report,
+    build_lesson_index,
     build_source_index,
     main,
     validate_corpus,
@@ -478,6 +480,78 @@ class ValidateCorpusTests(unittest.TestCase):
         self.assertTrue(any("duplicate" in error and "sec-01" in error for error in errors))
 
 
+class LessonIndexTests(unittest.TestCase):
+    def test_orders_lessons_by_canonical_course_sequence(self):
+        lessons = [
+            _lesson(id="day-39-64", catalogRef=_catalog_lesson(id="day-39-64")),
+            _lesson(id="day-02", catalogRef=_catalog_lesson(id="day-02")),
+            _lesson(id="day-65-66", catalogRef=_catalog_lesson(id="day-65-66")),
+            _lesson(id="day-01"),
+        ]
+
+        index = build_lesson_index(lessons)
+
+        self.assertEqual(
+            [entry["id"] for entry in index],
+            ["day-01", "day-02", "day-39-64", "day-65-66"],
+        )
+
+    def test_drops_lessons_outside_the_canonical_sequence(self):
+        index = build_lesson_index([_lesson(id="not-a-real-day", catalogRef=_catalog_lesson(id="not-a-real-day"))])
+
+        self.assertEqual(index, [])
+
+    def test_index_entry_has_expected_summary_fields(self):
+        index = build_lesson_index([_lesson()])
+
+        self.assertEqual(index, [{
+            "id": "day-01",
+            "unitId": "unit-01",
+            "group": "java",
+            "kind": "theory",
+            "title": "JVM, JRE, JDK & Data Types",
+            "durationMinutes": 150.0,
+            "objectiveCount": 1,
+            "practiceCount": 2,
+            "citationCount": 1,
+            "sourceLimitations": 0,
+        }])
+
+
+class AuthoringReportTests(unittest.TestCase):
+    def test_report_covers_sources_practices_assignments_and_lint(self):
+        # Both resourceIds the default catalog lesson assigns (res-acff7fd27edc
+        # and res-99801d0b7043) have a read note, so nothing is inaccessible.
+        source_index = _source_index([
+            _source_note(),
+            _source_note(resource_id="res-99801d0b7043"),
+        ])
+
+        report = build_authoring_report([_lesson()], source_index)
+
+        self.assertIn("## day-01 - JVM, JRE, JDK & Data Types", report)
+        self.assertIn("res-acff7fd27edc", report)
+        self.assertIn("Inaccessible supplied links: none.", report)
+        self.assertIn("Practice inventory (2 total):", report)
+        self.assertIn("practice-01", report)
+        self.assertIn("Assignment preservation: 1 syllabus assignment(s) carried over.", report)
+        self.assertIn("Baseline lint: PASS", report)
+
+    def test_report_lists_unread_assigned_resources_and_missing_sourceusage(self):
+        lesson = _lesson(sourceUsage=[], practices=[_self_check_practice(), _self_check_practice("practice-02b")])
+        unread_index = _source_index([_source_note(status="unavailable")])
+
+        report = build_authoring_report([lesson], unread_index)
+
+        self.assertIn(
+            "Source resources used: none (internal curriculum content, "
+            "no external resourceIds assigned for this lesson).",
+            report,
+        )
+        self.assertIn("Inaccessible supplied links:", report)
+        self.assertIn("res-acff7fd27edc", report)
+
+
 class CliTests(unittest.TestCase):
     def _write_fixture_project(self, root: Path):
         catalog = _catalog([_catalog_lesson(id="day-01")])
@@ -603,6 +677,26 @@ class CliTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("PASS lessons=1", output.getvalue())
 
+    def test_wrapped_lessons_file_is_unwrapped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog, lessons_dir = self._write_fixture_project(root)
+            (lessons_dir / "day-01.json").unlink()
+            combined = {"schemaVersion": 1, "lessons": [_lesson()]}
+            (lessons_dir / "ojt-evaluation.json").write_text(json.dumps(combined), encoding="utf-8")
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = main([
+                    "--catalog", str(root / "course-catalog.json"),
+                    "--manifest", str(root / "content" / "source-manifest.json"),
+                    "--source-notes-dir", str(root / "content" / "source-notes"),
+                    "--lessons-dir", str(lessons_dir),
+                ])
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("PASS lessons=1", output.getvalue())
+
     def test_compile_java_compiles_valid_snippet_and_reports_errors_for_invalid_one(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -640,6 +734,51 @@ class CliTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertIn("day-01", output.getvalue())
             self.assertIn("block-code-01", output.getvalue())
+
+    def test_write_index_and_report_flags_generate_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, lessons_dir = self._write_fixture_project(root)
+            index_path = root / "content" / "lesson-index.json"
+            report_path = root / "content" / "lesson-authoring-report.md"
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = main([
+                    "--catalog", str(root / "course-catalog.json"),
+                    "--manifest", str(root / "content" / "source-manifest.json"),
+                    "--source-notes-dir", str(root / "content" / "source-notes"),
+                    "--lessons-dir", str(lessons_dir),
+                    "--write-index", str(index_path),
+                    "--write-report", str(report_path),
+                ])
+
+            self.assertEqual(exit_code, 0)
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+            self.assertEqual([entry["id"] for entry in index], ["day-01"])
+            self.assertIn("## day-01", report_path.read_text(encoding="utf-8"))
+
+    def test_write_index_and_report_are_skipped_when_validation_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, lessons_dir = self._write_fixture_project(root)
+            broken = _lesson()
+            broken["title"] = "Wrong title"
+            (lessons_dir / "day-01.json").write_text(json.dumps(broken), encoding="utf-8")
+            index_path = root / "content" / "lesson-index.json"
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = main([
+                    "--catalog", str(root / "course-catalog.json"),
+                    "--manifest", str(root / "content" / "source-manifest.json"),
+                    "--source-notes-dir", str(root / "content" / "source-notes"),
+                    "--lessons-dir", str(lessons_dir),
+                    "--write-index", str(index_path),
+                ])
+
+            self.assertEqual(exit_code, 1)
+            self.assertFalse(index_path.exists())
 
 
 if __name__ == "__main__":

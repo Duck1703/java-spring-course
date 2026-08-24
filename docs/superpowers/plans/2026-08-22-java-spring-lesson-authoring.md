@@ -143,7 +143,7 @@ Allowed practice types: `concept|predict-output|coding|applied`. Allowed interac
 - Produces: `validate_corpus(catalog: dict, lessons: list[dict], source_index: dict) -> list[str]`.
 - Produces: CLI `python tools/validate_lessons.py --catalog course-catalog.json --manifest content/source-manifest.json --source-notes-dir content/source-notes --lessons-dir content/lessons`.
 
-- [ ] **Step 1: Write failing tests for a minimal valid lesson and required rejections**
+- [x] **Step 1: Write failing tests for a minimal valid lesson and required rejections**
 
 Tests must reject:
 
@@ -168,16 +168,16 @@ Tests must reject:
 
 The valid fixture must include two practices, one code block, one exact source-note locator and the catalog assignment.
 
-- [ ] **Step 2: Run tests and confirm failure**
+- [x] **Step 2: Run tests and confirm failure**
 
 Run: `python -m unittest tests.test_validate_lessons -v`  
 Expected: missing `validate_lesson`/`validate_corpus`.
 
-- [ ] **Step 3: Write the exact JSON schema reference**
+- [x] **Step 3: Write the exact JSON schema reference**
 
 `content/lesson-schema.json` must enumerate required keys, body/practice types, min/max practice count, source-usage fields and `additionalProperties: false` for structured objects. The Python validator remains authoritative because standard library has no JSON Schema engine.
 
-- [ ] **Step 4: Implement structural and cross-source validation**
+- [x] **Step 4: Implement structural and cross-source validation**
 
 Build indices:
 
@@ -193,7 +193,7 @@ source_index[resource_id] = {
 
 `validate_lesson` checks exact IDs, allowed enum values, nonempty text, assignment deep equality, citation ownership/locators and source-backed body blocks. `validate_corpus` checks every catalog lesson appears exactly once, including range activities from `ojt-evaluation.json`.
 
-- [ ] **Step 5: Implement baseline lint**
+- [x] **Step 5: Implement baseline lint**
 
 Reject these exact patterns in code/config blocks unless inside prose explaining a migration and the block has `language="text"`:
 
@@ -210,7 +210,7 @@ javac --release 17 -d .course-cache/javac .course-cache/javac-src/Snippet_day_01
 
 A snippet may set `compile=false` only when it is intentionally partial and must include `partialReason`.
 
-- [ ] **Step 6: Add reporting and run tests**
+- [x] **Step 6: Add reporting and run tests**
 
 Success line:
 
@@ -243,7 +243,7 @@ Expected: all tests pass.
 - Consumes: exact catalog records and readable source notes linked to Days 1–6.
 - Produces: schema-valid lessons with citations resolvable by Task 1 validator.
 
-- [ ] **Step 1: Generate an authoring packet limited to Days 1–6**
+- [x] **Step 1: Generate an authoring packet limited to Days 1–6**
 
 Run:
 
@@ -257,7 +257,7 @@ python tools/validate_lessons.py --catalog course-catalog.json \
 
 Expected: exact title/outline/objectives/assignments plus readable source facts/locators for each Day.
 
-- [ ] **Step 2: Author Day 1–3 packages**
+- [x] **Step 2: Author Day 1–3 packages**
 
 Coverage must follow, not replace, the syllabus:
 
@@ -267,13 +267,13 @@ Coverage must follow, not replace, the syllabus:
 
 Each file has 2–4 practices spanning at least two practice types. Every theory lesson includes at least one source-backed `multiple-choice` concept check with immediate explanation; lab/project/exam/OJT/evaluation packages may use only `self-check` when fixed choices would be misleading. Day 3 may use lab deliverables as one practice only if remaining practices are distinct supporting exercises.
 
-- [ ] **Step 3: Author Day 4–6 packages**
+- [x] **Step 3: Author Day 4–6 packages**
 
 - Day 4: class structure, objects, constructors, access modifiers, encapsulation, records, `this`/`super`.
 - Day 5: inheritance, override vs overload, polymorphism and abstract classes.
 - Day 6: preserve complete Employee Management System assignment and add guided decomposition/test cases/rubric without altering requirements.
 
-- [ ] **Step 4: Validate this range**
+- [x] **Step 4: Validate this range**
 
 Run:
 
@@ -285,7 +285,7 @@ python tools/validate_lessons.py --catalog course-catalog.json \
 
 Expected: `PASS lessons=6` and no uncited technical sections.
 
-- [ ] **Step 5: Compile marked Java snippets**
+- [x] **Step 5: Compile marked Java snippets**
 
 Run the validator with `--compile-java --only day-01:day-06`.  
 Expected: all `compile=true` snippets compile under `javac --release 17`; partial snippets have explicit reasons.
@@ -298,11 +298,11 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Consumes exact Day 7–12 catalog records and readable source-note facts/locators linked to those lesson IDs. Produces six top-level lesson objects with the shared required fields (`schemaVersion`, IDs/group/kind/title, summary/duration/objectives/prerequisites/outcomes, sections, commonMistakes, practices, syllabusAssignments, enhancedExercises, references, sourceUsage, authoring); citations resolve to readable linked resources and practices use the declared interaction schema.
 
-- [ ] **Step 1:** Generate the requirement packet with `--list-requirements day-07:day-12`.
-- [ ] **Step 2:** Author Days 7–9 covering interface vs abstract class, inner classes, enums, SOLID, generics, List/Set/Map, exception hierarchy and try-with-resources; preserve the Custom Collection & Exception Framework lab on Day 9.
-- [ ] **Step 3:** Author Days 10–12 covering functional interfaces/lambdas, stream pipelines/collectors/Optional/parallel streams, threads/synchronized/volatile/ExecutorService/NIO/serialization; preserve the 500K-row Data Processing Pipeline assignment and its benchmark/thread-safety requirements.
-- [ ] **Step 4:** Add 2–4 practices per Day, including predict-output where meaningful and applied/concurrency safety questions for Days 11–12.
-- [ ] **Step 5:** Run validator with `--only day-07:day-12 --compile-java`; expected `PASS lessons=6` and all marked snippets compile for release 17.
+- [x] **Step 1:** Generate the requirement packet with `--list-requirements day-07:day-12`.
+- [x] **Step 2:** Author Days 7–9 covering interface vs abstract class, inner classes, enums, SOLID, generics, List/Set/Map, exception hierarchy and try-with-resources; preserve the Custom Collection & Exception Framework lab on Day 9.
+- [x] **Step 3:** Author Days 10–12 covering functional interfaces/lambdas, stream pipelines/collectors/Optional/parallel streams, threads/synchronized/volatile/ExecutorService/NIO/serialization; preserve the 500K-row Data Processing Pipeline assignment and its benchmark/thread-safety requirements.
+- [x] **Step 4:** Add 2–4 practices per Day, including predict-output where meaningful and applied/concurrency safety questions for Days 11–12.
+- [x] **Step 5:** Run validator with `--only day-07:day-12 --compile-java`; expected `PASS lessons=6` and all marked snippets compile for release 17.
 
 ---
 
@@ -312,11 +312,11 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Consumes exact Day 13–18 catalog records and readable linked source facts/locators. Produces six complete lesson objects with all shared required fields, 2–4 declared-interaction practices each, exact preserved assignments, and readable-resource citations; all Spring code/config follows Spring Boot 3.x/Spring Framework 6 and Jakarta conventions.
 
-- [ ] **Step 1:** Generate `--list-requirements day-13:day-18` and identify official Spring locators for each theory section.
-- [ ] **Step 2:** Author Days 13–15: Spring Boot architecture, IoC, bean scopes/lifecycle, stereotype annotations, DI types/resolution, `@Configuration`, `@Bean`, `@ConfigurationProperties`, profiles; preserve Multi-module Notification Service assignment.
-- [ ] **Step 3:** Author Days 16–18: annotated controllers, mapping and parameters, `ResponseEntity`, content negotiation, Bean Validation, custom validators, `@RestControllerAdvice`, RFC 9457 `ProblemDetail`; preserve User & Task Management API lab.
-- [ ] **Step 4:** Ensure all imports use `jakarta.validation` and examples do not use `WebSecurityConfigurerAdapter` or pre-Boot-3 APIs.
-- [ ] **Step 5:** Validate `--only day-13:day-18`; expected `PASS lessons=6`, no legacy namespace lint errors and exact assignments retained.
+- [x] **Step 1:** Generate `--list-requirements day-13:day-18` and identify official Spring locators for each theory section.
+- [x] **Step 2:** Author Days 13–15: Spring Boot architecture, IoC, bean scopes/lifecycle, stereotype annotations, DI types/resolution, `@Configuration`, `@Bean`, `@ConfigurationProperties`, profiles; preserve Multi-module Notification Service assignment.
+- [x] **Step 3:** Author Days 16–18: annotated controllers, mapping and parameters, `ResponseEntity`, content negotiation, Bean Validation, custom validators, `@RestControllerAdvice`, RFC 9457 `ProblemDetail`; preserve User & Task Management API lab.
+- [x] **Step 4:** Ensure all imports use `jakarta.validation` and examples do not use `WebSecurityConfigurerAdapter` or pre-Boot-3 APIs.
+- [x] **Step 5:** Validate `--only day-13:day-18`; expected `PASS lessons=6`, no legacy namespace lint errors and exact assignments retained.
 
 ---
 
@@ -326,11 +326,11 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Consumes exact Day 19–24 catalog records and readable linked source facts/locators. Produces six complete lesson objects with all shared required fields, 2–4 declared-interaction practices each, exact preserved assignments, and readable-resource citations; every security caveat has explicit sourceUsage and locator evidence.
 
-- [ ] **Step 1:** Generate `--list-requirements day-19:day-24`.
-- [ ] **Step 2:** Author Days 19–21 for entity mapping, relationships, `@ManyToMany`, cascades/orphan removal, fetch strategies, repositories, pagination/sort/projection, transactions and auditing; preserve E-Commerce Data Layer assignment/Flyway deliverables.
-- [ ] **Step 3:** Author Days 22–24 for Spring Security architecture, JWT structure/flow, stateless sessions, password encoding, method security, CORS/CSRF, N+1, batch fetching and soft delete; preserve Auth Service + Performance Optimization lab.
-- [ ] **Step 4:** Include warnings that explain token validation, password hashing and context-dependent CSRF rather than presenting insecure tutorial shortcuts as production recommendations.
-- [ ] **Step 5:** Validate `--only day-19:day-24`; expected `PASS lessons=6`, Jakarta imports only, exact assignments retained and every security warning cited.
+- [x] **Step 1:** Generate `--list-requirements day-19:day-24`.
+- [x] **Step 2:** Author Days 19–21 for entity mapping, relationships, `@ManyToMany`, cascades/orphan removal, fetch strategies, repositories, pagination/sort/projection, transactions and auditing; preserve E-Commerce Data Layer assignment/Flyway deliverables.
+- [x] **Step 3:** Author Days 22–24 for Spring Security architecture, JWT structure/flow, stateless sessions, password encoding, method security, CORS/CSRF, N+1, batch fetching and soft delete; preserve Auth Service + Performance Optimization lab.
+- [x] **Step 4:** Include warnings that explain token validation, password hashing and context-dependent CSRF rather than presenting insecure tutorial shortcuts as production recommendations.
+- [x] **Step 5:** Validate `--only day-19:day-24`; expected `PASS lessons=6`, Jakarta imports only, exact assignments retained and every security warning cited.
 
 ---
 
@@ -340,11 +340,11 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Consumes exact Day 25–30 catalog records and readable linked source facts/locators. Produces six complete lesson objects with all shared required fields, 2–4 declared-interaction practices each, exact preserved assignments, technical code/config blocks, and citations restricted to readable linked resources.
 
-- [ ] **Step 1:** Generate `--list-requirements day-25:day-30`.
-- [ ] **Step 2:** Author Days 25–27 for Spring Cache/Redis, cache patterns/eviction, `@Async`, `@Scheduled`, multipart upload/download, WebClient, resilience and CSV/Excel export; preserve Product & Order Features assignment.
-- [ ] **Step 3:** Author Days 28–30 for unit/slice/integration tests, Testcontainers, OpenAPI/SpringDoc, structured logging, Actuator/Micrometer concepts, Docker and Compose; preserve Production Readiness lab including ≥75% JaCoCo, trace ID and metrics requirements.
-- [ ] **Step 4:** Include environment/config examples as technical blocks and 2–4 practices per Day; avoid pretending the browser can execute them.
-- [ ] **Step 5:** Validate `--only day-25:day-30`; expected `PASS lessons=6` and exact assignments retained.
+- [x] **Step 1:** Generate `--list-requirements day-25:day-30`.
+- [x] **Step 2:** Author Days 25–27 for Spring Cache/Redis, cache patterns/eviction, `@Async`, `@Scheduled`, multipart upload/download, WebClient, resilience and CSV/Excel export; preserve Product & Order Features assignment.
+- [x] **Step 3:** Author Days 28–30 for unit/slice/integration tests, Testcontainers, OpenAPI/SpringDoc, structured logging, Actuator/Micrometer concepts, Docker and Compose; preserve Production Readiness lab including ≥75% JaCoCo, trace ID and metrics requirements.
+- [x] **Step 4:** Include environment/config examples as technical blocks and 2–4 practices per Day; avoid pretending the browser can execute them.
+- [x] **Step 5:** Validate `--only day-25:day-30`; expected `PASS lessons=6` and exact assignments retained.
 
 ---
 
@@ -354,12 +354,12 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Kinds are `project` for Days 31–36 and `exam` for Days 37–38.
 
-- [ ] **Step 1:** Generate `--list-requirements day-31:day-38`.
-- [ ] **Step 2:** Author Days 31–32 as system-design/kickoff packages with architecture overview, API contract template, database design checklist, error strategy and development workflow. Keep their distinct source rows/deliverables even though titles match.
-- [ ] **Step 3:** Author Days 33–35 as Sprint 1–3 packages preserving every entity/module/API/caching/async/export/Docker/CI deliverable and adding Definition of Done, review checklist and daily progress template.
-- [ ] **Step 4:** Author Day 36 Final Defense with presentation structure, demo checklist, evidence checklist, question bank and rubric; source citations only where actual linked testing/OpenAPI/Docker pages were read.
-- [ ] **Step 5:** Author Day 37 Final Theory as a cited review map across LO1–LO10 and Day 38 Final Practice as an exam-readiness package. Day 38 has no source links, so derive only from prior validated lesson IDs and label references as internal curriculum review rather than external citations.
-- [ ] **Step 6:** Validate `--only day-31:day-38`; expected `PASS lessons=8`. Technical config examples are source-backed; deliverable templates satisfy the non-code example requirement.
+- [x] **Step 1:** Generate `--list-requirements day-31:day-38`.
+- [x] **Step 2:** Author Days 31–32 as system-design/kickoff packages with architecture overview, API contract template, database design checklist, error strategy and development workflow. Keep their distinct source rows/deliverables even though titles match.
+- [x] **Step 3:** Author Days 33–35 as Sprint 1–3 packages preserving every entity/module/API/caching/async/export/Docker/CI deliverable and adding Definition of Done, review checklist and daily progress template.
+- [x] **Step 4:** Author Day 36 Final Defense with presentation structure, demo checklist, evidence checklist, question bank and rubric; source citations only where actual linked testing/OpenAPI/Docker pages were read.
+- [x] **Step 5:** Author Day 37 Final Theory as a cited review map across LO1–LO10 and Day 38 Final Practice as an exam-readiness package. Day 38 has no source links, so derive only from prior validated lesson IDs and label references as internal curriculum review rather than external citations.
+- [x] **Step 6:** Validate `--only day-31:day-38`; expected `PASS lessons=8`. Technical config examples are source-backed; deliverable templates satisfy the non-code example requirement.
 
 ---
 
@@ -370,7 +370,7 @@ Expected: all `compile=true` snippets compile under `javac --release 17`; partia
 
 **Interfaces:** Produces a JSON object with `schemaVersion` and `lessons` containing exactly `day-39-64` and `day-65-66`.
 
-- [ ] **Step 1: Extract exact source constraints**
+- [x] **Step 1: Extract exact source constraints**
 
 From catalog, preserve:
 
@@ -379,7 +379,7 @@ Day 39–64: Learners work with project tasks in FSU Project; mentor support dur
 Day 65–66: Evaluate learners after training and OJT phase; LO10–LO12.
 ```
 
-- [ ] **Step 2: Author Day 39–64 as `kind="ojt"`**
+- [x] **Step 2: Author Day 39–64 as `kind="ojt"`**
 
 Include:
 
@@ -392,7 +392,7 @@ Include:
 
 Set `authoring.limitations` to explain that the syllabus supplies no external URLs for this range.
 
-- [ ] **Step 3: Author Day 65–66 as `kind="evaluation"`**
+- [x] **Step 3: Author Day 65–66 as `kind="evaluation"`**
 
 Include:
 
@@ -402,7 +402,7 @@ Include:
 - defense/reflection questions and improvement-plan practice;
 - no invented score thresholds unless explicitly labeled as a suggested template.
 
-- [ ] **Step 4: Validate the two range activities**
+- [x] **Step 4: Validate the two range activities**
 
 Run with `--only day-39-64,day-65-66`.  
 Expected: `PASS lessons=2`, each has 2–4 practices, concrete templates and explicit source limitations.
@@ -419,7 +419,7 @@ Expected: `PASS lessons=2`, each has 2–4 practices, concrete templates and exp
 **Interfaces:**
 - Produces ordered index consumed by the static-site build plan.
 
-- [ ] **Step 1: Write failing index-generation test**
+- [x] **Step 1: Write failing index-generation test**
 
 Assert exact ordered IDs:
 
@@ -430,11 +430,11 @@ self.assertEqual([x["id"] for x in index["lessons"]], expected)
 
 Also assert group totals: Java 12, Spring 24 (Days 13–36), Completion 4 (Days 37–38 plus two range activities). Unit 13–15 remain Completion; Unit 11–12 remain Spring as specified.
 
-- [ ] **Step 2: Run test and confirm failure**
+- [x] **Step 2: Run test and confirm failure**
 
 Run: `python -m unittest tests.test_validate_lessons.LessonIndexTests -v`.
 
-- [ ] **Step 3: Implement index/report generation**
+- [x] **Step 3: Implement index/report generation**
 
 Each index entry includes:
 
@@ -455,7 +455,7 @@ Each index entry includes:
 
 Report one section per lesson with source resources actually used, inaccessible supplied links, practice inventory, assignment preservation and baseline lint result.
 
-- [ ] **Step 4: Run full corpus validation and generation**
+- [x] **Step 4: Run full corpus validation and generation**
 
 ```bash
 python tools/validate_lessons.py \
@@ -470,7 +470,7 @@ python tools/validate_lessons.py \
 
 Expected: `PASS lessons=40` and generated index/report.
 
-- [ ] **Step 5: Final content audit**
+- [x] **Step 5: Final content audit**
 
 Run:
 

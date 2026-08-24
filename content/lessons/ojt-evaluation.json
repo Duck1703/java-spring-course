@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "lessons": [
+    {
+      "schemaVersion": 1,
+      "id": "day-39-64",
+      "catalogRef": {
+        "unitId": "unit-14",
+        "group": "completion",
+        "title": "Learners work with project tasks in FSU Project",
+        "objectives": ["LO6", "LO7", "LO8", "LO9", "LO10", "LO11", "LO12"],
+        "durationMinutes": 3960.0,
+        "sourceRows": [61, 62],
+        "syllabusAssignments": [],
+        "resourceIds": []
+      },
+      "unitId": "unit-14",
+      "group": "completion",
+      "kind": "ojt",
+      "title": "Learners work with project tasks in FSU Project",
+      "summary": "Giai đoạn On-the-Job Training (26 ngày, tổng 3960 phút): học viên làm việc trực tiếp trên các task thực tế trong FSU Project dưới sự hỗ trợ của mentor, áp dụng LO6-LO12 (Spring Data JPA, bảo mật, hiệu năng, caching/async, kiểm thử, vận hành, tổ chức dự án) vào công việc dự án thật - không có resourceId ngoài, nội dung là khung tổ chức nội bộ.",
+      "durationMinutes": 3960.0,
+      "objectives": ["LO6", "LO7", "LO8", "LO9", "LO10", "LO11", "LO12"],
+      "prerequisites": [
+        "Đã hoàn thành Unit 5-12 (Day 13-36): Spring Boot core, MVC, JPA, Security, caching/async, testing/vận hành và toàn bộ Sprint 1-3 của dự án capstone."
+      ],
+      "outcomes": [
+        "Ghi nhận tiến độ công việc thực tế trong FSU Project bằng nhật ký công việc hàng tuần có evidence cụ thể.",
+        "Chuẩn bị và tham gia các buổi check-in mentor với blocker/next action rõ ràng.",
+        "Chuẩn bị evidence code-review bám theo LO6-LO12 khi đề nghị review."
+      ],
+      "sections": [
+        {
+          "id": "day3964-sec-overview",
+          "title": "Phạm vi và mục tiêu giai đoạn OJT",
+          "blocks": [
+            {
+              "id": "day3964-blk-1",
+              "type": "deliverable",
+              "text": "Day 39-64 (26 ngày, tổng 3960 phút) là giai đoạn On-the-Job Training: học viên làm việc trực tiếp trên các task thực tế trong FSU Project dưới sự hỗ trợ của mentor, bao phủ LO6-LO12 - áp dụng kỹ năng Spring Data JPA, bảo mật, hiệu năng, caching/async, kiểm thử và tổ chức dự án đã xây dựng ở Unit 5-12 vào công việc dự án thực tế.",
+              "citations": []
+            },
+            {
+              "id": "day3964-blk-2",
+              "type": "note",
+              "text": "Day 39-64 chỉ có 2 dòng lịch trong course-catalog.json (row 61: 'Learners work with project tasks in FSU Project'; row 62: 'Mentor support during OJT Phase') và không có resourceId/URL tài liệu ngoài nào được gán - checklist và mẫu template dưới đây là khung tổ chức nội bộ (internal scaffold) để học viên tự vận hành giai đoạn OJT, không mô tả stack, chính sách hay quy trình riêng cụ thể nào của FSU Project vì syllabus không cung cấp thông tin đó.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day3964-sec-onboarding",
+          "title": "Checklist onboarding và đặt mục tiêu",
+          "blocks": [
+            {
+              "id": "day3964-blk-3",
+              "type": "template",
+              "text": "Checklist onboarding tuần đầu OJT: (1) Xác nhận với mentor phạm vi/task đầu tiên được giao trong FSU Project; (2) Xác định rõ task đầu tiên rèn luyện LO nào trong LO6-LO12; (3) Thiết lập môi trường làm việc (repo, nhánh, quyền truy cập) theo hướng dẫn của mentor; (4) Thống nhất kênh liên lạc và tần suất check-in với mentor; (5) Viết 2-3 mục tiêu cá nhân đo lường được cho 2 tuần đầu, bám sát đúng phạm vi mentor đã giao - không tự đặt mục tiêu vượt ngoài task được phân công.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day3964-sec-worklog",
+          "title": "Mẫu nhật ký công việc hàng tuần",
+          "blocks": [
+            {
+              "id": "day3964-blk-4",
+              "type": "template",
+              "text": "Mẫu nhật ký công việc (điền 1 dòng cho mỗi ngày làm việc chính) gồm 5 cột: Ngày | Task đã làm | Evidence (link commit/PR/tài liệu nội bộ) | Blocker gặp phải (nếu có) | Next action. Ví dụ một dòng mẫu: 2026-09-07 | Triển khai endpoint GET /orders có phân trang | PR #128 (link nội bộ dự án) | Chưa rõ quy tắc phân quyền cho endpoint này | Hỏi mentor trong buổi check-in kế tiếp.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day3964-sec-mentor-checkin",
+          "title": "Mẫu buổi check-in với mentor",
+          "blocks": [
+            {
+              "id": "day3964-blk-5",
+              "type": "template",
+              "text": "Chuẩn bị cho mỗi buổi check-in mentor: (1) Tóm tắt tiến độ từ lần check-in trước, dựa trên nhật ký công việc; (2) Liệt kê blocker cụ thể cần hỗ trợ, kèm những gì đã thử; (3) Đề xuất next action cho giai đoạn tới để mentor xác nhận/điều chỉnh; (4) Ghi lại quyết định/phản hồi của mentor ngay trong buổi để không bị quên.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day3964-sec-evidence-checklist",
+          "title": "Checklist code-review và evidence theo LO6-LO12",
+          "blocks": [
+            {
+              "id": "day3964-blk-6",
+              "type": "template",
+              "text": "Checklist evidence khi đề nghị code review, ánh xạ theo các LO đã xây dựng ở Unit 5-12: LO6-LO7 (repository/JPA) - PR có mô tả entity/migration rõ ràng kèm test; LO8-LO9 (bảo mật, hiệu năng) - PR description nêu rõ đã kiểm tra phân quyền/N+1; LO10 (caching/async/tích hợp) - có evidence log hoặc test cho hành vi async/cache; LO11 (kiểm thử/vận hành) - test liên quan pass và có ghi chú ảnh hưởng tới coverage; LO12 (tổ chức và quy trình dự án) - PR tuân theo quy ước nhánh/commit do mentor hướng dẫn cho FSU Project. Không tự suy diễn coding convention cụ thể ngoài những gì mentor/dự án cung cấp.",
+              "citations": []
+            }
+          ]
+        }
+      ],
+      "commonMistakes": [
+        "Không ghi nhật ký công việc đều đặn, khiến buổi check-in mentor thiếu evidence cụ thể để trao đổi.",
+        "Giữ blocker cho riêng mình quá lâu thay vì escalate cho mentor kèm evidence cụ thể ngay khi gặp.",
+        "Tự suy diễn quy trình/stack/chính sách riêng của FSU Project thay vì xác nhận trực tiếp với mentor."
+      ],
+      "practices": [
+        {
+          "id": "day3964-prac-1",
+          "type": "applied",
+          "interaction": "self-check",
+          "prompt": "Điền một dòng nhật ký công việc mẫu (Ngày | Task | Evidence | Blocker | Next action) cho một task giả định bạn có thể gặp trong OJT.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Evidence phải là thứ có thể kiểm chứng được (link commit/PR/tài liệu), không phải mô tả chung chung.",
+          "solution": "Không có đáp án cố định - một dòng nhật ký đạt yêu cầu có đủ 5 cột, task cụ thể (không mơ hồ), evidence dẫn tới một sản phẩm cụ thể (ví dụ số PR), và next action là một hành động khả thi cho ngày/tuần kế tiếp.",
+          "explanation": "Nhật ký càng cụ thể (đặc biệt cột evidence và next action) thì càng hữu ích khi dùng lại trong buổi check-in mentor hoặc evidence portfolio ở Day 65-66.",
+          "rubric": "Đánh giá đúng: đủ 5 cột, task cụ thể, evidence kiểm chứng được, next action khả thi cho bước kế tiếp.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day3964-prac-2",
+          "type": "applied",
+          "interaction": "self-check",
+          "prompt": "Viết 2-3 mục tiêu cá nhân đo lường được cho 2 tuần đầu OJT, bám theo checklist onboarding ở trên.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Mục tiêu nên gắn với task/LO cụ thể mentor đã giao, không đặt mục tiêu vượt phạm vi được phân công.",
+          "solution": "Không có đáp án cố định - mục tiêu tốt đo lường được (ví dụ: hoàn thành 1 task được mentor xác nhận pass review trong tuần 2) và bám sát đúng phạm vi công việc mentor đã giao, không tự thêm phạm vi ngoài task được phân công.",
+          "explanation": "Mục tiêu đo lường được và đúng phạm vi giúp buổi check-in mentor có cơ sở rõ ràng để đối chiếu tiến độ, tránh mục tiêu chung chung không kiểm chứng được.",
+          "rubric": "Đánh giá đúng: 2-3 mục tiêu đo lường được, bám sát phạm vi mentor giao, không mơ hồ.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day3964-prac-3",
+          "type": "concept",
+          "interaction": "self-check",
+          "prompt": "Viết một đoạn reflection ngắn (3-5 câu) về một incident/blocker giả định trong OJT và cách bạn xử lý theo đúng quy trình escalate ở checklist buổi check-in mentor.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Nêu rõ: blocker là gì, bạn đã thử gì trước khi escalate, và escalate cho mentor như thế nào.",
+          "solution": "Không có đáp án cố định - reflection tốt nêu blocker cụ thể (không chung chung), ít nhất một hành động đã thử trước khi escalate, và cách trình bày blocker đó cho mentor kèm evidence cụ thể (không phải mô tả mơ hồ 'bị kẹt').",
+          "explanation": "Reflection cụ thể, gắn với evidence thật, giúp học viên rút kinh nghiệm cho các blocker tương tự trong các task tiếp theo của OJT.",
+          "rubric": "Đánh giá đúng: blocker cụ thể, có hành động đã thử, cách escalate rõ ràng kèm evidence.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day3964-prac-4",
+          "type": "concept",
+          "interaction": "multiple-choice",
+          "prompt": "Khi gặp một blocker kỹ thuật mà bạn không tự giải quyết được trong buổi làm việc, hành động đúng nhất theo quy trình OJT ở trên là gì?",
+          "choices": [
+            {
+              "id": "day3964-prac-4-a",
+              "text": "Escalate ngay cho mentor trong buổi check-in gần nhất, kèm evidence cụ thể về những gì đã thử và lỗi gặp phải"
+            },
+            {
+              "id": "day3964-prac-4-b",
+              "text": "Bỏ qua task đó và tự chuyển sang task khác mà không báo với ai"
+            },
+            {
+              "id": "day3964-prac-4-c",
+              "text": "Cố tự giải quyết bằng mọi giá và không ghi nhận gì vào nhật ký công việc"
+            },
+            {
+              "id": "day3964-prac-4-d",
+              "text": "Chờ đến buổi check-in định kỳ tiếp theo (có thể cả tuần sau) mới báo cho mentor"
+            }
+          ],
+          "correctChoiceIds": ["day3964-prac-4-a"],
+          "hint": "Xem lại checklist 'Mẫu buổi check-in với mentor' ở trên - blocker nên được đưa vào ngay khi có cơ hội gần nhất, không phải chờ định kỳ.",
+          "solution": "day3964-prac-4-a",
+          "explanation": "Checklist check-in ở trên yêu cầu liệt kê blocker cụ thể kèm những gì đã thử ngay tại buổi check-in gần nhất - escalate sớm với evidence cụ thể giúp mentor hỗ trợ đúng lúc và tránh trễ tiến độ, thay vì im lặng chịu đựng hoặc chờ tới kỳ check-in xa.",
+          "rubric": "Chọn đúng phương án escalate sớm kèm evidence cụ thể (phương án a).",
+          "sourceUsage": []
+        }
+      ],
+      "syllabusAssignments": [],
+      "enhancedExercises": [
+        "Tự thiết kế một bảng theo dõi cá nhân (spreadsheet hoặc công cụ bất kỳ) để duy trì nhật ký công việc hàng tuần trong suốt giai đoạn OJT.",
+        "Diễn tập một buổi check-in mentor giả lập với bạn học, luân phiên đóng vai mentor/mentee để luyện cách trình bày blocker súc tích."
+      ],
+      "references": [
+        {
+          "id": "day3964-ref-1",
+          "type": "internal",
+          "description": "Day 19-30 (Spring Data JPA, Security, caching/async, testing/vận hành) là nguồn kỹ năng kỹ thuật cho LO6-LO10 được áp dụng vào các task OJT thực tế."
+        },
+        {
+          "id": "day3964-ref-2",
+          "type": "internal",
+          "description": "Day 31-36 (System Design & Project Kickoff, Sprint 1-3, Final Defense) cung cấp quy trình tổ chức dự án và thói quen evidence/review mà checklist OJT ở trên dựa theo (LO11-LO12)."
+        }
+      ],
+      "sourceUsage": [],
+      "authoring": {
+        "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+        "reviewStatus": "reviewed",
+        "limitations": [
+          "Day 39-64 không có resourceId nào được gán trong content/source-manifest.json/course-catalog.json (chỉ có 2 sourceRows lịch trình, không có URL tài liệu ngoài) - checklist/template trong bài này là khung tổ chức nội bộ, không mô tả stack, chính sách hay quy trình cụ thể nào của FSU Project vì syllabus không cung cấp thông tin đó."
+        ]
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "id": "day-65-66",
+      "catalogRef": {
+        "unitId": "unit-15",
+        "group": "completion",
+        "title": "Evaluate learners after training and OJT phase",
+        "objectives": ["LO10", "LO11", "LO12"],
+        "durationMinutes": 600.0,
+        "sourceRows": [63],
+        "syllabusAssignments": [],
+        "resourceIds": []
+      },
+      "unitId": "unit-15",
+      "group": "completion",
+      "kind": "evaluation",
+      "title": "Evaluate learners after training and OJT phase",
+      "summary": "Giai đoạn đánh giá học viên sau đào tạo và OJT (2 ngày, tổng 600 phút, hình thức Virtual): tổng hợp evidence portfolio từ giai đoạn OJT (Day 39-64), tự đánh giá và tham gia đánh giá theo LO10-LO12 - không có resourceId ngoài, nội dung là khung đánh giá nội bộ, không đặt ra thang điểm chính thức.",
+      "durationMinutes": 600.0,
+      "objectives": ["LO10", "LO11", "LO12"],
+      "prerequisites": [
+        "Đã hoàn thành giai đoạn OJT (Day 39-64) với nhật ký công việc và evidence code-review được duy trì đều đặn."
+      ],
+      "outcomes": [
+        "Tổng hợp được một evidence portfolio phản ánh đóng góp thực tế trong giai đoạn OJT.",
+        "Tự đánh giá năng lực bản thân theo LO10-LO12 kèm evidence cụ thể.",
+        "Trình bày phản biện/reflection và đề ra improvement plan cho bước tiếp theo."
+      ],
+      "sections": [
+        {
+          "id": "day6566-sec-overview",
+          "title": "Phạm vi và mục tiêu giai đoạn đánh giá",
+          "blocks": [
+            {
+              "id": "day6566-blk-1",
+              "type": "deliverable",
+              "text": "Day 65-66 (2 ngày, tổng 600 phút, hình thức Virtual) là giai đoạn đánh giá học viên sau đào tạo và OJT, bao phủ LO10-LO12: học viên tổng hợp evidence portfolio từ Day 39-64, tự đánh giá và tham gia buổi đánh giá/phản biện với evaluator.",
+              "citations": []
+            },
+            {
+              "id": "day6566-blk-2",
+              "type": "note",
+              "text": "Day 65-66 chỉ có 1 dòng lịch trong course-catalog.json (row 63: 'Evaluate learners after training and OJT phase') và không có resourceId/URL tài liệu ngoài nào được gán - toàn bộ mẫu portfolio/rubric dưới đây là khung đánh giá nội bộ do syllabus không cung cấp thang điểm hay quy trình đánh giá chính thức; mọi mức điểm/nhãn xuất hiện trong bài đều được ghi rõ là gợi ý tham khảo, không phải thang điểm chính thức của chương trình.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day6566-sec-portfolio",
+          "title": "Mẫu evidence portfolio",
+          "blocks": [
+            {
+              "id": "day6566-blk-3",
+              "type": "template",
+              "text": "Evidence portfolio nộp trước buổi đánh giá gồm: (1) Danh sách task đã hoàn thành trong OJT, trích từ nhật ký công việc Day 39-64; (2) 2-3 PR/code review tiêu biểu nhất kèm lý do chọn; (3) Kết quả test/coverage liên quan (nếu có) cho các task đã làm; (4) Phản hồi mentor tiêu biểu đã nhận được trong các buổi check-in; (5) Một đoạn tóm tắt ngắn (5-7 câu) về đóng góp cá nhân vào FSU Project trong toàn bộ giai đoạn OJT.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day6566-sec-self-assessment",
+          "title": "Tự đánh giá của học viên (self-assessment)",
+          "blocks": [
+            {
+              "id": "day6566-blk-4",
+              "type": "template",
+              "text": "Với mỗi LO10, LO11, LO12: tự xếp mức độ tự tin theo 3 mức mô tả (Mới bắt đầu / Áp dụng được khi có hỗ trợ / Áp dụng độc lập) và nêu 1 evidence cụ thể từ portfolio minh hoạ cho mức đó. Đây là thang mô tả định tính để tự phản ánh, không phải điểm số chính thức của chương trình đào tạo.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day6566-sec-evaluator-rubric",
+          "title": "Gợi ý rubric dành cho evaluator (LO10-LO12)",
+          "blocks": [
+            {
+              "id": "day6566-blk-5",
+              "type": "template",
+              "text": "Gợi ý mẫu rubric tham khảo (không phải thang điểm chính thức của chương trình đào tạo) cho evaluator, theo 3 mức 'Cần cải thiện / Đạt yêu cầu / Đạt tốt' trên từng LO: LO10 (tích hợp/vận hành - caching, async, testing, tài liệu API) - đánh giá qua evidence PR và kết quả test trong portfolio; LO11 (quy trình kỹ thuật dự án - nhánh, review, CI/CD nếu có) - đánh giá qua mức tuân thủ quy ước dự án ghi nhận trong nhật ký công việc; LO12 (phối hợp và tổ chức công việc) - đánh giá qua chất lượng trao đổi trong các buổi check-in mentor và khả năng tự escalate blocker đúng lúc.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day6566-sec-defense",
+          "title": "Câu hỏi phản biện và reflection",
+          "blocks": [
+            {
+              "id": "day6566-blk-6",
+              "type": "template",
+              "text": "Câu hỏi phản biện/reflection mẫu cho buổi đánh giá: (1) Mô tả task khó nhất bạn xử lý trong OJT liên quan LO10 - bạn đã áp dụng kỹ thuật nào và vì sao chọn cách đó? (2) Nếu làm lại task đó, bạn sẽ thay đổi gì trong cách tổ chức/kiểm thử (LO11)? (3) Kể lại một tình huống bạn phải phối hợp với mentor hoặc thành viên khác để giải quyết blocker và bài học rút ra (LO12).",
+              "citations": []
+            }
+          ]
+        }
+      ],
+      "commonMistakes": [
+        "Nộp portfolio chỉ liệt kê task mà không có evidence kiểm chứng được (không link PR/kết quả test cụ thể).",
+        "Tự đánh giá chung chung ('làm tốt', 'ổn') mà không gắn với evidence cụ thể cho từng LO.",
+        "Trả lời câu hỏi phản biện bằng lý thuyết chung thay vì ví dụ thực tế từ chính công việc đã làm trong OJT."
+      ],
+      "practices": [
+        {
+          "id": "day6566-prac-1",
+          "type": "applied",
+          "interaction": "self-check",
+          "prompt": "Chuẩn bị một evidence portfolio mẫu cho một task OJT giả định, theo đúng 5 mục ở phần 'Mẫu evidence portfolio' ở trên.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Mỗi mục cần dẫn được tới một evidence cụ thể (PR, kết quả test, phản hồi mentor), không mô tả chung chung.",
+          "solution": "Không có đáp án cố định - portfolio đạt yêu cầu có đủ 5 mục, mỗi mục có evidence dẫn chứng cụ thể (ví dụ số PR, kết quả test), và đoạn tóm tắt đóng góp cá nhân phản ánh đúng các task đã liệt kê.",
+          "explanation": "Portfolio có evidence cụ thể giúp evaluator đối chiếu nhanh giữa lời tự thuật và bằng chứng thực tế, thay vì chỉ dựa vào mô tả chủ quan.",
+          "rubric": "Đánh giá đúng: đủ 5 mục, mỗi mục có evidence cụ thể, tóm tắt khớp với các task đã liệt kê.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day6566-prac-2",
+          "type": "concept",
+          "interaction": "self-check",
+          "prompt": "Tự đánh giá bản thân theo 3 mức (Mới bắt đầu / Áp dụng được khi có hỗ trợ / Áp dụng độc lập) cho từng LO10, LO11, LO12, kèm 1 evidence cụ thể mỗi LO.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Evidence nên lấy trực tiếp từ evidence portfolio đã chuẩn bị ở practice trước.",
+          "solution": "Không có đáp án cố định - tự đánh giá đạt yêu cầu khi mỗi LO có đúng 1 mức được chọn (trong 3 mức mô tả) và 1 evidence cụ thể minh hoạ cho mức đó, không bỏ trống LO nào.",
+          "explanation": "Gắn mức tự đánh giá với evidence cụ thể giúp buổi đánh giá tập trung vào bằng chứng thay vì cảm tính, và giúp học viên nhận ra khoảng cách giữa tự nhận thức và thực tế.",
+          "rubric": "Đánh giá đúng: cả 3 LO đều có mức tự đánh giá và evidence cụ thể tương ứng.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day6566-prac-3",
+          "type": "concept",
+          "interaction": "self-check",
+          "prompt": "Trả lời một trong các câu hỏi phản biện mẫu ở trên bằng một ví dụ thực tế (giả định) từ giai đoạn OJT của bạn.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Chọn 1 câu hỏi và trả lời bằng tình huống cụ thể, tránh trả lời lý thuyết chung chung.",
+          "solution": "Không có đáp án cố định - câu trả lời tốt gắn với một task/tình huống cụ thể đã làm (không phải mô tả lý thuyết chung), nêu rõ hành động đã thực hiện và lý do lựa chọn cách làm đó.",
+          "explanation": "Câu trả lời gắn với tình huống cụ thể chứng minh học viên thực sự áp dụng LO liên quan vào công việc thật, thay vì chỉ nhắc lại khái niệm.",
+          "rubric": "Đánh giá đúng: câu trả lời gắn với một tình huống/task cụ thể, có hành động và lý do rõ ràng.",
+          "sourceUsage": []
+        },
+        {
+          "id": "day6566-prac-4",
+          "type": "applied",
+          "interaction": "self-check",
+          "prompt": "Viết một improvement plan ngắn (2-3 hành động cụ thể) cho giai đoạn tiếp theo, dựa trên điểm còn yếu bạn tự nhận thấy qua self-assessment ở trên.",
+          "choices": [],
+          "correctChoiceIds": [],
+          "hint": "Mỗi hành động nên gắn với một LO cụ thể còn ở mức thấp trong self-assessment, không chung chung kiểu 'cố gắng hơn'.",
+          "solution": "Không có đáp án cố định - improvement plan đạt yêu cầu có 2-3 hành động cụ thể, khả thi, mỗi hành động gắn rõ với một LO còn yếu đã xác định ở self-assessment.",
+          "explanation": "Improvement plan cụ thể, bám theo kết quả self-assessment, giúp học viên có hướng cải thiện rõ ràng cho giai đoạn tiếp theo thay vì mục tiêu mơ hồ.",
+          "rubric": "Đánh giá đúng: 2-3 hành động cụ thể, mỗi hành động gắn với một LO còn yếu đã xác định.",
+          "sourceUsage": []
+        }
+      ],
+      "syllabusAssignments": [],
+      "enhancedExercises": [
+        "Diễn tập trình bày evidence portfolio trong 5 phút với bạn học đóng vai evaluator, sau đó xin phản hồi.",
+        "So sánh self-assessment của bạn với phản hồi thực tế mentor đã đưa ra trong OJT để tìm điểm lệch nhận thức (nếu có)."
+      ],
+      "references": [
+        {
+          "id": "day6566-ref-1",
+          "type": "internal",
+          "description": "Day 39-64 (giai đoạn OJT) là nguồn evidence chính (nhật ký công việc, PR, phản hồi mentor) được tổng hợp vào portfolio đánh giá ở đây."
+        },
+        {
+          "id": "day6566-ref-2",
+          "type": "internal",
+          "description": "Day 36 (Final Defense) là nơi cấu trúc trình bày/evidence/câu hỏi phản biện được giới thiệu chi tiết lần đầu, được tái sử dụng ở dạng rút gọn cho buổi đánh giá cuối OJT này."
+        }
+      ],
+      "sourceUsage": [],
+      "authoring": {
+        "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
+        "reviewStatus": "reviewed",
+        "limitations": [
+          "Day 65-66 không có resourceId nào được gán trong content/source-manifest.json/course-catalog.json (chỉ có 1 sourceRow lịch trình, không có URL tài liệu ngoài) - mẫu portfolio/rubric trong bài này là khung đánh giá nội bộ; mọi mức điểm/nhãn xuất hiện đều được ghi rõ là gợi ý tham khảo, không phải thang điểm chính thức của chương trình đào tạo."
+        ]
+      }
+    }
+  ]
+}
