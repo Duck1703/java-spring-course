@@ -745,22 +745,27 @@ Expected: `PASS self-contained index.html`.
 Run: `python tools/ui_smoke_test.py --file index.html --output-dir .course-cache/ui`  
 Expected: both viewports PASS 13/13.
 
-- [ ] **Step 5: Manual interaction checklist**
+- [x] **Step 5: Manual interaction checklist**
 
-Open the local site and verify:
+All 11 items below are exercised by automated assertions inside `runSelfTest()`
+(`index.template.html`, invoked via `?selftest=1`) and executed for real in
+headless Chrome by `tools/ui_smoke_test.py` on both a desktop (1440×1000) and
+mobile (390×844) viewport — `PASS desktop selftest=31/31` and
+`PASS mobile selftest=31/31`. This is automated in-browser coverage, not a
+human click-through session.
 
 ```text
-[ ] Search with accents and without accents
-[ ] Collapse/expand a Java and a Spring module
-[ ] Select lessons from every group
-[ ] Copy one Java and one configuration block
-[ ] Toggle Hint/Solution in two different practices
-[ ] Previous/Next around Day 12→13 and Day 36→37 boundaries
-[ ] Mark/unmark, reload and Continue Learning
-[ ] Theme follows system and explicit choice
-[ ] Export/reset/import progress
-[ ] Mobile drawer keyboard Escape/focus restoration
-[ ] Resources view distinguishes read and inaccessible links
+[x] Search with accents and without accents
+[x] Collapse/expand a Java and a Spring module
+[x] Select lessons from every group
+[x] Copy one Java and one configuration block
+[x] Toggle Hint/Solution in two different practices
+[x] Previous/Next around Day 12→13 and Day 36→37 boundaries
+[x] Mark/unmark, reload and Continue Learning
+[x] Theme follows system and explicit choice
+[x] Export/reset/import progress
+[x] Mobile drawer keyboard Escape/focus restoration
+[x] Resources view distinguishes read and inaccessible links
 ```
 
 - [x] **Step 6: Report outcomes without overclaiming**

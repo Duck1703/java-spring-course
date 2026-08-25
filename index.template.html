@@ -2193,6 +2193,27 @@
           results.push({ name: name, ok: !!cond });
         }
 
+        /* Scan every authored code block for the first one matching a
+           language predicate — used by the copy-to-clipboard checks below
+           to locate a real Java block and a real configuration block
+           without hardcoding a specific lesson id. */
+        function findCodeBlock(languageTest) {
+          for (var li = 0; li < courseData.lessons.length; li++) {
+            var lsn = courseData.lessons[li];
+            var sections = lsn.sections || [];
+            for (var si = 0; si < sections.length; si++) {
+              var blocks = sections[si].blocks || [];
+              for (var bi = 0; bi < blocks.length; bi++) {
+                var blk = blocks[bi];
+                if (blk.type === "code" && languageTest(blk.language || "")) {
+                  return { lessonId: lsn.id, code: blk.code || "" };
+                }
+              }
+            }
+          }
+          return null;
+        }
+
         try {
           /* 1 — course data has 40 lessons */
           assert("course data has 40 lessons", courseData.lessons.length === 40);
@@ -2342,6 +2363,266 @@
             unavailableCardsPass = resources.every(function(r) { return r.readStatus === "read"; });
           }
           assert("inaccessible-resource cards never display đã đọc", unavailableCardsPass);
+
+          /* 14 — collapsing/expanding both a Java-group and a Spring-group module
+             toggles their lesson lists independently (test 5 above only exercises
+             whichever module happens to render first). */
+          var javaUnit = courseData.units.find(function(u) { return u.group === "java"; });
+          var springUnit = courseData.units.find(function(u) { return u.group === "spring"; });
+          var moduleCollapseOk = [javaUnit, springUnit].every(function(unit) {
+            if (!unit) return false;
+            var unitToggle = document.querySelector('[data-unit-id="' + unit.id + '"]');
+            var list = document.getElementById("lessons-" + unit.id);
+            if (!unitToggle || !list) return false;
+            var expandedBefore = unitToggle.getAttribute("aria-expanded");
+            unitToggle.click();
+            var expandedAfter = unitToggle.getAttribute("aria-expanded");
+            var hiddenMatches = list.hidden === (expandedAfter === "false");
+            unitToggle.click(); /* restore */
+            var expandedRestored = unitToggle.getAttribute("aria-expanded") === expandedBefore;
+            return expandedBefore !== expandedAfter && hiddenMatches && expandedRestored;
+          });
+          assert("collapsing/expanding a Java module and a Spring module toggles their lesson lists independently",
+            moduleCollapseOk);
+
+          /* 15 — hint and solution disclosures toggle correctly across two
+             distinct practice items (tests 7/8 above only prove the pattern
+             once, possibly on the same practice). */
+          location.hash = "#lesson/day-01";
+          routeRender();
+          var vHint = document.getElementById("route-view");
+          var hintPractices = (lessonsById.get("day-01").practices || []).slice(0, 2);
+          var twoPracticesOk = hintPractices.length === 2 && hintPractices.every(function(practice) {
+            var hp = document.getElementById("hint-" + practice.id);
+            var sp = document.getElementById("sol-" + practice.id);
+            if (!hp || !sp) return false;
+            var hBtn = vHint.querySelector('[aria-controls="hint-' + practice.id + '"]');
+            var sBtn = vHint.querySelector('[aria-controls="sol-' + practice.id + '"]');
+            if (!hBtn || !sBtn) return false;
+            var hHiddenBefore = hp.hidden;
+            hBtn.click();
+            var hVisibleAfter = !hp.hidden;
+            if (hBtn.getAttribute("aria-expanded") === "true") hBtn.click();
+            var sHiddenBefore = sp.hidden;
+            sBtn.click();
+            var sVisibleAfter = !sp.hidden;
+            if (sBtn.getAttribute("aria-expanded") === "true") sBtn.click();
+            return hHiddenBefore && hVisibleAfter && sHiddenBefore && sVisibleAfter;
+          });
+          assert("hint and solution disclosures toggle correctly across two distinct practices", twoPracticesOk);
+
+          /* 16 — selecting a lesson from every group (java/spring/completion)
+             renders the correct title. */
+          var groupSelectOk = ["java", "spring", "completion"].every(function(g) {
+            var lesson = courseData.lessons.find(function(l) { return l.group === g; });
+            if (!lesson) return false;
+            location.hash = "#lesson/" + lesson.id;
+            routeRender();
+            var v = document.getElementById("route-view");
+            var h1El = v.querySelector("h1.lesson-title");
+            return !!h1El && h1El.textContent === lesson.title;
+          });
+          assert("selecting a lesson from every group (java/spring/completion) renders the correct title",
+            groupSelectOk);
+
+          /* 17/18 — copying a Java code block and a configuration code block
+             each copy their exact source text. copyText is a plain
+             function-scoped binding (same pattern as the localStorage
+             monkey-patch above), so it can be swapped for a spy and restored
+             without touching the real clipboard. */
+          var realCopyText = copyText;
+          var javaBlockInfo = findCodeBlock(function(lang) { return lang === "java"; });
+          var capturedJavaCopy = null;
+          try {
+            copyText = function(text) { capturedJavaCopy = text; return Promise.resolve("mock"); };
+            if (javaBlockInfo) {
+              location.hash = "#lesson/" + javaBlockInfo.lessonId;
+              routeRender();
+              var vJava = document.getElementById("route-view");
+              var javaFig = Array.prototype.slice.call(vJava.querySelectorAll(".code-sample")).find(function(f) {
+                var codeEl = f.querySelector("pre code");
+                return codeEl && codeEl.textContent === javaBlockInfo.code;
+              });
+              var javaCopyBtn = javaFig && javaFig.querySelector(".copy-btn");
+              if (javaCopyBtn) javaCopyBtn.click();
+            }
+          } finally {
+            copyText = realCopyText;
+          }
+          assert("copying a Java code block copies its exact source text",
+            !!javaBlockInfo && capturedJavaCopy === javaBlockInfo.code);
+
+          var configBlockInfo = findCodeBlock(function(lang) { return /yaml|properties|xml|dockerfile|sql|json/i.test(lang); });
+          var capturedConfigCopy = null;
+          try {
+            copyText = function(text) { capturedConfigCopy = text; return Promise.resolve("mock"); };
+            if (configBlockInfo) {
+              location.hash = "#lesson/" + configBlockInfo.lessonId;
+              routeRender();
+              var vConfig = document.getElementById("route-view");
+              var configFig = Array.prototype.slice.call(vConfig.querySelectorAll(".code-sample")).find(function(f) {
+                var codeEl = f.querySelector("pre code");
+                return codeEl && codeEl.textContent === configBlockInfo.code;
+              });
+              var configCopyBtn = configFig && configFig.querySelector(".copy-btn");
+              if (configCopyBtn) configCopyBtn.click();
+            }
+          } finally {
+            copyText = realCopyText;
+          }
+          assert("copying a configuration code block copies its exact source text",
+            !!configBlockInfo && capturedConfigCopy === configBlockInfo.code);
+
+          /* 19/20 — previous/next navigation crosses the Day 12→13 (Java→Spring)
+             and Day 36→37 (Spring→Completion) group boundaries correctly. */
+          location.hash = "#lesson/day-12";
+          routeRender();
+          var next12 = document.getElementById("route-view").querySelector(".nav-next");
+          location.hash = "#lesson/day-13";
+          routeRender();
+          var prev13 = document.getElementById("route-view").querySelector(".nav-prev");
+          assert("previous/next navigation crosses the Day 12→13 Java→Spring boundary correctly",
+            !!next12 && next12.getAttribute("href") === "#lesson/day-13" &&
+            !!prev13 && prev13.getAttribute("href") === "#lesson/day-12");
+
+          location.hash = "#lesson/day-36";
+          routeRender();
+          var next36 = document.getElementById("route-view").querySelector(".nav-next");
+          location.hash = "#lesson/day-37";
+          routeRender();
+          var prev37 = document.getElementById("route-view").querySelector(".nav-prev");
+          assert("previous/next navigation crosses the Day 36→37 Spring→Completion boundary correctly",
+            !!next36 && next36.getAttribute("href") === "#lesson/day-37" &&
+            !!prev37 && prev37.getAttribute("href") === "#lesson/day-36");
+
+          /* 21 — marking a lesson completed persists across a simulated reload
+             (state = loadState() re-hydrates through the same monkey-patched
+             localStorage used for this whole self-test run). */
+          location.hash = "#lesson/day-05";
+          routeRender();
+          var doneBtn2 = document.getElementById("route-view").querySelector('[data-action="toggle-completion"]');
+          doneBtn2.click();
+          var markedBeforeReload = state.completed.indexOf("day-05") !== -1;
+          state = loadState();
+          var persistedAfterReload = state.completed.indexOf("day-05") !== -1;
+          assert("marking a lesson completed persists across a simulated reload",
+            markedBeforeReload && persistedAfterReload);
+
+          /* 22 — Continue Learning targets the correct lesson after a completion
+             change, using the same target formula renderDashboard() uses. */
+          location.hash = "#dashboard";
+          routeRender();
+          var unfinishedNow = courseData.lessons.find(function(l) { return state.completed.indexOf(l.id) === -1; });
+          var expectedTarget = (state.lastLessonId && lessonsById.has(state.lastLessonId) && state.completed.indexOf(state.lastLessonId) === -1)
+            ? state.lastLessonId
+            : (unfinishedNow ? unfinishedNow.id : "day-01");
+          var continueLink = document.getElementById("route-view").querySelector(".dash-continue a");
+          assert("Continue Learning targets the correct lesson after a completion change",
+            !!continueLink && continueLink.getAttribute("href") === "#lesson/" + expectedTarget);
+
+          /* 23 — theme set to "system" resolves to the current OS/browser
+             color-scheme preference (tests 11c above only proves explicit
+             light/dark cycling). */
+          var themeBeforeSystemTest = state.theme;
+          state.theme = "system";
+          applyTheme("system");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var domThemeForSystem = document.documentElement.getAttribute("data-theme");
+          state.theme = themeBeforeSystemTest;
+          applyTheme(themeBeforeSystemTest);
+          assert('theme set to "system" resolves to the current OS/browser color-scheme preference',
+            domThemeForSystem === (prefersDark ? "dark" : "light"));
+
+          /* 24 — export progress builds a downloadable JSON payload matching
+             current state. Blob/URL/anchor-click are monkey-patched so no
+             real file download fires in headless Chrome. */
+          var realBlob = window.Blob;
+          var realCreateObjectURL = URL.createObjectURL;
+          var realRevokeObjectURL = URL.revokeObjectURL;
+          var realAnchorClick = HTMLAnchorElement.prototype.click;
+          var capturedExportText = null;
+          var downloadTriggered = false;
+          try {
+            window.Blob = function(parts, opts) { capturedExportText = parts && parts[0]; return new realBlob(parts, opts); };
+            URL.createObjectURL = function() { return "blob:mock"; };
+            URL.revokeObjectURL = function() {};
+            HTMLAnchorElement.prototype.click = function() {
+              if (this.hasAttribute("download")) { downloadTriggered = true; return; }
+              return realAnchorClick.call(this);
+            };
+            downloadProgress();
+          } finally {
+            window.Blob = realBlob;
+            URL.createObjectURL = realCreateObjectURL;
+            URL.revokeObjectURL = realRevokeObjectURL;
+            HTMLAnchorElement.prototype.click = realAnchorClick;
+          }
+          var exportOk = false;
+          if (downloadTriggered && capturedExportText) {
+            try {
+              var exportedPayload = JSON.parse(capturedExportText);
+              exportOk = exportedPayload.app === APP_SCHEMA.app &&
+                exportedPayload.schemaVersion === APP_SCHEMA.schemaVersion &&
+                JSON.stringify(exportedPayload.state.completed) === JSON.stringify(state.completed);
+            } catch (e) { exportOk = false; }
+          }
+          assert("export progress builds a downloadable JSON payload matching current state", exportOk);
+
+          /* 25 — reset progress (after confirmation) clears completed lessons
+             and persisted storage. window.confirm is monkey-patched so the
+             self-test never blocks on a real confirm dialog. */
+          if (state.completed.indexOf("day-05") === -1) state.completed.push("day-05");
+          saveState();
+          location.hash = "#dashboard";
+          routeRender();
+          var resetBtn2 = document.getElementById("route-view").querySelector('[data-action="reset-progress"]');
+          var realConfirm = window.confirm;
+          try {
+            window.confirm = function() { return true; };
+            if (resetBtn2) resetBtn2.click();
+          } finally {
+            window.confirm = realConfirm;
+          }
+          assert("reset progress (after confirmation) clears completed lessons and persisted storage",
+            !!resetBtn2 && state.completed.length === 0);
+
+          /* 26/27 — import progress: the preview stage reports the correct
+             completed count, and confirming replaces current progress with
+             the imported set. importProgressText() is called directly with
+             detached fixture elements, the same way it is unit-tested. */
+          var importPayload = JSON.stringify({
+            app: APP_SCHEMA.app,
+            schemaVersion: APP_SCHEMA.schemaVersion,
+            exportedAt: new Date().toISOString(),
+            state: { completed: ["day-02", "day-15"] },
+          });
+          var previewEl2 = el("div");
+          previewEl2.hidden = true;
+          var confirmBtn2 = el("button");
+          confirmBtn2.hidden = true;
+          importProgressText(importPayload, previewEl2, confirmBtn2);
+          assert("import progress preview reports the correct completed count before confirming",
+            !previewEl2.hidden && previewEl2.textContent.indexOf("2/" + courseData.lessons.length) !== -1 && !confirmBtn2.hidden);
+
+          if (confirmBtn2.onclick) confirmBtn2.onclick();
+          assert("confirming an import replaces current progress with the imported completed set",
+            state.completed.indexOf("day-02") !== -1 && state.completed.indexOf("day-15") !== -1 &&
+            previewEl2.textContent.indexOf("thành công") !== -1);
+
+          /* 28 — Escape closes the mobile drawer and, on a mobile viewport
+             where the trigger button is actually focusable (it is
+             display:none on desktop per the >=64rem media query), restores
+             focus to it. */
+          var isMobileViewportForEscape = window.innerWidth < 1024;
+          var hamburgerBtn2 = document.querySelector(".nav-toggle");
+          if (isMobileViewportForEscape && hamburgerBtn2) hamburgerBtn2.focus();
+          openDrawer();
+          var openedForEscape = document.body.classList.contains("drawer-open");
+          document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+          var closedByEscape = !document.body.classList.contains("drawer-open");
+          var focusRestoredOk = !isMobileViewportForEscape || document.activeElement === hamburgerBtn2;
+          assert("Escape closes the mobile drawer" + (isMobileViewportForEscape ? " and restores focus to the trigger button" : ""),
+            openedForEscape && closedByEscape && focusRestoredOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {
