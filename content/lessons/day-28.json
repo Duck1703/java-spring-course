@@ -96,6 +96,42 @@
             "day28-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day28-blk-20",
+          "type": "paragraph",
+          "text": "Mental model của test: một test là một *đặc tả có thể chạy được*. Giá trị của nó không nằm ở việc chạy xanh hôm nay mà ở việc nó sẽ đỏ khi ai đó (kể cả bạn sáu tháng sau) phá vỡ hành vi đã hứa. Từ đó suy ra ba tiêu chí của test tốt: (1) *tên* nói rõ hành vi được kiểm chứng, không phải tên method được gọi; (2) *độc lập* — chạy riêng hay chạy chung, chạy theo thứ tự nào cũng cho cùng kết quả; (3) *xác định* — không phụ thuộc thời gian hệ thống, số ngẫu nhiên, hay mạng. Test vi phạm ba điều này sẽ dần bị đội ngũ bỏ qua, và một test bị bỏ qua thì tệ hơn không có test vì nó tạo cảm giác an toàn giả.",
+          "citations": [
+            "day28-src-1",
+            "day28-src-2"
+          ]
+        },
+        {
+          "id": "day28-blk-21",
+          "type": "paragraph",
+          "text": "Cấu trúc chuẩn của mỗi test là Arrange–Act–Assert (còn gọi Given–When–Then): dựng dữ liệu và điều kiện, thực hiện *một* hành động cần kiểm chứng, rồi khẳng định kết quả. Vì sao chỉ một hành động? Vì khi test đỏ, bạn muốn biết ngay điều gì sai mà không phải đọc lại toàn bộ. `assertAll` hữu ích để khẳng định nhiều *thuộc tính của cùng một kết quả* (tất cả assertion đều được chạy, báo cáo đầy đủ chỗ sai) — khác với việc gom nhiều tình huống khác nhau vào một method test. Với các lỗi mong đợi, `assertThrows` trả về chính exception đó, nên hãy kiểm tra cả thông điệp hoặc mã lỗi thay vì chỉ kiểm tra 'có ném exception'.",
+          "citations": [
+            "day28-src-3",
+            "day28-src-4"
+          ]
+        },
+        {
+          "id": "day28-blk-22",
+          "type": "note",
+          "text": "Vòng đời JUnit 5 quyết định sự độc lập giữa các test: mặc định JUnit tạo *một instance mới của class test cho mỗi method*, nên field không bị chia sẻ. `@BeforeEach`/`@AfterEach` chạy quanh từng test; `@BeforeAll`/`@AfterAll` chạy một lần cho cả class và phải `static` (trừ khi dùng `@TestInstance(PER_CLASS)`). Đây là chỗ hay sinh test 'chập chờn': đặt trạng thái dùng chung vào field static rồi test này để lại dữ liệu cho test kia, khiến kết quả phụ thuộc thứ tự chạy. Nếu bạn *phải* dựa vào thứ tự, thiết kế đó gần như luôn sai.",
+          "citations": [
+            "day28-src-2",
+            "day28-src-3"
+          ]
+        },
+        {
+          "id": "day28-blk-23",
+          "type": "paragraph",
+          "text": "Test nên bám vào *hành vi* chứ không vào cách cài đặt. Cụ thể: khẳng định trên kết quả trả về và trên tác động quan sát được (bản ghi đã lưu, HTTP status, sự kiện đã phát), thay vì khẳng định 'method X được gọi đúng 3 lần' trừ khi chính lời gọi đó là hợp đồng cần bảo vệ (ví dụ *phải* gửi email khi đơn hàng hoàn tất). Test gắn chặt vào cài đặt sẽ vỡ mỗi lần refactor dù hành vi không đổi — đó là loại test làm chậm đội ngũ thay vì bảo vệ họ. Khi chọn ca kiểm thử, hãy ưu tiên biên và ngoại lệ: rỗng, một phần tử, giá trị âm, `null`, trùng lặp, vượt giới hạn — vì lỗi thật gần như luôn nằm ở biên chứ không nằm ở đường đi may mắn.",
+          "citations": [
+            "day28-src-3",
+            "day28-src-4"
+          ]
         }
       ]
     },
@@ -134,6 +170,33 @@
           "citations": [
             "day28-src-10"
           ]
+        },
+        {
+          "id": "day28-blk-24",
+          "type": "paragraph",
+          "text": "Vì sao Spring Boot cung cấp nhiều loại test thay vì luôn nạp cả ứng dụng: mỗi lần nạp context là một khoản chi phí thời gian, và test càng rộng thì khi đỏ càng khó biết lỗi ở đâu. `@WebMvcTest` nạp *chỉ* tầng web — controller, `@ControllerAdvice`, converter, validator, filter của Spring MVC — nên nó là công cụ đúng để kiểm chứng những gì thuộc về HTTP: mã trạng thái, hình dạng JSON, ánh xạ tham số, phản hồi lỗi khi validation thất bại (Day 17). Service phía dưới được thay bằng mock (`@MockitoBean` trong Spring Boot 3.4+, thay cho `@MockBean` đã deprecated), vì logic nghiệp vụ nên được kiểm chứng ở test đơn vị riêng, nhanh hơn nhiều.",
+          "citations": [
+            "day28-src-5",
+            "day28-src-6"
+          ]
+        },
+        {
+          "id": "day28-blk-25",
+          "type": "note",
+          "text": "Ba điều dễ nhầm với `@WebMvcTest`: (1) nó *không* nạp `@Service`/`@Repository` — nếu quên mock, context sẽ lỗi 'required a bean of type ...'; đó là tính năng, không phải lỗi; (2) mặc định Spring Security *được* áp dụng trong slice web, nên một endpoint có bảo vệ sẽ trả 401 khiến test 'sai một cách bí ẩn' — dùng `@WithMockUser` hoặc `SecurityMockMvcRequestPostProcessors` để mô phỏng người dùng, và kiểm tra cả trường hợp bị chặn (Day 22–23); (3) `MockMvc` không mở cổng và không chạy qua tầng HTTP thật, nên nó không phát hiện được vấn đề về serialize khác biệt của server thật hay về cấu hình cổng — đổi lại nó nhanh và ổn định.",
+          "citations": [
+            "day28-src-7",
+            "day28-src-10"
+          ]
+        },
+        {
+          "id": "day28-blk-26",
+          "type": "note",
+          "text": "Khi khẳng định JSON, hãy khẳng định *hợp đồng*, không phải toàn bộ chuỗi: kiểm tra các trường quan trọng bằng `jsonPath` (`$.id`, `$.errors[0].field`) thay vì so sánh nguyên văn cả body, vì so sánh nguyên văn sẽ vỡ khi bạn thêm một trường mới hoàn toàn tương thích. Ngược lại, với các API công khai đã cam kết, việc *thiếu* một trường là lỗi phá vỡ hợp đồng — nên test cần khẳng định sự tồn tại của những trường đó một cách tường minh.",
+          "citations": [
+            "day28-src-8",
+            "day28-src-9"
+          ]
         }
       ]
     },
@@ -160,6 +223,23 @@
             "day28-src-11"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day28-blk-27",
+          "type": "paragraph",
+          "text": "`@DataJpaTest` tồn tại để trả lời một câu hỏi rất cụ thể: *mapping và câu truy vấn của tôi có đúng không?* Nó nạp lớp JPA, cấu hình `TestEntityManager`, và mặc định bọc mỗi test trong một transaction rồi rollback khi kết thúc — nhờ vậy các test không để lại dữ liệu cho nhau. Chính hành vi rollback này lại là nguồn của một điểm dễ nhầm quan trọng: vì transaction chưa commit, nhiều vấn đề chỉ xuất hiện lúc flush/commit (ràng buộc `NOT NULL`, unique, thứ tự câu lệnh) có thể *không* lộ ra. Khi muốn kiểm chứng những điều đó, hãy gọi flush tường minh qua `TestEntityManager` để buộc Hibernate sinh SQL.",
+          "citations": [
+            "day28-src-11",
+            "day28-src-12"
+          ]
+        },
+        {
+          "id": "day28-blk-28",
+          "type": "important",
+          "text": "Cẩn thận với việc test JPA trên database trong bộ nhớ (H2) khi production dùng PostgreSQL/MySQL: kiểu dữ liệu, hàm ngày tháng, cú pháp phân trang, phân biệt chữ hoa/thường của định danh và hành vi khóa đều có thể khác nhau, nên một test xanh trên H2 vẫn có thể vỡ ở production. Vì thế H2 phù hợp cho vòng phản hồi nhanh, còn những gì phụ thuộc dialect nên được kiểm chứng trên database thật bằng Testcontainers (Day 29). Ngoài ra `@DataJpaTest` cũng là chỗ tốt để phát hiện vấn đề N+1: bật `spring.jpa.show-sql` và *đếm* số câu lệnh sinh ra, vì lỗi hiệu năng loại này không thể thấy qua kết quả trả về (Day 20).",
+          "citations": [
+            "day28-src-12"
+          ]
         }
       ]
     },
@@ -187,6 +267,33 @@
             "day28-src-15"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day28-blk-29",
+          "type": "paragraph",
+          "text": "Chọn loại test theo câu hỏi bạn cần trả lời, đây là bản chất của kim tự tháp kiểm thử: rất nhiều test đơn vị cho logic nghiệp vụ (nhanh, không cần Spring, chạy bằng JUnit + Mockito thuần), một lượng vừa phải test slice cho từng tầng (`@WebMvcTest`, `@DataJpaTest`), và một ít test đầu-cuối với `@SpringBootTest` để chứng minh các mảnh ghép lại với nhau thật sự chạy — đăng nhập, gọi endpoint, dữ liệu vào database. Đảo ngược tỉ lệ này (rất nhiều test toàn hệ thống) khiến bộ test chậm và hay chập chờn, và mỗi lần đỏ đều tốn công điều tra.",
+          "citations": [
+            "day28-src-13",
+            "day28-src-14"
+          ]
+        },
+        {
+          "id": "day28-blk-30",
+          "type": "note",
+          "text": "Hai chi tiết kỹ thuật cần nhớ về `@SpringBootTest`: (1) `webEnvironment` quyết định bạn test qua tầng nào — `MOCK` (mặc định, dùng `MockMvc`, không mở cổng) so với `RANDOM_PORT` (server thật, dùng `TestRestTemplate`/RestAssured, có đầy đủ hành vi HTTP); chọn `RANDOM_PORT` thay vì cổng cố định để test không xung đột khi chạy song song hoặc trên CI. (2) Spring *cache lại* application context giữa các test có cấu hình giống nhau — đây là lý do quan trọng nhất khiến bộ test nhanh hay chậm. Mỗi biến thể cấu hình (`@MockitoBean` khác nhau, `properties` khác nhau, `@ActiveProfiles` khác nhau, `@DirtiesContext`) tạo thêm một context mới phải nạp lại; giữ số biến thể càng ít càng tốt.",
+          "citations": [
+            "day28-src-14",
+            "day28-src-15"
+          ]
+        },
+        {
+          "id": "day28-blk-31",
+          "type": "note",
+          "text": "Về dữ liệu test: `@SpringBootTest` mặc định *không* rollback như `@DataJpaTest`, nên nếu bạn ghi dữ liệu qua HTTP thì dữ liệu đó tồn lại và có thể làm test sau thất bại. Cách xử lý theo thứ tự ưu tiên: mỗi test tự tạo dữ liệu riêng với giá trị duy nhất (email kèm UUID) thay vì dựa vào dữ liệu dùng chung; hoặc thêm `@Transactional` cho test đọc/ghi qua tầng service; hoặc dọn dẹp tường minh. Về xác định (determinism): tránh `LocalDateTime.now()` rải rác trong logic — tiêm một `Clock` để test có thể cố định thời gian, và không bao giờ dùng `Thread.sleep` để 'chờ cho xong' vì đó là nguồn chính của test chập chờn.",
+          "citations": [
+            "day28-src-13",
+            "day28-src-15"
+          ]
         }
       ]
     },
@@ -235,6 +342,15 @@
             "day28-src-16",
             "day28-src-17"
           ]
+        },
+        {
+          "id": "day28-blk-32",
+          "type": "note",
+          "text": "Về độ phủ (coverage): con số phần trăm là *chỉ dấu*, không phải mục tiêu. 100% dòng được chạy qua vẫn có thể không có một assertion nào ý nghĩa, còn 60% tập trung vào logic nghiệp vụ cốt lõi có thể bảo vệ tốt hơn nhiều. Cách dùng coverage đúng đắn là đọc phần *chưa* được phủ để phát hiện nhánh xử lý lỗi bị bỏ quên, chứ không phải viết test cho getter/setter để đẩy số lên. Một dấu hiệu tốt hơn coverage: khi có bug ở production, hãy viết test tái hiện bug *trước* khi sửa — bộ test của bạn sẽ lớn lên đúng theo những chỗ hệ thống thực sự dễ vỡ.",
+          "citations": [
+            "day28-src-16",
+            "day28-src-17"
+          ]
         }
       ]
     }
@@ -242,7 +358,15 @@
   "commonMistakes": [
     "Dùng @SpringBootTest cho mọi test (kể cả test controller đơn giản) thay vì @WebMvcTest - làm test chạy chậm không cần thiết vì nạp toàn bộ context.",
     "Quên @MockBean/@MockitoBean cho dependency trong @WebMvcTest, khiến Spring không khởi tạo được context vì thiếu bean.",
-    "Dùng MockMvc để kiểm tra hành vi chỉ xảy ra ở tầng HTTP thật (ví dụ SSL, cấu hình server) - MockMvc không mở kết nối mạng thật nên không phát hiện được các vấn đề này."
+    "Dùng MockMvc để kiểm tra hành vi chỉ xảy ra ở tầng HTTP thật (ví dụ SSL, cấu hình server) - MockMvc không mở kết nối mạng thật nên không phát hiện được các vấn đề này.",
+    "Test phụ thuộc thứ tự chạy hoặc dùng trạng thái static dùng chung, dẫn tới kết quả khác nhau giữa chạy riêng và chạy cả bộ.",
+    "Quên mock service trong @WebMvcTest rồi kết luận slice test bị lỗi, trong khi việc không nạp service là đúng thiết kế.",
+    "Bỏ qua việc Spring Security vẫn hoạt động trong @WebMvcTest, khiến test nhận 401 và bị 'sửa' sai cách bằng việc tắt bảo mật.",
+    "Tin rằng @DataJpaTest xanh là mapping chắc chắn đúng, dù transaction rollback che mất lỗi chỉ xuất hiện khi flush/commit.",
+    "Dùng H2 để kiểm chứng các hành vi phụ thuộc dialect của PostgreSQL/MySQL.",
+    "Tạo quá nhiều biến thể cấu hình test (properties, @MockitoBean, profile) làm Spring phải nạp lại context liên tục và bộ test chậm dần.",
+    "Dùng Thread.sleep để chờ tác vụ bất đồng bộ hoàn tất, tạo ra test chập chờn thay vì chờ theo điều kiện.",
+    "Coi tỉ lệ coverage là mục tiêu và viết test cho getter/setter thay vì phủ các nhánh xử lý lỗi."
   ],
   "practices": [
     {
@@ -353,7 +477,12 @@
   ],
   "enhancedExercises": [
     "Viết bộ test đầy đủ 3 tầng (unit @WebMvcTest, integration @DataJpaTest, end-to-end @SpringBootTest RANDOM_PORT) cho một endpoint của Assignment 9.",
-    "Thêm @TestFactory với DynamicTest để sinh nhiều test case kiểm tra validate input theo bảng dữ liệu."
+    "Thêm @TestFactory với DynamicTest để sinh nhiều test case kiểm tra validate input theo bảng dữ liệu.",
+    "Viết một test dùng field static để giữ dữ liệu rồi chạy cả class theo hai thứ tự khác nhau để tự chứng minh vì sao test phải độc lập; sau đó sửa lại bằng @BeforeEach.",
+    "Trong @WebMvcTest, gọi một endpoint được bảo vệ và ghi lại mã trạng thái nhận được, rồi thêm @WithMockUser với role đúng và role sai để kiểm chứng cả hai nhánh cho phép/từ chối.",
+    "Trong @DataJpaTest, lưu một entity thiếu trường NOT NULL nhưng không flush (test xanh), rồi gọi flush tường minh qua TestEntityManager và giải thích vì sao lỗi mới xuất hiện.",
+    "Bật show-sql trong một @DataJpaTest đọc danh sách entity có quan hệ LAZY, đếm số câu SELECT để phát hiện N+1, rồi sửa bằng fetch join và đếm lại.",
+    "Tạo hai test @SpringBootTest với properties khác nhau, quan sát log để thấy context bị nạp hai lần, sau đó hợp nhất cấu hình và so sánh thời gian chạy."
   ],
   "references": [
     {

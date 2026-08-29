@@ -98,6 +98,51 @@
             "day22-src-3",
             "day22-src-4"
           ]
+        },
+        {
+          "id": "day22-blk-20",
+          "type": "paragraph",
+          "text": "Mental model của Spring Security: nó là một chuỗi `Filter` đặt *trước* `DispatcherServlet`. Mỗi request đi qua từng filter theo thứ tự cố định; nhiệm vụ của chuỗi này là trả lời hai câu hỏi khác nhau — 'bạn là ai' (authentication) và 'bạn được làm gì' (authorization). Kết quả của bước một được lưu vào `SecurityContextHolder` dưới dạng một `Authentication`; bước hai chỉ đọc lại thông tin đó. Vì mọi thứ diễn ra ở tầng filter, code controller của bạn không cần biết gì về bảo mật, nhưng cũng vì thế mà lỗi bảo mật *không* đi qua `@RestControllerAdvice` (Day 17).",
+          "citations": [
+            "day22-src-1",
+            "day22-src-2"
+          ]
+        },
+        {
+          "id": "day22-blk-21",
+          "type": "paragraph",
+          "text": "Vì sao JWT thay cho session: với session, server phải lưu trạng thái đăng nhập trong bộ nhớ và mọi instance phải chia sẻ nó — trở ngại khi scale ngang. JWT đảo ngược: token *tự mang* thông tin (claims) và được ký, nên server chỉ cần khóa để xác thực chữ ký chứ không cần nhớ gì. Cấu trúc token gồm ba phần base64url ngăn bởi dấu chấm — header (thuật toán), payload (claims như `sub`, `exp`, `scope`), signature. Điều tối quan trọng: base64 *không* phải mã hóa, ai nắm token cũng đọc được payload, nên không bao giờ đặt dữ liệu bí mật trong đó.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        },
+        {
+          "id": "day22-blk-22",
+          "type": "paragraph",
+          "text": "Bên dưới, `oauth2ResourceServer().jwt()` dựng một `BearerTokenAuthenticationFilter`: nó lấy token từ header `Authorization: Bearer ...`, giao cho `JwtDecoder` để (1) xác thực chữ ký bằng khóa lấy từ JWKS của issuer, (2) kiểm tra `exp`/`nbf` và `iss`, rồi (3) chuyển claims thành `Authentication` với các quyền được suy ra từ claim `scope`. Bất kỳ bước nào thất bại đều cho 401 với header `WWW-Authenticate`. Thứ tự này giải thích một điều quan trọng: token hết hạn hay sai chữ ký bị chặn *trước khi* chạm tới code của bạn.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        },
+        {
+          "id": "day22-blk-23",
+          "type": "warning",
+          "text": "Sai lầm bảo mật nghiêm trọng nhất với JWT là tin vào nội dung token mà không xác thực chữ ký — chỉ decode base64 rồi đọc `role: ADMIN` thì bất kỳ ai cũng tự tạo được token quản trị. Các bẫy khác: chấp nhận thuật toán `alg: none` hoặc để client chọn thuật toán; không kiểm tra `exp` nên token sống mãi; nhét bí mật vào payload; đặt thời gian sống quá dài (access token nên ngắn, tính bằng phút, và dùng refresh token cho phiên dài). Cũng phải nhớ JWT *không thể thu hồi* trước khi hết hạn — muốn logout tức thì thì phải có danh sách chặn (blacklist/denylist) ở phía server.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        },
+        {
+          "id": "day22-blk-24",
+          "type": "note",
+          "text": "Phân biệt 401 và 403 vì hai mã này hay bị dùng lẫn: 401 Unauthorized nghĩa là 'chưa xác thực được bạn là ai' (thiếu token, token sai, token hết hạn) và do `AuthenticationEntryPoint` sinh ra; 403 Forbidden nghĩa là 'đã biết bạn là ai nhưng bạn không có quyền này' và do `AccessDeniedHandler` sinh ra. Trong API JSON, bạn thường muốn thay body HTML mặc định bằng ProblemDetail — cấu hình tại `exceptionHandling()` chứ không phải trong `@RestControllerAdvice`.",
+          "citations": [
+            "day22-src-1",
+            "day22-src-2"
+          ]
         }
       ]
     },
@@ -128,6 +173,24 @@
           "id": "day22-blk-9",
           "type": "note",
           "text": "Từ Spring Security 6, requireExplicitSave mặc định là true - SecurityContext chỉ được lưu vào session (nếu có) khi có yêu cầu tường minh, thay vì tự động lưu như các phiên bản trước; điều này phù hợp tự nhiên với kiến trúc stateless vì không có session nào để lưu vào. Bảo vệ session fixation (đổi session ID sau khi đăng nhập thành công) vẫn là kiến thức nền tảng quan trọng cho các phần của hệ thống còn dùng session truyền thống (ví dụ trang quản trị dùng cookie), dù không áp dụng trực tiếp cho luồng API stateless bằng JWT.",
+          "citations": [
+            "day22-src-10",
+            "day22-src-11"
+          ]
+        },
+        {
+          "id": "day22-blk-25",
+          "type": "paragraph",
+          "text": "`SessionCreationPolicy.STATELESS` báo với Spring Security rằng không tạo và không dùng `HttpSession`: `SecurityContext` chỉ tồn tại trong phạm vi một request. Hệ quả cần lường trước: không có gì được nhớ giữa hai request, nên client phải gửi token ở *mọi* lần gọi; các tính năng dựa trên session như 'remember me' hay CSRF token theo session không còn ý nghĩa; và vì `SecurityContextHolder` mặc định lưu theo `ThreadLocal`, thông tin xác thực không tự sang thread khác khi bạn dùng `@Async` (Day 25) — phải truyền hoặc khôi phục tường minh.",
+          "citations": [
+            "day22-src-9",
+            "day22-src-10"
+          ]
+        },
+        {
+          "id": "day22-blk-26",
+          "type": "note",
+          "text": "Cấu hình Spring Security 6 (Boot 3) khác bản cũ ở hai điểm dễ gây lỗi khi bạn tham khảo tài liệu cũ: `WebSecurityConfigurerAdapter` đã bị bỏ — thay bằng khai báo một bean `SecurityFilterChain`; và DSL dùng lambda (`http.authorizeHttpRequests(auth -> ...)`) thay cho chuỗi `.and()`. Ngoài ra `authorizeHttpRequests` thay cho `authorizeRequests`, và mọi request không khớp rule nào nên được chốt bằng `anyRequest().authenticated()` để tránh vô tình mở endpoint mới. Nơi lưu token phía client cũng là quyết định bảo mật: `localStorage` phơi token trước XSS, cookie `HttpOnly` + `Secure` + `SameSite` an toàn hơn nhưng lúc đó cần cân nhắc lại CSRF (Day 23).",
           "citations": [
             "day22-src-10",
             "day22-src-11"
@@ -175,6 +238,33 @@
             "day22-src-7"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day22-blk-27",
+          "type": "paragraph",
+          "text": "Vì sao không dùng SHA-256 cho mật khẩu dù nó là hàm băm 'mạnh': hàm băm thông thường được thiết kế để *nhanh*, và nhanh chính là điều kẻ tấn công cần khi dò hàng tỉ mật khẩu mỗi giây trên GPU. BCrypt được thiết kế ngược lại: nó cố tình chậm, có tham số chi phí (strength) để bạn tăng độ chậm theo tốc độ phần cứng tương lai, và tự sinh salt ngẫu nhiên nhúng vào chuỗi kết quả nên hai người dùng cùng mật khẩu vẫn cho hai hash khác nhau (chặn rainbow table). Đó là lý do bạn không cần tự quản lý salt khi dùng `BCryptPasswordEncoder`.",
+          "citations": [
+            "day22-src-5",
+            "day22-src-6"
+          ]
+        },
+        {
+          "id": "day22-blk-28",
+          "type": "paragraph",
+          "text": "`DelegatingPasswordEncoder` giải một bài toán thực tế: hệ thống đang lưu hash cũ, làm sao đổi thuật toán mà không bắt mọi người dùng đặt lại mật khẩu? Nó lưu tiền tố định danh thuật toán trong chính chuỗi hash (`{bcrypt}$2a$10$...`), nên khi xác minh nó đọc tiền tố để chọn encoder tương ứng, còn khi tạo hash mới thì luôn dùng thuật toán mặc định hiện tại. Nhờ đó nhiều thế hệ hash cùng tồn tại và dữ liệu được nâng cấp dần. Cũng vì thế, một hash cũ không có tiền tố sẽ gây `IllegalArgumentException: There is no PasswordEncoder mapped for the id \"null\"` — lỗi rất hay gặp khi migrate.",
+          "citations": [
+            "day22-src-6",
+            "day22-src-7"
+          ]
+        },
+        {
+          "id": "day22-blk-29",
+          "type": "note",
+          "text": "Quy tắc thực hành: `encode()` là một chiều, nên xác minh mật khẩu phải dùng `matches(raw, encoded)` chứ không phải `encode(raw).equals(encoded)` — cách sau luôn trả false vì salt ngẫu nhiên khác nhau mỗi lần. Khi login thất bại, trả một thông báo chung ('email hoặc mật khẩu không đúng') thay vì tiết lộ tài khoản có tồn tại hay không. Và đừng đưa mật khẩu vào log hay `toString()` của DTO: một field `password` trong record sẽ tự xuất hiện trong `toString()` mà bạn không để ý.",
+          "citations": [
+            "day22-src-7",
+            "day22-src-8"
+          ]
         }
       ]
     }
@@ -182,7 +272,12 @@
   "commonMistakes": [
     "Tự viết logic giải mã JWT thủ công mà bỏ qua bước xác thực chữ ký hoặc kiểm tra claim exp.",
     "Dùng User.withDefaultPasswordEncoder() hoặc NoOpPasswordEncoder trong môi trường production.",
-    "Bật session thông thường (không STATELESS) cho một API chỉ dùng JWT, gây tốn tài nguyên và khó scale ngang không cần thiết."
+    "Bật session thông thường (không STATELESS) cho một API chỉ dùng JWT, gây tốn tài nguyên và khó scale ngang không cần thiết.",
+    "Decode JWT bằng base64 rồi tin luôn claims mà không xác thực chữ ký, cho phép bất kỳ ai tự tạo token quản trị.",
+    "Đặt dữ liệu nhạy cảm trong payload JWT vì tưởng token đã được mã hóa, trong khi base64url chỉ là mã hóa dạng biểu diễn.",
+    "Xác minh mật khẩu bằng encode(raw).equals(stored) thay vì matches(raw, stored), luôn cho kết quả sai vì salt ngẫu nhiên.",
+    "Vẫn dùng WebSecurityConfigurerAdapter theo tài liệu cũ trong khi Spring Security 6 đã loại bỏ nó và yêu cầu bean SecurityFilterChain.",
+    "Kỳ vọng logout làm token hết hiệu lực ngay, trong khi JWT chỉ mất hiệu lực khi hết hạn nếu không có danh sách chặn phía server."
   ],
   "practices": [
     {
@@ -294,7 +389,11 @@
   ],
   "enhancedExercises": [
     "Viết một filter tuỳ chỉnh kiểm tra thêm claim 'roles' trong JWT trước khi cho phép truy cập endpoint /admin/**.",
-    "Thử đăng ký một mật khẩu bằng BCryptPasswordEncoder tường minh, in ra chuỗi kết quả, và so sánh tiền tố {id} với kết quả từ DelegatingPasswordEncoder mặc định."
+    "Thử đăng ký một mật khẩu bằng BCryptPasswordEncoder tường minh, in ra chuỗi kết quả, và so sánh tiền tố {id} với kết quả từ DelegatingPasswordEncoder mặc định.",
+    "Dán một access token vào jwt.io (hoặc tự decode base64url) để tự chứng minh payload đọc được bằng mắt, rồi liệt kê những gì tuyệt đối không được đặt vào đó.",
+    "Sửa một ký tự trong phần signature của token rồi gọi API để quan sát 401 và header WWW-Authenticate, giải thích bước nào trong JwtDecoder đã chặn request.",
+    "Tạo hash cho cùng một mật khẩu hai lần bằng BCryptPasswordEncoder, so sánh hai chuỗi kết quả và giải thích vì sao chúng khác nhau nhưng matches() vẫn đúng cho cả hai.",
+    "Cấu hình AuthenticationEntryPoint và AccessDeniedHandler để trả ProblemDetail, sau đó kiểm chứng bằng hai request: một thiếu token (401) và một có token nhưng thiếu quyền (403)."
   ],
   "references": [
     {

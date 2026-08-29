@@ -7,70 +7,86 @@
   <title>Java Spring Boot Course</title>
   <style id="app-styles">
     /* ============================================================
-       Design tokens — Java Spring Boot Course · "Build Log"
-       Java orange (Duke) and Spring green (Sprout) are the real
-       brand colors of the two platforms taught here, not decoration.
-       Structure borrows from a Maven/Gradle reactor build summary —
-       the one artifact every Java developer recognizes on sight.
-       Code blocks stay dark in both themes (the signature surface).
+       Design tokens — Java & Spring Boot Course · learning platform
+       Java orange and Spring green stay the real brand colors of the
+       two platforms taught here, tuned for legible text/UI contrast
+       rather than decoration. Warm paper neutrals replace clinical
+       black/white; every semantic hue gets a mid-tone (icons/borders/
+       fills), an "-ink" (text), and a "-soft" tint (chip/badge wash).
+       Code blocks stay dark in both themes (the one deliberately
+       "terminal" surface, reserved for actual source code).
        ============================================================ */
     :root {
-      --java: #f89820;
-      --java-ink: #9c5000;
-      --java-soft: rgba(248, 152, 32, .12);
-      --spring: #4f8f2b;
-      --spring-ink: #3a6b1e;
-      --spring-soft: rgba(79, 143, 43, .12);
-      --completion: #6b7280;
-      --completion-soft: rgba(107, 114, 128, .12);
-      --ink: #1b2430;
-      --muted: #5b6675;
-      --canvas: #f6f4ef;
+      --java: #c1440e;
+      --java-ink: #963309;
+      --java-soft: #fbe9dd;
+      --spring: #3f7a24;
+      --spring-ink: #2f6b1f;
+      --spring-soft: #e6f1dd;
+      --completion: #78716c;
+      --completion-soft: #eeece6;
+      --ink: #26231f;
+      --muted: #6b6558;
+      --canvas: #faf8f4;
       --surface: #ffffff;
       --surface-raised: #ffffff;
-      --surface-strong: #ece8de;
-      --line: #ddd7c9;
-      --line-strong: #c6bfac;
-      --ok: #157a3d;
+      --surface-strong: #f2efe7;
+      --line: #e6e0d3;
+      --line-strong: #d2c9b4;
+      --ok: #2e7d32;
+      --ok-soft: #e5f3e6;
       --ok-contrast: #ffffff;
-      --info: #2b74b8;
+      --info: #2c6e9e;
+      --info-soft: #e5f0f8;
       --danger: #b3372a;
+      --danger-soft: #fbe9e6;
       --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
       --code-head: rgba(20, 27, 35, .06);
       --code-bg: #10151b;
       --code-ink: #e6edf5;
-      --focus: #2b74b8;
+      --focus: #2f6b1f;
       --header-h: 4rem;
       --sidebar-w: 19rem;
       --content-max: 46rem;
-      --radius-sm: .25rem;
-      --radius-md: .5rem;
+      --radius-sm: .375rem;
+      --radius-md: .75rem;
+      --radius-lg: 1rem;
+      --shadow-sm: 0 1px 2px rgb(38 35 32 / .06);
+      --shadow-md: 0 8px 24px rgb(38 35 32 / .08);
       --shadow-float: 0 18px 40px rgb(20 24 20 / .16);
       color-scheme: light;
     }
     html[data-theme="dark"] {
-      --java-ink: var(--java);
-      --java-soft: rgba(248, 152, 32, .16);
+      --java: #e8935c;
+      --java-ink: #f2b083;
+      --java-soft: #332217;
       --spring: #74cf4f;
-      --spring-ink: var(--spring);
-      --spring-soft: rgba(116, 207, 79, .16);
-      --completion-soft: rgba(148, 163, 184, .18);
-      --ink: #e6ecf2;
-      --muted: #93a1b0;
-      --canvas: #0b0f14;
-      --surface: #141b23;
-      --surface-raised: #182029;
-      --surface-strong: #1f2933;
-      --line: #232d38;
-      --line-strong: #37434f;
-      --ok: #4ade80;
-      --ok-contrast: #04170c;
-      --info: #5ec8f2;
-      --danger: #f2836b;
+      --spring-ink: #8ede6c;
+      --spring-soft: #1c2a17;
+      --completion: #a6a099;
+      --completion-soft: #24221e;
+      --ink: #eeebe4;
+      --muted: #a39c8d;
+      --canvas: #16140f;
+      --surface: #1e1c17;
+      --surface-raised: #24221c;
+      --surface-strong: #2b2820;
+      --line: #383429;
+      --line-strong: #4a4433;
+      --ok: #6fcf73;
+      --ok-soft: #1a2a1b;
+      --ok-contrast: #0b1f0d;
+      --info: #7db8e8;
+      --info-soft: #17222c;
+      --danger: #e8776e;
+      --danger-soft: #2c1815;
       --code-head: rgba(148, 163, 184, .1);
-      --code-bg: #060a0e;
+      --code-bg: #0a0d10;
       --code-ink: #dde6ef;
-      --focus: #5ec8f2;
+      --focus: #8ede6c;
+      --shadow-sm: 0 1px 2px rgb(0 0 0 / .3);
+      --shadow-md: 0 8px 24px rgb(0 0 0 / .35);
+      --shadow-float: 0 18px 40px rgb(0 0 0 / .5);
       color-scheme: dark;
     }
 
@@ -116,9 +132,9 @@
       z-index: 100;
       display: flex;
       align-items: center;
-      gap: .75rem;
+      gap: 1rem;
       height: var(--header-h);
-      padding-inline: 1rem;
+      padding-inline: 1.25rem;
       background: var(--surface);
       border-bottom: 1px solid var(--line);
     }
@@ -126,80 +142,102 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 2.375rem;
+      height: 2.375rem;
       flex-shrink: 0;
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       background: var(--surface);
-      color: var(--ink);
+      color: var(--muted);
       cursor: pointer;
       font-size: 1rem;
       line-height: 1;
+      transition: border-color .12s ease, color .12s ease, background .12s ease;
     }
-    .icon-btn:hover { border-color: var(--spring); color: var(--spring-ink); }
+    .icon-btn svg { width: 1.15rem; height: 1.15rem; }
+    .icon-btn:hover { border-color: var(--spring); color: var(--spring-ink); background: var(--spring-soft); }
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: .5rem;
+      gap: .625rem;
       text-decoration: none;
       color: var(--ink);
-      font-family: var(--mono);
       font-weight: 700;
+      font-size: 1.0625rem;
       letter-spacing: -.01em;
       white-space: nowrap;
     }
-    /* Brand mark: a terminal-style lockup — [J·S] — Java orange and
-       Spring green initials bracketed, a literal nod to the two
-       platforms this course is built from. */
-    .brand-mark { flex-shrink: 0; }
-    .brand-mark .mark-java { color: var(--java-ink); }
-    .brand-mark .mark-spring { color: var(--spring-ink); }
-    .brand-mark .mark-bracket, .brand-mark .mark-dot { color: var(--muted); }
+    /* Brand mark: a rounded two-tone badge (Java orange / Spring green
+       diagonal split) standing in for a course "logo" — reads as a
+       product mark, not a terminal prompt. */
+    .brand-mark {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--java) 0%, var(--java) 45%, var(--spring) 55%, var(--spring) 100%);
+      color: #fff;
+      font-size: .8125rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      box-shadow: var(--shadow-sm);
+    }
+    .brand-text { color: var(--ink); }
     .header-search { margin-left: auto; position: relative; }
     .header-search label {
       position: absolute;
       left: -9999px;
     }
-    .header-search::before {
-      content: '/';
+    .header-search svg {
       position: absolute;
-      left: .65rem;
+      left: .7rem;
       top: 50%;
+      width: 1rem;
+      height: 1rem;
       transform: translateY(-50%);
       color: var(--muted);
-      font-family: var(--mono);
-      font-size: .8125rem;
       pointer-events: none;
     }
     .header-search input {
-      width: min(16rem, 42vw);
-      padding: .45rem .75rem .45rem 1.7rem;
+      width: min(17rem, 42vw);
+      padding: .5rem .75rem .5rem 2.1rem;
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       background: var(--surface-strong);
       color: var(--ink);
       font: inherit;
-      font-family: var(--mono);
-      font-size: .8125rem;
+      font-size: .875rem;
     }
     .header-search input:focus { background: var(--surface); }
+    .header-search input::placeholder { color: var(--muted); }
     .header-actions { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
     .progress-meter {
       display: flex;
       align-items: center;
       gap: .5rem;
       flex-shrink: 0;
-      font-family: var(--mono);
       font-size: .75rem;
+      font-weight: 600;
       color: var(--muted);
       white-space: nowrap;
     }
     .progress-meter progress {
+      -webkit-appearance: none;
+      appearance: none;
       width: 6rem;
-      height: .5rem;
-      accent-color: var(--spring);
+      height: .4375rem;
+      border: none;
+      border-radius: 999px;
+      overflow: hidden;
+      accent-color: var(--spring-ink);
     }
+    .progress-meter progress::-webkit-progress-bar { background: var(--surface-strong); border-radius: 999px; }
+    .progress-meter progress::-webkit-progress-value { background: var(--spring-ink); border-radius: 999px; }
+    .progress-meter progress::-moz-progress-bar { background: var(--spring-ink); border-radius: 999px; }
+    .progress-text-short { font-weight: 700; color: var(--spring-ink); min-width: 2.4ch; }
 
     /* ============ Frame ============ */
     .app-frame {
@@ -214,23 +252,44 @@
       background: var(--surface);
       border-right: 1px solid var(--line);
     }
-    #curriculum-nav { padding: .75rem .75rem 2rem; }
+    .sidebar-title {
+      padding: 1rem 1rem .75rem;
+      font-size: .8125rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      margin-bottom: .5rem;
+    }
+    #curriculum-nav { padding: .25rem .75rem 2rem; }
     .group-label {
-      font-family: var(--mono);
+      display: flex;
+      align-items: center;
+      gap: .4375rem;
       font-size: .6875rem;
       font-weight: 700;
-      letter-spacing: .08em;
+      letter-spacing: .07em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 1.25rem .5rem .35rem;
+      margin: 1.375rem .375rem .5rem;
     }
+    .group-label::before {
+      content: '';
+      width: .5rem;
+      height: .5rem;
+      border-radius: 999px;
+      background: var(--completion);
+      flex-shrink: 0;
+    }
+    .group-label--java::before { background: var(--java); }
+    .group-label--spring::before { background: var(--spring); }
     .module-toggle {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: .5rem;
       width: 100%;
-      padding: .5rem .625rem;
+      padding: .5rem .5rem;
       border: 0;
       border-radius: var(--radius-sm);
       background: transparent;
@@ -242,35 +301,66 @@
       cursor: pointer;
     }
     .module-toggle:hover { background: var(--surface-strong); }
-    .module-num { font-family: var(--mono); color: var(--muted); margin-right: .1rem; }
-    .module-toggle .chevron { transition: transform .15s ease; color: var(--muted); }
+    .module-toggle-label { display: flex; align-items: baseline; gap: .5rem; min-width: 0; }
+    .module-num {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.375rem;
+      height: 1.375rem;
+      padding-inline: .25rem;
+      border-radius: 999px;
+      background: var(--surface-strong);
+      color: var(--muted);
+      font-size: .6875rem;
+      font-weight: 700;
+    }
+    .module-toggle[data-group="java"] .module-num { background: var(--java-soft); color: var(--java-ink); }
+    .module-toggle[data-group="spring"] .module-num { background: var(--spring-soft); color: var(--spring-ink); }
+    .module-toggle[data-group="completion"] .module-num { background: var(--completion-soft); color: var(--completion); }
+    .module-toggle-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .module-progress { flex-shrink: 0; font-size: .6875rem; font-weight: 700; color: var(--muted); }
+    .module-toggle .chevron { flex-shrink: 0; transition: transform .15s ease; color: var(--muted); }
     .module-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
-    .lesson-list { list-style: none; margin: .15rem 0 .35rem; padding: 0; }
+    .lesson-list { list-style: none; margin: .125rem 0 .5rem; padding: 0; display: grid; gap: .0625rem; }
     .lesson-link {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: .5rem;
-      padding: .35rem .625rem .35rem 1.4rem;
+      padding: .4375rem .625rem .4375rem 1.5rem;
       border-radius: var(--radius-sm);
       color: var(--ink);
       text-decoration: none;
       font-size: .8438rem;
       line-height: 1.4;
+      border-left: 2px solid transparent;
     }
     .lesson-link:hover { background: var(--surface-strong); }
     .lesson-link[aria-current="page"] {
-      background: var(--surface-strong);
+      background: var(--accent-soft, var(--spring-soft));
       font-weight: 600;
-      box-shadow: inset 3px 0 0 var(--accent, var(--focus));
+      border-left-color: var(--accent, var(--focus));
     }
     .lesson-state {
       flex-shrink: 0;
-      font-family: var(--mono);
-      font-size: .75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.125rem;
+      height: 1.125rem;
       line-height: 1;
-      color: var(--muted);
+      border-radius: 999px;
+      border: 1.5px solid var(--line-strong);
+      color: transparent;
     }
-    .lesson-state[data-done="true"] { color: var(--spring-ink); }
+    .lesson-state svg { width: .6875rem; height: .6875rem; }
+    .lesson-state[data-done="true"] {
+      background: var(--spring-ink);
+      border-color: var(--spring-ink);
+      color: #fff;
+    }
+    .lesson-link-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .visually-hidden {
       position: absolute !important;
       width: 1px; height: 1px;
@@ -294,7 +384,7 @@
     main#main-content { outline: none; }
     #route-view { padding-block: 1.5rem 4rem; }
     /* Lesson reading view gets a capped line length; dashboard/resources
-       stay full-width so their grids and the reactor summary can breathe. */
+       stay full-width so their cards and the curriculum overview can breathe. */
     #route-view.route-view--reading { max-width: var(--content-max); margin-inline: auto; }
 
     /* ============ Responsive ============ */
@@ -334,16 +424,12 @@
     }
     @media (max-width: 30rem) {
       .progress-meter .progress-text-long { display: none; }
+      .progress-meter .progress-text-short { display: none; }
       .progress-meter progress { width: 4rem; }
       .header-search input { width: 7rem; }
       .brand .brand-name-long { display: none; }
-      /* Dot-leader alignment needs room the smallest screens don't have —
-         drop the leader and let meta/tag wrap to their own line instead
-         of being clipped off unreachable. */
-      .reactor-row { flex-wrap: wrap; row-gap: .125rem; }
-      .reactor-name { max-width: calc(100% - 2.5rem); }
-      .reactor-leader { display: none; }
-      .reactor-meta { margin-left: 2.5rem; }
+      .curriculum-row { flex-wrap: wrap; row-gap: .25rem; }
+      .dash-progress-card { grid-template-columns: 1fr; }
     }
 
     pre { max-width: 100%; overflow-x: auto; }
@@ -394,16 +480,30 @@
       align-items: center;
       font-size: .8125rem;
       color: var(--muted);
-      margin-bottom: .75rem;
+      margin-bottom: 1.125rem;
     }
     .lesson-breadcrumb a { color: var(--muted); text-decoration: none; }
     .lesson-breadcrumb a:hover { color: var(--accent, var(--spring-ink)); text-decoration: underline; }
-    .lesson-header { margin-bottom: 2rem; }
+    .lesson-breadcrumb .crumb-sep { display: inline-flex; align-items: center; color: var(--line-strong); }
+    .lesson-breadcrumb .crumb-sep svg { width: .75rem; height: .75rem; }
+    .lesson-breadcrumb .crumb-current { color: var(--ink); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 16rem; }
+    .lesson-kicker {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .8125rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: var(--accent, var(--spring-ink));
+      margin-bottom: .5rem;
+    }
+    .lesson-header { margin-bottom: 1.75rem; }
     .lesson-title {
-      font-size: 1.75rem;
-      line-height: 1.25;
-      margin: 0 0 .625rem;
-      letter-spacing: -0.01em;
+      font-size: 2rem;
+      line-height: 1.22;
+      margin: 0 0 .75rem;
+      letter-spacing: -0.015em;
+      font-weight: 800;
     }
     .lesson-meta {
       display: flex;
@@ -412,132 +512,164 @@
       align-items: center;
       font-size: .8125rem;
       color: var(--muted);
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
     .chip {
-      display: inline-block;
-      padding: .1875rem .5625rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .3125rem;
+      padding: .25rem .6875rem;
       border: 1px solid var(--line-strong);
       border-radius: 999px;
-      font-family: var(--mono);
-      font-size: .75rem;
+      font-size: .8125rem;
+      font-weight: 600;
       color: var(--ink);
       background: var(--surface);
     }
+    .chip svg { width: .8125rem; height: .8125rem; flex-shrink: 0; }
+    .chip--group-java { border-color: transparent; background: var(--java-soft); color: var(--java-ink); }
+    .chip--group-spring { border-color: transparent; background: var(--spring-soft); color: var(--spring-ink); }
     .lesson-summary {
-      border-left: 3px solid var(--accent, var(--spring));
-      padding: .75rem 1rem;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent, var(--spring));
+      padding: 1rem 1.25rem;
       background: var(--surface);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      font-size: .9375rem;
-      line-height: 1.65;
-      color: var(--muted);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--ink);
     }
-    .lesson-columns { display: grid; gap: 1.5rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
+    .lesson-columns { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
     @media (min-width: 48rem) { .lesson-columns.twocol { grid-template-columns: 1fr 1fr; } }
+    .lesson-column {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      padding: 1.125rem 1.25rem;
+    }
     .lesson-column h2 {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
       font-size: .8125rem;
       text-transform: uppercase;
-      letter-spacing: .06em;
+      letter-spacing: .05em;
       color: var(--muted);
-      margin: 0 0 .5rem;
+      margin: 0 0 .75rem;
     }
-    .lesson-column ul { margin: 0; padding-left: 1.125rem; font-size: .875rem; line-height: 1.65; }
-    .section-block { margin-bottom: 2.5rem; }
+    .lesson-column h2 svg { width: 1rem; height: 1rem; color: var(--accent, var(--spring-ink)); flex-shrink: 0; }
+    .lesson-column ul { margin: 0; padding: 0; list-style: none; font-size: .9063rem; line-height: 1.6; display: grid; gap: .5rem; }
+    .lesson-column li { display: flex; gap: .5rem; align-items: flex-start; }
+    .lesson-column li::before {
+      content: '';
+      flex-shrink: 0;
+      margin-top: .5rem;
+      width: .375rem;
+      height: .375rem;
+      border-radius: 999px;
+      background: var(--line-strong);
+    }
+    .lesson-column--outcomes li::before { background: var(--spring); }
+    .section-block { margin-bottom: 2.75rem; }
     .section-heading {
-      font-size: 1.25rem;
-      margin: 0 0 1rem;
-      padding-bottom: .375rem;
-      border-bottom: 1px solid var(--line);
+      font-size: 1.375rem;
+      font-weight: 700;
+      margin: 0 0 1.125rem;
+      padding-bottom: .625rem;
+      border-bottom: 2px solid var(--line);
+      letter-spacing: -.005em;
     }
-    .prose > p { margin: 0 0 1rem; line-height: 1.7; }
+    .prose > p { margin: 0 0 1.125rem; line-height: 1.75; font-size: 1rem; }
     .callout {
-      border-left: 3px solid var(--muted);
+      display: flex;
+      gap: .75rem;
+      border: 1px solid var(--line);
       background: var(--surface);
-      padding: .75rem 1rem;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      margin: 0 0 1rem;
-      font-size: .9063rem;
+      padding: 1rem 1.125rem;
+      border-radius: var(--radius-md);
+      margin: 0 0 1.25rem;
+      font-size: .9375rem;
       line-height: 1.65;
     }
+    .callout-icon { flex-shrink: 0; width: 1.375rem; height: 1.375rem; margin-top: .0625rem; }
+    .callout-icon svg { width: 100%; height: 100%; }
+    .callout-body { min-width: 0; }
     .callout-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem; margin-bottom: .25rem; }
-    .callout-tag {
-      font-family: var(--mono);
-      font-size: .6875rem;
-      font-weight: 700;
-      letter-spacing: .04em;
-      padding: .0625rem .375rem;
-      border-radius: .1875rem;
-      background: var(--surface-strong);
-      color: var(--muted);
-    }
+    .callout-tag { display: none; }
     .callout-label { font-weight: 700; }
-    .callout--note { border-left-color: var(--info); }
-    .callout--note .callout-tag { color: var(--info); }
-    .callout--important { border-left-color: var(--java); }
-    .callout--important .callout-tag { color: var(--java-ink); }
-    .callout--warning { border-left-color: var(--danger); }
-    .callout--warning .callout-tag { color: var(--danger); }
-    .callout--deliverable { border-left-color: var(--spring); }
-    .callout--deliverable .callout-tag { color: var(--spring-ink); }
+    .callout--note { background: var(--info-soft); border-color: color-mix(in srgb, var(--info) 35%, var(--line)); }
+    .callout--note .callout-icon, .callout--note .callout-label { color: var(--info); }
+    .callout--important { background: var(--java-soft); border-color: color-mix(in srgb, var(--java) 35%, var(--line)); }
+    .callout--important .callout-icon, .callout--important .callout-label { color: var(--java-ink); }
+    .callout--warning { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); }
+    .callout--warning .callout-icon, .callout--warning .callout-label { color: var(--danger); }
+    .callout--deliverable { background: var(--spring-soft); border-color: color-mix(in srgb, var(--spring) 35%, var(--line)); }
+    .callout--deliverable .callout-icon, .callout--deliverable .callout-label { color: var(--spring-ink); }
     .deliverable-body { white-space: pre-wrap; }
-    .code-sample { margin: 0 0 1rem; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+    .code-sample { margin: 0 0 1.25rem; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
     .code-sample figcaption {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: .5rem;
-      padding: .4375rem .75rem;
+      padding: .5625rem .875rem;
       background: var(--code-head, rgba(127,127,127,.08));
       border-bottom: 1px solid var(--line);
-      font-family: var(--mono);
-      font-size: .7188rem;
-      letter-spacing: .03em;
-      text-transform: uppercase;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .02em;
       color: var(--muted);
     }
+    .code-sample figcaption > span:first-child { font-family: var(--mono); text-transform: uppercase; letter-spacing: .04em; }
     .code-sample pre {
       margin: 0;
-      padding: .875rem 1rem;
+      padding: 1rem 1.125rem;
       overflow-x: auto;
       background: var(--code-bg);
       color: var(--code-ink);
       font-size: .8438rem;
-      line-height: 1.55;
+      line-height: 1.6;
       tab-size: 2;
     }
     .copy-btn {
       flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: .3125rem;
       border: 1px solid var(--line-strong);
       background: var(--surface);
       color: var(--ink);
-      font-family: var(--mono);
       font-size: .75rem;
-      padding: .1875rem .5rem;
+      font-weight: 600;
+      padding: .25rem .625rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
     }
-    .copy-btn:hover { border-color: var(--spring); color: var(--spring-ink); }
-    .data-table-wrap { overflow-x: auto; margin: 0 0 1rem; }
-    .data-table { width: 100%; border-collapse: collapse; font-size: .8438rem; line-height: 1.55; }
-    .data-table caption { text-align: left; font-weight: 600; padding: 0 0 .5rem; color: var(--muted); font-size: .8125rem; }
-    .data-table th, .data-table td { border: 1px solid var(--line); padding: .4375rem .625rem; text-align: left; vertical-align: top; }
-    .data-table th { background: var(--surface-strong); font-family: var(--mono); font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    .copy-btn svg { width: .875rem; height: .875rem; }
+    .copy-btn:hover { border-color: var(--spring); color: var(--spring-ink); background: var(--spring-soft); }
+    .data-table-wrap { overflow-x: auto; margin: 0 0 1.25rem; border: 1px solid var(--line); border-radius: var(--radius-md); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .875rem; line-height: 1.55; }
+    .data-table caption { text-align: left; font-weight: 600; padding: .75rem .875rem; color: var(--ink); font-size: .875rem; border-bottom: 1px solid var(--line); background: var(--surface-strong); }
+    .data-table th, .data-table td { border-bottom: 1px solid var(--line); padding: .625rem .875rem; text-align: left; vertical-align: top; }
+    .data-table th { background: var(--surface-strong); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+    .data-table tbody tr:last-child td { border-bottom: 0; }
+    .data-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-strong) 45%, transparent); }
     .citation-link {
       font-size: .6875rem;
       vertical-align: super;
       text-decoration: none;
       margin-left: .0625rem;
       color: var(--accent, var(--spring-ink));
-      font-family: var(--mono);
+      font-weight: 700;
     }
     .authoring-warning {
-      border: 1px dashed var(--danger);
+      border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
       color: var(--danger);
-      background: transparent;
-      padding: .625rem .875rem;
-      border-radius: var(--radius-sm);
-      font-size: .8438rem;
+      background: var(--danger-soft);
+      padding: .75rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: .875rem;
       margin: 0 0 1rem;
     }
     /* Practice cards */
@@ -547,129 +679,166 @@
       background: var(--surface);
       margin: 0 0 1rem;
       overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
-    .practice-head { padding: .875rem 1rem .5rem; }
+    .practice-head { padding: 1rem 1.125rem .625rem; }
     .practice-kind {
       display: inline-block;
-      font-family: var(--mono);
-      font-size: .6875rem;
+      font-size: .75rem;
       text-transform: uppercase;
-      letter-spacing: .07em;
+      letter-spacing: .06em;
       color: var(--accent, var(--spring-ink));
       font-weight: 700;
       margin-bottom: .375rem;
     }
-    .practice-prompt { margin: 0; font-size: .9375rem; line-height: 1.6; font-weight: 500; }
-    .practice-body { padding: 0 1rem 1rem; }
+    .practice-prompt { margin: 0; font-size: .9375rem; line-height: 1.6; font-weight: 600; }
+    .practice-body { padding: 0 1.125rem 1.125rem; }
     .practice-starter pre {
       margin: 0 0 .75rem;
-      padding: .75rem 1rem;
+      padding: .875rem 1rem;
       background: var(--code-bg);
       color: var(--code-ink);
       border-radius: var(--radius-sm);
       font-size: .8125rem;
       overflow-x: auto;
     }
-    .practice-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .625rem; }
+    .practice-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
     .disclosure-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .375rem;
       border: 1px solid var(--line-strong);
-      background: var(--canvas);
+      background: var(--surface);
       color: var(--ink);
-      font-family: var(--mono);
       font-size: .8125rem;
-      padding: .375rem .75rem;
+      font-weight: 600;
+      padding: .4375rem .8125rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
     }
-    .disclosure-btn[aria-expanded="true"] { background: var(--surface-strong); border-color: var(--spring); color: var(--spring-ink); }
-    .disclosure-panel { margin-top: .625rem; font-size: .875rem; line-height: 1.65; }
+    .disclosure-btn:hover { border-color: var(--spring); color: var(--spring-ink); }
+    .disclosure-btn[aria-expanded="true"] { background: var(--spring-soft); border-color: var(--spring); color: var(--spring-ink); }
+    .disclosure-btn[aria-pressed="true"] { background: var(--spring-ink); border-color: var(--spring-ink); color: #fff; }
+    .disclosure-panel {
+      margin-top: .75rem;
+      padding: .75rem .875rem;
+      background: var(--surface-strong);
+      border-radius: var(--radius-sm);
+      font-size: .875rem;
+      line-height: 1.65;
+    }
     .disclosure-panel[hidden] { display: none; }
-    .choice-list { list-style: none; margin: 0 0 .625rem; padding: 0; display: grid; gap: .375rem; }
+    .choice-list { list-style: none; margin: 0 0 .75rem; padding: 0; display: grid; gap: .5rem; }
     .choice-item label {
       display: flex;
-      gap: .5rem;
+      gap: .625rem;
       align-items: baseline;
-      padding: .4375rem .625rem;
+      padding: .625rem .75rem;
       border: 1px solid var(--line);
       border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: .875rem;
+      font-size: .9063rem;
       line-height: 1.5;
+      transition: border-color .12s ease, background .12s ease;
     }
-    .choice-item input { accent-color: var(--spring); }
-    .choice-item.is-correct label { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, transparent); }
-    .choice-item.is-wrong label { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
-    .check-feedback { margin: .625rem 0 0; font-size: .875rem; line-height: 1.6; padding: .5625rem .75rem; border-radius: var(--radius-sm); }
-    .check-feedback.ok { background: color-mix(in srgb, var(--ok) 12%, transparent); border: 1px solid var(--ok); }
-    .check-feedback.wrong { background: color-mix(in srgb, var(--danger) 10%, transparent); border: 1px solid var(--danger); }
+    .choice-item label:hover { border-color: var(--line-strong); background: var(--surface-strong); }
+    .choice-item input { accent-color: var(--spring-ink); }
+    .choice-item.is-correct label { border-color: var(--ok); background: var(--ok-soft); }
+    .choice-item.is-wrong label { border-color: var(--danger); background: var(--danger-soft); }
+    .check-feedback { margin: .75rem 0 0; font-size: .875rem; line-height: 1.6; padding: .75rem .875rem; border-radius: var(--radius-sm); font-weight: 500; }
+    .check-feedback.ok { background: var(--ok-soft); border: 1px solid var(--ok); color: var(--ink); }
+    .check-feedback.wrong { background: var(--danger-soft); border: 1px solid var(--danger); color: var(--ink); }
     /* Assignments */
-    .assignments-block { margin: 2.5rem 0; }
-    .assignments-block h2 { font-size: 1.125rem; margin: 0 0 .75rem; }
+    .assignments-block { margin: 2.75rem 0; }
+    .assignments-block h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 .875rem; }
     .assignment-item {
       border: 1px solid var(--line);
-      border-left: 3px solid var(--java);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      border-left: 4px solid var(--java);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
       background: var(--surface);
-      padding: .75rem 1rem;
-      margin-bottom: .625rem;
-      font-size: .875rem;
+      padding: .875rem 1.125rem;
+      margin-bottom: .75rem;
+      font-size: .9063rem;
       line-height: 1.65;
       white-space: pre-wrap;
     }
     .assignment-origin {
       display: inline-block;
-      font-family: var(--mono);
-      font-size: .6875rem;
+      font-size: .75rem;
       text-transform: uppercase;
-      letter-spacing: .06em;
+      letter-spacing: .05em;
+      font-weight: 700;
       color: var(--muted);
       margin-bottom: .375rem;
     }
     /* References */
-    .references-block h2 { font-size: 1.125rem; margin: 0 0 .75rem; }
+    .references-block h2 { font-size: 1.25rem; font-weight: 700; margin: 0 0 .875rem; }
     .ref-card {
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       background: var(--surface);
-      padding: .75rem 1rem;
+      padding: .875rem 1.125rem;
       margin-bottom: .625rem;
       font-size: .875rem;
       scroll-margin-top: 5rem;
     }
-    .ref-card-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .25rem; }
-    .ref-num { color: var(--accent, var(--spring-ink)); font-weight: 700; font-family: var(--mono); font-size: .8125rem; }
-    .ref-card a { color: var(--spring-ink); word-break: break-all; }
-    .badge-read {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: .6875rem;
-      padding: .125rem .5rem;
+    .ref-card-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .3125rem; }
+    .ref-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.375rem;
+      height: 1.375rem;
       border-radius: 999px;
-      background: color-mix(in srgb, var(--ok) 15%, transparent);
-      color: var(--ok);
-      border: 1px solid var(--ok);
-      font-weight: 600;
+      background: var(--spring-soft);
+      color: var(--accent, var(--spring-ink));
+      font-weight: 700;
+      font-size: .75rem;
     }
-    .badge-domain { font-family: var(--mono); font-size: .6875rem; color: var(--muted); }
-    .ref-locators { margin: .375rem 0 0; padding-left: 1.125rem; color: var(--muted); font-size: .7813rem; }
-    details.ref-unavailable { margin-top: 1rem; border: 1px dashed var(--line-strong); border-radius: var(--radius-sm); padding: .625rem .875rem; }
+    .ref-card a { color: var(--spring-ink); word-break: break-all; }
+    .ref-url { display: inline-flex; align-items: flex-start; gap: .375rem; }
+    .ref-url svg { flex-shrink: 0; margin-top: .1875rem; }
+    .badge-read, .badge-status--unavailable {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      font-size: .6875rem;
+      font-weight: 700;
+      padding: .1875rem .5625rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .badge-read svg, .badge-status--unavailable svg { flex-shrink: 0; }
+    .badge-read {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+    .badge-status--unavailable {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+    .badge-domain { font-size: .75rem; color: var(--muted); }
+    .ref-inline-label { font-size: .8125rem; color: var(--muted); font-weight: 600; }
+    details.ref-unavailable { margin-top: 1.25rem; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); padding: .75rem 1rem; }
     details.ref-unavailable summary { cursor: pointer; font-size: .875rem; font-weight: 600; color: var(--muted); }
     details.ref-unavailable .ref-card { border-style: dashed; }
     /* Lesson footer nav */
     .lesson-nav {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: .625rem;
+      gap: .75rem;
       align-items: stretch;
-      margin-top: 2.5rem;
-      padding-top: 1.25rem;
+      margin-top: 2.75rem;
+      padding-top: 1.5rem;
       border-top: 1px solid var(--line);
     }
     .lesson-nav a, .lesson-nav button {
-      font-family: var(--mono);
-      font-size: .8125rem;
-      padding: .5625rem .75rem;
-      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      font-size: .875rem;
+      padding: .75rem 1rem;
+      border-radius: var(--radius-md);
       text-decoration: none;
       color: var(--ink);
       background: var(--surface);
@@ -677,147 +846,223 @@
       cursor: pointer;
       text-align: left;
       line-height: 1.4;
+      transition: border-color .12s ease, background .12s ease;
     }
-    .lesson-nav a:hover, .lesson-nav button:hover { border-color: var(--spring); }
-    .lesson-nav .nav-next { text-align: right; }
+    .lesson-nav a:hover, .lesson-nav button:hover { border-color: var(--spring); background: var(--spring-soft); }
+    .lesson-nav .nav-prev svg { flex-shrink: 0; }
+    .lesson-nav .nav-next { text-align: right; flex-direction: row-reverse; }
+    .lesson-nav .nav-next svg { flex-shrink: 0; }
     .lesson-nav .nav-complete {
       white-space: nowrap;
-      min-width: 7rem;
-      text-align: center;
+      min-width: 8rem;
+      justify-content: center;
+      font-weight: 700;
     }
     .lesson-nav .nav-complete[aria-pressed="true"] {
       background: var(--ok);
       border-color: var(--ok);
       color: var(--ok-contrast);
     }
-    .nav-label { display: block; font-family: var(--mono); font-size: .6875rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+    .nav-label { display: block; font-size: .6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+    .lesson-nav a:hover .nav-label { color: var(--spring-ink); }
 
     /* Dashboard settings (Site Task 5) */
-    .settings-block { margin-top: 2.5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+    .settings-block { margin-top: 2.75rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
     .settings-block details { margin-bottom: .625rem; }
     .settings-block summary {
       cursor: pointer;
-      font-size: .9063rem;
-      font-weight: 600;
-      color: var(--muted);
+      font-size: .9375rem;
+      font-weight: 700;
+      color: var(--ink);
     }
-    .settings-actions { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem 0 0; }
+    .settings-actions { display: flex; flex-wrap: wrap; gap: .625rem; padding: 1rem 0 0; }
     .settings-btn {
       display: inline-flex;
       align-items: center;
-      gap: .375rem;
+      gap: .4375rem;
       border: 1px solid var(--line-strong);
       background: var(--surface);
       color: var(--ink);
-      font-family: var(--mono);
-      font-size: .8125rem;
-      padding: .4375rem .8125rem;
+      font-size: .8438rem;
+      font-weight: 600;
+      padding: .5rem .875rem;
       border-radius: var(--radius-sm);
       cursor: pointer;
     }
-    .settings-btn:hover { border-color: var(--spring); color: var(--spring-ink); }
-    .settings-btn--danger:hover { border-color: var(--danger); color: var(--danger); }
+    .settings-btn:hover { border-color: var(--spring); color: var(--spring-ink); background: var(--spring-soft); }
+    .settings-btn--danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
     .import-preview {
-      margin-top: .625rem;
-      padding: .625rem .75rem;
+      margin-top: .75rem;
+      padding: .75rem .875rem;
       border: 1px dashed var(--line-strong);
       border-radius: var(--radius-sm);
-      font-size: .8125rem;
+      font-size: .8438rem;
       line-height: 1.6;
     }
     .import-preview[hidden] { display: none; }
 
-    /* ============ Dashboard: hero, stats, reactor summary ============ */
-    .dash-hero { margin-bottom: 1.5rem; }
-    .dash-eyebrow { font-family: var(--mono); font-size: .8125rem; color: var(--muted); margin-bottom: .25rem; }
-    .dash-title { font-size: 1.75rem; margin: 0; letter-spacing: -.01em; }
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-      gap: .75rem;
-      margin-bottom: 1.5rem;
+    /* ============ Dashboard: hero, progress, curriculum overview ============ */
+    .dash-hero {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--line);
     }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--line-strong);
-      border-radius: var(--radius-sm);
-      padding: .875rem 1rem;
-    }
-    .stat-card--ok { border-left-color: var(--ok); }
-    .stat-card--java { border-left-color: var(--java); }
-    .stat-card--spring { border-left-color: var(--spring); }
-    .stat-label {
-      font-family: var(--mono);
-      font-size: .6875rem;
+    .dash-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: .375rem;
+      font-size: .8125rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .06em;
-      color: var(--muted);
-      margin-bottom: .375rem;
+      color: var(--spring-ink);
+      margin: 0 0 .5rem;
     }
-    .stat-value-row { display: flex; align-items: baseline; gap: .4rem; }
-    .stat-value { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; }
-    .stat-sub { font-size: .8125rem; color: var(--muted); }
+    .dash-title {
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      font-weight: 800;
+      margin: 0 0 .625rem;
+      letter-spacing: -.02em;
+      color: var(--ink);
+    }
+    .dash-desc { max-width: 42rem; margin: 0; font-size: 1rem; line-height: 1.6; color: var(--muted); }
+
+    /* Overall + per-track progress card */
+    .dash-progress-card {
+      display: grid;
+      grid-template-columns: minmax(11rem, 17rem) minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .dash-progress-headline { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+    .dash-progress-percent { font-size: 2.75rem; font-weight: 800; line-height: 1; color: var(--spring-ink); }
+    .dash-progress-count { font-size: .9375rem; color: var(--muted); font-weight: 600; }
+    .dash-progress-track {
+      height: .5rem;
+      border-radius: 999px;
+      background: var(--surface-strong);
+      overflow: hidden;
+      margin-top: .75rem;
+    }
+    .dash-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--spring-ink), var(--spring)); transition: width .3s ease; }
+    .dash-progress-split { display: grid; gap: .875rem; }
+    .dash-progress-row { display: grid; grid-template-columns: minmax(5rem, auto) minmax(0, 1fr) auto; align-items: center; gap: .75rem; }
+    .dash-progress-row-label { display: inline-flex; align-items: center; gap: .4375rem; font-size: .875rem; font-weight: 700; color: var(--ink); }
+    .dash-progress-row-label::before { content: ""; width: .625rem; height: .625rem; border-radius: 999px; background: var(--muted); flex-shrink: 0; }
+    .dash-progress-row--java .dash-progress-row-label::before { background: var(--java); }
+    .dash-progress-row--spring .dash-progress-row-label::before { background: var(--spring); }
+    .dash-progress-row .dash-progress-track { margin-top: 0; }
+    .dash-progress-row--java .dash-progress-fill { background: linear-gradient(90deg, var(--java-ink), var(--java)); }
+    .dash-progress-row--spring .dash-progress-fill { background: linear-gradient(90deg, var(--spring-ink), var(--spring)); }
+    .dash-progress-row-count { font-size: .8125rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+
+    /* Continue-learning callout card */
+    .dash-continue-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--spring-soft);
+      border: 1px solid var(--spring);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .dash-continue-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: .375rem;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--spring-ink);
+      margin: 0 0 .3125rem;
+    }
+    .dash-continue-title { font-size: 1.25rem; font-weight: 700; margin: 0 0 .625rem; color: var(--ink); }
+    .dash-continue-meta { display: flex; flex-wrap: wrap; gap: .5rem; }
 
     .btn {
       display: inline-flex;
       align-items: center;
       gap: .5rem;
-      font-family: var(--mono);
-      font-size: .875rem;
-      font-weight: 600;
-      padding: .625rem 1.125rem;
-      border-radius: var(--radius-sm);
+      font-size: .9375rem;
+      font-weight: 700;
+      padding: .75rem 1.375rem;
+      border-radius: var(--radius-md);
       text-decoration: none;
       cursor: pointer;
       border: 1px solid var(--line-strong);
       background: var(--surface);
       color: var(--ink);
+      transition: filter .12s ease, transform .12s ease, background .12s ease;
+      flex-shrink: 0;
     }
-    .btn--primary { background: var(--ok); border-color: var(--ok); color: var(--ok-contrast); }
-    .btn--primary:hover { filter: brightness(1.08); }
-    .btn-glyph { font-weight: 700; }
-    .dash-continue { margin-bottom: 2rem; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn--primary { background: var(--spring-ink); border-color: var(--spring-ink); color: #fff; box-shadow: var(--shadow-sm); }
+    .btn--primary:hover { filter: brightness(1.1); }
+    .btn-glyph, .btn svg { flex-shrink: 0; }
 
-    /* Reactor summary — styled after a Maven/Gradle multi-module build
-       report: one row per unit, dot-leader aligned, SUCCESS/RUNNING/
-       PENDING standing in for lessons-completed state. */
-    .reactor-summary {
+    /* Curriculum overview — plain-language unit list replacing any
+       build-log framing: each row is one unit with real completion state. */
+    .curriculum-overview { margin-bottom: 1.75rem; }
+    .curriculum-overview-head { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-bottom: .875rem; }
+    .curriculum-overview-head h2 { font-size: 1.125rem; font-weight: 700; margin: 0; }
+    .curriculum-overview-hint { font-size: .8125rem; color: var(--muted); }
+    .curriculum-list {
       border: 1px solid var(--line);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       background: var(--surface);
-      margin-bottom: 2rem;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
-    .reactor-row {
+    .curriculum-row {
       display: flex;
-      align-items: baseline;
-      gap: .5rem;
-      padding: .5625rem .875rem;
+      align-items: center;
+      gap: .875rem;
+      padding: .875rem 1.125rem;
       border-bottom: 1px solid var(--line);
       text-decoration: none;
       color: var(--ink);
-      font-family: var(--mono);
-      font-size: .8125rem;
     }
-    .reactor-row:first-child { border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); }
-    .reactor-row:last-child { border-bottom: 0; border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
-    .reactor-row:hover { background: var(--surface-strong); }
-    .reactor-status { flex-shrink: 0; width: 3ch; white-space: nowrap; color: var(--muted); }
-    .reactor-row--success .reactor-status { color: var(--spring-ink); }
-    .reactor-row--running .reactor-status { color: var(--java-ink); }
-    .reactor-name {
+    .curriculum-row:last-child { border-bottom: 0; }
+    .curriculum-row:hover { background: var(--surface-strong); }
+    .curriculum-status {
       flex-shrink: 0;
-      max-width: 60%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 999px;
+      background: var(--surface-strong);
+      color: var(--muted);
     }
-    .reactor-leader { flex: 1 1 auto; min-width: 1.5rem; border-bottom: 1px dotted var(--line-strong); margin: 0 .25rem .3em; }
-    .reactor-meta { flex-shrink: 0; color: var(--muted); }
-    .reactor-tag { flex-shrink: 0; width: 5.25rem; text-align: right; font-size: .6875rem; letter-spacing: .04em; color: var(--muted); }
-    .reactor-row--success .reactor-tag { color: var(--spring-ink); }
-    .reactor-row--running .reactor-tag { color: var(--java-ink); }
+    .curriculum-status svg { width: 1rem; height: 1rem; }
+    .curriculum-row--done .curriculum-status { background: var(--ok); color: var(--ok-contrast); }
+    .curriculum-row--active .curriculum-status { background: var(--java-soft); color: var(--java-ink); }
+    .curriculum-name { flex: 1 1 auto; min-width: 0; font-size: .9375rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .curriculum-meta { flex-shrink: 0; font-size: .8125rem; color: var(--muted); font-weight: 600; }
+    .curriculum-tag {
+      flex-shrink: 0;
+      font-size: .6875rem;
+      font-weight: 700;
+      padding: .1875rem .5625rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      background: var(--surface-strong);
+      color: var(--muted);
+    }
+    .curriculum-row--done .curriculum-tag { background: var(--ok-soft); color: var(--ok); }
+    .curriculum-row--active .curriculum-tag { background: var(--java-soft); color: var(--java-ink); }
   </style>
   <script>
     /* Theme bootstrap: runs before first paint to avoid a light/dark flash. */
@@ -1007,6 +1252,8 @@
         var p = CourseCore.calculateProgress(courseData.lessons, state.completed, null);
         var bar = document.getElementById('progress-bar');
         if (bar) { bar.value = String(p.completed); bar.setAttribute('max', String(p.total || 1)); }
+        var short = document.querySelector('.progress-text-short');
+        if (short) short.textContent = p.percent + '%';
         var txt = document.querySelector('.progress-text-long');
         if (txt) txt.textContent = p.completed + '/' + p.total + ' bài';
       }
@@ -1021,22 +1268,31 @@
         var nav = document.getElementById('curriculum-nav');
         if (!nav) return;
         nav.textContent = '';
-        var GROUPS = [{key:'java',label:'Java'},{key:'spring',label:'Spring Boot'},{key:'completion',label:'Hoan thanh'}];
+        var GROUP_ORDER = ['java', 'spring', 'completion'];
         var ACCENT = {java:'var(--java)',spring:'var(--spring)',completion:'var(--completion)'};
-        GROUPS.forEach(function(g) {
-          var units = courseData.units.filter(function(u){return u.group===g.key;});
+        var ACCENT_SOFT = {java:'var(--java-soft)',spring:'var(--spring-soft)',completion:'var(--completion-soft)'};
+        GROUP_ORDER.forEach(function(groupKey) {
+          var units = courseData.units.filter(function(u){return u.group===groupKey;});
           if (!units.length) return;
           var label = document.createElement('div');
-          label.className = 'group-label';
-          label.textContent = g.label;
+          label.className = 'group-label' + (groupKey === 'completion' ? '' : ' group-label--' + groupKey);
+          label.textContent = GROUP_LABELS[groupKey] || groupKey;
           nav.appendChild(label);
           units.forEach(function(unit) {
+            var lessonIds = unit.lessonIds || [];
+            var doneCount = lessonIds.filter(function(lid){ return state.completed.indexOf(lid)!==-1; }).length;
+            var collapsed = state.collapsedUnits.indexOf(unit.id) !== -1;
             var toggle = document.createElement('button');
             toggle.className = 'module-toggle';
-            toggle.setAttribute('aria-expanded', state.collapsedUnits.indexOf(unit.id)===-1 ? 'true' : 'false');
+            toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
             toggle.setAttribute('aria-controls', 'lessons-' + unit.id);
             toggle.setAttribute('data-unit-id', unit.id);
-            toggle.innerHTML = '<span><span class="module-num">' + unit.number + '.</span> ' + unit.title + '</span><span class="chevron" aria-hidden="true">&#9660;</span>';
+            toggle.setAttribute('data-group', groupKey);
+            toggle.title = unit.number + '. ' + unit.title;
+            toggle.innerHTML = '<span class="module-toggle-label"><span class="module-num">' + unit.number + '</span>' +
+              '<span class="module-toggle-title">' + unit.title + '</span></span>' +
+              '<span class="module-progress">' + doneCount + '/' + lessonIds.length + '</span>' +
+              '<span class="chevron" aria-hidden="true">' + icon('chevron-down') + '</span>';
             toggle.onclick = function() {
               var expanded = toggle.getAttribute('aria-expanded')==='true';
               toggle.setAttribute('aria-expanded', expanded?'false':'true');
@@ -1051,7 +1307,8 @@
             list.className = 'lesson-list';
             list.id = 'lessons-' + unit.id;
             list.setAttribute('role', 'list');
-            (unit.lessonIds||[]).forEach(function(lid) {
+            list.hidden = collapsed;
+            lessonIds.forEach(function(lid) {
               var lesson = lessonsById.get(lid);
               if (!lesson) return;
               var li = document.createElement('li');
@@ -1059,9 +1316,12 @@
               a.className = 'lesson-link';
               a.href = '#lesson/' + lid;
               a.setAttribute('data-lesson-id', lid);
+              a.title = lesson.title || lid;
               a.style.setProperty('--accent', ACCENT[lesson.group] || ACCENT.completion);
+              a.style.setProperty('--accent-soft', ACCENT_SOFT[lesson.group] || ACCENT_SOFT.completion);
               var done = state.completed.indexOf(lid) !== -1;
-              a.innerHTML = '<span class="lesson-state" data-done="' + done + '">[' + (done ? 'x' : ' ') + ']</span><span>' + (lesson.title || lid) + '</span>';
+              a.innerHTML = '<span class="lesson-state" data-done="' + done + '">' + (done ? icon('check') : '') + '</span>' +
+                '<span class="lesson-link-title">' + (done ? '<span class="visually-hidden">Đã hoàn thành: </span>' : '') + (lesson.title || lid) + '</span>';
               a.onclick = function() { closeDrawer(); };
               li.appendChild(a);
               list.appendChild(li);
@@ -1084,7 +1344,24 @@
         else renderDashboard(view);
         setAriaCurrent(route.lessonId || state.lastLessonId);
       }
-      window.addEventListener('hashchange', function(){ routeRender(); });
+      window.addEventListener('hashchange', function() {
+        /* In-page anchors (citation links like #ref-day01-2) target
+           elements that already exist in the current view — let the
+           browser perform its native anchor scroll and skip re-render. */
+        var anchorId = window.location.hash.replace(/^#/, '');
+        if (anchorId && document.getElementById(anchorId)) return;
+        routeRender();
+        /* Hash-only SPA navigation never triggers the browser's native
+           scroll-to-top, so moving between lessons (sidebar, Bài trước/
+           Bài sau) used to keep the previous scroll position. Jump
+           instantly — the smooth scroll-behavior on <html> would animate
+           through the freshly rendered content. */
+        var htmlEl = document.documentElement;
+        var prevBehavior = htmlEl.style.scrollBehavior;
+        htmlEl.style.scrollBehavior = 'auto';
+        window.scrollTo(0, 0);
+        htmlEl.style.scrollBehavior = prevBehavior;
+      });
 
       /* ---- dashboard ------------------------------------------------- */
       function renderDashboard(container) {
@@ -1093,56 +1370,89 @@
         var sp = CourseCore.calculateProgress(courseData.lessons, state.completed, 'spring');
 
         var hero = el('div', 'dash-hero');
-        hero.appendChild(el('div', 'dash-eyebrow', '$ mvn clean install'));
-        hero.appendChild(el('h1', 'dash-title', 'Tổng quan khóa học'));
+        var eyebrow = el('div', 'dash-eyebrow');
+        eyebrow.innerHTML = icon('book-open') + '<span>Lộ trình học</span>';
+        hero.appendChild(eyebrow);
+        hero.appendChild(el('h1', 'dash-title', 'Java & Spring Boot'));
+        hero.appendChild(el('p', 'dash-desc',
+          'Hành trình từ nền tảng ngôn ngữ Java đến xây dựng dịch vụ web với Spring Boot — theo từng bài học có thứ tự, kèm bài tập thực hành và tài liệu tham khảo.'));
         container.appendChild(hero);
 
-        var statGrid = el('div', 'stat-grid');
-        [['ok', 'Tiến độ chung', p.completed + '/' + p.total, 'bài (' + p.percent + '%)'],
-         ['java', 'Java', jp.completed + '/' + jp.total, 'bài'],
-         ['spring', 'Spring Boot', sp.completed + '/' + sp.total, 'bài']].forEach(function(s) {
-          var card = el('div', 'stat-card stat-card--' + s[0]);
-          card.appendChild(el('div', 'stat-label', s[1]));
-          var row = el('div', 'stat-value-row');
-          row.appendChild(el('span', 'stat-value', s[2]));
-          row.appendChild(el('span', 'stat-sub', s[3]));
-          card.appendChild(row);
-          statGrid.appendChild(card);
+        /* Overall progress + per-track (Java / Spring Boot) split */
+        var progressCard = el('div', 'dash-progress-card');
+        var overallCol = el('div');
+        var headline = el('div', 'dash-progress-headline');
+        headline.appendChild(el('span', 'dash-progress-percent', p.percent + '%'));
+        headline.appendChild(el('span', 'dash-progress-count', p.completed + '/' + p.total + ' bài đã hoàn thành'));
+        overallCol.appendChild(headline);
+        var overallTrack = el('div', 'dash-progress-track');
+        var overallFill = el('div', 'dash-progress-fill');
+        overallFill.style.width = p.percent + '%';
+        overallTrack.appendChild(overallFill);
+        overallCol.appendChild(overallTrack);
+        progressCard.appendChild(overallCol);
+
+        var splitCol = el('div', 'dash-progress-split');
+        [['java', 'Java', jp], ['spring', 'Spring Boot', sp]].forEach(function(entry) {
+          var row = el('div', 'dash-progress-row dash-progress-row--' + entry[0]);
+          row.appendChild(el('span', 'dash-progress-row-label', entry[1]));
+          var rowTrack = el('div', 'dash-progress-track');
+          var rowFill = el('div', 'dash-progress-fill');
+          rowFill.style.width = entry[2].percent + '%';
+          rowTrack.appendChild(rowFill);
+          row.appendChild(rowTrack);
+          row.appendChild(el('span', 'dash-progress-row-count', entry[2].completed + '/' + entry[2].total));
+          splitCol.appendChild(row);
         });
-        container.appendChild(statGrid);
+        progressCard.appendChild(splitCol);
+        container.appendChild(progressCard);
 
         /* Continue learning */
         var unfinished = courseData.lessons.find(function(l){return state.completed.indexOf(l.id)===-1;});
         var target = (state.lastLessonId && lessonsById.has(state.lastLessonId) && state.completed.indexOf(state.lastLessonId)===-1) ? state.lastLessonId : (unfinished ? unfinished.id : 'day-01');
-        var continueWrap = el('div', 'dash-continue');
+        var targetLesson = lessonsById.get(target);
+        var continueCard = el('div', 'dash-continue-card');
+        var continueInfo = el('div');
+        var continueEyebrow = el('div', 'dash-continue-eyebrow');
+        continueEyebrow.innerHTML = icon('flag') + '<span>' + (state.completed.length > 0 ? 'Tiếp tục học' : 'Bắt đầu học') + '</span>';
+        continueInfo.appendChild(continueEyebrow);
+        continueInfo.appendChild(el('p', 'dash-continue-title', targetLesson ? (targetLesson.title || target) : target));
+        var continueMeta = el('div', 'dash-continue-meta');
+        if (targetLesson && targetLesson.unitTitle) continueMeta.appendChild(el('span', 'chip', targetLesson.unitNumber + '. ' + targetLesson.unitTitle));
+        if (targetLesson && targetLesson.durationMinutes) continueMeta.appendChild(el('span', 'chip', '~' + targetLesson.durationMinutes + ' phút'));
+        continueInfo.appendChild(continueMeta);
+        continueCard.appendChild(continueInfo);
         var continueBtn = el('a', 'btn btn--primary');
         continueBtn.href = '#lesson/' + target;
-        continueBtn.innerHTML = '<span class="btn-glyph" aria-hidden="true">&#9654;</span>' +
-          (state.completed.length > 0 ? 'Học tiếp' : 'Bắt đầu học');
-        continueWrap.appendChild(continueBtn);
-        container.appendChild(continueWrap);
+        continueBtn.innerHTML = icon('play') + '<span>' + (state.completed.length > 0 ? 'Học tiếp' : 'Bắt đầu học') + '</span>';
+        continueCard.appendChild(continueBtn);
+        container.appendChild(continueCard);
 
-        /* Reactor summary — one row per unit, in the vernacular of a
-           Maven/Gradle multi-module build report (this curriculum really
-           is a sequence of daily modules with real completion state). */
-        var reactor = el('div', 'reactor-summary');
-        reactor.setAttribute('aria-label', 'Tóm tắt tiến độ theo đơn vị học tập');
+        /* Curriculum overview — plain-language unit list, each row carrying
+           its own real completion state (no build-log framing). */
+        var overview = el('div', 'curriculum-overview');
+        var head = el('div', 'curriculum-overview-head');
+        head.appendChild(el('h2', null, 'Nội dung khóa học'));
+        head.appendChild(el('span', 'curriculum-overview-hint', courseData.units.length + ' đơn vị học tập'));
+        overview.appendChild(head);
+        var list = el('div', 'curriculum-list');
         courseData.units.forEach(function(u) {
           var lessonIds = u.lessonIds || [];
           var doneCount = lessonIds.filter(function(lid){ return state.completed.indexOf(lid)!==-1; }).length;
-          var status = doneCount === 0 ? 'pending' : (doneCount === lessonIds.length ? 'success' : 'running');
-          var glyph = status === 'success' ? '[x]' : (status === 'running' ? '[>]' : '[ ]');
-          var tag = status === 'success' ? 'SUCCESS' : (status === 'running' ? 'RUNNING' : 'PENDING');
-          var row = el('a', 'reactor-row reactor-row--' + status);
+          var isDone = lessonIds.length > 0 && doneCount === lessonIds.length;
+          var isActive = !isDone && doneCount > 0;
+          var row = el('a', 'curriculum-row' + (isDone ? ' curriculum-row--done' : isActive ? ' curriculum-row--active' : ''));
           row.href = '#lesson/' + (lessonIds[0] || '');
-          row.appendChild(el('span', 'reactor-status', glyph));
-          row.appendChild(el('span', 'reactor-name', u.number + '. ' + u.title));
-          row.appendChild(el('span', 'reactor-leader'));
-          row.appendChild(el('span', 'reactor-meta', doneCount + '/' + lessonIds.length + ' bài'));
-          row.appendChild(el('span', 'reactor-tag', tag));
-          reactor.appendChild(row);
+          var status = el('span', 'curriculum-status');
+          status.innerHTML = isDone ? icon('check') : String(u.number);
+          row.appendChild(status);
+          row.appendChild(el('span', 'curriculum-name', u.number + '. ' + u.title));
+          row.appendChild(el('span', 'curriculum-meta', doneCount + '/' + lessonIds.length + ' bài'));
+          row.appendChild(el('span', 'curriculum-tag', isDone ? 'Hoàn thành' : (isActive ? 'Đang học' : 'Chưa bắt đầu')));
+          list.appendChild(row);
         });
-        container.appendChild(reactor);
+        overview.appendChild(list);
+        container.appendChild(overview);
 
         renderSettingsBlock(container);
       }
@@ -1207,13 +1517,15 @@
         details.appendChild(el("summary", null, "Cài đặt dữ liệu học tập"));
         var actions = el("div", "settings-actions");
 
-        var exportBtn = el("button", "settings-btn", "Tải tiến độ (.json)");
+        var exportBtn = el("button", "settings-btn");
+        exportBtn.innerHTML = icon("download") + '<span>Tải tiến độ (.json)</span>';
         exportBtn.type = "button";
         exportBtn.setAttribute("data-action", "export-progress");
         exportBtn.addEventListener("click", downloadProgress);
         actions.appendChild(exportBtn);
 
-        var importLabel = el("label", "settings-btn", "Nhập tiến độ (.json)");
+        var importLabel = el("label", "settings-btn");
+        importLabel.innerHTML = icon("upload") + '<span>Nhập tiến độ (.json)</span>';
         var fileInput = el("input");
         fileInput.type = "file";
         fileInput.accept = ".json,application/json";
@@ -1221,14 +1533,16 @@
         importLabel.appendChild(fileInput);
         actions.appendChild(importLabel);
 
-        var resetBtn = el("button", "settings-btn settings-btn--danger", "Đặt lại tiến độ");
+        var resetBtn = el("button", "settings-btn settings-btn--danger");
+        resetBtn.innerHTML = icon("refresh-cw") + '<span>Đặt lại tiến độ</span>';
         resetBtn.type = "button";
         resetBtn.setAttribute("data-action", "reset-progress");
         actions.appendChild(resetBtn);
 
         var preview = el("div", "import-preview");
         preview.hidden = true;
-        var confirmBtn = el("button", "settings-btn", "Xác nhận nhập");
+        var confirmBtn = el("button", "settings-btn");
+        confirmBtn.innerHTML = icon("check") + '<span>Xác nhận nhập</span>';
         confirmBtn.type = "button";
         confirmBtn.hidden = true;
 
@@ -1272,6 +1586,50 @@
         return node;
       }
 
+      /* Small inline icon set (stroke-based, 24x24 viewBox, currentColor).
+         Returns a plain HTML string so call sites can splice it into either
+         innerHTML assembly or a wrapper element's innerHTML. No <defs>/
+         <symbol>/id attributes are used anywhere, by design — every icon is
+         fully inlined per use so nothing can collide across repeated cards. */
+      var ICONS = {
+        search: '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+        moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+        monitor: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/>',
+        menu: '<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>',
+        check: '<polyline points="5 13 10 18 19 7"/>',
+        "chevron-left": '<polyline points="15 6 9 12 15 18"/>',
+        "chevron-right": '<polyline points="9 6 15 12 9 18"/>',
+        "chevron-down": '<polyline points="6 9 12 15 18 9"/>',
+        "arrow-left": '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/>',
+        "arrow-right": '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>',
+        play: '<path d="M7 4l13 8-13 8V4z"/>',
+        info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.5" r=".75" fill="currentColor" stroke="none"/>',
+        star: '<path d="M12 3l2.6 5.8 6.4.6-4.8 4.2 1.4 6.3L12 16.9 6.4 19.9l1.4-6.3-4.8-4.2 6.4-.6L12 3z"/>',
+        "alert-triangle": '<path d="M12 4 2.5 20h19L12 4z"/><line x1="12" y1="10" x2="12" y2="15"/><circle cx="12" cy="18" r=".75" fill="currentColor" stroke="none"/>',
+        flag: '<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>',
+        copy: '<rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a1.5 1.5 0 0 1 1.5-1.5H15"/>',
+        "external-link": '<path d="M14 4h6v6"/><line x1="20" y1="4" x2="10" y2="14"/><path d="M18 13v5.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H11"/>',
+        target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".75" fill="currentColor" stroke="none"/>',
+        "book-open": '<path d="M12 6.5c-1.8-1.3-4.2-2-6.5-2A2 2 0 0 0 3.5 6.5v11c2.3 0 4.7.7 6.5 2 1.8-1.3 4.2-2 6.5-2 1 0 1.9.1 2.5.3V6.5A2 2 0 0 0 18.5 4.5c-2.3 0-4.7.7-6.5 2z"/><line x1="12" y1="6.5" x2="12" y2="19.5"/>',
+        "alert-circle": '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.5" r=".75" fill="currentColor" stroke="none"/>',
+        download: '<path d="M12 4v10m0 0 3.5-3.5M12 14l-3.5-3.5"/><path d="M4.5 15.5V18A1.5 1.5 0 0 0 6 19.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>',
+        upload: '<path d="M12 20V10m0 0 3.5 3.5M12 10l-3.5 3.5"/><path d="M4.5 15.5V18A1.5 1.5 0 0 0 6 19.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>',
+        "refresh-cw": '<path d="M20 11A8 8 0 0 0 6.3 6.3L4 8.5"/><path d="M4 4v4.5h4.5"/><path d="M4 13a8 8 0 0 0 13.7 4.7L20 15.5"/><path d="M20 20v-4.5h-4.5"/>',
+        lightbulb: '<circle cx="12" cy="9" r="5"/><line x1="9.5" y1="18" x2="14.5" y2="18"/><line x1="10" y1="21" x2="14" y2="21"/><line x1="12" y1="14" x2="12" y2="18"/>'
+      };
+      var ICON_FILLED = { play: true };
+      function icon(name, extraClass) {
+        var body = ICONS[name];
+        if (!body) return "";
+        var filled = !!ICON_FILLED[name];
+        var cls = "icon icon-" + name + (extraClass ? " " + extraClass : "");
+        return '<svg class="' + cls + '" viewBox="0 0 24 24" width="1em" height="1em" ' +
+          'fill="' + (filled ? "currentColor" : "none") + '" stroke="' + (filled ? "none" : "currentColor") + '" ' +
+          'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' +
+          body + '</svg>';
+      }
+
       var GROUP_LABELS = { java: "Java", spring: "Spring Boot", completion: "Hoàn thành" };
       var PRACTICE_KIND_LABELS = {
         "concept": "Khái niệm",
@@ -1281,7 +1639,7 @@
       };
       var CALLOUT_CLASS = { note: "callout--note", important: "callout--important", warning: "callout--warning", deliverable: "callout--deliverable" };
       var CALLOUT_LABEL = { note: "Ghi chú: ", important: "Quan trọng: ", warning: "Lưu ý: ", deliverable: "Đề bài: " };
-      var CALLOUT_TAG = { note: "INFO", important: "WARN", warning: "ERROR", deliverable: "TASK" };
+      var CALLOUT_ICON = { note: "info", important: "alert-triangle", warning: "alert-circle", deliverable: "flag" };
       var ALLOWED_BLOCK_TYPES = ["paragraph", "note", "important", "warning", "code", "table", "deliverable"];
       var currentLessonId = null;
 
@@ -1321,7 +1679,8 @@
           var fig = el("figure", "code-sample");
           var cap = el("figcaption");
           cap.appendChild(el("span", null, block.language ? block.language.toUpperCase() + (block.compile === false && block.partialReason ? " — không biên dịch độc lập" : "") : ""));
-          var copyBtn = el("button", "copy-btn", "Sao chép mã");
+          var copyBtn = el("button", "copy-btn");
+          copyBtn.innerHTML = icon("copy") + '<span>Sao chép mã</span>';
           copyBtn.type = "button";
           copyBtn.setAttribute("data-action", "copy-code");
           copyBtn.setAttribute("aria-label", "Sao chép mã mẫu vào clipboard");
@@ -1365,19 +1724,24 @@
         if (type === "note" || type === "important" || type === "warning" || type === "deliverable") {
           var aside = el("aside", "callout " + (CALLOUT_CLASS[type] || ""));
           aside.setAttribute("role", type === "warning" ? "alert" : "note");
+          var calloutIcon = el("span", "callout-icon");
+          calloutIcon.setAttribute("aria-hidden", "true");
+          calloutIcon.innerHTML = icon(CALLOUT_ICON[type] || "info");
+          aside.appendChild(calloutIcon);
+          var calloutBody = el("div", "callout-body");
           var head = el("div", "callout-head");
-          head.appendChild(el("span", "callout-tag", "[" + (CALLOUT_TAG[type] || "") + "]"));
           head.appendChild(el("strong", "callout-label", CALLOUT_LABEL[type] || ""));
-          aside.appendChild(head);
+          calloutBody.appendChild(head);
           /* Deliverable text is often an authored multi-line bullet list — preserve line breaks. */
           if (type === "deliverable") {
             var body = el("span", "deliverable-body");
             body.appendChild(document.createTextNode(block.text == null ? "" : String(block.text)));
-            aside.appendChild(body);
+            calloutBody.appendChild(body);
           } else {
-            aside.appendChild(document.createTextNode(block.text == null ? "" : String(block.text)));
+            calloutBody.appendChild(document.createTextNode(block.text == null ? "" : String(block.text)));
           }
-          appendCitations(aside, block.citations, refIndexById);
+          appendCitations(calloutBody, block.citations, refIndexById);
+          aside.appendChild(calloutBody);
           container.appendChild(aside);
           return;
         }
@@ -1417,19 +1781,27 @@
         var g = el("a", null, GROUP_LABELS[lesson.group] || lesson.group);
         g.href = "#dashboard";
         crumb.appendChild(g);
-        crumb.appendChild(el("span", null, "/"));
+        var sep1 = el("span", "crumb-sep");
+        sep1.setAttribute("aria-hidden", "true");
+        sep1.innerHTML = icon("chevron-right");
+        crumb.appendChild(sep1);
         var unit = courseData.units.find(function(x){ return x.id === lesson.unitId; });
         var u = el("a", null, "Unit " + lesson.unitNumber + ": " + (lesson.unitTitle || ""));
         if (unit && unit.lessonIds && unit.lessonIds.length) u.href = "#lesson/" + unit.lessonIds[0];
         crumb.appendChild(u);
-        crumb.appendChild(el("span", null, "/"));
-        crumb.appendChild(el("span", null, lesson.title));
+        var sep2 = el("span", "crumb-sep");
+        sep2.setAttribute("aria-hidden", "true");
+        sep2.innerHTML = icon("chevron-right");
+        crumb.appendChild(sep2);
+        crumb.appendChild(el("span", "crumb-current", lesson.title));
         container.appendChild(crumb);
 
         var header = el("header", "lesson-header");
+        var kicker = el("div", "lesson-kicker");
+        kicker.innerHTML = icon("flag") + '<span>' + (GROUP_LABELS[lesson.group] || lesson.group) + '</span>';
+        header.appendChild(kicker);
         header.appendChild(el("h1", "lesson-title", lesson.title));
         var meta = el("div", "lesson-meta");
-        meta.appendChild(el("span", "chip", GROUP_LABELS[lesson.group] || lesson.group));
         if (lesson.durationMinutes) meta.appendChild(el("span", "chip", "~" + lesson.durationMinutes + " phút"));
         header.appendChild(meta);
         if (lesson.summary) {
@@ -1447,15 +1819,19 @@
           var cols = el("div", "lesson-columns" + ((lesson.prerequisites && lesson.prerequisites.length) ? " twocol" : ""));
           if (lesson.prerequisites && lesson.prerequisites.length) {
             var c0 = el("div", "lesson-column");
-            c0.appendChild(el("h2", null, "Yêu cầu trước khi học"));
+            var headingPrereq = el("h2");
+            headingPrereq.innerHTML = icon("book-open") + '<span>Yêu cầu trước khi học</span>';
+            c0.appendChild(headingPrereq);
             var ul0 = el("ul");
             lesson.prerequisites.forEach(function(item) { ul0.appendChild(el("li", null, item)); });
             c0.appendChild(ul0);
             cols.appendChild(c0);
           }
           if (lesson.outcomes && lesson.outcomes.length) {
-            var c1 = el("div", "lesson-column");
-            c1.appendChild(el("h2", null, "Sau bài này bạn sẽ"));
+            var c1 = el("div", "lesson-column lesson-column--outcomes");
+            var headingOutcomes = el("h2");
+            headingOutcomes.innerHTML = icon("target") + '<span>Sau bài này bạn sẽ</span>';
+            c1.appendChild(headingOutcomes);
             var ul1 = el("ul");
             lesson.outcomes.forEach(function(item) { ul1.appendChild(el("li", null, item)); });
             c1.appendChild(ul1);
@@ -1477,8 +1853,9 @@
 
 
       /* ---- practice cards --------------------------------------------- */
-      function disclosureButton(label, panelId) {
-        var b = el("button", "disclosure-btn", label);
+      function disclosureButton(label, panelId, iconName) {
+        var b = el("button", "disclosure-btn");
+        b.innerHTML = (iconName ? icon(iconName) : "") + "<span>" + label + "</span>";
         b.type = "button";
         b.setAttribute("aria-expanded", "false");
         b.setAttribute("aria-controls", panelId);
@@ -1539,7 +1916,8 @@
           fieldset.appendChild(list);
           body.appendChild(fieldset);
 
-          var checkBtn = el("button", "disclosure-btn", "Kiểm tra đáp án");
+          var checkBtn = el("button", "disclosure-btn");
+          checkBtn.innerHTML = icon("check") + "<span>Kiểm tra đáp án</span>";
           checkBtn.type = "button";
           checkBtn.setAttribute("data-action", "check-practice");
           checkBtn.setAttribute("data-practice-id", practice.id);
@@ -1576,7 +1954,7 @@
         var actions = el("div", "practice-actions");
         if (practice.hint) {
           var hintPanelId = "hint-" + practice.id;
-          var hintBtn = disclosureButton("Gợi ý", hintPanelId);
+          var hintBtn = disclosureButton("Gợi ý", hintPanelId, "lightbulb");
           var hintPanel = el("div", "disclosure-panel");
           hintPanel.id = hintPanelId;
           hintPanel.hidden = true;
@@ -1587,7 +1965,7 @@
         }
         if (practice.solution || (mc && practice.explanation)) {
           var solPanelId = "sol-" + practice.id;
-          var solBtn = disclosureButton(mc ? "Xem giải thích" : "Xem lời giải", solPanelId);
+          var solBtn = disclosureButton(mc ? "Xem giải thích" : "Xem lời giải", solPanelId, "book-open");
           var solPanel = el("div", "disclosure-panel");
           solPanel.id = solPanelId;
           solPanel.hidden = true;
@@ -1716,15 +2094,16 @@
           var prevLesson = lessonsById.get(prevId);
           var prevA = el("a", "nav-prev");
           prevA.href = "#lesson/" + prevId;
-          prevA.innerHTML = '<span class="nav-label">← Bài trước</span><span>' +
-            CourseCore.escapeHtml(prevLesson ? prevLesson.title : prevId) + "</span>";
+          prevA.innerHTML = icon("arrow-left") + '<span><span class="nav-label">Bài trước</span><span>' +
+            CourseCore.escapeHtml(prevLesson ? prevLesson.title : prevId) + "</span></span>";
           nav.appendChild(prevA);
         } else {
           nav.appendChild(el("span"));
         }
 
         var done = state.completed.indexOf(lesson.id) !== -1;
-        var toggleBtn = el("button", "nav-complete", done ? "✓ Đã hoàn thành" : "Đánh dấu hoàn thành");
+        var toggleBtn = el("button", "nav-complete");
+        toggleBtn.innerHTML = icon("check") + "<span>" + (done ? "Đã hoàn thành" : "Đánh dấu hoàn thành") + "</span>";
         toggleBtn.type = "button";
         toggleBtn.setAttribute("data-action", "toggle-completion");
         toggleBtn.setAttribute("data-lesson-id", lesson.id);
@@ -1735,8 +2114,8 @@
           var nextLesson = lessonsById.get(nextId);
           var nextA = el("a", "nav-next");
           nextA.href = "#lesson/" + nextId;
-          nextA.innerHTML = '<span class="nav-label">Bài sau →</span><span>' +
-            CourseCore.escapeHtml(nextLesson ? nextLesson.title : nextId) + "</span>";
+          nextA.innerHTML = icon("arrow-right") + '<span><span class="nav-label">Bài sau</span><span>' +
+            CourseCore.escapeHtml(nextLesson ? nextLesson.title : nextId) + "</span></span>";
           nav.appendChild(nextA);
         } else {
           nav.appendChild(el("span"));
@@ -1827,7 +2206,7 @@
         }
 
         RES_FILTERS.forEach(function(f, i) {
-          var b = el("button", "disclosure-btn" + (i === 0 ? " is-active" : ""), f.label);
+          var b = el("button", "disclosure-btn", f.label);
           b.type = "button";
           b.setAttribute("data-filter", f.key);
           b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
@@ -1864,14 +2243,28 @@
         card.id = "resource-" + r.id;
         var headRow = el("div", "ref-card-head");
         headRow.appendChild(el("strong", null, r.label || r.pageTitle || r.id));
-        if (r.readStatus === "read") headRow.appendChild(el("span", "badge-read", "đã đọc"));
-        else headRow.appendChild(el("span", "badge-domain", "không truy cập được"));
+        if (r.readStatus === "read") {
+          var readBadge = el("span", "badge-read");
+          readBadge.innerHTML = icon("check") + "<span>đã đọc</span>";
+          headRow.appendChild(readBadge);
+        } else {
+          var unavailBadge = el("span", "badge-status--unavailable");
+          unavailBadge.innerHTML = icon("alert-circle") + "<span>không truy cập được</span>";
+          headRow.appendChild(unavailBadge);
+        }
         card.appendChild(headRow);
-        if (r.pageTitle) card.appendChild(el("div", null, "Trang: " + r.pageTitle));
+        if (r.pageTitle) {
+          var pageP = el("p");
+          pageP.style.margin = ".25rem 0 0";
+          pageP.appendChild(el("span", "badge-domain", "Trang: "));
+          pageP.appendChild(document.createTextNode(r.pageTitle));
+          card.appendChild(pageP);
+        }
         if (r.url) {
           var p = el("p");
           p.style.margin = ".25rem 0 0";
-          var a = el("a", "ref-url", r.url);
+          var a = el("a", "ref-url");
+          a.innerHTML = icon("external-link") + CourseCore.escapeHtml(r.url);
           a.href = CourseCore.safeExternalUrl(r.url) || "#";
           a.target = "_blank";
           a.rel = "noopener noreferrer";
@@ -2053,7 +2446,7 @@
         var themeBtn = document.getElementById('theme-toggle');
         if (!themeBtn) return;
         themeBtn.setAttribute('aria-label', THEME_LABELS[state.theme] || state.theme);
-        themeBtn.textContent = state.theme === 'dark' ? '☾' : state.theme === 'light' ? '☀' : '◐';
+        themeBtn.innerHTML = icon(state.theme === 'dark' ? 'moon' : state.theme === 'light' ? 'sun' : 'monitor');
       }
       function cycleTheme() {
         state.theme = THEME_ORDER[(THEME_ORDER.indexOf(state.theme) + 1) % 3];
@@ -2086,12 +2479,16 @@
         var brand = document.createElement('a');
         brand.className = 'brand';
         brand.href = '#dashboard';
-        brand.innerHTML = '<span class="brand-mark" aria-hidden="true">' +
-          '<span class="mark-bracket">[</span><span class="mark-java">J</span><span class="mark-dot">·</span><span class="mark-spring">S</span><span class="mark-bracket">]</span>' +
-          '</span><span class="brand-text brand-name-long">Java &amp; Spring Boot</span>';
+        /* aria-label on the link itself so its accessible name survives
+           even at the mobile width where .brand-name-long is hidden and
+           the mark graphic is aria-hidden. */
+        brand.setAttribute('aria-label', 'Java & Spring Boot – trang tổng quan khóa học');
+        brand.innerHTML = '<span class="brand-mark" aria-hidden="true">JS</span>' +
+          '<span class="brand-text brand-name-long">Java &amp; Spring Boot</span>';
 
         var searchWrap = document.createElement('div');
         searchWrap.className = 'header-search';
+        searchWrap.innerHTML = '<label for="site-search">Tìm kiếm bài học</label>' + icon('search');
         var search = document.createElement('input');
         search.id = 'site-search';
         search.type = 'search';
@@ -2103,6 +2500,7 @@
         progress.className = 'progress-meter';
         progress.innerHTML =
           '<progress id="progress-bar" value="0" max="1" aria-label="Tiến độ khóa học"></progress>' +
+          '<span class="progress-text-short" aria-hidden="true"></span>' +
           '<span class="progress-text-long visually-hidden"></span>';
 
         var actions = document.createElement('div');
@@ -2113,7 +2511,7 @@
         themeBtn.type = 'button';
         themeBtn.setAttribute('data-action', 'toggle-theme');
         themeBtn.setAttribute('aria-label', 'Giao diện: system');
-        themeBtn.textContent = '☽';
+        themeBtn.innerHTML = icon('monitor');
         actions.appendChild(themeBtn);
         var menuBtn = document.createElement('button');
         menuBtn.className = 'icon-btn nav-toggle';
@@ -2122,7 +2520,7 @@
         menuBtn.setAttribute('aria-expanded', 'false');
         menuBtn.setAttribute('aria-controls', 'course-sidebar');
         menuBtn.setAttribute('aria-label', 'Mở danh mục');
-        menuBtn.textContent = '☰';
+        menuBtn.innerHTML = icon('menu');
         actions.appendChild(menuBtn);
 
         header.appendChild(brand);
@@ -2516,7 +2914,7 @@
           var expectedTarget = (state.lastLessonId && lessonsById.has(state.lastLessonId) && state.completed.indexOf(state.lastLessonId) === -1)
             ? state.lastLessonId
             : (unfinishedNow ? unfinishedNow.id : "day-01");
-          var continueLink = document.getElementById("route-view").querySelector(".dash-continue a");
+          var continueLink = document.getElementById("route-view").querySelector(".dash-continue-card a");
           assert("Continue Learning targets the correct lesson after a completion change",
             !!continueLink && continueLink.getAttribute("href") === "#lesson/" + expectedTarget);
 

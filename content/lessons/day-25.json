@@ -98,6 +98,51 @@
             "day25-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day25-blk-20",
+          "type": "paragraph",
+          "text": "Mental model của cache: đây là một sự đánh đổi có ý thức giữa *độ mới* của dữ liệu và *chi phí* lấy dữ liệu. Cache chỉ đáng dùng khi ba điều kiện đồng thời đúng: việc tính toán/truy vấn tốn kém, dữ liệu được đọc nhiều hơn ghi, và người dùng chấp nhận dữ liệu cũ trong một khoảng thời gian nào đó. Nếu điều kiện thứ ba không đúng (ví dụ số dư tài khoản, tồn kho lúc thanh toán), cache là sai chỗ chứ không phải cần cấu hình khéo hơn. Trước khi cache, hãy đo — cache đặt lên một query đã nhanh chỉ thêm phức tạp mà không thêm giá trị.",
+          "citations": [
+            "day25-src-1",
+            "day25-src-6"
+          ]
+        },
+        {
+          "id": "day25-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới giải thích hầu hết các lỗi 'cache không chạy': Spring Cache là abstraction dựa trên AOP proxy. `@EnableCaching` khiến bean được bọc bởi một interceptor; interceptor tính key, tra `Cache`, nếu có thì trả luôn và *không* gọi method. Vì cơ chế là proxy, gọi method có `@Cacheable` từ chính bên trong cùng class (`this.method()`) sẽ đi thẳng vào code thật, không qua interceptor, nên cache im lặng không hoạt động — cùng bản chất với `@Transactional` (Day 21) và `@PreAuthorize` (Day 23). Cách chữa là tách sang bean khác hoặc self-inject.",
+          "citations": [
+            "day25-src-1",
+            "day25-src-2"
+          ]
+        },
+        {
+          "id": "day25-blk-22",
+          "type": "note",
+          "text": "Key của cache mặc định được sinh bởi `SimpleKeyGenerator` từ *tất cả* tham số của method — điều này gây hai vấn đề thực tế: hai method khác nhau trong cùng cache có thể trùng key, và tham số không có `equals/hashCode` hợp lý (hoặc là entity mutable) khiến tra cache trượt liên tục. Vì vậy hãy khai báo key tường minh bằng SpEL: `@Cacheable(value = \"products\", key = \"#id\")`. Với `Optional` hay `null`, đặt `unless = \"#result == null\"` để không lưu 'không tìm thấy' vào cache — trừ khi bạn *cố ý* cache negative result để chống dò.",
+          "citations": [
+            "day25-src-2",
+            "day25-src-3"
+          ]
+        },
+        {
+          "id": "day25-blk-23",
+          "type": "important",
+          "text": "Điều khó nhất của cache không phải ghi vào mà là làm mất hiệu lực đúng lúc. Ba mẫu thường dùng: (1) TTL ngắn cho dữ liệu chấp nhận được cũ vài giây/phút — đơn giản và an toàn nhất; (2) `@CacheEvict` tại đúng chỗ dữ liệu bị thay đổi — chính xác hơn nhưng dễ bỏ sót đường ghi khác (job nền, service khác, sửa trực tiếp trong DB); (3) `@CachePut` khi bạn vừa ghi vừa muốn cập nhật cache ngay. Chú ý `@CacheEvict(allEntries = true)` xóa toàn bộ vùng cache — dùng khi không xác định được phạm vi ảnh hưởng, và biết rằng nó tạo một cơn 'lạnh cache' sau đó.",
+          "citations": [
+            "day25-src-3",
+            "day25-src-4"
+          ]
+        },
+        {
+          "id": "day25-blk-24",
+          "type": "warning",
+          "text": "Đừng để `@CacheEvict` chạy trước khi transaction commit: mặc định eviction xảy ra *sau khi* method kết thúc, nhưng nếu bạn để `beforeInvocation = true` hoặc gọi evict ở giữa một transaction rồi transaction rollback, cache đã bị xóa (hoặc tệ hơn, được nạp lại từ dữ liệu chưa commit) — dẫn tới cache và DB lệch nhau. Trong hệ thống nhiều instance, mọi cache cục bộ (`ConcurrentMapCacheManager`, Caffeine) chỉ được evict trên *một* instance, các instance khác vẫn giữ dữ liệu cũ; đó chính là lúc cần cache dùng chung như Redis.",
+          "citations": [
+            "day25-src-4",
+            "day25-src-5"
+          ]
         }
       ]
     },
@@ -142,6 +187,33 @@
           "citations": [
             "day25-src-9"
           ]
+        },
+        {
+          "id": "day25-blk-25",
+          "type": "paragraph",
+          "text": "Khi nào chuyển từ cache trong tiến trình sang Redis: cache cục bộ nhanh nhất (không qua network) nhưng mỗi instance có bản riêng, mất khi restart, và không thể đảm bảo nhất quán khi scale. Redis là tiến trình riêng nên mọi instance thấy cùng một dữ liệu, dữ liệu sống qua lần deploy, nhưng bạn trả giá bằng một lượt network và bằng việc mọi thứ đưa vào phải serialize được. Cấu hình `RedisCacheConfiguration` với `entryTtl` là bắt buộc trong thực tế — cache không TTL sẽ lớn dần đến khi Redis phải trục xuất theo chính sách `maxmemory-policy`, một hành vi bạn không kiểm soát được từ code ứng dụng.",
+          "citations": [
+            "day25-src-7",
+            "day25-src-8"
+          ]
+        },
+        {
+          "id": "day25-blk-26",
+          "type": "note",
+          "text": "Hai bẫy khi dùng Redis làm cache: (1) *serialization* — mặc định dùng JDK serialization nên object phải `Serializable` và dữ liệu trong Redis không đọc được bằng mắt; chuyển sang `GenericJackson2JsonRedisSerializer` cho dữ liệu dạng JSON dễ debug, nhưng lúc đó phải cẩn thận với kiểu đa hình và với `LocalDateTime` (cần `JavaTimeModule`). Đổi kiểu DTO sau khi đã có dữ liệu trong cache có thể gây lỗi deserialize — đặt version vào tên cache khi thay đổi hình dạng dữ liệu. (2) Redis là *dependency ngoài*: nếu nó chết, mặc định lỗi sẽ lan ra request; hãy quyết định trước bạn muốn cache lỗi thì bỏ qua (degrade) hay báo lỗi.",
+          "citations": [
+            "day25-src-8",
+            "day25-src-9"
+          ]
+        },
+        {
+          "id": "day25-blk-27",
+          "type": "paragraph",
+          "text": "Hai hiện tượng cần biết tên khi vận hành cache dưới tải: *cache stampede* (thundering herd) xảy ra khi một key nóng hết hạn và hàng loạt request đồng thời cùng lao xuống database — giảm bằng cách làm lệch TTL (thêm jitter) hoặc dùng khóa để chỉ một luồng nạp lại. *Cache penetration* xảy ra khi client liên tục hỏi những key không tồn tại, khiến mọi request đều xuống DB — giảm bằng cách cache cả kết quả rỗng với TTL rất ngắn. Cả hai đều không xuất hiện khi test một mình trên máy dev, nên phải nghĩ tới từ lúc thiết kế.",
+          "citations": [
+            "day25-src-9",
+            "day25-src-10"
+          ]
         }
       ]
     },
@@ -153,6 +225,30 @@
           "id": "day25-blk-10",
           "type": "note",
           "text": "@Async (kích hoạt bằng @EnableAsync trên class cấu hình, cho phép một method chạy trên luồng khác thay vì chặn luồng xử lý request chính) không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource về @Async thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (gửi email xác nhận đơn hàng, cập nhật tồn kho) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-28",
+          "type": "paragraph",
+          "text": "Vì sao cần `@Async`: một request HTTP nên trả về ngay khi công việc *bắt buộc* đã xong. Gửi email, ghi audit log, gọi hệ thống bên thứ ba, sinh báo cáo — những việc người dùng không cần chờ. `@Async` chuyển việc sang một thread khác, nên method trả về gần như tức thì. Bản chất kỹ thuật cũng chỉ là proxy AOP: interceptor gửi lời gọi vào một `TaskExecutor`. Từ đó suy ra các giới hạn quen thuộc: cần `@EnableAsync`, không có tác dụng khi gọi nội bộ trong cùng class, và không có tác dụng trên method `private`.",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-29",
+          "type": "paragraph",
+          "text": "Kiểu trả về quyết định cách bạn biết kết quả: `void` là 'bắn và quên' — nếu method ném exception thì exception *biến mất* khỏi luồng gọi (phải bắt bằng `AsyncUncaughtExceptionHandler`, nếu không lỗi sẽ âm thầm mất). `CompletableFuture<T>` cho bạn giữ lại kết quả và lỗi, kết hợp nhiều tác vụ song song (`thenCombine`, `allOf`) và đặt timeout (`orTimeout`). Vì vậy quy tắc thực dụng: dùng `void` chỉ cho việc không quan trọng và *phải* có handler ghi log; dùng `CompletableFuture` khi kết quả hoặc lỗi có ý nghĩa.",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-30",
+          "type": "note",
+          "text": "Ba điều dễ sai với `@Async` trong Spring Boot 3: (1) executor mặc định — nếu không khai báo `ThreadPoolTaskExecutor` riêng, bạn không kiểm soát được số thread và hàng đợi; hãy định nghĩa bean executor với `corePoolSize`, `maxPoolSize`, `queueCapacity` và một `RejectedExecutionHandler` có ý nghĩa, rồi chỉ định `@Async(\"myExecutor\")`; (2) ngữ cảnh gắn ThreadLocal *không* tự sang thread mới — `SecurityContext` (Day 22), MDC dùng cho correlation id khi log (Day 29), và transaction hiện tại đều không được truyền; (3) `@Async` không nằm trong transaction của caller, nên đừng truyền entity đang được quản lý sang thread khác — hãy truyền id rồi tải lại.",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-31",
+          "type": "note",
+          "text": "Java 17 chưa có virtual thread (đó là Java 21), nên mô hình ở đây vẫn là thread pool nền tảng: mỗi tác vụ chiếm một OS thread trong lúc chạy, và tác vụ chặn nhiều I/O sẽ giữ thread. Điều này quan trọng khi chọn kích thước pool: pool quá lớn gây tranh chấp và tốn bộ nhớ, pool quá nhỏ khiến hàng đợi dài và độ trễ tăng. Nếu tác vụ nền cần *đảm bảo* thực hiện (không được mất khi ứng dụng restart), `@Async` là công cụ sai — lúc đó cần lưu công việc vào DB hoặc dùng message queue.",
           "citations": []
         }
       ]
@@ -166,6 +262,18 @@
           "type": "note",
           "text": "@Scheduled (kích hoạt bằng @EnableScheduling, method phải trả về void và không nhận tham số; fixedDelay tính khoảng cách từ lúc KẾT THÚC lần chạy trước, fixedRate chạy theo chu kỳ cố định không quan tâm lần trước đã xong hay chưa, hoặc dùng biểu thức cron cho lịch phức tạp hơn) cũng không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource tương ứng thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (huỷ đơn hàng chờ quá 30 phút) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-32",
+          "type": "paragraph",
+          "text": "`@Scheduled` có ba cách diễn đạt thời gian với ngữ nghĩa khác nhau: `fixedRate` đếm từ lúc *bắt đầu* lần trước (nên nếu tác vụ chạy lâu hơn chu kỳ, các lần chạy dồn nhau); `fixedDelay` đếm từ lúc *kết thúc* lần trước (an toàn hơn cho tác vụ có thời gian chạy biến động); `cron` cho mốc thời gian theo lịch (mỗi 0h, mỗi thứ Hai). Với cron, hãy khai báo `zone` một cách tường minh, vì mặc định dùng timezone của JVM và điều đó khác nhau giữa máy dev và container production.",
+          "citations": []
+        },
+        {
+          "id": "day25-blk-33",
+          "type": "note",
+          "text": "Bẫy lớn nhất của `@Scheduled` trong môi trường thật: mặc định scheduler chỉ có *một* thread, nên một tác vụ chạy lâu sẽ làm trễ mọi tác vụ khác — cấu hình `spring.task.scheduling.pool.size` hoặc một `TaskScheduler` riêng. Bẫy thứ hai còn nghiêm trọng hơn: khi bạn deploy 3 instance, *mỗi* instance đều chạy job, nên email gửi ba lần, báo cáo tính ba lần. Cần một khóa phân tán (ví dụ ShedLock) hoặc tách job ra một tiến trình riêng. Ngoài ra một exception không bắt được trong tác vụ `@Scheduled` sẽ khiến các lần chạy tiếp theo vẫn tiếp tục nhưng lỗi chỉ nằm trong log — hãy luôn bọc `try/catch` và log rõ ràng.",
+          "citations": []
         }
       ]
     }
@@ -173,7 +281,13 @@
   "commonMistakes": [
     "Dùng @Cacheable cho method ghi dữ liệu (insert/update) khiến lần ghi đầu tiên bị bỏ qua nếu cache đã có key trùng - phải dùng @CachePut cho thao tác ghi.",
     "Quên @EnableCaching trên class cấu hình, khiến mọi @Cacheable/@CachePut/@CacheEvict bị bỏ qua hoàn toàn mà không có lỗi rõ ràng.",
-    "Dùng CacheManager mặc định (trong bộ nhớ) cho ứng dụng chạy nhiều instance, dẫn tới dữ liệu cache không nhất quán giữa các instance."
+    "Dùng CacheManager mặc định (trong bộ nhớ) cho ứng dụng chạy nhiều instance, dẫn tới dữ liệu cache không nhất quán giữa các instance.",
+    "Gọi method có @Cacheable/@Async từ trong cùng class (this.method()) khiến proxy AOP bị bỏ qua và annotation không có hiệu lực.",
+    "Dùng key mặc định cho @Cacheable với tham số phức tạp, dẫn tới trùng key hoặc luôn cache miss vì equals/hashCode không phù hợp.",
+    "Cấu hình Redis cache không đặt TTL, để cache phình ra và phụ thuộc vào chính sách trục xuất của Redis.",
+    "Dùng @Async void cho việc quan trọng mà không có AsyncUncaughtExceptionHandler, làm exception mất hoàn toàn.",
+    "Truyền entity JPA đang được quản lý sang thread @Async thay vì truyền id và tải lại trong transaction mới.",
+    "Để @Scheduled chạy trên nhiều instance mà không có khóa phân tán, khiến job bị thực thi trùng lặp."
   ],
   "practices": [
     {
@@ -283,7 +397,11 @@
   ],
   "enhancedExercises": [
     "Thêm condition/unless SpEL vào @Cacheable(\"products\") để chỉ cache khi sản phẩm đang ở trạng thái ACTIVE.",
-    "Đo thời gian phản hồi trước/sau khi bật cache Redis cho một truy vấn danh mục sản phẩm."
+    "Đo thời gian phản hồi trước/sau khi bật cache Redis cho một truy vấn danh mục sản phẩm.",
+    "Thêm log ở đầu method có @Cacheable rồi gọi hai lần với cùng tham số để tự chứng minh lần thứ hai không vào thân method; sau đó gọi method đó từ trong cùng class và giải thích vì sao cache không còn hoạt động.",
+    "Đặt entryTtl 10 giây cho một cache Redis, quan sát dữ liệu biến mất bằng redis-cli, rồi đổi serializer sang JSON và so sánh khả năng đọc dữ liệu trong Redis.",
+    "Viết một method @Async void ném RuntimeException để thấy exception mất tăm, sau đó cấu hình AsyncUncaughtExceptionHandler và chứng minh lỗi đã được ghi log.",
+    "So sánh thực nghiệm fixedRate và fixedDelay với một tác vụ ngủ lâu hơn chu kỳ, ghi lại thời điểm bắt đầu từng lần chạy và giải thích khác biệt."
   ],
   "references": [
     {

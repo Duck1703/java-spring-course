@@ -81,6 +81,22 @@
             "day11-src-1",
             "day11-src-3"
           ]
+        },
+        {
+          "id": "day11-blk-30",
+          "type": "paragraph",
+          "text": "Mental model để nhớ cả bài: một thread là một *luồng thực thi* có stack riêng nhưng dùng chung heap với mọi thread khác trong cùng JVM. Vì stack riêng nên biến local luôn an toàn; vì heap dùng chung nên mọi field của object chia sẻ đều là điểm có thể xảy ra lỗi đồng thời. Toàn bộ phần còn lại của Day 11 (synchronized, volatile, executor) chỉ là các cách trả lời hai câu hỏi: 'ai được sửa dữ liệu chung tại một thời điểm' (atomicity) và 'khi nào thread khác nhìn thấy thay đổi đó' (visibility).",
+          "citations": [
+            "day11-src-1"
+          ]
+        },
+        {
+          "id": "day11-blk-31",
+          "type": "note",
+          "text": "Điểm dễ nhầm ngay từ bước đầu: gọi `run()` trực tiếp *không* tạo thread mới — nó chỉ là một lời gọi method thường trên thread hiện tại; chỉ `start()` mới yêu cầu JVM tạo thread mới. Mỗi thread cũng chỉ `start()` được đúng một lần, gọi lần thứ hai sẽ nhận `IllegalThreadStateException`. RUNNABLE trong Java bao gồm cả 'đang chạy' và 'đang chờ CPU', nên trạng thái này không đồng nghĩa với việc thread đang thực sự chiếm lõi CPU.",
+          "citations": [
+            "day11-src-1"
+          ]
         }
       ]
     },
@@ -124,6 +140,43 @@
           "citations": [
             "day11-src-11"
           ]
+        },
+        {
+          "id": "day11-blk-32",
+          "type": "paragraph",
+          "text": "Vì sao `count++` không an toàn: dù chỉ là một dòng code, nó gồm ba bước riêng biệt ở mức bytecode — đọc giá trị, tăng, ghi lại. Hai thread có thể đọc cùng giá trị 5, cả hai ghi 6, và một lần tăng biến mất. `synchronized` sửa điều này bằng cách gắn mỗi khối với một *monitor* (một object cụ thể): thread muốn vào phải giành được monitor đó, các thread còn lại chuyển sang BLOCKED. Ngoài atomicity, việc vào/ra monitor còn tạo ra rào cản bộ nhớ nên nó cũng đảm bảo visibility — đây là điểm `synchronized` mạnh hơn `volatile`.",
+          "citations": [
+            "day11-src-4",
+            "day11-src-5"
+          ]
+        },
+        {
+          "id": "day11-blk-33",
+          "type": "paragraph",
+          "text": "Chọn phạm vi khóa là quyết định thiết kế: khóa cả method là dễ đúng nhưng làm hẹp cổ chai; khóa một khối nhỏ quanh đúng phần dữ liệu chia sẻ giữ được throughput. Với các thao tác đếm/cộng đơn giản, hãy dùng `AtomicInteger`/`AtomicLong` — chúng dựa trên compare-and-swap ở mức CPU, không cần khóa nên nhanh hơn và không thể quên mở khóa. Với map dùng chung, `ConcurrentHashMap` cung cấp thao tác nguyên tử như `compute`, `merge`, `putIfAbsent` thay vì bắt bạn tự khóa quanh `HashMap`.",
+          "citations": [
+            "day11-src-5",
+            "day11-src-11"
+          ]
+        },
+        {
+          "id": "day11-blk-34",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.concurrent.atomic.AtomicInteger;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.Map;\n\nclass AtomicVsLockDemo {\n    private final Object lock = new Object();      // monitor rieng, khong khoa 'this'\n    private int guarded = 0;\n    private final AtomicInteger lockFree = new AtomicInteger();\n    private final Map<String, Integer> hits = new ConcurrentHashMap<>();\n\n    void work(String key) {\n        synchronized (lock) {                       // pham vi khoa hep\n            guarded++;\n        }\n        lockFree.incrementAndGet();                 // CAS, khong can khoa\n        hits.merge(key, 1, Integer::sum);           // thao tac nguyen tu san co\n    }\n\n    public static void main(String[] args) throws InterruptedException {\n        AtomicVsLockDemo demo = new AtomicVsLockDemo();\n        Runnable task = () -> { for (int i = 0; i < 1000; i++) demo.work(\"a\"); };\n        Thread t1 = new Thread(task);\n        Thread t2 = new Thread(task);\n        t1.start(); t2.start();\n        t1.join(); t2.join();                       // cho ca hai xong truoc khi doc\n        System.out.println(demo.guarded + \" \" + demo.lockFree.get() + \" \" + demo.hits);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-5",
+            "day11-src-6"
+          ]
+        },
+        {
+          "id": "day11-blk-35",
+          "type": "warning",
+          "text": "Deadlock: hai thread giữ khóa A và B rồi cùng chờ khóa của nhau, cả hai treo vĩnh viễn và ứng dụng không báo lỗi gì. Cách phòng thực dụng: luôn giành nhiều khóa theo *cùng một thứ tự* trong toàn hệ thống, giữ khóa càng ngắn càng tốt, và tuyệt đối không gọi I/O hay code của bên thứ ba khi đang giữ khóa. Cũng nên khóa trên một field private riêng (`private final Object lock`) thay vì `this` hoặc một `String` hằng, vì khóa công khai cho phép code bên ngoài vô tình tham gia vào tranh chấp khóa của bạn.",
+          "citations": [
+            "day11-src-11"
+          ]
         }
       ]
     },
@@ -155,6 +208,23 @@
           "text": "Đánh dấu biến volatile buộc runtime/processor không được sắp xếp lại các lệnh liên quan tới biến đó và luôn ghi/đọc giá trị mới nhất từ bộ nhớ chính, đảm bảo mọi thread thấy giá trị nhất quán — nhưng không cấp mutual exclusion như synchronized (không thay thế được synchronized khi cần đảm bảo một khối thao tác là nguyên tử). Theo Java Memory Model, một lần ghi vào biến volatile luôn happens-before mọi lần đọc tiếp theo của cùng biến đó, nên các giá trị thread A thấy trước khi ghi volatile cũng được thread B thấy sau khi đọc volatile đó.",
           "citations": [
             "day11-src-9"
+          ]
+        },
+        {
+          "id": "day11-blk-36",
+          "type": "paragraph",
+          "text": "Giới hạn cần nắm rõ: `volatile` chỉ giải quyết *visibility* và cấm sắp xếp lại lệnh, nó không làm thao tác trở nên nguyên tử. `volatile int count; count++;` vẫn mất dữ liệu vì phép tăng vẫn gồm đọc-sửa-ghi. Vì vậy quy tắc chọn công cụ khá rõ: một cờ boolean bật/tắt hoặc một tham chiếu chỉ được gán → `volatile`; đếm/cộng/so-sánh-rồi-gán → lớp `Atomic*`; một chuỗi thao tác phải xảy ra như một khối không chia cắt → `synchronized` hoặc `ReentrantLock`.",
+          "citations": [
+            "day11-src-8",
+            "day11-src-9"
+          ]
+        },
+        {
+          "id": "day11-blk-37",
+          "type": "note",
+          "text": "Liên hệ Spring Boot: bean singleton (mặc định) được chia sẻ bởi mọi request trên nhiều thread cùng lúc, nên bean *phải* không có state có thể thay đổi. Field chỉ chứa dependency được inject và `final` thì an toàn; một `private List<String> cache = new ArrayList<>()` trong `@Service` là bug đồng thời chờ xảy ra. Đây chính là lý do kỹ thuật khiến khóa học khuyến nghị constructor injection với field `final` từ Day 14.",
+          "citations": [
+            "day11-src-7"
           ]
         }
       ]
@@ -188,6 +258,43 @@
           "text": "Chủ đề Executor chia làm ba phần: Executor Interfaces (định nghĩa 3 kiểu đối tượng executor), Thread Pools (loại cài đặt executor phổ biến nhất, như newFixedThreadPool ở ví dụ trên) và Fork/Join (framework tận dụng nhiều bộ xử lý).",
           "citations": [
             "day11-src-13"
+          ]
+        },
+        {
+          "id": "day11-blk-38",
+          "type": "paragraph",
+          "text": "Vì sao không tự `new Thread()` trong ứng dụng thật: mỗi thread tốn bộ nhớ stack và chi phí tạo/hủy, và số thread không kiểm soát sẽ làm hệ thống sụp dưới tải cao. `ExecutorService` tách 'tác vụ' khỏi 'thread chạy tác vụ': bạn `submit` công việc, pool tái sử dụng một số thread cố định để chạy chúng. `submit` trả về `Future` — tay cầm để lấy kết quả sau; lưu ý `Future.get()` là *blocking*, và nếu tác vụ ném exception thì lỗi đó chỉ hiện ra khi bạn gọi `get()` (bọc trong `ExecutionException`), nên tác vụ thất bại rất dễ bị bỏ lọt trong im lặng.",
+          "citations": [
+            "day11-src-12",
+            "day11-src-13"
+          ]
+        },
+        {
+          "id": "day11-blk-39",
+          "type": "paragraph",
+          "text": "Cách chọn pool: `newFixedThreadPool(n)` cho công việc nặng CPU (n xấp xỉ số lõi); pool lớn hơn cho công việc chờ I/O vì thread phần lớn thời gian đứng chờ; `newSingleThreadExecutor` khi cần thứ tự tuần tự; `newScheduledThreadPool` cho tác vụ định kỳ. Tránh `newCachedThreadPool` cho tải không giới hạn vì nó tạo thread không có giới hạn trên. Quan trọng không kém: executor phải được tắt (`shutdown()` rồi `awaitTermination`), nếu không thread non-daemon sẽ giữ JVM không thoát.",
+          "citations": [
+            "day11-src-12",
+            "day11-src-13"
+          ]
+        },
+        {
+          "id": "day11-blk-40",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.concurrent.*;\nimport java.util.List;\n\nclass ExecutorPatternsDemo {\n    public static void main(String[] args) throws Exception {\n        ExecutorService pool = Executors.newFixedThreadPool(2);\n        try {\n            // invokeAll: chay nhieu tac vu, cho tat ca hoan thanh\n            List<Callable<Integer>> tasks = List.of(() -> 1, () -> 2, () -> { throw new IllegalStateException(\"boom\"); });\n            List<Future<Integer>> futures = pool.invokeAll(tasks);\n\n            for (Future<Integer> f : futures) {\n                try {\n                    System.out.println(\"ok \" + f.get());   // blocking\n                } catch (ExecutionException e) {\n                    // loi cua tac vu duoc boc trong ExecutionException\n                    System.out.println(\"task failed: \" + e.getCause().getMessage());\n                }\n            }\n        } finally {\n            pool.shutdown();                                // khong nhan tac vu moi\n            if (!pool.awaitTermination(2, TimeUnit.SECONDS)) {\n                pool.shutdownNow();                         // ngat cac tac vu con lai\n            }\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-12",
+            "day11-src-13"
+          ]
+        },
+        {
+          "id": "day11-blk-41",
+          "type": "note",
+          "text": "Liên hệ Spring Boot: bạn hầu như không tạo `ExecutorService` bằng tay trong ứng dụng Boot mà khai báo một `ThreadPoolTaskExecutor` làm bean rồi dùng qua `@Async` (Day 25) — nhờ đó pool được cấu hình tập trung và tự shutdown theo lifecycle của context. Cũng nên nhớ hai thứ không tự chuyển sang thread của pool: transaction (`@Transactional` gắn với thread hiện tại) và `SecurityContext`; muốn có chúng ở thread khác thì phải truyền/khôi phục tường minh.",
+          "citations": [
+            "day11-src-12"
           ]
         }
       ]
@@ -231,6 +338,35 @@
           "text": "Java IO Series của Baeldung phân loại các bài viết File I/O theo ba nhóm: thao tác file cơ bản (đọc/ghi/xóa/đổi tên), Java IO APIs (OutputStream, BufferedReader kiểu cũ) và Java NIO APIs (NIO2 File API, Path, WatchService, Selector) — Day 11 tập trung vào nhóm NIO APIs qua Path/Files.",
           "citations": [
             "day11-src-15"
+          ]
+        },
+        {
+          "id": "day11-blk-42",
+          "type": "paragraph",
+          "text": "Vì sao NIO.2 (`java.nio.file`) thay cho `java.io.File`: `File` báo lỗi bằng cách trả về `false` mà không cho biết vì sao (không tồn tại? thiếu quyền? đang bị giữ?), còn `Files` ném `IOException` có kiểu cụ thể như `NoSuchFileException`, `FileAlreadyExistsException`, `AccessDeniedException`. `Path` cũng là kiểu trừu tượng đúng hơn: nó chỉ mô tả *đường dẫn* (một chuỗi tên có cấu trúc, có thể không tồn tại trên đĩa), còn mọi thao tác thật đều nằm ở lớp tiện ích `Files`.",
+          "citations": [
+            "day11-src-14",
+            "day11-src-16"
+          ]
+        },
+        {
+          "id": "day11-blk-43",
+          "type": "code",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.*;\nimport java.util.List;\nimport java.util.stream.Stream;\n\nclass FilesPatternsDemo {\n    public static void main(String[] args) throws IOException {\n        Path dir = Files.createTempDirectory(\"demo\");\n        Path file = dir.resolve(\"data.txt\");                 // ghep duong dan an toan\n\n        // luon chi dinh charset tuong minh\n        Files.writeString(file, \"line1\\nline2\\n\", StandardCharsets.UTF_8);\n\n        // file nho: doc het mot lan\n        List<String> all = Files.readAllLines(file, StandardCharsets.UTF_8);\n        System.out.println(all.size());\n\n        // file lon: stream lazy, PHAI dong -> try-with-resources\n        try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {\n            System.out.println(lines.filter(l -> l.endsWith(\"2\")).count());\n        }\n\n        // ghi them thay vi ghi de\n        Files.writeString(file, \"line3\\n\", StandardCharsets.UTF_8, StandardOpenOption.APPEND);\n\n        try {\n            Files.readString(dir.resolve(\"missing.txt\"));\n        } catch (NoSuchFileException e) {\n            System.out.println(\"loi co kieu ro rang: \" + e.getFile());\n        }\n\n        Files.deleteIfExists(file);\n        Files.deleteIfExists(dir);\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day11-src-17",
+            "day11-src-18"
+          ]
+        },
+        {
+          "id": "day11-blk-44",
+          "type": "warning",
+          "text": "Ba edge case gây bug thật: (1) không chỉ định charset — `Files.readAllLines(path)` dùng UTF-8 từ Java 18 nhưng trên Java 17 nhiều API text vẫn phụ thuộc default charset của máy, nên code chạy đúng trên máy dev và làm hỏng tiếng Việt trên server; luôn truyền `StandardCharsets.UTF_8` tường minh; (2) `Files.lines(...)` mở một file handle và chỉ đóng khi stream được close — quên try-with-resources sẽ rò rỉ file descriptor; (3) đường dẫn ghép từ input người dùng phải được `normalize()` và kiểm tra `startsWith(baseDir)` để chặn path traversal (`../../etc/passwd`) — điều bắt buộc khi làm chức năng upload/download ở Day 26.",
+          "citations": [
+            "day11-src-15",
+            "day11-src-16"
           ]
         }
       ]
@@ -276,6 +412,24 @@
             "day11-src-21",
             "day11-src-22"
           ]
+        },
+        {
+          "id": "day11-blk-45",
+          "type": "paragraph",
+          "text": "Điều quan trọng nhất về Java serialization trong bối cảnh hiện nay: hiểu nó để đọc code cũ và để biết vì sao *không* nên chọn nó cho dữ liệu đi qua mạng. Deserialization đọc byte và tự dựng lại object mà không đi qua constructor, nên dữ liệu do người khác kiểm soát có thể dẫn tới thực thi code ngoài ý muốn — đây là một lớp lỗ hổng đã gây ra nhiều sự cố lớn. Trong ứng dụng Spring Boot, định dạng trao đổi mặc định là JSON qua Jackson (Day 16), và khi cần lưu object vào Redis (Day 25) thì cấu hình serializer JSON cũng là lựa chọn được ưu tiên thay vì JDK serialization.",
+          "citations": [
+            "day11-src-19",
+            "day11-src-22"
+          ]
+        },
+        {
+          "id": "day11-blk-46",
+          "type": "note",
+          "text": "Các quy tắc cần nhớ nếu buộc phải dùng: field `transient` bị bỏ qua và nhận giá trị mặc định khi đọc lại (dùng cho mật khẩu, connection, cache); mọi field không transient phải serializable, nếu không sẽ nhận `NotSerializableException` lúc ghi; hãy khai báo `serialVersionUID` tường minh vì nếu để JVM tự tính, chỉ cần thêm một field là dữ liệu cũ không đọc được nữa (`InvalidClassException`); và `static` field không thuộc trạng thái object nên không được ghi.",
+          "citations": [
+            "day11-src-20",
+            "day11-src-21"
+          ]
         }
       ]
     }
@@ -283,7 +437,12 @@
   "commonMistakes": [
     "Chỉ đồng bộ (synchronized) method ghi (ví dụ increment()) mà quên đồng bộ cả method đọc (get()) trên cùng field — vẫn có thể đọc phải giá trị cũ do memory visibility, dù không còn mất dữ liệu do ghi đè ghi.",
     "Dùng volatile để thay thế synchronized khi cần đảm bảo một chuỗi thao tác (như đọc-sửa-ghi) là nguyên tử — volatile chỉ đảm bảo visibility, không đảm bảo mutual exclusion.",
-    "Đánh dấu một field tham chiếu tới object không implement Serializable trong một lớp đã Serializable mà không đánh dấu transient — sẽ ném NotSerializableException lúc runtime thay vì lỗi lúc biên dịch."
+    "Đánh dấu một field tham chiếu tới object không implement Serializable trong một lớp đã Serializable mà không đánh dấu transient — sẽ ném NotSerializableException lúc runtime thay vì lỗi lúc biên dịch.",
+    "Gọi thread.run() thay vì thread.start(), khiến code chạy tuần tự trên thread hiện tại mà không có lỗi nào báo ra.",
+    "Dùng volatile cho biến đếm (count++) và tưởng rằng đã an toàn: volatile chỉ đảm bảo visibility, không đảm bảo atomicity — phải dùng AtomicInteger hoặc synchronized.",
+    "Giữ state có thể thay đổi trong bean singleton của Spring, gây race condition khi nhiều request xử lý song song.",
+    "Quên đóng Stream trả về từ Files.lines(), làm rò rỉ file descriptor cho tới khi tiến trình bị giới hạn số file mở.",
+    "Không shutdown ExecutorService, khiến JVM không thoát vì thread non-daemon của pool vẫn còn sống."
   ],
   "practices": [
     {
@@ -380,7 +539,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết lại RaceConditionDemo nhưng bỏ synchronized ở increment() để tự quan sát kết quả counter.get() sai lệch (< 2000) do race condition, rồi so sánh với bản có synchronized.",
-    "Viết một chương trình dùng ExecutorService với newFixedThreadPool(4) để xử lý song song việc đọc nội dung nhiều file bằng Files.readString(), rồi tổng hợp kết quả vào một danh sách dùng chung (có đồng bộ đúng cách)."
+    "Viết một chương trình dùng ExecutorService với newFixedThreadPool(4) để xử lý song song việc đọc nội dung nhiều file bằng Files.readString(), rồi tổng hợp kết quả vào một danh sách dùng chung (có đồng bộ đúng cách).",
+    "Viết một counter chia sẻ, cho 4 thread cùng tăng 10.000 lần với ba biến thể (int thường, volatile int, AtomicInteger) và so sánh kết quả để tự chứng minh khác biệt giữa visibility và atomicity.",
+    "Tạo deadlock có chủ đích với hai object khóa lấy theo thứ tự ngược nhau, dùng jstack hoặc thread dump để nhìn thấy nó, rồi sửa bằng cách thống nhất thứ tự giành khóa.",
+    "Submit ba tác vụ vào ExecutorService trong đó một tác vụ ném exception, kiểm chứng rằng lỗi chỉ xuất hiện khi gọi Future.get() và nằm trong ExecutionException.getCause().",
+    "Viết hàm nhận tên file từ input rồi resolve trong một thư mục gốc, thử nhập '../secret.txt' và bổ sung kiểm tra normalize()/startsWith() để chặn path traversal."
   ],
   "references": [
     {

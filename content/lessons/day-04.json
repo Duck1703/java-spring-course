@@ -57,6 +57,67 @@
           "citations": [
             "day04-src-1"
           ]
+        },
+        {
+          "id": "day04-blk-20",
+          "type": "paragraph",
+          "text": "Hiểu đơn giản: class là bản thiết kế, object là căn nhà xây theo bản thiết kế đó. Nhưng bản chất kỹ thuật quan trọng hơn phép so sánh này: class là một *kiểu dữ liệu* (type) mà compiler dùng để kiểm tra bạn được phép gọi gì; object là một *vùng nhớ trên heap* mà JVM cấp phát tại thời điểm chạy. Hai thứ này sống ở hai thời điểm khác nhau — class tồn tại lúc compile-time (và lúc load class), object chỉ tồn tại lúc runtime. Toàn bộ Day 5 (polymorphism) chỉ dễ hiểu khi bạn đã tách rời được hai khái niệm này.",
+          "citations": []
+        },
+        {
+          "id": "day04-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới của một lệnh `new Book(...)`: (1) JVM tìm class Book, nếu chưa được load thì load + link + khởi tạo (chạy static field/static block đúng một lần); (2) cấp phát vùng nhớ cho toàn bộ instance field trên heap và zero-hóa chúng (0, false, null) — nên field luôn có giá trị mặc định trước khi constructor chạy; (3) chạy field initializer và instance initializer block theo thứ tự khai báo trong file; (4) chạy thân constructor; (5) trả về *reference* trỏ tới object đó. Biến bạn viết ở bên trái dấu `=` không chứa object, nó chứa reference (một handle tới địa chỉ trên heap).",
+          "citations": []
+        },
+        {
+          "id": "day04-blk-22",
+          "type": "code",
+          "language": "java",
+          "code": "class Counter {\n    static int created = 0;      // 1 ban duy nhat cho ca class\n    int value = 10;              // field initializer: chay khi new\n    int doubled;\n\n    {\n        // instance initializer block: chay sau field initializer,\n        // truoc than constructor\n        doubled = value * 2;\n    }\n\n    Counter() {\n        created++;\n        System.out.println(value + \" / \" + doubled); // 10 / 20\n    }\n\n    public static void main(String[] args) {\n        Counter a = new Counter();\n        Counter b = a;           // KHONG tao object moi: copy reference\n        b.value = 99;\n        System.out.println(a.value);      // 99 - cung mot object\n        System.out.println(Counter.created); // 1 - chi new mot lan\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day04-src-1"
+          ]
+        },
+        {
+          "id": "day04-blk-23",
+          "type": "note",
+          "text": "Điểm dễ nhầm số một của người mới: `b = a` không sao chép object, nó sao chép reference. Java truyền tham số luôn theo giá trị (pass-by-value), nhưng với biến kiểu tham chiếu thì 'giá trị' được sao chép chính là reference — vì vậy method có thể *thay đổi trạng thái* object mà caller nhìn thấy, nhưng không thể làm biến của caller trỏ sang object khác. Đây là lý do một `List` truyền vào method có thể bị method đó thêm phần tử, còn việc gán `list = new ArrayList<>()` bên trong method thì caller không thấy gì.",
+          "citations": []
+        },
+        {
+          "id": "day04-blk-24",
+          "type": "paragraph",
+          "text": "Phân biệt static và instance: instance field thuộc từng object (mỗi object một bản), static field thuộc về class (một bản duy nhất, dùng chung, khởi tạo khi class được load). Instance method có thể truy cập cả static và instance member; static method chỉ truy cập được static member vì nó chạy khi chưa cần bất kỳ object nào tồn tại — đó chính là nguyên nhân lỗi biên dịch 'non-static variable cannot be referenced from a static context' mà hầu hết người mới gặp trong `main`.",
+          "citations": []
+        },
+        {
+          "id": "day04-blk-30",
+          "type": "paragraph",
+          "text": "Mental model của class và object: class là *bản mô tả* (khuôn), object là *một thực thể cụ thể* được tạo theo khuôn đó và có trạng thái riêng. Điều này giải thích vì sao hai object của cùng một class thay đổi độc lập nhau: mỗi lần `new` tạo một vùng nhớ mới trên heap chứa bản sao riêng của các instance field, còn biến bạn khai báo chỉ giữ một *tham chiếu* trỏ tới vùng nhớ đó. Từ đây suy ra hai điều thường gây nhầm: gán `a = b` không sao chép object mà chỉ khiến hai biến trỏ cùng một object (sửa qua `a` thì `b` cũng thấy), và so sánh `a == b` là so sánh hai tham chiếu có trỏ cùng chỗ hay không, chứ không so sánh nội dung — muốn so sánh nội dung phải dùng `equals`.",
+          "citations": [
+            "day04-src-1",
+            "day04-src-2"
+          ]
+        },
+        {
+          "id": "day04-blk-31",
+          "type": "paragraph",
+          "text": "Phân biệt `static` và instance theo câu hỏi 'thuộc về ai': instance field/method thuộc về *từng object* (mỗi object một giá trị, method cần biết object nào nên có `this`), còn `static` thuộc về *class* (chỉ có một bản dùng chung cho toàn bộ chương trình, không có `this`). Đó là lý do bạn không thể gọi trực tiếp instance field từ một method `static` — chưa có object nào để hỏi. Trong Spring, hầu hết logic nên nằm ở instance method của bean được quản lý (để có thể tiêm phụ thuộc và thay thế khi test), còn `static` phù hợp cho hằng số và các hàm thuần tuý không phụ thuộc trạng thái. Trạng thái mutable đặt trong field `static` là nguồn lỗi kinh điển: nó được chia sẻ giữa mọi request và mọi thread.",
+          "citations": [
+            "day04-src-2",
+            "day04-src-3"
+          ]
+        },
+        {
+          "id": "day04-blk-32",
+          "type": "note",
+          "text": "Vòng đời một object và điều dễ nhầm về `null`: biến tham chiếu chưa được gán object nào có giá trị `null` — nó *không* phải một object rỗng mà là 'không trỏ tới đâu cả', nên mọi lời gọi qua nó sinh `NullPointerException`. Java 17 giúp việc điều tra dễ hơn nhiều nhờ thông điệp NPE chi tiết (helpful NullPointerException, bật mặc định từ JDK 15), chỉ rõ *biến hay lời gọi nào* đang null trong một chuỗi dài như `a.getB().getC()`. Ở phía thiết kế, cách chữa tốt nhất không phải rải `if (x != null)` mà là không để object rơi vào trạng thái không hợp lệ ngay từ constructor.",
+          "citations": [
+            "day04-src-1",
+            "day04-src-3"
+          ]
         }
       ]
     },
@@ -97,6 +158,23 @@
           "citations": [
             "day04-src-3",
             "day04-src-4"
+          ]
+        },
+        {
+          "id": "day04-blk-33",
+          "type": "paragraph",
+          "text": "Vai trò thật của constructor là *bảo đảm object sinh ra đã hợp lệ*. Nếu bạn kiểm tra dữ liệu trong constructor và ném exception khi sai, thì mọi đoạn code sau đó không cần kiểm tra lại — bất biến (invariant) của class được thiết lập một lần tại điểm duy nhất. Ngược lại, nếu bạn tạo object rỗng rồi gọi từng setter, sẽ có một khoảng thời gian object tồn tại ở trạng thái nửa vời, và không ai chắc nó đã được điền đủ chưa. Đây là lý do thực tế để ưu tiên constructor injection trong Spring (Day 14): phụ thuộc bắt buộc trở thành tham số bắt buộc, bean không thể tồn tại trong trạng thái thiếu phụ thuộc, và field có thể khai báo `final`.",
+          "citations": [
+            "day04-src-4"
+          ]
+        },
+        {
+          "id": "day04-blk-34",
+          "type": "note",
+          "text": "Ba chi tiết về constructor thường gây ngạc nhiên: (1) nếu bạn *không* viết constructor nào, compiler tự thêm constructor không tham số — nhưng ngay khi bạn viết một constructor có tham số, constructor mặc định đó biến mất, nên code cũ dùng `new Foo()` sẽ không compile nữa (điều này quan trọng vì JPA yêu cầu entity phải có constructor không tham số); (2) nạp chồng constructor nên chuyển hết về *một* constructor chính bằng `this(...)` để logic kiểm tra không bị lặp và không bị lệch giữa các nhánh; (3) `this(...)` phải là câu lệnh đầu tiên. Ngoài ra tránh gọi method có thể bị override từ trong constructor: lúc đó phần khởi tạo của lớp con chưa chạy, nên method đó có thể đọc phải field còn `null`.",
+          "citations": [
+            "day04-src-4",
+            "day04-src-5"
           ]
         }
       ]
@@ -180,6 +258,32 @@
           "citations": [
             "day04-src-5"
           ]
+        },
+        {
+          "id": "day04-blk-35",
+          "type": "paragraph",
+          "text": "Bản chất của encapsulation không phải 'thêm getter/setter cho mọi field' — đó chỉ là hình thức. Bản chất là *ẩn cách cài đặt và chỉ phơi ra những hành vi có nghĩa*, để class tự chịu trách nhiệm giữ dữ liệu của mình luôn đúng. Một `setBalance()` công khai cho phép bất kỳ ai đặt số dư âm, và khi phát hiện lỗi bạn phải đi tìm khắp codebase; thay vào đó `deposit(amount)`/`withdraw(amount)` đặt quy tắc nghiệp vụ *bên trong* class, nên chỉ có một chỗ duy nhất cần kiểm tra và sửa. Câu hỏi thiết kế đúng vì vậy không phải 'field này cần getter/setter gì' mà 'người dùng class này cần *làm* gì'.",
+          "citations": [
+            "day04-src-5",
+            "day04-src-6"
+          ]
+        },
+        {
+          "id": "day04-blk-36",
+          "type": "warning",
+          "text": "Encapsulation có thể bị phá vỡ một cách âm thầm qua tham chiếu: nếu getter trả về trực tiếp một `List` hay một object mutable bên trong, người gọi có thể sửa nội dung của bạn mà không qua bất kỳ kiểm tra nào (`order.getItems().clear()`). Đây gọi là rò rỉ tham chiếu. Cách chữa: trả về bản sao hoặc `List.copyOf(...)`/`Collections.unmodifiableList(...)`, và cung cấp method `addItem`/`removeItem` để mọi thay đổi đều đi qua quy tắc của class. Cùng nguyên tắc đó áp dụng cho tham số constructor: nếu bạn nhận vào một collection từ bên ngoài rồi giữ nguyên tham chiếu, người gọi vẫn còn tay cầm để sửa trạng thái của object bạn vừa tạo.",
+          "citations": [
+            "day04-src-6"
+          ]
+        },
+        {
+          "id": "day04-blk-37",
+          "type": "note",
+          "text": "Chọn phạm vi truy cập theo nguyên tắc 'mặc định hẹp nhất rồi mở khi có lý do': `private` cho mọi field và cho các method trợ giúp nội bộ; `public` chỉ cho những gì thực sự là hợp đồng với bên ngoài; `protected` chỉ khi bạn *thiết kế* class để được kế thừa (Day 5); package-private (không ghi gì) hữu ích để mở cho test hoặc cho các class cùng package mà không phơi ra toàn hệ thống. Lý do thực dụng: những gì đã `public` thì rất khó thu hồi, vì bạn không biết ai đang dùng — mỗi thành phần `public` là một cam kết bảo trì lâu dài.",
+          "citations": [
+            "day04-src-5",
+            "day04-src-7"
+          ]
         }
       ]
     },
@@ -198,6 +302,22 @@
           "type": "paragraph",
           "text": "Từ khóa super dùng để truy cập tường minh thành viên của lớp cha (superclass) từ lớp con: super.tenField hoặc super.tenMethod() gọi đúng phiên bản của lớp cha khi lớp con có thành viên trùng tên; super(...) ở dòng đầu tiên của constructor lớp con gọi constructor tương ứng của lớp cha. Chi tiết về kế thừa và super sẽ được học sâu ở Day 5.",
           "citations": []
+        },
+        {
+          "id": "day04-blk-38",
+          "type": "paragraph",
+          "text": "`record` (chuẩn từ Java 16, nên dùng được đầy đủ trong Java 17) là cách khai báo một *tập hợp dữ liệu bất biến trong suốt*: compiler tự sinh constructor chính, các method truy cập theo tên thành phần, cùng `equals`, `hashCode` và `toString` dựa trên toàn bộ thành phần. Điểm mấu chốt để hiểu đúng: record không phải 'class ngắn gọn hơn' mà là một lời cam kết về ngữ nghĩa — object này chỉ là dữ liệu, các field là `final`, và hai record bằng nhau khi mọi thành phần bằng nhau. Nhờ vậy nó là lựa chọn tự nhiên cho DTO request/response trong Spring MVC (Day 16) và cho các giá trị trả về nhiều thông tin. Nếu bạn cần dữ liệu thay đổi được sau khi tạo (như entity JPA có setter và cần constructor không tham số), record là công cụ sai.",
+          "citations": [
+            "day04-src-7"
+          ]
+        },
+        {
+          "id": "day04-blk-39",
+          "type": "note",
+          "text": "Hai điều nên biết ngay khi dùng record: (1) bạn *có thể* kiểm tra dữ liệu bằng compact constructor — viết `public Money { if (amount < 0) throw ...; }` không cần danh sách tham số — nên record vẫn giữ được bất biến của mình chứ không chỉ là túi dữ liệu; (2) tính bất biến của record là *nông*: nếu một thành phần là `List` mutable thì nội dung list đó vẫn sửa được, nên hãy copy sang bản không đổi trong compact constructor. Ngoài ra vì `equals` dựa trên giá trị, record rất tiện làm key cho `Map` hay phần tử của `Set` (Day 8) — điều mà một class thông thường quên override `equals`/`hashCode` sẽ làm sai.",
+          "citations": [
+            "day04-src-7"
+          ]
         }
       ]
     }
@@ -205,7 +325,15 @@
   "commonMistakes": [
     "Đặt lời gọi this(...) không phải câu lệnh đầu tiên trong constructor, gây lỗi biên dịch 'call to this must be first statement'.",
     "Khai báo field public trực tiếp thay vì private + getter/setter, phá vỡ encapsulation vì code bên ngoài có thể gán giá trị bất hợp lệ mà không qua kiểm tra nào.",
-    "Cố khai báo một lớp top-level là protected hoặc private, dẫn tới lỗi biên dịch vì hai modifier này chỉ hợp lệ cho thành viên bên trong lớp."
+    "Cố khai báo một lớp top-level là protected hoặc private, dẫn tới lỗi biên dịch vì hai modifier này chỉ hợp lệ cho thành viên bên trong lớp.",
+    "Dùng == để so sánh nội dung object thay vì equals, và tưởng gán a = b là đã sao chép object.",
+    "Đặt trạng thái mutable vào field static, khiến dữ liệu bị chia sẻ ngoài ý muốn giữa các request và các thread.",
+    "Tạo object rỗng rồi điền dần bằng setter, để object tồn tại ở trạng thái chưa hợp lệ thay vì kiểm tra trong constructor.",
+    "Thêm constructor có tham số rồi bất ngờ vì new Foo() không còn compile (và vì JPA cần constructor không tham số).",
+    "Gọi method có thể bị override từ trong constructor, đọc phải field của lớp con chưa được khởi tạo.",
+    "Sinh getter/setter cho mọi field và gọi đó là encapsulation, trong khi quy tắc nghiệp vụ vẫn nằm rải rác bên ngoài class.",
+    "Trả trực tiếp collection nội bộ từ getter, cho phép bên ngoài sửa trạng thái mà không qua kiểm tra nào.",
+    "Dùng record cho entity JPA hoặc cho dữ liệu cần thay đổi sau khi tạo."
   ],
   "practices": [
     {
@@ -300,7 +428,12 @@
   ],
   "enhancedExercises": [
     "Viết lại class Book ở phần Constructor dưới dạng record (record Book(String title, String author, int totalPages) {}) và so sánh số dòng code cùng hành vi equals()/toString() sinh tự động.",
-    "Thêm một constructor chained thứ ba cho BankAccount (constructor không tham số, mặc định balance = 0) và kiểm tra vẫn giữ nguyên tính bất biến."
+    "Thêm một constructor chained thứ ba cho BankAccount (constructor không tham số, mặc định balance = 0) và kiểm tra vẫn giữ nguyên tính bất biến.",
+    "Tạo hai biến trỏ cùng một object, sửa qua biến thứ nhất rồi in ra từ biến thứ hai; sau đó so sánh kết quả của == và equals trên hai object có cùng nội dung.",
+    "Viết một class BankAccount chỉ phơi deposit/withdraw (không có setBalance), thử đặt số dư âm từ bên ngoài và giải thích vì sao không làm được.",
+    "Trả về trực tiếp danh sách nội bộ từ một getter, xoá sạch nó từ code gọi để thấy trạng thái bị phá; sau đó sửa bằng List.copyOf và kiểm chứng lại.",
+    "Chuyển một DTO viết bằng class thông thường sang record, rồi thử dùng nó làm key của HashMap và so sánh hành vi với phiên bản class chưa override equals/hashCode.",
+    "Viết compact constructor cho một record Money để chặn số tiền âm, và chứng minh record vẫn giữ được bất biến của mình."
   ],
   "references": [
     {

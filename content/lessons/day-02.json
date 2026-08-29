@@ -111,6 +111,24 @@
           "citations": [
             "day02-src-2"
           ]
+        },
+        {
+          "id": "day02-blk-30",
+          "type": "paragraph",
+          "text": "Hai đặc tính của toán tử logic thường bị bỏ qua nhưng quyết định code có chạy đúng hay không. Thứ nhất là *short-circuit*: `&&` không đánh giá vế phải nếu vế trái đã `false`, `||` không đánh giá vế phải nếu vế trái đã `true`. Đây không chỉ là tối ưu mà là một công cụ bảo vệ: `if (user != null && user.isActive())` an toàn, còn nếu đổi sang `&` (không short-circuit) thì vế phải vẫn chạy và ném NPE. Thứ hai là *thứ tự đánh giá trái sang phải*, nên các điều kiện rẻ và các phép kiểm tra null nên đứng trước các điều kiện đắt (truy vấn database, gọi API). Hệ quả cần cẩn thận: nếu vế phải có tác dụng phụ (tăng biến, ghi log, gọi service), tác dụng phụ đó có thể không xảy ra — vì vậy đừng đặt tác dụng phụ trong biểu thức điều kiện.",
+          "citations": [
+            "day02-src-1",
+            "day02-src-2"
+          ]
+        },
+        {
+          "id": "day02-blk-31",
+          "type": "note",
+          "text": "Về ép kiểu và thăng cấp kiểu (numeric promotion): trong biểu thức số học, các toán hạng nhỏ hơn `int` được thăng lên `int`, và nếu có một toán hạng lớn hơn thì cả biểu thức được thăng lên kiểu lớn nhất đó. Điều này giải thích hai hiện tượng dễ nhầm: `byte a = 1, b = 2; byte c = a + b;` không compile (kết quả là `int`), và `long total = intA * intB` vẫn có thể tràn vì phép nhân được thực hiện *trong `int`* rồi mới gán sang `long` — muốn đúng phải ép một toán hạng sang `long` trước. Đây là loại lỗi chỉ lộ ra khi dữ liệu đủ lớn, tức là thường ở production.",
+          "citations": [
+            "day02-src-2",
+            "day02-src-3"
+          ]
         }
       ]
     },
@@ -124,6 +142,22 @@
           "text": "Java chia các câu lệnh điều khiển luồng thành ba nhóm: nhóm quyết định (if-then, if-then-else, switch) chọn một trong nhiều nhánh thực thi; nhóm lặp (for, while, do-while) lặp lại một khối lệnh; nhóm rẽ nhánh (break, continue, return) thay đổi thứ tự thực thi bình thường.",
           "citations": [
             "day02-src-3"
+          ]
+        },
+        {
+          "id": "day02-blk-32",
+          "type": "paragraph",
+          "text": "Cách viết luồng điều khiển dễ đọc quan trọng không kém việc viết đúng, vì code nghiệp vụ được đọc nhiều lần hơn được viết. Kỹ thuật hiệu quả nhất là *guard clause*: xử lý các trường hợp không hợp lệ và trả về/ném exception ngay đầu method, để phần còn lại là đường đi chính không bị thụt lề sâu. So sánh hai cách viết cùng một logic, bạn sẽ thấy phiên bản guard clause không có `else` lồng nhau và mỗi điều kiện đứng cạnh lý do của nó. Trong Spring, mẫu này rất tự nhiên ở tầng service: kiểm tra đầu vào và quyền, ném exception nghiệp vụ, rồi để `@RestControllerAdvice` chuyển thành phản hồi HTTP phù hợp (Day 17) — thay vì trả về `null` hay cờ lỗi mà người gọi có thể quên kiểm tra.",
+          "citations": [
+            "day02-src-4"
+          ]
+        },
+        {
+          "id": "day02-blk-33",
+          "type": "warning",
+          "text": "Ba lỗi luồng điều khiển kinh điển: (1) `if (x = true)` thay vì `==` — với `boolean` thì đây là phép gán và vẫn compile, nên điều kiện luôn đúng; (2) `if (cond);` với dấu chấm phẩy lạc chỗ khiến thân lệnh rỗng và khối bên dưới luôn chạy; (3) bỏ dấu ngoặc nhọn cho thân `if` một dòng rồi sau này thêm dòng thứ hai — dòng mới nằm ngoài `if` dù thụt lề trông như bên trong. Cả ba đều compile được và không có cảnh báo rõ ràng, nên hãy luôn dùng ngoặc nhọn và bật cảnh báo của IDE.",
+          "citations": [
+            "day02-src-4"
           ]
         }
       ]
@@ -197,6 +231,24 @@
           "citations": [
             "day02-src-10"
           ]
+        },
+        {
+          "id": "day02-blk-34",
+          "type": "paragraph",
+          "text": "Vì sao switch expression (chuẩn từ Java 14, dùng được trong Java 17) là bước tiến thật chứ chỉ là cú pháp đẹp hơn: nó *trả về giá trị* nên bạn gán được trực tiếp vào biến `final`, nó dùng nhãn `->` nên không có fall-through, và quan trọng nhất là nó bắt buộc *đầy đủ nhánh* (exhaustiveness). Với `enum`, nếu bạn phủ hết các hằng thì không cần `default`; và khi ai đó thêm một hằng enum mới, compiler sẽ báo lỗi ngay tại switch đó — biến một bug runtime tiềm ẩn thành lỗi biên dịch. Đây là lý do thực dụng nhất để chuyển các chuỗi `if-else` theo enum trạng thái sang switch expression.",
+          "citations": [
+            "day02-src-5",
+            "day02-src-6"
+          ]
+        },
+        {
+          "id": "day02-blk-35",
+          "type": "note",
+          "text": "Vài điểm cần biết khi dùng switch trong Java 17: `yield` dùng để trả giá trị từ một nhánh có khối `{}` nhiều câu lệnh; nhiều nhãn có thể gộp trên một nhánh (`case SAT, SUN ->`); và switch trên `String` là hợp lệ nhưng nhớ rằng nó so sánh theo `equals` và *phân biệt chữ hoa/thường*, đồng thời sẽ ném NPE nếu giá trị là `null` — nên chuẩn hóa dữ liệu trước, hoặc tốt hơn là chuyển sang enum để trạng thái hợp lệ được kiểm soát bởi kiểu. Pattern matching cho switch (kiểm tra kiểu ngay trong nhãn `case`) vẫn ở dạng preview trong Java 17, nên trong code production của khóa học này hãy dùng `instanceof` với pattern (đã chuẩn ở Java 16) khi cần phân nhánh theo kiểu.",
+          "citations": [
+            "day02-src-6",
+            "day02-src-7"
+          ]
         }
       ]
     },
@@ -236,6 +288,24 @@
           "type": "paragraph",
           "text": "Java Stream API (gói java.util.stream) cung cấp một cách khai báo (declarative) để xử lý dãy phần tử — ví dụ numbers.stream().filter(n -> n % 2 == 0).sum() thay cho một vòng for thủ công. Ngày 2 chỉ giới thiệu khái niệm để so sánh với vòng lặp truyền thống; Stream API sẽ được học sâu ở các buổi Collections/Streams của Unit sau.",
           "citations": []
+        },
+        {
+          "id": "day02-blk-36",
+          "type": "paragraph",
+          "text": "Chọn kiểu vòng lặp theo thông tin bạn thực sự cần: `for` cổ điển khi cần chỉ số (in kèm số thứ tự, đi ngược, bước nhảy); enhanced for khi chỉ cần từng phần tử — an toàn hơn vì không có cơ hội sai điều kiện biên; `while` khi số lần lặp chưa biết trước (đọc tới hết dữ liệu). Còn Stream không phải 'vòng lặp thời thượng' mà là cách *khai báo phép biến đổi dữ liệu*: khi mục đích là lọc–biến đổi–tổng hợp thì Stream nói lên ý định rõ hơn (Day 10). Ngược lại, nếu thân vòng lặp cần `break` sớm phức tạp, cần chỉ số, hoặc thay đổi biến bên ngoài, vòng lặp thường vẫn dễ đọc và dễ debug hơn.",
+          "citations": [
+            "day02-src-8",
+            "day02-src-9"
+          ]
+        },
+        {
+          "id": "day02-blk-37",
+          "type": "warning",
+          "text": "Hai cạm bẫy hay gặp nhất trong vòng lặp. Thứ nhất, xóa hoặc thêm phần tử của một collection *trong khi* đang duyệt nó bằng enhanced for sẽ ném `ConcurrentModificationException` — không phải vì đa luồng mà vì iterator phát hiện collection đã bị thay đổi; cách đúng là dùng `Iterator.remove()`, `removeIf(...)`, hoặc gom các phần tử cần xóa rồi xóa sau vòng lặp. Thứ hai, sai một đơn vị ở biên (`<=` thay vì `<` với chỉ số mảng) sinh `ArrayIndexOutOfBoundsException`; đây chính là lý do nên dùng enhanced for khi không cần chỉ số. Ngoài ra, trong ứng dụng thật hãy đặc biệt tránh gọi database hay API *bên trong* vòng lặp — đó là nguồn gốc của vấn đề N+1 mà bạn sẽ gặp ở Day 20.",
+          "citations": [
+            "day02-src-8",
+            "day02-src-9"
+          ]
         }
       ]
     }
@@ -243,7 +313,14 @@
   "commonMistakes": [
     "Quên break trong switch labeled statement kiểu cũ, khiến chương trình vô tình chạy xuyên qua các case tiếp theo (fall-through).",
     "Nhầm độ ưu tiên toán tử khi viết biểu thức phức tạp (ví dụ quên ngoặc quanh phép so sánh trước &&/||), dẫn tới kết quả logic sai.",
-    "Ép kiểu thủ công (cast) sau khi đã kiểm tra instanceof thay vì dùng pattern variable có sẵn từ instanceof pattern, khiến code dài dòng và dễ ClassCastException nếu điều kiện kiểm tra sai đối tượng."
+    "Ép kiểu thủ công (cast) sau khi đã kiểm tra instanceof thay vì dùng pattern variable có sẵn từ instanceof pattern, khiến code dài dòng và dễ ClassCastException nếu điều kiện kiểm tra sai đối tượng.",
+    "Đặt tác dụng phụ (tăng biến, gọi service) ở vế phải của && hoặc ||, rồi bất ngờ khi nó không được thực thi do short-circuit.",
+    "Nhân hai giá trị int rồi gán vào long và vẫn bị tràn, vì phép nhân được thực hiện trong int trước khi gán.",
+    "Viết if không có ngoặc nhọn rồi thêm dòng thứ hai, khiến dòng đó luôn chạy dù thụt lề trông như nằm trong if.",
+    "Dùng chuỗi thay vì enum cho trạng thái, dẫn tới switch phân biệt chữ hoa/thường và NPE khi giá trị null.",
+    "Bỏ default cho switch trên enum và mất khả năng phát hiện lỗi khi enum có thêm hằng mới (dùng switch expression để compiler kiểm tra đầy đủ nhánh).",
+    "Xóa phần tử khỏi collection trong khi đang duyệt bằng enhanced for và nhận ConcurrentModificationException.",
+    "Gọi database hoặc API bên trong vòng lặp thay vì xử lý theo lô, tạo ra vấn đề N+1."
   ],
   "practices": [
     {
@@ -350,7 +427,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết lại đoạn switch kiểu cũ (dùng dấu hai chấm) ở phần switch sang switch expression dùng mũi tên -> và so sánh độ dài/độ rõ ràng của code.",
-    "Viết một vòng for cơ bản và một enhanced for cùng tính tổng một mảng int, đo thử bằng System.nanoTime() để cảm nhận không có khác biệt hiệu năng đáng kể ở quy mô nhỏ."
+    "Viết một vòng for cơ bản và một enhanced for cùng tính tổng một mảng int, đo thử bằng System.nanoTime() để cảm nhận không có khác biệt hiệu năng đáng kể ở quy mô nhỏ.",
+    "Viết một điều kiện có tác dụng phụ ở vế phải của && rồi in ra biến đếm để tự chứng minh hành vi short-circuit.",
+    "Nhân hai int lớn và gán vào long, in kết quả; sau đó ép một toán hạng sang long và so sánh hai kết quả.",
+    "Chuyển một chuỗi if-else theo enum trạng thái sang switch expression, rồi thêm một hằng enum mới để quan sát lỗi biên dịch xuất hiện ở đâu.",
+    "Xóa phần tử trong lúc duyệt danh sách bằng enhanced for để tái hiện ConcurrentModificationException, sau đó sửa lại bằng removeIf và bằng Iterator.remove."
   ],
   "references": [
     {

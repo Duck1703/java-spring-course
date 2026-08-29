@@ -79,6 +79,24 @@
             "day05-src-1",
             "day05-src-2"
           ]
+        },
+        {
+          "id": "day05-blk-20",
+          "type": "paragraph",
+          "text": "Bản chất của kế thừa: `class Dog extends Animal` nói với compiler rằng 'mọi Dog đều là một Animal'. Đó là quan hệ subtyping — nó tạo ra một kiểu con có thể dùng ở bất cứ nơi nào yêu cầu kiểu cha. Lợi ích thật sự không phải là tiết kiệm code (composition làm việc đó tốt hơn), mà là cho phép viết code làm việc với kiểu cha và vẫn chạy đúng với mọi kiểu con chưa tồn tại ở thời điểm bạn viết. Đây chính là nền tảng để Spring có thể inject một implementation bất kỳ vào chỗ khai báo interface.",
+          "citations": []
+        },
+        {
+          "id": "day05-blk-21",
+          "type": "paragraph",
+          "text": "Cơ chế bên dưới: mỗi object trên heap có một con trỏ tới metadata của class thực tế của nó, và mỗi class có một bảng method (virtual method table) chứa địa chỉ thực thi của từng method. Khi lớp con override một method, ô tương ứng trong bảng của lớp con trỏ tới phiên bản mới. Vì vậy lời gọi method được phân giải theo class thực của object, không theo kiểu biến — cơ chế này gọi là dynamic dispatch (late binding).",
+          "citations": []
+        },
+        {
+          "id": "day05-blk-22",
+          "type": "note",
+          "text": "Quy tắc chuỗi constructor: constructor lớp con luôn gọi một constructor của lớp cha trước khi thân của nó chạy. Nếu bạn không viết `super(...)` tường minh, compiler chèn `super()` không tham số. Hệ quả thực tế thường gây lỗi: nếu lớp cha chỉ có constructor có tham số (không có constructor rỗng), lớp con buộc phải gọi `super(...)` tường minh, nếu không sẽ lỗi biên dịch. Đây là lý do các entity JPA (Day 19) cần một constructor không tham số ở mọi tầng kế thừa.",
+          "citations": []
         }
       ]
     },
@@ -136,6 +154,72 @@
             "day05-src-5",
             "day05-src-6"
           ]
+        },
+        {
+          "id": "day05-blk-23",
+          "type": "important",
+          "text": "Tách rõ hai khái niệm cho mọi biến tham chiếu: compile-time type (kiểu khai báo của biến — quyết định bạn được phép gọi method nào) và runtime type (class thực của object mà biến đang trỏ tới — quyết định phiên bản method nào thực sự chạy). Câu `Animal a = new Dog();` có compile-time type là Animal, runtime type là Dog. Compiler chỉ cho gọi các method có trong Animal; nhưng khi gọi `a.speak()`, JVM chạy `Dog.speak()`.",
+          "citations": [
+            "day05-src-5"
+          ]
+        },
+        {
+          "id": "day05-blk-24",
+          "type": "code",
+          "language": "java",
+          "code": "class Animal {\n    String speak() { return \"...\"; }\n    static String kind() { return \"Animal\"; }\n}\n\nclass Dog extends Animal {\n    @Override String speak() { return \"Woof\"; }   // override: dynamic dispatch\n    static String kind() { return \"Dog\"; }        // HIDING, khong phai override\n    String fetch() { return \"ball\"; }             // chi co o Dog\n}\n\nclass DispatchDemo {\n    public static void main(String[] args) {\n        Animal a = new Dog();            // upcast: an toan, tu dong\n\n        System.out.println(a.speak());   // \"Woof\"  -> theo runtime type\n        // a.fetch();                    // LOI COMPILE -> theo compile-time type\n\n        // static method KHONG polymorphic: phan giai theo compile-time type\n        System.out.println(((Animal) new Dog()).kind()); // \"Animal\"\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-5",
+            "day05-src-6"
+          ]
+        },
+        {
+          "id": "day05-blk-25",
+          "type": "paragraph",
+          "text": "Ba cơ chế rất dễ bị gộp lẫn nhưng hoạt động khác nhau. Overriding (cùng tên, cùng danh sách tham số, ở lớp con) là polymorphism động — chọn method lúc runtime. Overloading (cùng tên, khác danh sách tham số, thường cùng class) là polymorphism tĩnh — compiler chọn overload dựa trên kiểu khai báo của argument, quyết định ngay lúc biên dịch. Hiding xảy ra với static method và với field: cả hai được phân giải theo compile-time type, nên không bao giờ 'override' được.",
+          "citations": [
+            "day05-src-5"
+          ]
+        },
+        {
+          "id": "day05-blk-26",
+          "type": "table",
+          "columns": [
+            "Tình huống",
+            "Ràng buộc chữ ký",
+            "Chọn phiên bản nào",
+            "Thời điểm quyết định"
+          ],
+          "rows": [
+            [
+              "Overriding (instance method)",
+              "Cùng tên + cùng tham số, kiểu trả về tương thích (covariant)",
+              "Theo runtime type của object",
+              "Runtime"
+            ],
+            [
+              "Overloading",
+              "Cùng tên, khác danh sách tham số",
+              "Theo compile-time type của argument",
+              "Compile-time"
+            ],
+            [
+              "Hiding (static method / field)",
+              "Cùng tên",
+              "Theo compile-time type của biến hoặc class",
+              "Compile-time"
+            ]
+          ],
+          "citations": [
+            "day05-src-5"
+          ]
+        },
+        {
+          "id": "day05-blk-27",
+          "type": "note",
+          "text": "Khi override, quyền truy cập không được thu hẹp (public không thể trở thành protected), method `final`/`static`/`private` không thể override, và method override không được ném thêm checked exception mới rộng hơn của bản gốc. Luôn viết `@Override`: nếu bạn gõ sai tên hoặc sai tham số, bạn sẽ nhận lỗi biên dịch ngay thay vì âm thầm tạo ra một method mới không bao giờ được gọi — lỗi này rất phổ biến khi override `equals(Object)` mà viết thành `equals(MyType)`.",
+          "citations": []
         }
       ]
     },
@@ -160,6 +244,30 @@
           "citations": [
             "day05-src-7"
           ]
+        },
+        {
+          "id": "day05-blk-28",
+          "type": "paragraph",
+          "text": "Upcast (lớp con → lớp cha) luôn an toàn và không cần cú pháp gì vì subtype đã thỏa mãn hợp đồng của supertype; bạn chỉ 'quên' đi một phần API. Downcast (lớp cha → lớp con) là lời hứa với compiler rằng object thực sự thuộc kiểu đó; compiler đồng ý bỏ qua kiểm tra, nhưng JVM vẫn kiểm tra lúc runtime và ném `ClassCastException` nếu lời hứa sai. Nói cách khác: downcast không đổi bản chất object, nó chỉ thay đổi cách bạn được phép nhìn object đó.",
+          "citations": [
+            "day05-src-7"
+          ]
+        },
+        {
+          "id": "day05-blk-29",
+          "type": "code",
+          "language": "java",
+          "code": "abstract class Shape { abstract double area(); }\nclass Circle extends Shape {\n    double r = 2;\n    double area() { return Math.PI * r * r; }\n    double circumference() { return 2 * Math.PI * r; }\n}\nclass Square extends Shape {\n    double side = 3;\n    double area() { return side * side; }\n}\n\nclass CastDemo {\n    static String describe(Shape s) {\n        // Java 16+: pattern matching for instanceof -> kiem tra + bind mot buoc\n        if (s instanceof Circle c) {\n            return \"circle, chu vi = \" + c.circumference();\n        }\n        return \"shape, dien tich = \" + s.area();\n    }\n\n    public static void main(String[] args) {\n        System.out.println(describe(new Circle()));\n        System.out.println(describe(new Square()));\n\n        Shape s = new Square();\n        try {\n            Circle bad = (Circle) s;   // compile OK, runtime FAIL\n            System.out.println(bad.area());\n        } catch (ClassCastException e) {\n            System.out.println(\"ClassCastException: \" + e.getMessage());\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-7"
+          ]
+        },
+        {
+          "id": "day05-blk-30",
+          "type": "note",
+          "text": "Khi nào `instanceof` là cần thiết, khi nào là mùi thiết kế xấu? Cần thiết khi bạn xử lý kiểu mà mình không kiểm soát (deserialize, `equals`, phân loại exception, xử lý cây cú pháp). Là mùi xấu khi bạn viết `if (x instanceof A) ... else if (x instanceof B) ...` để chọn hành vi trên các kiểu do chính bạn thiết kế — đó là dấu hiệu hành vi đó nên là một method được override, để thêm kiểu mới không phải sửa lại chuỗi if. Lưu ý `null instanceof X` luôn trả về false (không ném lỗi), còn `(X) null` thì luôn thành công.",
+          "citations": []
         }
       ]
     },
@@ -203,12 +311,52 @@
           ]
         }
       ]
+    },
+    {
+      "id": "day05-sec-design",
+      "title": "Từ polymorphism tới thiết kế: Strategy và Dependency Injection",
+      "blocks": [
+        {
+          "id": "day05-blk-31",
+          "type": "paragraph",
+          "text": "Giá trị lớn nhất của polymorphism không nằm trong ví dụ Animal/Dog mà nằm ở chỗ nó cho phép code phụ thuộc vào một *hợp đồng* thay vì một implementation cụ thể. Khi module gọi chỉ biết kiểu cha (thường là interface), bạn có thể thay implementation mà không sửa dòng nào ở phía gọi — thêm kiểu mới không phải sửa code cũ. Đó chính là mẫu Strategy: đóng gói mỗi cách làm thành một class, rồi chọn cách làm bằng cách chọn object.",
+          "citations": []
+        },
+        {
+          "id": "day05-blk-32",
+          "type": "code",
+          "language": "java",
+          "code": "interface DiscountPolicy {\n    long apply(long amount);\n}\n\nclass NoDiscount implements DiscountPolicy {\n    public long apply(long amount) { return amount; }\n}\n\nclass PercentDiscount implements DiscountPolicy {\n    private final int percent;\n    PercentDiscount(int percent) { this.percent = percent; }\n    public long apply(long amount) { return amount - amount * percent / 100; }\n}\n\n// Chi phu thuoc vao hop dong, khong biet implementation nao dang chay\nclass Checkout {\n    private final DiscountPolicy policy;   // constructor injection\n    Checkout(DiscountPolicy policy) { this.policy = policy; }\n    long total(long amount) { return policy.apply(amount); }\n}\n\nclass StrategyDemo {\n    public static void main(String[] args) {\n        System.out.println(new Checkout(new NoDiscount()).total(1000));        // 1000\n        System.out.println(new Checkout(new PercentDiscount(10)).total(1000)); // 900\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day05-src-3"
+          ]
+        },
+        {
+          "id": "day05-blk-33",
+          "type": "note",
+          "text": "Lớp `Checkout` ở trên đã là một Spring bean đúng chuẩn dù chưa có annotation nào: nó nhận phụ thuộc qua constructor và chỉ biết kiểu trừu tượng. Ở Day 14, Spring container sẽ làm đúng việc bạn đang làm thủ công trong `main` — quyết định implementation nào được truyền vào. Nói cách khác, Dependency Injection chỉ là polymorphism cộng với việc chuyển quyền chọn implementation ra khỏi class sử dụng nó.",
+          "citations": []
+        },
+        {
+          "id": "day05-blk-34",
+          "type": "paragraph",
+          "text": "Chọn giữa abstract class và interface theo câu hỏi: bạn cần chia sẻ *trạng thái và code chung* cho một họ lớp có quan hệ 'is-a' chặt (dùng abstract class), hay chỉ cần định nghĩa một *năng lực* mà nhiều lớp không liên quan đều có thể có (dùng interface)? Một class chỉ extends được một class nhưng implements được nhiều interface, nên mặc định hãy để API công khai của bạn là interface — dễ mock trong test (Day 28) và dễ thay implementation trong production.",
+          "citations": [
+            "day05-src-3",
+            "day05-src-10"
+          ]
+        }
+      ]
     }
   ],
   "commonMistakes": [
     "Ép kiểu downcast trực tiếp mà không kiểm tra instanceof trước, gây ClassCastException khi đối tượng thực sự không phải kiểu đích.",
     "Nhầm lẫn method overloading với method overriding — ví dụ tưởng đổi kiểu trả về hoặc chỉ đổi tên tham số (không đổi kiểu/số lượng) là overloading hợp lệ.",
-    "Quên rằng field bị 'che' (hidden) theo kiểu khai báo của biến (không có polymorphism động cho field như với method), dẫn tới đọc nhầm giá trị khi dùng biến kiểu lớp cha để truy cập field."
+    "Quên rằng field bị 'che' (hidden) theo kiểu khai báo của biến (không có polymorphism động cho field như với method), dẫn tới đọc nhầm giá trị khi dùng biến kiểu lớp cha để truy cập field.",
+    "Tưởng static method cũng được override: gọi qua biến kiểu cha luôn chạy phiên bản của lớp cha (method hiding), dẫn tới hành vi khác kỳ vọng.",
+    "Override equals bằng chữ ký equals(MyType) thay vì equals(Object) và quên @Override, khiến method mới không bao giờ được gọi bởi collection.",
+    "Dùng chuỗi if (x instanceof A) / else if (x instanceof B) để chọn hành vi cho các kiểu do mình thiết kế, thay vì đưa hành vi đó thành method được override."
   ],
   "practices": [
     {
@@ -316,7 +464,9 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Thêm một lớp con thứ hai cho Vehicle (ví dụ Car) với công thức tính toll fee khác, rồi viết một List<Vehicle> chứa cả Motorbike và Car để quan sát polymorphism động khi lặp qua danh sách.",
-    "Thử bỏ từ khóa abstract khỏi calculateTollFee() trong Vehicle và quan sát lỗi biên dịch xảy ra, để hiểu rõ hơn ràng buộc giữa abstract class và abstract method."
+    "Thử bỏ từ khóa abstract khỏi calculateTollFee() trong Vehicle và quan sát lỗi biên dịch xảy ra, để hiểu rõ hơn ràng buộc giữa abstract class và abstract method.",
+    "Thêm một implementation DiscountPolicy thứ ba (ví dụ giảm cố định, không thấp hơn 0) và xác nhận không phải sửa một dòng nào trong class Checkout — đó là kiểm chứng thực tế của Open/Closed Principle.",
+    "Viết một method nhận Shape và dùng pattern matching for instanceof để in mô tả khác nhau cho từng kiểu, sau đó refactor sang cách override method và so sánh: cách nào dễ thêm kiểu mới hơn?"
   ],
   "references": [
     {

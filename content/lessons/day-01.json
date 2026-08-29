@@ -136,6 +136,24 @@
           "citations": [
             "day01-src-5"
           ]
+        },
+        {
+          "id": "day01-blk-30",
+          "type": "paragraph",
+          "text": "Mental model gọn để nhớ về bộ nhớ JVM: *stack là nơi ghi việc đang làm, heap là nơi chứa đồ*. Mỗi thread có stack riêng, mỗi lời gọi method đẩy một frame chứa biến cục bộ và tham số; khi method trả về, frame bị bỏ ngay — đó là lý do biến cục bộ không cần dọn dẹp và vì sao đệ quy quá sâu sinh `StackOverflowError`. Ngược lại, heap được *chia sẻ giữa mọi thread* và chứa mọi object được tạo bằng `new`; object sống đến khi không còn tham chiếu nào tới nó, lúc đó garbage collector mới thu hồi. Hai hệ quả thực tế: hết heap là `OutOfMemoryError` (thường do giữ tham chiếu quá lâu, ví dụ một cache không giới hạn), còn việc heap dùng chung chính là lý do trạng thái mutable được nhiều thread truy cập trở nên nguy hiểm (Day 11).",
+          "citations": [
+            "day01-src-1",
+            "day01-src-2"
+          ]
+        },
+        {
+          "id": "day01-blk-31",
+          "type": "note",
+          "text": "Vì sao Java 'viết một lần, chạy mọi nơi': `javac` không dịch ra mã máy của CPU cụ thể mà dịch ra bytecode — tập lệnh của một máy ảo. JVM trên từng nền tảng mới là phần dịch bytecode thành mã máy thật. Điều này giải thích một hiện tượng bạn sẽ gặp: ứng dụng chạy chậm ở những giây đầu rồi nhanh dần, vì JVM ban đầu thông dịch bytecode, sau đó JIT compiler phát hiện các đoạn 'nóng' và biên dịch chúng thành mã máy tối ưu. Đó cũng là lý do đo hiệu năng bằng cách chạy một vòng lặp rồi lấy thời gian ngay lần đầu gần như luôn cho kết quả sai.",
+          "citations": [
+            "day01-src-1",
+            "day01-src-3"
+          ]
         }
       ]
     },
@@ -285,6 +303,33 @@
           "citations": [
             "day01-src-9"
           ]
+        },
+        {
+          "id": "day01-blk-32",
+          "type": "paragraph",
+          "text": "Khác biệt cốt lõi giữa kiểu nguyên thủy và kiểu tham chiếu: biến nguyên thủy *chứa chính giá trị*, biến tham chiếu chứa địa chỉ tới object trên heap. Từ đó suy ra ba điều: nguyên thủy không thể `null` (nên `int` mặc định là 0, còn `Integer` mặc định là `null`), so sánh nguyên thủy bằng `==` là so sánh giá trị nên hoàn toàn đúng, còn so sánh wrapper bằng `==` là so sánh tham chiếu nên có thể sai một cách khó hiểu. Trong Spring, chỗ này gây bug thật: một field entity kiểu `int` không phân biệt được 'chưa có dữ liệu' với 'bằng 0', nên các cột cho phép NULL nên map sang wrapper.",
+          "citations": [
+            "day01-src-4",
+            "day01-src-5"
+          ]
+        },
+        {
+          "id": "day01-blk-33",
+          "type": "warning",
+          "text": "Ba cạm bẫy số học phải biết trước khi viết code nghiệp vụ: (1) `int` tràn số âm thầm — cộng hai số lớn cho ra số âm mà không có exception nào, nên với tiền và số lượng lớn hãy dùng `long`; (2) chia hai số nguyên cắt bỏ phần thập phân (`5/2` bằng 2), lỗi rất hay gặp khi tính tỉ lệ phần trăm; (3) `double`/`float` là số thực dấu phẩy động nên *không* biểu diễn chính xác các số thập phân — `0.1 + 0.2` không bằng `0.3`. Vì vậy tuyệt đối không dùng `double` cho tiền: dùng `BigDecimal` (và khởi tạo từ `String`, vì `new BigDecimal(0.1)` đã mang sẵn sai số của `double`), so sánh bằng `compareTo` chứ không bằng `equals` vì `equals` còn xét cả số chữ số thập phân.",
+          "citations": [
+            "day01-src-4",
+            "day01-src-6"
+          ]
+        },
+        {
+          "id": "day01-blk-34",
+          "type": "note",
+          "text": "Autoboxing tiện nhưng có hai chi phí ẩn. Thứ nhất là NPE: `Integer x = map.get(key); int y = x;` sẽ ném NPE nếu key không tồn tại, vì unboxing gọi `intValue()` trên `null` — đây là một trong những NPE khó thấy nhất khi đọc code vì không có dấu `.` nào. Thứ hai là hiệu năng và bộ nhớ khi boxing trong vòng lặp lớn (mỗi giá trị là một object). Riêng về `==`: JVM cache các `Integer` trong khoảng -128..127, nên `Integer a = 127, b = 127; a == b` cho `true` nhưng với 128 lại cho `false` — hành vi này khiến bug chỉ xuất hiện với dữ liệu lớn. Luôn dùng `equals` (hoặc so sánh giá trị nguyên thủy) cho wrapper.",
+          "citations": [
+            "day01-src-5",
+            "day01-src-7"
+          ]
         }
       ]
     },
@@ -343,6 +388,24 @@
             "day01-src-13",
             "day01-src-14"
           ]
+        },
+        {
+          "id": "day01-blk-35",
+          "type": "paragraph",
+          "text": "Vì sao `String` bất biến (immutable) lại là một quyết định thiết kế quan trọng chứ không phải hạn chế: nhờ bất biến, `String` có thể được chia sẻ an toàn giữa nhiều thread mà không cần đồng bộ, `hashCode` có thể được cache (nên `String` làm key `Map` rất nhanh), và các chuỗi hằng có thể được gộp chung trong String Pool để tiết kiệm bộ nhớ. Hệ quả cần nhớ: mọi 'thay đổi' chuỗi thực chất tạo object mới. Vì vậy nối chuỗi trong vòng lặp bằng `+` tạo ra rất nhiều object trung gian — hãy dùng `StringBuilder` cho vòng lặp. Ngược lại, nối vài chuỗi trong một câu lệnh thì cứ dùng `+` vì compiler tự tối ưu, không cần làm phức tạp code.",
+          "citations": [
+            "day01-src-8",
+            "day01-src-9"
+          ]
+        },
+        {
+          "id": "day01-blk-36",
+          "type": "important",
+          "text": "Quy tắc dứt khoát: so sánh nội dung chuỗi bằng `equals` (hoặc `equalsIgnoreCase`), không bao giờ bằng `==`. Lý do `==` *đôi khi* đúng lại làm nó nguy hiểm hơn: hai chuỗi hằng viết trong code trỏ cùng một object trong pool nên `==` cho `true`, nhưng chuỗi đến từ input người dùng, từ database hay từ `new String(...)` là object riêng nên `==` cho `false` — bug chỉ xuất hiện khi chạy thật với dữ liệu thật, không xuất hiện lúc bạn thử nghiệm bằng chuỗi viết cứng. Với dữ liệu có thể `null` từ bên ngoài, đảo thứ tự để hằng đứng trước (`\"ADMIN\".equals(role)`) hoặc dùng `Objects.equals(a, b)` để tránh NPE.",
+          "citations": [
+            "day01-src-8",
+            "day01-src-10"
+          ]
         }
       ]
     },
@@ -368,7 +431,13 @@
   "commonMistakes": [
     "So sánh hai chuỗi bằng == thay vì equals(), dẫn tới kết quả sai khi một trong hai chuỗi được tạo bằng new String().",
     "Unbox một Integer đang null (ví dụ lấy từ Map.get() với key không tồn tại) gây NullPointerException ngay tại phép gán.",
-    "Cài JRE rồi thắc mắc vì sao máy không có lệnh javac để biên dịch — nhầm lẫn JRE (chạy) với JDK (viết + biên dịch + chạy)."
+    "Cài JRE rồi thắc mắc vì sao máy không có lệnh javac để biên dịch — nhầm lẫn JRE (chạy) với JDK (viết + biên dịch + chạy).",
+    "Dùng double cho tiền tệ, hoặc khởi tạo BigDecimal từ double thay vì từ String, dẫn tới sai số cộng dồn.",
+    "Chia hai số nguyên rồi bất ngờ vì phần thập phân bị cắt (5/2 = 2) khi tính tỉ lệ.",
+    "Dùng == để so sánh String hoặc wrapper, code chạy đúng với chuỗi viết cứng nhưng sai với dữ liệu thật.",
+    "Unbox một Integer có thể null (ví dụ kết quả map.get) và nhận NullPointerException ở dòng không có dấu chấm nào.",
+    "Dùng int cho field entity ứng với cột cho phép NULL, làm mất khả năng phân biệt 'chưa có dữ liệu' với giá trị 0.",
+    "Nối chuỗi bằng + trong vòng lặp lớn thay vì dùng StringBuilder."
   ],
   "practices": [
     {
@@ -481,7 +550,11 @@
   ],
   "enhancedExercises": [
     "Viết đoạn code minh họa sự khác biệt bộ nhớ giữa String tạo bằng literal và bằng new String(): so sánh == trước và sau khi gọi intern().",
-    "Dùng jconsole hoặc VisualVM (nếu có sẵn) để quan sát vùng Heap khi chạy một chương trình tạo nhiều đối tượng String bằng new."
+    "Dùng jconsole hoặc VisualVM (nếu có sẵn) để quan sát vùng Heap khi chạy một chương trình tạo nhiều đối tượng String bằng new.",
+    "In ra kết quả của 0.1 + 0.2 == 0.3 và của phép cộng tương ứng bằng BigDecimal khởi tạo từ String, rồi giải thích khác biệt.",
+    "So sánh Integer 127 và Integer 128 bằng == để tự quan sát tác động của vùng cache wrapper, sau đó sửa lại bằng equals.",
+    "Tạo một String bằng new String(\"abc\") và so sánh với chuỗi hằng \"abc\" bằng == và equals; giải thích vai trò của String Pool.",
+    "Cộng hai giá trị int gần Integer.MAX_VALUE để thấy tràn số âm thầm, sau đó lặp lại với long và với Math.addExact."
   ],
   "references": [
     {

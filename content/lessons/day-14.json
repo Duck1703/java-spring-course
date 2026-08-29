@@ -121,6 +121,63 @@
           "citations": [
             "day14-src-2"
           ]
+        },
+        {
+          "id": "day14-blk-20",
+          "type": "paragraph",
+          "text": "Hiểu đơn giản trước khi đi vào chi tiết: không có DI, mỗi class tự `new` những gì nó cần, nên nó bị gắn chặt vào *một* implementation cụ thể và bạn không thể thay thế hay giả lập chúng khi test. Với DI, class chỉ khai báo 'tôi cần một PricingPolicy' và ai đó bên ngoài đưa vào. Bản chất của Inversion of Control nằm ở chữ 'inversion': trước đây code của bạn gọi framework và tự quản lý vòng đời object; giờ container tạo object, nối chúng lại rồi gọi code của bạn.",
+          "citations": [
+            "day14-src-1",
+            "day14-src-2"
+          ]
+        },
+        {
+          "id": "day14-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới, giải thích được phần lớn lỗi khởi động mà bạn sẽ gặp: khi ứng dụng chạy, Spring quét component, đọc metadata của từng class thành các bean definition (chưa tạo object), sau đó với mỗi bean singleton nó tìm constructor phù hợp, resolve từng tham số theo *type* rồi mới gọi constructor. Vì mọi bean singleton được tạo sẵn (eager) lúc khởi động, một dependency thiếu hoặc mơ hồ sẽ làm ứng dụng dừng ngay khi start chứ không âm thầm lỗi lúc chạy — đây là đặc tính có lợi: sai cấu hình bị phát hiện sớm nhất có thể.",
+          "citations": [
+            "day14-src-2",
+            "day14-src-3"
+          ]
+        },
+        {
+          "id": "day14-blk-22",
+          "type": "paragraph",
+          "text": "Vì sao constructor injection là mặc định được khuyến nghị: object được tạo ra trong trạng thái đã hoàn chỉnh (không tồn tại giai đoạn 'đã tạo nhưng chưa có dependency'), field khai báo được `final` nên bất biến và an toàn khi nhiều thread cùng dùng bean singleton, danh sách tham số constructor phơi bày ngay khi một class phụ thuộc quá nhiều thứ (tín hiệu cần tách trách nhiệm), và trong unit test bạn chỉ cần `new OrderService(mockRepo)` mà không cần khởi động Spring context. Từ Spring 4.3, nếu class chỉ có một constructor thì `@Autowired` là không cần thiết.",
+          "citations": [
+            "day14-src-2",
+            "day14-src-4"
+          ]
+        },
+        {
+          "id": "day14-blk-23",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Service;\n\ninterface NotificationSender { void send(String to, String body); }\n\n@Service(\"emailSender\")\nclass EmailSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service(\"smsSender\")\nclass SmsSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service\nclass OrderNotifier {\n    private final NotificationSender sender;   // final -> bat bien, thread-safe\n\n    // mot constructor duy nhat: khong can @Autowired tu Spring 4.3\n    // nhieu bean cung type -> phai chi dinh bang @Qualifier\n    OrderNotifier(@Qualifier(\"emailSender\") NotificationSender sender) {\n        this.sender = sender;\n    }\n\n    void notifyPaid(String customer) {\n        sender.send(customer, \"Order paid\");\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day14-src-2",
+            "day14-src-3"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day14-blk-24",
+          "type": "warning",
+          "text": "Ba lỗi resolve hay gặp và cách đọc thông báo: (1) `NoSuchBeanDefinitionException` — không có bean nào khớp type, thường vì class thiếu annotation stereotype hoặc nằm ngoài package được quét (component scan chỉ đi từ package của class `@SpringBootApplication` xuống); (2) `NoUniqueBeanDefinitionException` — có nhiều bean cùng type, giải quyết bằng `@Qualifier` tại điểm inject hoặc `@Primary` tại một bean để chọn mặc định; (3) circular dependency giữa hai constructor — Spring 3.x/Boot 3 báo lỗi khởi động chứ không tự tháo gỡ, và cách sửa đúng là tách phần logic dùng chung ra một bean thứ ba, không phải dùng `@Lazy` để che vấn đề thiết kế.",
+          "citations": [
+            "day14-src-2",
+            "day14-src-3"
+          ]
+        },
+        {
+          "id": "day14-blk-25",
+          "type": "note",
+          "text": "Vì sao tránh field injection (`@Autowired` đặt trực tiếp trên field): field không thể `final`; class không dùng được nếu không có container (test buộc phải khởi động Spring hoặc dùng reflection); và phụ thuộc bị che khuất nên một class phình ra 10 dependency mà không ai thấy. Setter injection vẫn có chỗ dùng: dependency thực sự tùy chọn hoặc cần thay đổi sau khi khởi tạo. Ngoài ra, inject `List<NotificationSender>` sẽ nhận *tất cả* bean cùng type — cách chuẩn để hiện thực Strategy Pattern, và cũng là chỗ nên dùng `@Order` nếu thứ tự có ý nghĩa.",
+          "citations": [
+            "day14-src-2",
+            "day14-src-4"
+          ]
         }
       ]
     },
@@ -152,6 +209,44 @@
             "day14-src-7",
             "day14-src-8"
           ]
+        },
+        {
+          "id": "day14-blk-26",
+          "type": "paragraph",
+          "text": "Khi nào dùng `@Bean` thay vì `@Component`: `@Component` chỉ áp dụng được cho class *của bạn* mà bạn sửa được source. Với class của thư viện bên thứ ba (một `RestClient`, một `ObjectMapper` cấu hình riêng, một `DataSource`), bạn không thể dán annotation lên chúng, nên phải khai báo một method `@Bean` trong class `@Configuration` — method đó chính là factory mà container gọi để tạo bean. Tham số của method `@Bean` cũng được container resolve như tham số constructor, đó là cách sạch nhất để một bean cấu hình dùng bean khác.",
+          "citations": [
+            "day14-src-5"
+          ]
+        },
+        {
+          "id": "day14-blk-27",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.boot.context.properties.ConfigurationProperties;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;\n\n// gom property co lien quan vao mot POJO co kieu, validate duoc\n@ConfigurationProperties(prefix = \"payment\")\nrecord PaymentProperties(String apiUrl, int timeoutMs) {}\n\nclass PaymentClient {\n    private final PaymentProperties props;\n    PaymentClient(PaymentProperties props) { this.props = props; }\n    String endpoint() { return props.apiUrl(); }\n}\n\n@Configuration\nclass PaymentConfig {\n\n    // tham so cua @Bean duoc container resolve giong tham so constructor\n    @Bean\n    @ConditionalOnMissingBean          // lui lai neu ung dung da tu dinh nghia bean nay\n    PaymentClient paymentClient(PaymentProperties props) {\n        return new PaymentClient(props);\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day14-src-5",
+            "day14-src-6"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day14-blk-28",
+          "type": "paragraph",
+          "text": "Auto-configuration hoạt động theo nguyên tắc 'đoán hợp lý rồi nhường chỗ': mỗi lớp auto-configuration được bảo vệ bởi các điều kiện như `@ConditionalOnClass` (có thư viện này trên classpath không), `@ConditionalOnMissingBean` (ứng dụng đã tự định nghĩa bean này chưa), `@ConditionalOnProperty`. Vì vậy chỉ cần thêm một starter là Spring Boot dựng sẵn cấu hình mặc định, nhưng ngay khi bạn khai báo bean cùng loại, cấu hình mặc định tự lui lại. Muốn biết chính xác điều gì đã bật hay tắt và *vì sao*, chạy ứng dụng với `--debug` để đọc condition evaluation report.",
+          "citations": [
+            "day14-src-6",
+            "day14-src-7"
+          ]
+        },
+        {
+          "id": "day14-blk-29",
+          "type": "note",
+          "text": "Điểm dễ nhầm: tên bean mặc định là tên method `@Bean` (hoặc tên class viết thường đầu với `@Component`), nên đổi tên method cũng có thể làm hỏng một `@Qualifier` đang trỏ theo tên. Trong Spring Boot 3, các lớp auto-configuration được đăng ký qua file `META-INF/spring/...AutoConfiguration.imports` thay cho `spring.factories` kiểu cũ — chi tiết cần biết khi bạn đọc code của starter hoặc tự viết starter riêng.",
+          "citations": [
+            "day14-src-7",
+            "day14-src-8"
+          ]
         }
       ]
     },
@@ -163,6 +258,22 @@
           "id": "day14-blk-10",
           "type": "note",
           "text": "DI và bean scope liên quan chặt chẽ: khi một dependency có scope ngắn hơn (ví dụ request-scoped) cần được tiêm vào một bean scope dài hơn (singleton, là trường hợp phổ biến nhất khi dùng constructor injection), phải dùng scoped proxy — Spring tạo một proxy giữ cùng interface công khai nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method, thay vì giữ mãi instance được tiêm lúc khởi tạo. Chi tiết về các scope đã học ở Day 13.",
+          "citations": [
+            "day14-src-9"
+          ]
+        },
+        {
+          "id": "day14-blk-30",
+          "type": "important",
+          "text": "Hệ quả thực tế quan trọng nhất của scope singleton: một bean được tạo *một lần* và chia sẻ cho mọi request đang chạy song song trên nhiều thread. Vì vậy bean không được giữ state có thể thay đổi — chỉ dependency `final` được inject là an toàn. Một biến đếm hay một `List` tích lũy trong `@Service` sẽ tạo ra dữ liệu lẫn giữa các người dùng và race condition (xem Day 11). Nếu thật cần trạng thái theo từng request, hãy truyền nó qua tham số method hoặc dùng bean có scope `request`.",
+          "citations": [
+            "day14-src-9"
+          ]
+        },
+        {
+          "id": "day14-blk-31",
+          "type": "note",
+          "text": "Edge case scope: tiêm một bean scope ngắn (request/prototype) vào bean singleton thì instance được resolve *một lần* lúc khởi tạo và bị 'đóng băng' — không phải mỗi lần gọi một instance mới như bạn mong đợi. Cách xử lý là dùng proxy theo scope (`proxyMode`) hoặc inject `ObjectProvider<T>`/`Provider<T>` rồi gọi `get()` tại thời điểm cần. Đây cũng là lý do prototype bean không được container gọi phương thức destroy: container không theo dõi vòng đời của chúng sau khi trao cho bạn.",
           "citations": [
             "day14-src-9"
           ]
@@ -178,6 +289,22 @@
           "type": "note",
           "text": "Chủ đề @ConfigurationProperties (gom property liên quan vào một POJO có kiểu, thay vì đọc từng property riêng lẻ bằng @Value) và Profiles (kích hoạt cấu hình khác nhau theo môi trường: dev/test/prod) không có resource nào trong resourceIds của riêng Day 14 mô tả chi tiết (xem authoring.limitations) — hai chủ đề này sẽ được học sau, có trích dẫn đầy đủ, trong Day 15 cùng với Assignment 5 Multi-module Notification Service.",
           "citations": []
+        },
+        {
+          "id": "day14-blk-32",
+          "type": "paragraph",
+          "text": "`@Value(\"${...}\")` phù hợp cho một hai giá trị lẻ, nhưng khi nhóm cấu hình lớn dần thì `@ConfigurationProperties` tốt hơn ở ba điểm: giá trị được ràng buộc theo *kiểu* (int, Duration, enum, List, class lồng nhau) nên sai cấu hình bị phát hiện ngay lúc khởi động; có thể validate bằng Jakarta Bean Validation (`@Validated` cùng `@NotBlank`, `@Min`); và toàn bộ nhóm cấu hình trở thành một object bất biến truyền được vào constructor thay vì rải rác chuỗi ký tự trong code. Với record hoặc class có constructor, Spring Boot 3 dùng constructor binding và bạn nên `@EnableConfigurationProperties` hoặc `@ConfigurationPropertiesScan` để đăng ký chúng.",
+          "citations": [
+            "day14-src-5"
+          ]
+        },
+        {
+          "id": "day14-blk-33",
+          "type": "note",
+          "text": "Profile là cách để cùng một artifact chạy đúng ở nhiều môi trường: `application.yml` chứa phần dùng chung, `application-dev.yml`/`application-prod.yml` ghi đè phần khác biệt, và profile được chọn qua `spring.profiles.active` (biến môi trường hoặc tham số dòng lệnh, không nên hardcode trong file cấu hình đóng gói). `@Profile(\"dev\")` trên bean hoặc `@Configuration` cho phép bật/tắt cả một nhóm bean theo môi trường — ví dụ dùng bean gửi email thật ở prod và bean ghi log ở dev. Bí mật (mật khẩu, khóa API) nên đến từ biến môi trường hoặc secret manager, không nằm trong file cấu hình được commit.",
+          "citations": [
+            "day14-src-5"
+          ]
         }
       ]
     }
@@ -185,7 +312,12 @@
   "commonMistakes": [
     "Lạm dụng field injection cho mọi dependency, khiến lớp khó test và gánh quá nhiều trách nhiệm.",
     "Tưởng nhầm auto-configuration và @Bean tự viết xung đột, thay vì hiểu đúng cơ chế back-away.",
-    "Không biết dùng --debug để chẩn đoán vì sao một auto-configuration không được áp dụng như mong đợi."
+    "Không biết dùng --debug để chẩn đoán vì sao một auto-configuration không được áp dụng như mong đợi.",
+    "Dùng field injection (@Autowired trên field) khiến field không thể final, che khuất số lượng dependency và buộc test phải khởi động cả Spring context.",
+    "Tự new một dependency bên trong bean (new OrderRepository()) làm object đó nằm ngoài container, mất transaction, proxy và cấu hình.",
+    "Đặt class bean ngoài package được component scan rồi bối rối vì NoSuchBeanDefinitionException dù đã dán @Service.",
+    "Giữ state có thể thay đổi trong bean singleton, gây lẫn dữ liệu giữa các request đồng thời.",
+    "Dùng @Lazy để che circular dependency thay vì tách phần logic dùng chung ra bean thứ ba."
   ],
   "practices": [
     {
@@ -271,7 +403,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết lại OrderService bằng cả 3 kiểu DI (constructor/setter/field) và so sánh khả năng viết unit test cho từng kiểu.",
-    "Thử exclude một auto-configuration class thật (ví dụ DataSourceAutoConfiguration) và chạy với --debug để đọc conditions report."
+    "Thử exclude một auto-configuration class thật (ví dụ DataSourceAutoConfiguration) và chạy với --debug để đọc conditions report.",
+    "Tạo hai implementation của cùng một interface rồi khởi động ứng dụng để thấy NoUniqueBeanDefinitionException, sau đó sửa lần lượt bằng @Primary và @Qualifier, ghi lại khác biệt về ý nghĩa của hai cách.",
+    "Inject List<NotificationSender> vào một service và cho nó gọi mọi sender: giải thích vì sao đây là cách hiện thực Strategy Pattern mà không cần if-else theo loại.",
+    "Chuyển một nhóm 4 @Value rời rạc sang @ConfigurationProperties dạng record, thêm @Validated với @NotBlank/@Min rồi cố tình cấu hình sai để quan sát lỗi lúc khởi động.",
+    "Chạy ứng dụng với --debug, tìm trong condition evaluation report một auto-configuration bị 'back off' vì bean bạn tự định nghĩa và giải thích điều kiện nào đã quyết định điều đó."
   ],
   "references": [
     {

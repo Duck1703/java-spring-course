@@ -90,6 +90,33 @@
             "day17-src-2",
             "day17-src-3"
           ]
+        },
+        {
+          "id": "day17-blk-20",
+          "type": "paragraph",
+          "text": "Vì sao cần Bean Validation thay vì tự viết `if` trong controller: kiểm tra bằng tay bị lặp lại ở mọi endpoint, dễ bỏ sót, và trộn lẫn quy tắc dữ liệu với logic điều phối. Bean Validation (Jakarta Validation) đảo ngược cách làm: ràng buộc được *khai báo* ngay trên trường của DTO nên nó đi cùng dữ liệu tới mọi nơi, và một `Validator` duy nhất áp dụng chúng. Trong Spring Boot 3 các annotation nằm trong `jakarta.validation.constraints` (không còn `javax.validation`), và implementation mặc định là Hibernate Validator, được kéo vào bởi starter `spring-boot-starter-validation`.",
+          "citations": [
+            "day17-src-1",
+            "day17-src-2"
+          ]
+        },
+        {
+          "id": "day17-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới: khi tham số `@RequestBody` được gắn `@Valid`, Spring gọi validator *sau khi* Jackson đã bind JSON thành object và *trước khi* thân method chạy. Nếu có vi phạm, Spring ném `MethodArgumentNotValidException` và method của bạn không bao giờ được gọi — nghĩa là bên trong service bạn có thể tin dữ liệu đã đúng dạng. Trên tham số đơn lẻ (`@RequestParam`, `@PathVariable`) thì cơ chế khác: cần `@Validated` ở cấp class và lỗi xuất hiện dưới dạng `ConstraintViolationException`, nên hai loại lỗi này phải được xử lý riêng trong advice.",
+          "citations": [
+            "day17-src-2",
+            "day17-src-3"
+          ]
+        },
+        {
+          "id": "day17-blk-22",
+          "type": "note",
+          "text": "Chọn đúng annotation là chi tiết hay bị sai: `@NotNull` chỉ chặn null (`\"\"` và `\" \"` vẫn hợp lệ); `@NotEmpty` chặn null và rỗng nhưng cho qua `\" \"`; `@NotBlank` chặn cả chuỗi chỉ có khoảng trắng — với dữ liệu text từ người dùng, `@NotBlank` gần như luôn là lựa chọn đúng. Với object lồng nhau, ràng buộc bên trong *không* được kiểm tra nếu bạn không đánh `@Valid` lên chính field đó; với collection thì viết `List<@Valid ItemRequest>`. Ràng buộc nghiệp vụ phức tạp (giá trị phải tồn tại trong DB) không nên nhét vào validator vì nó cần truy vấn và có thể lỗi thời — hãy để tầng service kiểm tra.",
+          "citations": [
+            "day17-src-1",
+            "day17-src-4"
+          ]
         }
       ]
     },
@@ -122,6 +149,35 @@
           "id": "day17-blk-8",
           "type": "note",
           "text": "Một annotation gắn ở @Target(TYPE) như FieldsValueMatch cho phép so sánh giá trị của hai field trong cùng lớp (ví dụ password và verifyPassword phải khớp nhau), dùng BeanWrapperImpl để đọc giá trị field theo tên trong isValid() — hữu ích khi một constraint cần xét nhiều field cùng lúc thay vì từng field riêng lẻ.",
+          "citations": [
+            "day17-src-7"
+          ]
+        },
+        {
+          "id": "day17-blk-23",
+          "type": "paragraph",
+          "text": "Một custom constraint gồm hai phần: annotation (khai báo `@Constraint(validatedBy = ...)`, có ba thuộc tính bắt buộc `message`, `groups`, `payload`) và class `ConstraintValidator<A, T>` chứa logic trong `isValid`. Quy ước quan trọng: `isValid` nên trả `true` khi giá trị là `null` và để `@NotNull` lo việc bắt buộc — mỗi constraint chỉ nên kiểm tra một điều. Validator được Spring quản lý như một bean, nên bạn có thể inject dependency vào nó khi thực sự cần; đổi lại hãy tránh gọi I/O nặng trong validator vì nó chạy trên đường xử lý mọi request.",
+          "citations": [
+            "day17-src-5",
+            "day17-src-6"
+          ]
+        },
+        {
+          "id": "day17-blk-24",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Documented\n@Constraint(validatedBy = SkuValidator.class)\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface ValidSku {\n    String message() default \"SKU phai co dang AAA-1234\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nclass SkuValidator implements ConstraintValidator<ValidSku, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        // null -> de @NotNull/@NotBlank lo; moi constraint chi kiem tra mot dieu\n        if (value == null) return true;\n        return value.matches(\"[A-Z]{3}-\\\\d{4}\");\n    }\n}\n",
+          "compile": false,
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
+          "citations": [
+            "day17-src-5",
+            "day17-src-6"
+          ]
+        },
+        {
+          "id": "day17-blk-25",
+          "type": "note",
+          "text": "Khi ràng buộc liên quan tới *nhiều field* (ngày kết thúc phải sau ngày bắt đầu, hai lần nhập mật khẩu phải khớp), constraint phải đặt ở cấp class (`@Target(TYPE)`) vì validator cần thấy cả object. Lúc đó vi phạm không gắn với field nào nên thông báo lỗi mặc định không chỉ ra trường sai; hãy dùng `context.buildConstraintViolationWithTemplate(...).addPropertyNode(\"endDate\").addConstraintViolation()` (kèm `disableDefaultConstraintViolation()`) để lỗi trả về vẫn định vị được trường cho client.",
           "citations": [
             "day17-src-7"
           ]
@@ -166,6 +222,46 @@
             "day17-src-9",
             "day17-src-10"
           ]
+        },
+        {
+          "id": "day17-blk-26",
+          "type": "paragraph",
+          "text": "Vì sao cần xử lý lỗi tập trung: nếu mỗi controller tự `try/catch` rồi tự tạo body lỗi, API sẽ có nhiều định dạng lỗi khác nhau, client phải viết nhiều nhánh phân tích, và các exception chưa được bắt sẽ rơi ra ngoài thành 500 kèm stack trace — vừa khó dùng vừa rò rỉ thông tin nội bộ. `@RestControllerAdvice` là một lớp chắn ở mức ứng dụng: các method `@ExceptionHandler` trong đó bắt exception từ *mọi* controller và biến chúng thành response có cấu trúc thống nhất. Nguyên tắc chia việc: controller không xử lý lỗi, service ném exception có ý nghĩa nghiệp vụ, advice quyết định mã HTTP và hình dạng body.",
+          "citations": [
+            "day17-src-8",
+            "day17-src-9"
+          ]
+        },
+        {
+          "id": "day17-blk-27",
+          "type": "paragraph",
+          "text": "`ProblemDetail` (Spring Framework 6, có sẵn từ Spring Boot 3) là biểu diễn Java của định dạng lỗi chuẩn với các trường `type`, `title`, `status`, `detail`, `instance`, cùng khả năng thêm thuộc tính riêng qua `setProperty`. Response được trả với content type `application/problem+json`. Lợi ích thực tế là client và các công cụ quan sát chỉ cần hiểu *một* schema lỗi cho toàn hệ thống. Khi kế thừa `ResponseEntityExceptionHandler`, bạn nhận sẵn ánh xạ cho các exception của Spring MVC và chỉ cần ghi đè phần muốn tùy biến — cách này an toàn hơn tự bắt từng loại.",
+          "citations": [
+            "day17-src-8",
+            "day17-src-10",
+            "day17-src-11"
+          ]
+        },
+        {
+          "id": "day17-blk-28",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport java.net.URI;\nimport java.time.Instant;\nimport java.util.LinkedHashMap;\nimport java.util.Map;\n\nclass ResourceNotFoundException extends RuntimeException {\n    ResourceNotFoundException(String message) { super(message); }\n}\n\n@RestControllerAdvice\nclass GlobalExceptionHandler {\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n        pd.setTitle(\"Resource not found\");\n        pd.setType(URI.create(\"https://example.com/problems/not-found\"));\n        pd.setProperty(\"timestamp\", Instant.now());\n        return pd;\n    }\n\n    // loi validate @RequestBody: gom TAT CA field sai, khong chi field dau tien\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex) {\n        Map<String, String> errors = new LinkedHashMap<>();\n        ex.getBindingResult().getFieldErrors()\n          .forEach(fe -> errors.putIfAbsent(fe.getField(), fe.getDefaultMessage()));\n\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, \"Du lieu khong hop le\");\n        pd.setTitle(\"Validation failed\");\n        pd.setProperty(\"errors\", errors);\n        return pd;\n    }\n\n    // luoi an toan cuoi cung: khong bao gio de stack trace ra ngoai\n    @ExceptionHandler(Exception.class)\n    ProblemDetail handleUnexpected(Exception ex) {\n        // log ex day du o day, nhung chi tra thong bao chung cho client\n        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, \"Loi he thong\");\n    }\n}\n",
+          "compile": false,
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
+          "citations": [
+            "day17-src-8",
+            "day17-src-10"
+          ]
+        },
+        {
+          "id": "day17-blk-29",
+          "type": "warning",
+          "text": "Các bẫy thường gặp khi làm exception handling: (1) handler cụ thể và handler tổng quát cùng khớp thì Spring chọn cái *khớp sát nhất* theo cây kế thừa — nên một `@ExceptionHandler(Exception.class)` không che mất handler riêng, nhưng đừng vì thế mà bỏ log ở handler tổng quát, không thì lỗi thật biến mất khỏi hệ thống; (2) đừng trả `ex.getMessage()` của exception không kiểm soát ra ngoài vì nó có thể chứa câu SQL, tên bảng, đường dẫn file; (3) exception ném ra từ Filter hoặc từ tầng Spring Security *không* đi qua `@RestControllerAdvice` (chúng xảy ra trước khi vào DispatcherServlet) nên phải xử lý bằng `AuthenticationEntryPoint`/`AccessDeniedHandler` — sẽ gặp lại ở Day 22–23; (4) `@Transactional` mặc định chỉ rollback với unchecked exception, nên chọn kiểu exception nghiệp vụ có ảnh hưởng tới cả hành vi transaction.",
+          "citations": [
+            "day17-src-9",
+            "day17-src-10"
+          ]
         }
       ]
     }
@@ -173,7 +269,12 @@
   "commonMistakes": [
     "Quên dependency spring-boot-starter-validation nên @Valid không có tác dụng.",
     "Xử lý lỗi validate rải rác trong từng controller thay vì gom vào @RestControllerAdvice.",
-    "Tự định nghĩa cấu trúc JSON lỗi riêng cho mỗi API thay vì dùng ProblemDetail chuẩn hóa."
+    "Tự định nghĩa cấu trúc JSON lỗi riêng cho mỗi API thay vì dùng ProblemDetail chuẩn hóa.",
+    "Dùng @NotNull cho chuỗi text rồi bối rối khi client gửi \"\" hoặc \"   \" vẫn được chấp nhận: nên dùng @NotBlank.",
+    "Quên @Valid trên field object lồng nhau (hoặc List<@Valid ...>) khiến ràng buộc bên trong không bao giờ được kiểm tra.",
+    "Trả về ex.getMessage() của exception hệ thống cho client, làm lộ chi tiết SQL, tên bảng hoặc đường dẫn nội bộ.",
+    "Chỉ trả field lỗi đầu tiên thay vì gom toàn bộ field errors, buộc người dùng sửa form theo nhiều lượt.",
+    "Kỳ vọng @RestControllerAdvice bắt được lỗi phát sinh trong Filter hoặc Spring Security, trong khi các lỗi đó xảy ra trước DispatcherServlet."
   ],
   "practices": [
     {
@@ -260,7 +361,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết một @Constraint cấp class FieldsValueMatch cho password/verifyPassword và áp dụng vào CreateUserRequest.",
-    "Bật spring.mvc.problemdetails.enabled=true và so sánh response lỗi mặc định với ProblemDetail tự viết trong GlobalExceptionHandler."
+    "Bật spring.mvc.problemdetails.enabled=true và so sánh response lỗi mặc định với ProblemDetail tự viết trong GlobalExceptionHandler.",
+    "Gửi một request có 3 field sai cùng lúc và điều chỉnh advice để response ProblemDetail liệt kê đủ 3 lỗi kèm tên field, thay vì chỉ báo lỗi đầu tiên.",
+    "So sánh thực nghiệm ba annotation @NotNull, @NotEmpty, @NotBlank trên cùng một field với input null, \"\" và \"   \" rồi ghi lại kết quả.",
+    "Viết constraint cấp class kiểm tra endDate phải sau startDate và dùng addPropertyNode để lỗi gắn đúng vào field endDate.",
+    "Kiểm chứng rằng validate tham số @RequestParam cần @Validated ở cấp class và sinh ConstraintViolationException, rồi thêm handler riêng cho loại exception này."
   ],
   "references": [
     {

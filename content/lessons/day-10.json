@@ -65,6 +65,33 @@
           "type": "paragraph",
           "text": "Functional interface là một interface chỉ có đúng một phương thức trừu tượng (abstract method) — ví dụ Predicate<T> (có method boolean test(T t)), Function<T,R> (R apply(T t)), Consumer<T> (void accept(T t)), Supplier<T> (T get()). Lambda expression là cách viết gọn một cài đặt cho functional interface: cú pháp tổng quát là `(tham số) -> biểu thức hoặc khối lệnh`, ví dụ `Predicate<Integer> isEven = n -> n % 2 == 0;` tương đương với viết một lớp ẩn danh cài đặt Predicate nhưng ngắn gọn hơn rất nhiều.",
           "citations": []
+        },
+        {
+          "id": "day10-blk-20",
+          "type": "paragraph",
+          "text": "Hiểu đơn giản: lambda là cách viết ngắn cho 'một hành vi được truyền như một giá trị'. Bản chất: lambda không phải là một loại object mới — nó là một biểu thức mà compiler suy ra kiểu từ ngữ cảnh (target typing) và biến thành một instance của functional interface. Cùng một lambda `s -> s.isBlank()` có thể là `Predicate<String>` hoặc một interface tự viết, tùy vào kiểu mà chỗ gán/tham số đang cần. Vì vậy lambda luôn cần một functional interface làm 'khuôn'; không có khuôn thì compiler báo lỗi ngay.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới, phần đáng biết vì nó giải thích nhiều hành vi lạ: lambda không sinh ra một file .class riêng như anonymous class. Compiler đặt thân lambda thành một method tổng hợp trong chính class chứa nó, rồi tại chỗ dùng phát ra chỉ thị `invokedynamic`; JVM sẽ liên kết lần đầu và sinh implementation của interface lúc runtime. Hai hệ quả thực tế: (1) lambda không capture biến nào có thể được tái sử dụng thay vì tạo object mới mỗi lần chạy; (2) `this` trong lambda trỏ tới instance của class bao ngoài (không phải một object mới như anonymous class) — điều khiến lambda đọc trực tiếp field của bean Spring rất tự nhiên.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-22",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.function.*;\nimport java.util.List;\n\nclass LambdaBasics {\n    interface Discount { double apply(double amount); }   // functional interface tu viet\n\n    static double total(List<Double> items, Discount rule) {\n        double sum = 0;\n        for (double i : items) sum += rule.apply(i);\n        return sum;\n    }\n\n    public static void main(String[] args) {\n        double rate = 0.9;                 // effectively final -> capture duoc\n        System.out.println(total(List.of(100.0, 200.0), a -> a * rate));  // 270.0\n\n        // 4 nhom functional interface hay dung nhat\n        Predicate<String> notBlank = s -> !s.isBlank();\n        Function<String, Integer> length = String::length;      // method reference\n        Supplier<List<String>> factory = List::of;\n        Consumer<String> printer = System.out::println;\n\n        if (notBlank.test(\"abc\")) printer.accept(\"len=\" + length.apply(\"abc\"));\n        System.out.println(factory.get().size());\n\n        // compose: ghep hanh vi thay vi viet lai\n        Function<String, Integer> lengthTimesTwo = length.andThen(n -> n * 2);\n        System.out.println(lengthTimesTwo.apply(\"abcd\"));       // 8\n    }\n}",
+          "citations": [],
+          "compile": false,
+          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+        },
+        {
+          "id": "day10-blk-23",
+          "type": "note",
+          "text": "Điểm dễ nhầm: (1) lambda chỉ capture được biến local ở dạng effectively final — nếu cần tích lũy giá trị, đừng cố sửa biến ngoài, hãy dùng `reduce`/`Collectors` hoặc một biến kiểu atomic; (2) `Predicate` và bốn loại còn lại đều không cho phép ném checked exception, nên mọi `IOException` trong lambda phải được bọc lại; (3) với primitive, hãy dùng biến thể chuyên biệt (`IntPredicate`, `ToIntFunction`, `IntStream`) để tránh boxing hàng loạt trên tập dữ liệu lớn.",
+          "citations": []
         }
       ]
     },
@@ -135,6 +162,41 @@
           "citations": [
             "day10-src-4"
           ]
+        },
+        {
+          "id": "day10-blk-24",
+          "type": "paragraph",
+          "text": "Mental model của Stream: nó không phải collection mà là một *đường ống xử lý* gồm ba phần — nguồn (collection, mảng, `Files.lines`), một chuỗi intermediate operation (filter, map, sorted, distinct... đều lazy, chỉ mô tả ý định và trả về stream mới), và đúng một terminal operation (collect, forEach, count, findFirst) kích hoạt toàn bộ việc chạy. Không có terminal operation thì không có phần tử nào được xử lý cả.",
+          "citations": [
+            "day10-src-1"
+          ]
+        },
+        {
+          "id": "day10-blk-25",
+          "type": "paragraph",
+          "text": "Hệ quả quan trọng của tính lazy là *fusion*: pipeline không chạy từng operation trên toàn bộ dữ liệu rồi chuyển sang operation kế tiếp, mà đẩy từng phần tử đi qua hết chuỗi. Nhờ đó `stream().filter(...).findFirst()` có thể dừng ngay khi tìm được phần tử đầu tiên thỏa điều kiện (short-circuit) thay vì lọc cả triệu phần tử. Cũng vì vậy stream chỉ dùng được một lần: gọi terminal operation lần thứ hai trên cùng stream sẽ ném `IllegalStateException`.",
+          "citations": [
+            "day10-src-1"
+          ]
+        },
+        {
+          "id": "day10-blk-26",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass PipelineDemo {\n    public static void main(String[] args) {\n        // lazy: khong in gi vi thieu terminal operation\n        Stream<Integer> lazy = Stream.of(1, 2, 3).peek(n -> System.out.println(\"seen \" + n));\n        System.out.println(\"chua chay gi\");\n\n        // short-circuit: chi xu ly toi khi tim thay\n        Optional<Integer> firstEven = Stream.of(1, 3, 4, 6)\n                .peek(n -> System.out.println(\"check \" + n))\n                .filter(n -> n % 2 == 0)\n                .findFirst();                       // dung ngay tai 4\n        System.out.println(firstEven.orElse(-1));\n\n        // stream chi dung mot lan\n        Stream<Integer> once = Stream.of(1, 2);\n        once.count();\n        try {\n            once.count();\n        } catch (IllegalStateException e) {\n            System.out.println(\"stream da bi tieu thu\");\n        }\n\n        // flatMap: lam phang cau truc long nhau\n        List<List<String>> nested = List.of(List.of(\"a\", \"b\"), List.of(\"c\"));\n        System.out.println(nested.stream().flatMap(List::stream).toList()); // [a, b, c]\n    }\n}",
+          "citations": [
+            "day10-src-1",
+            "day10-src-2"
+          ],
+          "compile": true
+        },
+        {
+          "id": "day10-blk-27",
+          "type": "warning",
+          "text": "Đừng dùng stream để gây side effect: lambda trong `filter`/`map` phải không đổi trạng thái bên ngoài. Code kiểu `list.stream().forEach(x -> other.add(x))` vừa khó đọc vừa sai hẳn khi chuyển sang parallel — hãy để `collect`/`toList()` làm việc gom kết quả. Ngoài ra `peek` chỉ dành cho debug: nó không đảm bảo được gọi cho mọi phần tử vì pipeline có thể tối ưu bỏ qua.",
+          "citations": [
+            "day10-src-1"
+          ]
         }
       ]
     },
@@ -152,6 +214,27 @@
           "id": "day10-blk-9",
           "type": "paragraph",
           "text": "Collectors là lớp tiện ích cung cấp các 'chiến lược gom kết quả' để dùng với Stream.collect(): Collectors.toList()/toSet() gom thành collection; Collectors.groupingBy(keyFn) nhóm phần tử theo một khóa thành Map<K, List<T>>; Collectors.toMap(keyFn, valueFn) gom trực tiếp thành Map<K, V>; Collectors.joining(delimiter) nối các phần tử String lại với nhau.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-28",
+          "type": "paragraph",
+          "text": "Collector là 'chiến lược gom kết quả' được truyền vào `collect()`. Ba nhóm dùng thường xuyên nhất trong ứng dụng thật: gom về collection (`toList`, `toSet`, `toMap`), gom theo nhóm (`groupingBy` trả về `Map<K, List<T>>`, kèm downstream collector để đếm/tính tổng cho từng nhóm), và tổng hợp số liệu (`counting`, `summingDouble`, `averagingInt`, `joining`). `groupingBy` với downstream chính là bản Java của câu SQL `GROUP BY ... COUNT(*)`, và là công cụ bạn sẽ dùng để dựng báo cáo trong tầng service.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-29",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass CollectorsDemo {\n    record Order(String customer, String status, double amount) {}\n\n    public static void main(String[] args) {\n        List<Order> orders = List.of(\n                new Order(\"an\", \"PAID\", 100),\n                new Order(\"an\", \"NEW\", 50),\n                new Order(\"binh\", \"PAID\", 300));\n\n        Map<String, List<Order>> byCustomer =\n                orders.stream().collect(Collectors.groupingBy(Order::customer));\n\n        Map<String, Double> totalByCustomer = orders.stream()\n                .collect(Collectors.groupingBy(Order::customer,\n                         Collectors.summingDouble(Order::amount)));\n\n        Map<String, Long> countByStatus = orders.stream()\n                .collect(Collectors.groupingBy(Order::status, Collectors.counting()));\n\n        String names = orders.stream().map(Order::customer)\n                .distinct().collect(Collectors.joining(\", \"));\n\n        System.out.println(byCustomer.keySet() + \" \" + totalByCustomer\n                + \" \" + countByStatus + \" [\" + names + \"]\");\n\n        // toMap: NEM IllegalStateException khi khoa trung -> phai co merge function\n        Map<String, Double> latest = orders.stream()\n                .collect(Collectors.toMap(Order::customer, Order::amount, (a, b) -> b));\n        System.out.println(latest);\n    }\n}",
+          "citations": [],
+          "compile": false,
+          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+        },
+        {
+          "id": "day10-blk-30",
+          "type": "note",
+          "text": "Edge case của `Collectors.toMap`: khóa trùng sẽ ném `IllegalStateException` (dùng bản 3 tham số với merge function), và giá trị null cũng gây `NullPointerException` — khác với `HashMap.put`. Từ Java 16, `stream().toList()` là cách ngắn nhất để lấy danh sách, nhưng nó trả về danh sách *bất biến*; nếu cần sửa về sau hãy dùng `collect(Collectors.toCollection(ArrayList::new))`.",
           "citations": []
         }
       ]
@@ -171,6 +254,27 @@
           "type": "paragraph",
           "text": "Optional<T> là một kiểu wrapper biểu diễn 'có thể có hoặc không có giá trị', dùng để thay thế việc trả về null trực tiếp và buộc nơi gọi phải xử lý tường minh trường hợp rỗng: Optional.ofNullable(x) tạo Optional có thể rỗng; isPresent()/isEmpty() kiểm tra; get() lấy giá trị (ném NoSuchElementException nếu rỗng, nên tránh dùng trực tiếp); orElse(default)/orElseGet(supplier) cung cấp giá trị thay thế an toàn hơn; map(fn) biến đổi giá trị bên trong nếu có.",
           "citations": []
+        },
+        {
+          "id": "day10-blk-31",
+          "type": "paragraph",
+          "text": "Vì sao cần Optional: chữ ký `User findUser(String id)` không cho biết method có thể trả về null, nên caller quên kiểm tra và nhận NullPointerException ở một chỗ xa nơi gây lỗi. `Optional<User>` đưa thông tin 'có thể không có' vào *kiểu*, biến lỗi runtime thành điều compiler buộc bạn nghĩ tới. Cách dùng đúng là biến đổi bằng `map`/`filter`/`flatMap` rồi kết thúc bằng `orElse`, `orElseGet`, `orElseThrow` — không phải `isPresent()` rồi `get()`, vì như thế bạn chỉ viết lại `if (x != null)` bằng cú pháp dài hơn.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-32",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.Optional;\n\nclass OptionalDemo {\n    record Address(String city) {}\n    record User(String name, Address address) {\n        Optional<Address> addressOpt() { return Optional.ofNullable(address); }\n    }\n\n    static Optional<User> findUser(String id) {\n        return \"u1\".equals(id) ? Optional.of(new User(\"An\", new Address(\"Hanoi\")))\n                               : Optional.empty();\n    }\n\n    public static void main(String[] args) {\n        String city = findUser(\"u1\")\n                .flatMap(User::addressOpt)      // Optional long nhau -> flatMap\n                .map(Address::city)\n                .orElse(\"unknown\");\n        System.out.println(city);                // Hanoi\n\n        // orElseGet: chi tinh khi thuc su thieu gia tri\n        String name = findUser(\"u9\").map(User::name).orElseGet(() -> \"guest\");\n        System.out.println(name);                // guest\n\n        // bien 'khong co' thanh loi domain ro rang\n        try {\n            findUser(\"u9\").orElseThrow(() -> new IllegalArgumentException(\"user not found\"));\n        } catch (IllegalArgumentException e) {\n            System.out.println(e.getMessage());\n        }\n    }\n}",
+          "citations": [],
+          "compile": false,
+          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+        },
+        {
+          "id": "day10-blk-33",
+          "type": "note",
+          "text": "Ba cách dùng Optional sai thường thấy: (1) `optional.get()` không kiểm tra — ném `NoSuchElementException`, không hơn gì NPE; (2) `orElse(expensiveCall())` — biểu thức trong `orElse` luôn được tính kể cả khi có giá trị, hãy dùng `orElseGet` cho trường hợp tốn kém; (3) dùng `Optional` làm field entity, tham số method hay khóa/giá trị collection — nó được thiết kế cho *kiểu trả về*. Trong Spring Data JPA (Day 19) `Optional<T> findById(ID)` là ví dụ chuẩn của cách dùng đúng.",
+          "citations": []
         }
       ]
     },
@@ -189,6 +293,18 @@
           "type": "note",
           "text": "list.stream().parallel() (hoặc list.parallelStream()) chia công việc cho nhiều thread trong ForkJoinPool.commonPool(), chỉ nên dùng khi tập dữ liệu đủ lớn và thao tác trên mỗi phần tử đủ 'nặng' để bù được chi phí điều phối song song; với tập dữ liệu nhỏ hoặc thao tác đơn giản, parallel stream có thể CHẬM HƠN stream tuần tự. Ngoài ra thao tác bên trong parallel stream phải stateless và không gây side-effect trên dữ liệu chia sẻ, nếu không sẽ dẫn tới kết quả sai lệch ngẫu nhiên.",
           "citations": []
+        },
+        {
+          "id": "day10-blk-34",
+          "type": "paragraph",
+          "text": "Parallel stream chia dữ liệu thành nhiều phần, xử lý song song trên `ForkJoinPool.commonPool()` rồi ghép kết quả lại. Điều kiện để nó có lợi khá hẹp: tập dữ liệu lớn, nguồn chẻ được hiệu quả (mảng, `ArrayList` — không phải `LinkedList` hay `Iterator` tuần tự), mỗi phần tử xử lý tốn CPU thật, và các lambda không có state dùng chung. Nếu công việc chủ yếu là chờ I/O, song song hóa kiểu này không giúp gì mà còn chiếm pool dùng chung của cả JVM.",
+          "citations": []
+        },
+        {
+          "id": "day10-blk-35",
+          "type": "note",
+          "text": "Trong ứng dụng Spring Boot, hãy rất dè dặt với parallel stream: `commonPool` được chia sẻ cho toàn JVM nên một tác vụ nặng có thể làm chậm mọi thứ khác; và bên trong request handler, chuyển việc sang thread khác sẽ mất ngữ cảnh gắn với thread hiện tại (transaction của `@Transactional`, `SecurityContext`, MDC của log). Nhu cầu chạy song song trong service nên được giải quyết bằng `@Async` với executor riêng hoặc `CompletableFuture` có executor tường minh (Day 25), không phải bằng `.parallelStream()`.",
+          "citations": []
         }
       ]
     }
@@ -196,7 +312,11 @@
   "commonMistakes": [
     "Gọi get() trực tiếp trên Optional mà không kiểm tra isPresent() trước, dẫn tới NoSuchElementException khi Optional rỗng — mất hết lợi ích an toàn của Optional.",
     "Dùng method reference ném checked exception trực tiếp trong filter()/map() mà không bọc try-catch, gây lỗi biên dịch vì functional interface chuẩn không khai báo checked exception.",
-    "Dùng parallel stream cho tập dữ liệu nhỏ hoặc thao tác đơn giản, khiến code chậm hơn và khó đoán kết quả vì chi phí điều phối song song lớn hơn lợi ích."
+    "Dùng parallel stream cho tập dữ liệu nhỏ hoặc thao tác đơn giản, khiến code chậm hơn và khó đoán kết quả vì chi phí điều phối song song lớn hơn lợi ích.",
+    "Dùng Optional.get() hoặc orElse(hàmTốnKém()) thay vì orElseThrow/orElseGet, làm mất đúng lợi ích mà Optional mang lại.",
+    "Gọi Collectors.toMap khi khóa có thể trùng mà không truyền merge function, gặp IllegalStateException lúc runtime.",
+    "Sửa trạng thái bên ngoài (side effect) trong lambda của filter/map, khiến kết quả sai và không thể chuyển sang parallel.",
+    "Dùng parallelStream() bên trong request handler của Spring Boot, làm mất transaction/SecurityContext gắn với thread và chiếm ForkJoinPool.commonPool dùng chung."
   ],
   "practices": [
     {
@@ -304,7 +424,10 @@
   ],
   "enhancedExercises": [
     "Viết một pipeline dùng Collectors.groupingBy() để nhóm danh sách Employee theo department, sau đó tính lương trung bình từng phòng ban bằng Collectors.averagingDouble().",
-    "So sánh thời gian chạy giữa stream() và parallelStream() trên một danh sách 1 triệu phần tử với một phép tính đơn giản (ví dụ cộng dồn) để tự quan sát khi nào parallel thật sự có lợi."
+    "So sánh thời gian chạy giữa stream() và parallelStream() trên một danh sách 1 triệu phần tử với một phép tính đơn giản (ví dụ cộng dồn) để tự quan sát khi nào parallel thật sự có lợi.",
+    "Viết pipeline có peek() ở mỗi bước rồi so sánh log giữa findFirst() và collect(toList()) để tự chứng minh tính lazy và short-circuit của stream.",
+    "Chuyển một đoạn code lồng nhiều if (x != null) sang chuỗi Optional.map/flatMap/orElseThrow, sau đó giải thích vì sao flatMap cần thiết khi method trả về Optional.",
+    "Dùng groupingBy kết hợp counting() và summingDouble() để tạo báo cáo doanh thu theo trạng thái đơn hàng, rồi đối chiếu kết quả với câu SQL GROUP BY tương ứng."
   ],
   "references": [
     {

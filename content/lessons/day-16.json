@@ -122,6 +122,32 @@
             "day16-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day16-blk-20",
+          "type": "paragraph",
+          "text": "Mental model của Spring MVC: mọi request HTTP đi vào một servlet duy nhất là `DispatcherServlet`. Nó hỏi `HandlerMapping` 'method nào xử lý URL này', dùng các `HandlerMethodArgumentResolver` để biến phần của request (path, query, body, header) thành tham số Java, gọi method của bạn, rồi để `HttpMessageConverter` biến giá trị trả về thành response body. Hiểu chuỗi này giúp bạn biết đặt câu hỏi đúng khi có lỗi: 404 là vấn đề ở bước mapping, 400 ở bước resolve/convert tham số, 500 ở trong code của bạn, và 406/415 ở bước chọn định dạng.",
+          "citations": [
+            "day16-src-1",
+            "day16-src-5"
+          ]
+        },
+        {
+          "id": "day16-blk-21",
+          "type": "paragraph",
+          "text": "`@RestController` chỉ là `@Controller` cộng `@ResponseBody` áp cho toàn bộ class: giá trị trả về không được hiểu là tên view mà được serialize trực tiếp vào body (JSON qua Jackson khi có trên classpath). Các annotation `@GetMapping`, `@PostMapping`... là dạng viết ngắn của `@RequestMapping(method = ...)`; ghép mapping ở cấp class với cấp method cho ta URL đầy đủ. Trong thiết kế REST, hãy để danh từ số nhiều làm tài nguyên (`/api/products`) và để HTTP method diễn đạt hành động — không đặt động từ trong URL kiểu `/getProduct`.",
+          "citations": [
+            "day16-src-1",
+            "day16-src-4"
+          ]
+        },
+        {
+          "id": "day16-blk-22",
+          "type": "note",
+          "text": "Điểm dễ nhầm về mã trạng thái: `POST` tạo mới nên trả 201 kèm header `Location` trỏ tới tài nguyên vừa tạo, không phải 200. `PUT` là thay thế toàn bộ và có tính idempotent (gọi 10 lần cho cùng kết quả), `PATCH` chỉ cập nhật phần được gửi. `DELETE` thành công thường trả 204 (không có body). Một endpoint tìm kiếm không tìm thấy gì nên trả 200 với danh sách rỗng, còn 404 dành cho *một tài nguyên cụ thể* không tồn tại.",
+          "citations": [
+            "day16-src-4"
+          ]
         }
       ]
     },
@@ -143,6 +169,37 @@
           "type": "warning",
           "text": "Khi hai method có cùng HTTP method, URL, parameters, headers và media type, Spring ném IllegalStateException báo ambiguous mapping ngay lúc khởi động ứng dụng (không phải lúc gọi request) — khắc phục bằng cách phân biệt qua produces/consumes khác nhau hoặc đổi URL của một trong hai method.",
           "citations": [
+            "day16-src-7"
+          ]
+        },
+        {
+          "id": "day16-blk-23",
+          "type": "paragraph",
+          "text": "Cách chọn nơi nhận dữ liệu là quyết định thiết kế API, không phải sở thích cú pháp: `@PathVariable` cho phần *định danh* tài nguyên (`/products/42`); `@RequestParam` cho tham số phụ trợ như lọc, sắp xếp, phân trang (`?page=0&size=20`); `@RequestBody` cho dữ liệu có cấu trúc khi tạo/cập nhật; `@RequestHeader` cho metadata truyền tải. Với `@RequestParam` không bắt buộc, hãy dùng `required = false` kèm `defaultValue`, hoặc bọc trong `Optional<T>` — quên điều này là nguyên nhân phổ biến của lỗi 400 khi client bỏ trống tham số.",
+          "citations": [
+            "day16-src-5",
+            "day16-src-6"
+          ]
+        },
+        {
+          "id": "day16-blk-24",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\nimport java.net.URI;\nimport java.util.List;\n\nrecord ProductRequest(String name, double price) {}\nrecord ProductResponse(Long id, String name, double price) {}\n\n@RestController\n@RequestMapping(\"/api/products\")          // mapping dung chung o cap class\nclass ProductController {\n\n    // dinh danh tai nguyen -> @PathVariable\n    @GetMapping(\"/{id}\")\n    ResponseEntity<ProductResponse> getOne(@PathVariable Long id) {\n        return ResponseEntity.ok(new ProductResponse(id, \"demo\", 10.0));\n    }\n\n    // tham so phu tro -> @RequestParam co defaultValue\n    @GetMapping\n    List<ProductResponse> search(@RequestParam(required = false) String keyword,\n                                 @RequestParam(defaultValue = \"0\") int page,\n                                 @RequestParam(defaultValue = \"20\") int size) {\n        return List.of();                 // khong tim thay -> 200 + danh sach rong\n    }\n\n    // tao moi -> 201 + header Location\n    @PostMapping\n    ResponseEntity<ProductResponse> create(@RequestBody ProductRequest request) {\n        ProductResponse created = new ProductResponse(1L, request.name(), request.price());\n        return ResponseEntity.created(URI.create(\"/api/products/\" + created.id())).body(created);\n    }\n\n    @DeleteMapping(\"/{id}\")\n    ResponseEntity<Void> delete(@PathVariable Long id) {\n        return ResponseEntity.noContent().build();   // 204\n    }\n}\n",
+          "compile": false,
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
+          "citations": [
+            "day16-src-1",
+            "day16-src-3",
+            "day16-src-5"
+          ]
+        },
+        {
+          "id": "day16-blk-25",
+          "type": "note",
+          "text": "Edge case khi bind tham số: (1) tên tham số Java chỉ được suy ra nếu code biên dịch có thông tin tên (Spring Boot bật `-parameters` mặc định) — trong dự án cấu hình khác thường, hãy ghi rõ `@PathVariable(\"id\")`; (2) truyền `abc` vào tham số `Long id` cho ra `MethodArgumentTypeMismatchException` → 400, và nếu muốn thông báo lỗi thân thiện thì phải xử lý ở `@RestControllerAdvice` (Day 17); (3) đừng nhận entity JPA trực tiếp làm `@RequestBody`: client sẽ gán được cả những field bạn không muốn (như `id`, `role`) — luôn dùng DTO riêng cho request.",
+          "citations": [
+            "day16-src-6",
             "day16-src-7"
           ]
         }
@@ -180,6 +237,24 @@
             "day16-src-4",
             "day16-src-10"
           ]
+        },
+        {
+          "id": "day16-blk-26",
+          "type": "paragraph",
+          "text": "Cơ chế bên dưới việc trả JSON: khi method trả về một object, `RequestResponseBodyMethodProcessor` chọn một `HttpMessageConverter` phù hợp dựa trên header `Accept` của client và các `produces` bạn khai báo — quá trình gọi là content negotiation. Với Jackson trên classpath, `MappingJackson2HttpMessageConverter` chuyển object thành JSON. Nếu không converter nào thỏa `Accept`, client nhận 406; nếu body gửi lên có `Content-Type` mà không converter nào đọc được, kết quả là 415. Đó là lý do hai mã lỗi này không nằm ở code của bạn mà ở tầng thương lượng định dạng.",
+          "citations": [
+            "day16-src-8",
+            "day16-src-9"
+          ]
+        },
+        {
+          "id": "day16-blk-27",
+          "type": "important",
+          "text": "Dùng DTO cho response chứ không phơi entity ra ngoài, vì ba lý do rất thực tế: entity có thể chứa dữ liệu nhạy cảm (`passwordHash`), quan hệ lazy của JPA sẽ gây `LazyInitializationException` hoặc kéo theo hàng loạt query khi Jackson cố serialize, và quan hệ hai chiều (`Order` ↔ `OrderItem`) tạo vòng lặp vô hạn trong quá trình serialize. `record` của Java 17 là kiểu DTO gọn nhất: bất biến, tự có `equals/hashCode/toString`, và Jackson hỗ trợ tốt.",
+          "citations": [
+            "day16-src-4",
+            "day16-src-10"
+          ]
         }
       ]
     }
@@ -187,7 +262,11 @@
   "commonMistakes": [
     "Khai báo hai method mapping trùng hoàn toàn (cùng method/URL/params/headers/media type), gây IllegalStateException lúc khởi động.",
     "Dùng @PathVariable mà không ràng buộc kiểu, nhận TypeMismatchException khi client gửi giá trị sai kiểu.",
-    "Lạm dụng ResponseEntity cho mọi endpoint đơn giản thay vì @ResponseBody/@ResponseStatus."
+    "Lạm dụng ResponseEntity cho mọi endpoint đơn giản thay vì @ResponseBody/@ResponseStatus.",
+    "Dùng entity JPA làm @RequestBody/@ResponseBody, làm lộ field nội bộ, cho client ghi đè id/role và gây LazyInitializationException khi serialize.",
+    "Trả 200 cho mọi trường hợp, kể cả khi tạo mới (nên là 201 + Location) hoặc khi xóa (nên là 204).",
+    "Quên required=false hoặc defaultValue cho @RequestParam tùy chọn, khiến request thiếu tham số bị trả 400.",
+    "Đặt động từ trong URL (/getProduct, /deleteProduct) thay vì để HTTP method diễn đạt hành động trên tài nguyên."
   ],
   "practices": [
     {
@@ -280,7 +359,10 @@
   ],
   "enhancedExercises": [
     "Thêm consumes/produces cho ProductController.create để chỉ chấp nhận application/json và trả lỗi 415 với Content-Type khác.",
-    "Viết test gọi hai endpoint gây ambiguous mapping có chủ ý và sửa bằng produces khác nhau."
+    "Viết test gọi hai endpoint gây ambiguous mapping có chủ ý và sửa bằng produces khác nhau.",
+    "Gọi cùng một endpoint với Accept: application/xml và Accept: application/json, quan sát 406 hoặc kết quả khác nhau, rồi giải thích vai trò của HttpMessageConverter trong content negotiation.",
+    "Tạo endpoint POST trả về 201 kèm header Location, kiểm chứng bằng curl -i rằng client có thể lần theo Location để GET tài nguyên vừa tạo.",
+    "Cố tình truyền chuỗi không phải số vào @PathVariable Long id, đọc thông báo MethodArgumentTypeMismatchException và phác thảo cách xử lý nó ở @RestControllerAdvice."
   ],
   "references": [
     {

@@ -93,6 +93,41 @@
           "citations": [
             "day26-src-7"
           ]
+        },
+        {
+          "id": "day26-blk-20",
+          "type": "paragraph",
+          "text": "Bản chất của upload: form với `enctype=\"multipart/form-data\"` chia body thành nhiều part, mỗi part có header riêng (tên field, tên file, content type). Spring dùng một `MultipartResolver` để tách các part đó và trao cho bạn dưới dạng `MultipartFile` — một *tham chiếu tạm thời* tới dữ liệu, có thể nằm trong bộ nhớ hoặc trong file tạm trên đĩa tùy kích thước. Điều này dẫn tới hai hệ quả quan trọng: `MultipartFile` chỉ hợp lệ trong phạm vi request đó (không được lưu lại để dùng sau, càng không truyền sang thread `@Async`), và `getInputStream()` thường chỉ nên đọc một lần.",
+          "citations": [
+            "day26-src-1",
+            "day26-src-2"
+          ]
+        },
+        {
+          "id": "day26-blk-21",
+          "type": "paragraph",
+          "text": "Giới hạn kích thước phải được đặt ở hai nơi và bạn cần biết chúng khác nhau: `spring.servlet.multipart.max-file-size` giới hạn *từng* file, còn `max-request-size` giới hạn *tổng* một request (quan trọng khi upload nhiều file). Khi vượt giới hạn, Spring ném `MaxUploadSizeExceededException` — mặc định người dùng nhận một lỗi 500 khó hiểu, nên hãy bắt nó trong `@RestControllerAdvice` (Day 17) và trả 413 kèm ProblemDetail nói rõ giới hạn. Cũng nhớ rằng nếu có reverse proxy (Nginx) phía trước, proxy có giới hạn riêng và nó sẽ chặn trước khi request tới ứng dụng.",
+          "citations": [
+            "day26-src-1",
+            "day26-src-6"
+          ]
+        },
+        {
+          "id": "day26-blk-22",
+          "type": "important",
+          "text": "Kiểm tra file tải lên theo thứ tự phòng thủ nhiều lớp, vì mỗi lớp có thể bị vượt qua: (1) tên file — không bao giờ dùng `getOriginalFilename()` để ghép đường dẫn, vì `../../etc/passwd` cho phép ghi ra ngoài thư mục dự kiến (path traversal); hãy sinh tên mới (UUID) và chỉ giữ phần mở rộng đã kiểm chứng; (2) content type do client gửi là *tự khai*, kẻ tấn công đổi được — muốn chắc thì kiểm tra magic bytes của nội dung thật; (3) phần mở rộng — dùng danh sách cho phép (allowlist) thay vì danh sách chặn; (4) nơi lưu — thư mục lưu file không nên nằm trong đường dẫn được phục vụ tĩnh, để một file `.html` hay `.jsp` tải lên không thể bị thực thi hay dùng cho XSS.",
+          "citations": [
+            "day26-src-5"
+          ]
+        },
+        {
+          "id": "day26-blk-23",
+          "type": "note",
+          "text": "Về nơi lưu trữ: ghi vào đĩa cục bộ chỉ ổn khi bạn có một instance. Khi scale nhiều instance hoặc chạy trong container (đĩa mất khi container bị thay), file phải nằm ở nơi dùng chung — object storage (S3-compatible) hoặc network storage. Lưu file *trong* database dưới dạng BLOB làm DB phình to và backup chậm, nên thường chỉ dùng cho file nhỏ. Mẫu phổ biến: metadata (tên gốc, kích thước, content type, người upload, khóa lưu trữ) nằm trong DB, còn bytes nằm ở object storage.",
+          "citations": [
+            "day26-src-2",
+            "day26-src-3"
+          ]
         }
       ]
     },
@@ -118,6 +153,23 @@
             "day26-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day26-blk-24",
+          "type": "paragraph",
+          "text": "Header `Content-Disposition` quyết định trải nghiệm tải: `inline` để trình duyệt hiển thị (PDF, ảnh), `attachment; filename=\"...\"` để buộc tải xuống. Tên file trong header cần được xử lý cẩn thận: ký tự không phải ASCII hay dấu ngoặc kép sẽ làm header sai định dạng, nên với tên tiếng Việt hãy dùng dạng `filename*=UTF-8''<percent-encoded>`. Về hiệu năng, trả `InputStreamResource`/`FileSystemResource` cho phép truyền theo dòng thay vì nạp toàn bộ file vào bộ nhớ — điều bắt buộc nếu file có thể lớn, vì `byte[]` cho một file 500 MB sẽ nhân với số request đồng thời và dẫn tới `OutOfMemoryError`.",
+          "citations": [
+            "day26-src-4"
+          ]
+        },
+        {
+          "id": "day26-blk-25",
+          "type": "important",
+          "text": "Endpoint tải file là nơi rất hay bị lỗ hổng IDOR: nếu URL là `/files/{id}` mà bạn không kiểm tra người gọi có quyền với *chính file đó*, bất kỳ ai đăng nhập cũng có thể dò id để lấy tài liệu của người khác. Kiểm tra quyền phải dựa trên chủ sở hữu bản ghi, không chỉ dựa trên 'đã đăng nhập'. Tương tự, nếu bạn nhận tên file từ tham số để đọc từ đĩa, hãy chuẩn hóa đường dẫn (`Path.normalize()`) và xác nhận nó vẫn nằm trong thư mục gốc cho phép trước khi mở file.",
+          "citations": [
+            "day26-src-4",
+            "day26-src-5"
+          ]
         }
       ]
     },
@@ -150,6 +202,33 @@
           "type": "note",
           "text": "Có thể kiểm thử code gọi WebClient bằng WebTestClient mà không cần gọi API thật.",
           "citations": [
+            "day26-src-11"
+          ]
+        },
+        {
+          "id": "day26-blk-26",
+          "type": "paragraph",
+          "text": "Vì sao gọi API bên ngoài cần cách nghĩ khác với gọi method nội bộ: mọi lời gọi mạng đều có thể chậm, thất bại giữa đường, hoặc trả về dữ liệu không như tài liệu. `WebClient` là client không chặn, xây trên Reactor, thay thế `RestTemplate` (đã ở trạng thái duy trì, không phát triển thêm). Điểm cần nắm: `WebClient` chỉ *mô tả* lời gọi cho tới khi bạn subscribe — `retrieve()` trả về `Mono`/`Flux` và không có gì xảy ra nếu bạn không `block()` (trong code đồng bộ) hoặc trả chuỗi reactive ra ngoài. Đó là lý do một lời gọi 'không thấy chạy' thường là do thiếu bước subscribe.",
+          "citations": [
+            "day26-src-8",
+            "day26-src-9"
+          ]
+        },
+        {
+          "id": "day26-blk-27",
+          "type": "note",
+          "text": "Ba quy tắc thực dụng khi dùng WebClient: (1) tạo *một* bean `WebClient` dùng lại (qua `WebClient.Builder` mà Spring Boot đã cấu hình sẵn) — tạo mới mỗi request làm mất connection pool và có thể cạn kiệt socket; (2) *luôn* đặt timeout, cả timeout kết nối và timeout đọc, vì mặc định một API treo sẽ giữ tài nguyên của bạn rất lâu; (3) xử lý lỗi tường minh bằng `onStatus`: mặc định 4xx/5xx sinh `WebClientResponseException`, và bạn thường muốn phân biệt lỗi do dữ liệu gửi lên (4xx — không nên retry) với lỗi phía đối tác (5xx, timeout — có thể retry).",
+          "citations": [
+            "day26-src-9",
+            "day26-src-10"
+          ]
+        },
+        {
+          "id": "day26-blk-28",
+          "type": "note",
+          "text": "Điểm dễ nhầm về đồng bộ/không chặn: gọi `.block()` bên trong một ứng dụng Spring MVC thông thường là chấp nhận được (thread request vốn đã chặn), nhưng gọi `.block()` trong một luồng WebFlux sẽ ném lỗi vì chặn event loop. Ngoài ra đừng ghi log toàn bộ response của API bên ngoài — chúng thường chứa token hoặc dữ liệu cá nhân; nếu cần debug thì log có chọn lọc và che các trường nhạy cảm.",
+          "citations": [
+            "day26-src-8",
             "day26-src-11"
           ]
         }
@@ -195,6 +274,31 @@
           "citations": [
             "day26-src-13"
           ]
+        },
+        {
+          "id": "day26-blk-29",
+          "type": "paragraph",
+          "text": "Vì sao cần circuit breaker: khi một dịch vụ phụ thuộc bị chậm, các request của bạn xếp hàng chờ nó, thread pool cạn dần, và cuối cùng *ứng dụng của bạn* sập dù lỗi không nằm ở bạn — đó là lỗi lan truyền (cascading failure). Circuit breaker chủ động cắt mạch: sau khi tỉ lệ lỗi vượt ngưỡng, nó chuyển sang Open và *thất bại ngay lập tức* thay vì chờ, giúp hệ thống của bạn giữ được tài nguyên và giúp dịch vụ kia có thời gian hồi phục. Sau một khoảng chờ, trạng thái Half-Open cho qua vài request thử để quyết định đóng lại hay tiếp tục mở.",
+          "citations": [
+            "day26-src-12"
+          ]
+        },
+        {
+          "id": "day26-blk-30",
+          "type": "paragraph",
+          "text": "Retry và circuit breaker giải quyết hai vấn đề khác nhau nên phải phối hợp có ý thức. Retry chỉ đúng với lỗi *tạm thời* và với thao tác *idempotent*: thử lại một `POST` tạo đơn hàng có thể tạo hai đơn. Retry ngay lập tức và liên tục còn làm tình hình xấu hơn (bạn tự tấn công đối tác đang yếu), nên hãy dùng exponential backoff kèm jitter và giới hạn số lần. Thứ tự bọc cũng quan trọng: retry nên nằm *trong* circuit breaker để những lần thử lại được tính vào tỉ lệ lỗi. Cuối cùng, fallback phải là hành vi có ý nghĩa nghiệp vụ (trả dữ liệu cache cũ, trả danh sách rỗng kèm cảnh báo) — không phải nuốt lỗi rồi trả 200 như thể mọi thứ bình thường.",
+          "citations": [
+            "day26-src-12",
+            "day26-src-13"
+          ]
+        },
+        {
+          "id": "day26-blk-31",
+          "type": "note",
+          "text": "Timeout là tuyến phòng thủ đầu tiên và thường bị bỏ qua: không có timeout thì circuit breaker cũng khó phát hiện vấn đề vì request chưa 'thất bại', chỉ đang chờ. Quy tắc đặt số: timeout của lời gọi bên ngoài phải *nhỏ hơn* timeout mà client của bạn chịu được, và nếu có chuỗi nhiều lời gọi thì tổng thời gian xấu nhất (bao gồm cả các lần retry) phải nằm trong ngân sách đó. Hãy viết ra ngân sách thời gian cho mỗi endpoint trước khi chọn tham số retry.",
+          "citations": [
+            "day26-src-13"
+          ]
         }
       ]
     },
@@ -229,6 +333,15 @@
           "type": "note",
           "text": "Xuất Excel (.xlsx) không nằm trong resourceIds của bài này - không có tài liệu tham khảo nào trong bộ nguồn của khoá học mô tả thư viện xử lý Excel (ví dụ Apache POI). Nếu cần xuất Excel thay vì CSV, học viên tự tham khảo tài liệu chính thức của thư viện được chọn; nội dung này không được trình bày có trích dẫn ở đây.",
           "citations": []
+        },
+        {
+          "id": "day26-blk-32",
+          "type": "note",
+          "text": "CSV trông đơn giản nhưng có ba cạm bẫy thực tế: (1) *escaping* — giá trị chứa dấu phẩy, dấu ngoặc kép hoặc ký tự xuống dòng phải được bọc trong ngoặc kép và nhân đôi dấu ngoặc kép bên trong; tự nối chuỗi bằng dấu phẩy sẽ làm hỏng file khi dữ liệu là địa chỉ hoặc mô tả; (2) *encoding* — Excel trên Windows dễ hiểu sai UTF-8 làm tiếng Việt thành ký tự lạ, nên nhiều hệ thống ghi thêm BOM UTF-8 ở đầu file; (3) *quy mô* — xuất báo cáo bằng cách tải toàn bộ dữ liệu vào `List` rồi mới ghi sẽ hết bộ nhớ khi dữ liệu lớn; hãy ghi theo dòng ra `OutputStream` (streaming) và đọc dữ liệu theo trang hoặc theo cursor.",
+          "citations": [
+            "day26-src-14",
+            "day26-src-15"
+          ]
         }
       ]
     }
@@ -236,7 +349,14 @@
   "commonMistakes": [
     "Ghép trực tiếp originalFilename từ client vào đường dẫn lưu file mà không chuẩn hoá/kiểm tra - mở lỗ hổng path traversal.",
     "Dùng block() trên WebClient trong luồng reactive mà không hiểu đây là thao tác chặn (blocking) - chỉ chấp nhận được trong code không-reactive (MVC truyền thống).",
-    "Ghi CSV bằng cách nối chuỗi thủ công mà quên escape dấu phẩy/dấu nháy kép trong dữ liệu, làm hỏng cấu trúc file khi mở bằng Excel."
+    "Ghi CSV bằng cách nối chuỗi thủ công mà quên escape dấu phẩy/dấu nháy kép trong dữ liệu, làm hỏng cấu trúc file khi mở bằng Excel.",
+    "Dùng getOriginalFilename() để ghép đường dẫn lưu file, mở đường cho path traversal (../) ghi ra ngoài thư mục dự kiến.",
+    "Tin vào content type do client khai báo khi kiểm tra loại file, trong khi giá trị này có thể bị sửa tùy ý.",
+    "Nạp toàn bộ file vào byte[] khi tải xuống thay vì streaming, gây OutOfMemoryError với file lớn hoặc nhiều request đồng thời.",
+    "Endpoint tải file chỉ kiểm tra 'đã đăng nhập' mà không kiểm tra quyền với chính bản ghi đó (IDOR).",
+    "Tạo WebClient mới cho mỗi request và không đặt timeout, làm mất connection pool và để lời gọi treo giữ tài nguyên.",
+    "Retry một thao tác không idempotent (POST tạo đơn) hoặc retry liên tục không backoff, khiến dữ liệu trùng và làm đối tác quá tải.",
+    "Ghi CSV bằng cách nối chuỗi với dấu phẩy, làm hỏng file ngay khi dữ liệu chứa dấu phẩy hoặc xuống dòng."
   ],
   "practices": [
     {
@@ -341,7 +461,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Thêm kiểm tra loại file (whitelist content-type) trước khi lưu trong FileSystemStorageService.",
-    "Cấu hình WebClient với retry (spring-retry hoặc Resilience4j) khi gọi API bên ngoài thất bại tạm thời."
+    "Cấu hình WebClient với retry (spring-retry hoặc Resilience4j) khi gọi API bên ngoài thất bại tạm thời.",
+    "Gửi một file có tên ../../evil.txt qua multipart và chứng minh vì sao code phải sinh tên mới; sau đó dùng Path.normalize() để xác nhận đường dẫn đích vẫn nằm trong thư mục gốc.",
+    "Đổi phần mở rộng một file .exe thành .png rồi upload, quan sát content type client gửi và giải thích vì sao kiểm tra theo content type là không đủ.",
+    "Trỏ WebClient tới một endpoint cố tình ngủ 10 giây, đặt timeout 2 giây và ghi lại loại exception nhận được; sau đó thêm fallback trả dữ liệu mặc định.",
+    "Xuất CSV cho một bản ghi có trường chứa dấu phẩy và dấu ngoặc kép, mở bằng Excel để thấy file bị lệch cột, rồi sửa bằng quy tắc escaping đúng và thêm BOM UTF-8."
   ],
   "references": [
     {

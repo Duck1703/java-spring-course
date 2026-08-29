@@ -108,6 +108,24 @@
             "day13-src-3"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day13-blk-30",
+          "type": "paragraph",
+          "text": "Hiểu IoC bằng cách so sánh hai lối viết cùng một việc. Không có IoC, class của bạn tự `new` phụ thuộc: nó phải biết dùng cài đặt nào, biết cách cấu hình, và mỗi khi đổi cài đặt bạn phải sửa code. Có IoC, class chỉ *khai báo* nó cần gì (qua tham số constructor), còn việc tạo và ghép nối do container làm. Bản chất bị đảo là *quyền quyết định*: không phải class quyết định lấy phụ thuộc ở đâu, mà cấu hình bên ngoài quyết định. Lợi ích cụ thể chứ không trừu tượng: đổi cài đặt không sửa code gọi, và trong test bạn tiêm được bản giả mà không cần chạy cả hệ thống.",
+          "citations": [
+            "day13-src-1",
+            "day13-src-2"
+          ]
+        },
+        {
+          "id": "day13-blk-31",
+          "type": "note",
+          "text": "`ApplicationContext` là gì trong thực tế: một sổ đăng ký các bean cùng metadata về cách tạo và ghép chúng. Khi ứng dụng khởi động, Spring quét cấu hình, dựng *định nghĩa bean* (chưa tạo object), rồi khởi tạo — mặc định các bean singleton được tạo sẵn ngay lúc startup (eager). Đây là lý do nhiều lỗi cấu hình lộ ra ngay khi khởi động chứ không đợi tới request đầu tiên, và đó là điều tốt: sai cấu hình thì ứng dụng không lên, thay vì chết giữa giờ cao điểm. `ApplicationContext` mở rộng `BeanFactory` bằng các khả năng của một ứng dụng thật: đọc cấu hình theo môi trường, quốc tế hoá, phát/nhận event, và tự động áp dụng các bộ hậu xử lý bean.",
+          "citations": [
+            "day13-src-2",
+            "day13-src-3"
+          ]
         }
       ]
     },
@@ -189,6 +207,24 @@
           "citations": [
             "day13-src-8"
           ]
+        },
+        {
+          "id": "day13-blk-32",
+          "type": "warning",
+          "text": "Hệ quả quan trọng nhất của scope singleton: *một* instance phục vụ *mọi* request đồng thời. Vì vậy bean singleton phải không có trạng thái thay đổi được (stateless). Đặt một field mutable trong `@Service` để 'giữ tạm dữ liệu của request' là bug nghiêm trọng nhưng khó phát hiện: khi test một mình thì đúng, khi có tải thì hai người dùng ghi đè dữ liệu của nhau. Nơi giữ dữ liệu theo request phải là biến cục bộ trong method (mỗi lời gọi có stack riêng) hoặc tham số truyền vào. Field `final` chứa phụ thuộc thì hoàn toàn an toàn vì chỉ đọc.",
+          "citations": [
+            "day13-src-4",
+            "day13-src-5"
+          ]
+        },
+        {
+          "id": "day13-blk-33",
+          "type": "note",
+          "text": "Điểm dễ nhầm khi trộn scope: nếu tiêm một bean scope ngắn (`request`, `prototype`) vào một singleton theo cách thông thường, phụ thuộc đó được giải quyết *một lần* lúc khởi tạo singleton — nên bạn vô tình dùng mãi cùng một instance. Cách xử lý đúng là dùng scoped proxy (`@Scope(value = \"request\", proxyMode = ScopedProxyMode.TARGET_CLASS)`) để mỗi lời gọi được chuyển tới instance đúng của scope hiện tại, hoặc tiêm `ObjectProvider` và lấy instance khi cần. Thực tế: hãy dùng singleton cho gần như mọi thứ, và chỉ dùng scope khác khi có lý do rõ ràng — trạng thái theo request thường nên truyền tường minh qua tham số thay vì ẩn trong bean.",
+          "citations": [
+            "day13-src-4",
+            "day13-src-6"
+          ]
         }
       ]
     },
@@ -201,6 +237,24 @@
           "type": "note",
           "text": "Chủ đề bean lifecycle (thứ tự gọi các callback khởi tạo/hủy) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
           "citations": []
+        },
+        {
+          "id": "day13-blk-34",
+          "type": "paragraph",
+          "text": "Trình tự vòng đời bean, hiểu theo đúng thứ tự nhân quả: container tạo instance (gọi constructor, tiêm các phụ thuộc bắt buộc) → tiêm các phụ thuộc còn lại qua setter/field → chạy các bộ hậu xử lý và callback khởi tạo (`@PostConstruct`, `afterPropertiesSet`) → bean sẵn sàng phục vụ → khi context đóng thì chạy callback hủy (`@PreDestroy`). Suy ra một quy tắc thực dụng: trong constructor *không* nên làm việc nặng hay phụ thuộc vào bean khác đã khởi tạo xong, vì lúc đó hệ thống chưa hoàn chỉnh; các việc như nạp cache ban đầu hay kiểm tra kết nối thuộc về `@PostConstruct` hoặc `ApplicationRunner`. Lưu ý cho Spring Boot 3: các annotation này thuộc `jakarta.annotation`, không còn là `javax.annotation`.",
+          "citations": [
+            "day13-src-7",
+            "day13-src-8"
+          ]
+        },
+        {
+          "id": "day13-blk-35",
+          "type": "note",
+          "text": "Hai điều cần biết về phần hủy: callback `@PreDestroy` chỉ chạy cho bean singleton do container quản lý và chỉ khi context được đóng một cách bình thường — bean scope prototype thì Spring *không* gọi callback hủy, nên tài nguyên của chúng phải do bạn tự đóng. Vì vậy với tài nguyên cần giải phóng chắc chắn (file, socket, executor), hãy dùng try-with-resources trong phạm vi sử dụng thay vì dựa vào vòng đời container. Với các bean bao bọc tài nguyên dài hạn, `@PreDestroy` là chỗ đúng để dừng chúng gọn gàng khi ứng dụng shutdown.",
+          "citations": [
+            "day13-src-8",
+            "day13-src-9"
+          ]
         }
       ]
     },
@@ -213,6 +267,15 @@
           "type": "note",
           "text": "Chủ đề các stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: `@Component` là annotation gốc, đánh dấu một class để component scanning tự động đăng ký nó thành bean; `@Service`, `@Repository`, `@Controller` là các annotation chuyên biệt hóa của `@Component` cho từng tầng kiến trúc (nghiệp vụ, truy cập dữ liệu, điều khiển web) — về mặt cơ chế chung đều là một bean như nhau, điểm khác biệt là ngữ nghĩa và một số xử lý thêm (ví dụ `@Repository` tự động dịch exception tầng persistence).",
           "citations": []
+        },
+        {
+          "id": "day13-blk-36",
+          "type": "paragraph",
+          "text": "Về mặt kỹ thuật, `@Service`, `@Repository`, `@Controller` đều là `@Component` — chúng đều khiến class được đăng ký làm bean. Khác biệt nằm ở *ý nghĩa* và ở vài hành vi đi kèm: `@Repository` bật chuyển đổi exception, biến exception đặc thù của nhà cung cấp persistence thành phân cấp `DataAccessException` của Spring, nhờ đó tầng service không bị dính vào chi tiết của Hibernate hay JDBC; `@Controller`/`@RestController` được xử lý bởi Spring MVC để ánh xạ request. Chọn đúng annotation vì thế vừa nói lên vai trò của class cho người đọc, vừa lấy được hành vi phù hợp. Điều kiện để chúng có tác dụng: class phải nằm trong phạm vi quét component — mặc định là package của class `@SpringBootApplication` và các package con, nên một class đặt ngoài cây package đó sẽ im lặng không được nhận.",
+          "citations": [
+            "day13-src-1",
+            "day13-src-3"
+          ]
         }
       ]
     }
@@ -220,7 +283,13 @@
   "commonMistakes": [
     "Tiêm trực tiếp một request/session-scoped bean vào singleton bean mà không dùng scoped proxy.",
     "Nhầm lẫn singleton của Spring (per-container/per-bean) với singleton pattern GoF (một instance cho cả ứng dụng).",
-    "Kỳ vọng container tự gọi destruction callback cho bean scope prototype giống như singleton."
+    "Kỳ vọng container tự gọi destruction callback cho bean scope prototype giống như singleton.",
+    "Giữ trạng thái theo request trong field của bean singleton, gây trộn dữ liệu giữa các người dùng khi có tải.",
+    "Tiêm bean scope request/prototype vào singleton mà không dùng scoped proxy hay ObjectProvider, nên chỉ nhận đúng một instance mãi mãi.",
+    "Làm việc nặng hoặc phụ thuộc bean khác trong constructor thay vì trong @PostConstruct hay ApplicationRunner.",
+    "Trông đợi @PreDestroy chạy cho bean prototype, dẫn tới rò rỉ tài nguyên.",
+    "Đặt component ngoài cây package của lớp @SpringBootApplication rồi không hiểu vì sao bean không được tạo.",
+    "Dùng javax.annotation.PostConstruct trong Spring Boot 3 thay vì jakarta.annotation.PostConstruct."
   ],
   "practices": [
     {
@@ -311,7 +380,11 @@
   ],
   "enhancedExercises": [
     "Viết một custom scope đơn giản (implement org.springframework.beans.factory.config.Scope) và đăng ký bằng ConfigurableBeanFactory.registerScope().",
-    "Thử nghiệm @PostConstruct/@PreDestroy trên một bean singleton và quan sát thứ tự gọi so với constructor."
+    "Thử nghiệm @PostConstruct/@PreDestroy trên một bean singleton và quan sát thứ tự gọi so với constructor.",
+    "Thêm một field đếm mutable vào @Service, gọi endpoint đồng thời nhiều lần rồi giải thích kết quả sai theo scope singleton.",
+    "Tiêm một bean prototype vào singleton, in identity hash qua nhiều request; sau đó chuyển sang ObjectProvider và so sánh.",
+    "Log trong constructor, @PostConstruct và @PreDestroy của cùng một bean rồi đọc thứ tự log khi khởi động và khi shutdown.",
+    "Di chuyển một @Service ra ngoài package gốc để thấy bean không được nạp, sau đó sửa bằng cách chỉ định scanBasePackages."
   ],
   "references": [
     {

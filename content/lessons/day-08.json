@@ -88,6 +88,41 @@
           "citations": [
             "day08-src-5"
           ]
+        },
+        {
+          "id": "day08-blk-20",
+          "type": "paragraph",
+          "text": "Bản chất generics: nó là công cụ dành cho *compiler*, không phải cho runtime. Bạn dán nhãn kiểu vào một cấu trúc dữ liệu để compiler kiểm tra hộ và tự chèn cast; sau khi biên dịch xong, nhãn đó bị xóa (type erasure) và bytecode chỉ còn thấy `Object` hoặc bound của type parameter. Hệ quả: `List<String>` và `List<Integer>` là *cùng một class* lúc runtime, nên không có `getClass()` nào phân biệt được chúng và bạn không thể viết `new T[10]` hay `instanceof List<String>`.",
+          "citations": [
+            "day08-src-5"
+          ]
+        },
+        {
+          "id": "day08-blk-21",
+          "type": "paragraph",
+          "text": "Quy tắc dễ sai nhất: generics *không* covariant. `Dog` là subtype của `Animal`, nhưng `List<Dog>` KHÔNG phải subtype của `List<Animal>` — nếu được phép, bạn sẽ thêm được một `Cat` vào danh sách Dog qua tham chiếu `List<Animal>` và phá vỡ an toàn kiểu. Wildcard tồn tại để lấy lại phần linh hoạt đã mất một cách an toàn: `? extends T` cho phép *đọc* (producer), `? super T` cho phép *ghi* (consumer). Mẹo nhớ chuẩn là PECS: Producer Extends, Consumer Super.",
+          "citations": [
+            "day08-src-4"
+          ]
+        },
+        {
+          "id": "day08-blk-22",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.*;\n\nclass GenericsDemo {\n    // bounded type parameter: T phai so sanh duoc\n    static <T extends Comparable<T>> T max(List<? extends T> items) {\n        T best = items.get(0);\n        for (T item : items) {\n            if (item.compareTo(best) > 0) best = item;\n        }\n        return best;\n    }\n\n    // consumer: chi ghi -> super\n    static void addNumbers(List<? super Integer> sink) {\n        sink.add(1);\n        sink.add(2);\n    }\n\n    public static void main(String[] args) {\n        List<Integer> ints = new ArrayList<>(List.of(3, 9, 4));\n        System.out.println(max(ints));            // 9\n\n        List<? extends Number> readOnly = ints;\n        System.out.println(readOnly.get(0));      // doc: OK\n        // readOnly.add(5);                        // LOI: khong biet kieu chinh xac -> khong ghi duoc\n\n        List<Number> sink = new ArrayList<>();\n        addNumbers(sink);                          // Number la super cua Integer\n        System.out.println(sink);                  // [1, 2]\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day08-src-3",
+            "day08-src-4"
+          ]
+        },
+        {
+          "id": "day08-blk-23",
+          "type": "warning",
+          "text": "Edge case do erasure: (1) không có generic type cho primitive — `List<int>` không hợp lệ, phải dùng `List<Integer>` và trả giá bằng boxing; (2) không overload được hai method chỉ khác nhau ở type argument (`f(List<String>)` và `f(List<Integer>)` có cùng chữ ký sau erasure); (3) `List` thô (raw type) vẫn biên dịch được vì tương thích ngược nhưng vô hiệu hóa mọi kiểm tra kiểu — đừng dùng; (4) cảnh báo 'unchecked' nghĩa là compiler đã hết khả năng bảo vệ bạn, và lỗi sẽ nổ ra dưới dạng ClassCastException ở một chỗ khác hẳn.",
+          "citations": [
+            "day08-src-5"
+          ]
         }
       ]
     },
@@ -144,6 +179,47 @@
             "day08-src-6",
             "day08-src-7"
           ]
+        },
+        {
+          "id": "day08-blk-24",
+          "type": "paragraph",
+          "text": "Cách chọn collection nên bắt đầu từ câu hỏi về *hợp đồng*, không phải từ tên class. Cần thứ tự và cho phép trùng lặp, truy cập theo chỉ số? `ArrayList`. Cần thêm/xóa nhiều ở hai đầu, hoặc dùng như queue/deque? `ArrayDeque` (nhanh hơn `LinkedList` trong hầu hết trường hợp thực tế). Cần loại bỏ trùng lặp và không quan tâm thứ tự? `HashSet`. Cần loại trùng nhưng giữ thứ tự chèn? `LinkedHashSet`. Cần tra cứu theo khóa? `HashMap`. Cần dữ liệu luôn được sắp xếp theo khóa hoặc truy vấn khoảng? `TreeMap`/`TreeSet`.",
+          "citations": [
+            "day08-src-6"
+          ]
+        },
+        {
+          "id": "day08-blk-25",
+          "type": "paragraph",
+          "text": "Cơ chế bên dưới quyết định hiệu năng. `ArrayList` là một mảng có khả năng tự mở rộng: truy cập theo chỉ số O(1), nhưng chèn/xóa giữa danh sách phải dịch chuyển phần tử nên O(n). `HashMap` là mảng bucket: khóa được băm để chọn bucket, các phần tử cùng bucket nối thành danh sách và tự chuyển thành cây cân bằng khi bucket quá đông, nên tra cứu trung bình O(1) miễn là `hashCode()` phân bố tốt. `TreeMap` dựa trên cây đỏ-đen: O(log n) cho mọi thao tác nhưng đổi lại luôn duy trì thứ tự.",
+          "citations": [
+            "day08-src-7"
+          ]
+        },
+        {
+          "id": "day08-blk-26",
+          "type": "important",
+          "text": "Hợp đồng equals/hashCode là điều kiện sống còn của HashMap và HashSet: hai object bằng nhau theo `equals` bắt buộc phải có cùng `hashCode`. Nếu bạn dùng một object làm khóa mà chỉ override `equals` (hoặc không override gì cả), `map.get(key)` sẽ trả về null dù 'khóa giống nhau'. Nguy hiểm hơn: nếu bạn *thay đổi* field tham gia vào hashCode sau khi đã đặt object vào Set/Map, phần tử đó trở thành không thể tìm lại được — nên khóa nên là kiểu bất biến (String, số, record, enum).",
+          "citations": [
+            "day08-src-7"
+          ]
+        },
+        {
+          "id": "day08-blk-27",
+          "type": "code",
+          "language": "java",
+          "code": "import java.util.*;\n\nclass CollectionsDemo {\n    // record: tu dong sinh equals/hashCode dung hop dong -> khoa an toan\n    record CustomerId(String value) {}\n\n    public static void main(String[] args) {\n        Map<CustomerId, Integer> orders = new HashMap<>();\n        orders.put(new CustomerId(\"C1\"), 3);\n        // instance khac nhau nhung equals -> tim duoc\n        System.out.println(orders.get(new CustomerId(\"C1\")));   // 3\n\n        // API tien dung thay cho if-else quanh get()\n        orders.merge(new CustomerId(\"C1\"), 2, Integer::sum);     // 5\n        orders.computeIfAbsent(new CustomerId(\"C2\"), k -> 0);\n        System.out.println(orders.getOrDefault(new CustomerId(\"C9\"), -1)); // -1\n\n        // List.of tra ve danh sach BAT BIEN\n        List<String> fixed = List.of(\"a\", \"b\");\n        try {\n            fixed.add(\"c\");\n        } catch (UnsupportedOperationException e) {\n            System.out.println(\"immutable: \" + e.getClass().getSimpleName());\n        }\n\n        // Xoa an toan khi dang duyet: removeIf, khong phai for-each + remove\n        List<String> names = new ArrayList<>(List.of(\"an\", \"binh\", \"chi\"));\n        names.removeIf(n -> n.length() <= 2);\n        System.out.println(names);   // [binh, chi]\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day08-src-6",
+            "day08-src-7"
+          ]
+        },
+        {
+          "id": "day08-blk-28",
+          "type": "note",
+          "text": "Edge case hay gặp trong production: (1) `List.of(...)`/`Map.of(...)` trả về collection bất biến và không nhận null — `Collectors.toList()` hay `new ArrayList<>()` mới cho phép sửa; (2) sửa collection trong lúc đang duyệt bằng for-each sẽ ném `ConcurrentModificationException` (dùng `removeIf` hoặc `Iterator.remove`); (3) `HashMap` cho phép một khóa null còn `TreeMap` thì không; (4) `HashMap` không an toàn khi nhiều thread ghi đồng thời — dùng `ConcurrentHashMap` (Day 11).",
+          "citations": []
         }
       ]
     },
@@ -193,6 +269,41 @@
           "citations": [
             "day08-src-11"
           ]
+        },
+        {
+          "id": "day08-blk-29",
+          "type": "paragraph",
+          "text": "Vì sao Java chia checked và unchecked: checked exception là những tình huống bên ngoài mà caller *được kỳ vọng* xử lý (file không tồn tại, mất kết nối) nên compiler bắt bạn khai báo hoặc bắt; unchecked (RuntimeException và con của nó) biểu thị lỗi lập trình hoặc vi phạm điều kiện đầu vào (null, chỉ số vượt mảng, tham số sai) — không nên bắt lẻ tẻ mà nên sửa code. `Error` (OutOfMemoryError, StackOverflowError) thuộc nhóm đừng cố bắt: JVM đã ở trạng thái không thể tiếp tục an toàn.",
+          "citations": [
+            "day08-src-9",
+            "day08-src-10"
+          ]
+        },
+        {
+          "id": "day08-blk-30",
+          "type": "paragraph",
+          "text": "Nguyên tắc thiết kế exception theo tầng: tầng thấp ném lỗi kỹ thuật, tầng nghiệp vụ *dịch* nó thành lỗi có nghĩa với domain và luôn giữ nguyên nhân gốc (`throw new OrderNotFoundException(id, cause)`), tầng ngoài cùng quyết định cách hiển thị. Đây chính là mô hình bạn sẽ hiện thực bằng `@ControllerAdvice` ở Day 17: service ném exception domain, một handler duy nhất chuyển nó thành HTTP status và response body — không có block try/catch nào rải rác trong controller.",
+          "citations": [
+            "day08-src-11"
+          ]
+        },
+        {
+          "id": "day08-blk-31",
+          "type": "code",
+          "language": "java",
+          "code": "class ExceptionDemo {\n    static class OrderNotFoundException extends RuntimeException {\n        private final String orderId;\n        OrderNotFoundException(String orderId, Throwable cause) {\n            super(\"Order not found: \" + orderId, cause);   // GIU nguyen nhan goc\n            this.orderId = orderId;\n        }\n        String getOrderId() { return orderId; }\n    }\n\n    static String loadRaw(String id) {\n        throw new IllegalStateException(\"db timeout\");        // loi tang ha tang\n    }\n\n    static String findOrder(String id) {\n        try {\n            return loadRaw(id);\n        } catch (IllegalStateException e) {\n            throw new OrderNotFoundException(id, e);          // dich sang loi domain\n        }\n    }\n\n    public static void main(String[] args) {\n        try {\n            findOrder(\"A-1\");\n        } catch (OrderNotFoundException e) {\n            System.out.println(e.getMessage());\n            System.out.println(\"root cause: \" + e.getCause().getMessage());\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day08-src-11"
+          ]
+        },
+        {
+          "id": "day08-blk-32",
+          "type": "warning",
+          "text": "Ba anti-pattern làm mất dấu lỗi: (1) `catch (Exception e) {}` — nuốt lỗi, hệ thống hỏng âm thầm; (2) `catch (Exception e) { throw new RuntimeException(\"loi\"); }` — mất stack trace gốc, không thể debug (luôn truyền `e` làm cause); (3) `return` hoặc `throw` trong khối `finally` — nó ghi đè kết quả/exception đang lan truyền, khiến lỗi thật biến mất hoàn toàn. Cũng đừng dùng exception để điều khiển luồng bình thường: chi phí tạo stack trace là thật, và ý định code trở nên khó đọc.",
+          "citations": [
+            "day08-src-11"
+          ]
         }
       ]
     },
@@ -234,6 +345,34 @@
           "citations": [
             "day08-src-15"
           ]
+        },
+        {
+          "id": "day08-blk-33",
+          "type": "paragraph",
+          "text": "Cơ chế bên dưới try-with-resources: compiler sinh ra một khối `finally` ngầm gọi `close()` cho từng resource khai báo trong ngoặc, theo thứ tự *ngược* với thứ tự khởi tạo (resource mở sau đóng trước) — đúng thứ tự cần thiết khi resource sau phụ thuộc resource trước, ví dụ `BufferedWriter` bọc `FileWriter`. Điểm tinh tế thường bị bỏ qua: nếu thân try ném lỗi *và* `close()` cũng ném lỗi, exception của thân try được giữ làm chính, còn lỗi từ `close()` được gắn kèm như suppressed exception và đọc được qua `getSuppressed()`. Với try/finally viết tay, lỗi gốc sẽ bị lỗi của `close()` ghi đè và mất hẳn.",
+          "citations": [
+            "day08-src-15",
+            "day08-src-12"
+          ]
+        },
+        {
+          "id": "day08-blk-34",
+          "type": "code",
+          "language": "java",
+          "code": "class TwrDemo {\n    static class Res implements AutoCloseable {\n        private final String name;\n        Res(String name) { this.name = name; System.out.println(\"open \" + name); }\n        void use() { throw new IllegalStateException(\"loi trong than try\"); }\n        @Override public void close() {\n            System.out.println(\"close \" + name);\n            throw new IllegalStateException(\"loi khi close \" + name);\n        }\n    }\n\n    public static void main(String[] args) {\n        try (Res a = new Res(\"A\"); Res b = new Res(\"B\")) {   // dong B truoc, roi A\n            a.use();\n        } catch (Exception e) {\n            System.out.println(\"chinh: \" + e.getMessage());\n            for (Throwable s : e.getSuppressed()) {\n                System.out.println(\"suppressed: \" + s.getMessage());\n            }\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day08-src-14",
+            "day08-src-15"
+          ]
+        },
+        {
+          "id": "day08-blk-35",
+          "type": "note",
+          "text": "Điểm dễ nhầm: biến khai báo trong ngoặc try-with-resources là ngầm final (không gán lại được), và chỉ những kiểu implement `AutoCloseable`/`Closeable` mới đặt được ở đó. Trong Spring Boot bạn ít viết try-with-resources cho JDBC vì `JdbcTemplate`/JPA đã quản lý connection, nhưng vẫn cần nó mỗi khi tự mở `InputStream`, đọc file bằng `Files.lines(...)`, hay dùng một `Stream` có tài nguyên nền (Day 11, Day 26).",
+          "citations": [
+            "day08-src-13"
+          ]
         }
       ]
     }
@@ -241,7 +380,11 @@
   "commonMistakes": [
     "Bắt exception chung chung bằng catch (Exception e) rồi bỏ qua (nuốt lỗi) thay vì xử lý hoặc re-throw đúng loại exception cụ thể.",
     "Dùng return/throw bên trong khối finally, vô tình che mất giá trị hoặc exception thực sự của khối try/catch.",
-    "Khai báo kiểu nguyên thủy (int, double) làm type argument cho generic (ví dụ List<int>) — Java không cho phép vì type erasure chỉ hoạt động với kiểu tham chiếu."
+    "Khai báo kiểu nguyên thủy (int, double) làm type argument cho generic (ví dụ List<int>) — Java không cho phép vì type erasure chỉ hoạt động với kiểu tham chiếu.",
+    "Dùng object có thể thay đổi (mutable) làm khóa HashMap/HashSet, hoặc chỉ override equals mà không override hashCode, khiến map.get() trả về null dù khóa 'giống nhau'.",
+    "Gọi add/remove trên collection bất biến trả về từ List.of()/Map.of(), nhận UnsupportedOperationException ở runtime.",
+    "Bọc lại exception bằng new RuntimeException(message) mà không truyền cause, làm mất stack trace gốc và không thể truy nguyên lỗi trong production.",
+    "Cho rằng List<Dog> dùng được ở nơi cần List<Animal>: generics không covariant, phải dùng wildcard theo nguyên tắc PECS."
   ],
   "practices": [
     {
@@ -342,7 +485,10 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết một custom exception hierarchy 3 tầng (ví dụ: AppException -> ValidationException -> MissingFieldException) và một method minh họa catch đúng từng tầng.",
-    "Viết một lớp tự tạo cài đặt AutoCloseable, mở một 'kết nối' giả lập trong constructor và đóng nó trong close(), rồi dùng trong try-with-resources với 3 resource cùng lúc."
+    "Viết một lớp tự tạo cài đặt AutoCloseable, mở một 'kết nối' giả lập trong constructor và đóng nó trong close(), rồi dùng trong try-with-resources với 3 resource cùng lúc.",
+    "Viết một class Key có field mutable, đặt nó làm khóa HashMap rồi đổi field đó sau khi put — quan sát vì sao không tìm lại được entry, sau đó chuyển sang record và giải thích khác biệt.",
+    "Tự tạo hai resource AutoCloseable lồng nhau, cố tình ném lỗi ở cả thân try và close(), in ra getSuppressed() để xác nhận exception nào là chính, exception nào bị suppressed.",
+    "Viết một method dùng wildcard ? extends Number để tính tổng và thử gọi add() vào tham số đó — giải thích thông báo lỗi của compiler theo nguyên tắc PECS."
   ],
   "references": [
     {

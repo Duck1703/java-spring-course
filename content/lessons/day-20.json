@@ -85,6 +85,24 @@
             "day20-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day20-blk-30",
+          "type": "paragraph",
+          "text": "Spring Data JPA hoạt động theo nguyên tắc: bạn *khai báo* interface repository, còn phần cài đặt do framework sinh ra lúc chạy. Có ba cách diễn đạt truy vấn và mỗi cách có chỗ dùng riêng. Derived query (`findByStatusAndCreatedAtAfter`) là ngắn nhất và được kiểm tra ngay khi khởi động — nếu tên method sai chính tả hoặc không khớp field, ứng dụng không lên; nhưng tên sẽ dài không đọc nổi khi có nhiều điều kiện. `@Query` với JPQL phù hợp cho truy vấn phức tạp và vẫn làm việc trên entity nên không phụ thuộc phương ngữ SQL. Specification/Criteria API dùng khi các điều kiện *thay đổi theo dữ liệu người dùng* (bộ lọc tùy chọn) — chỗ mà nếu nối chuỗi SQL bằng tay bạn sẽ mở cửa cho SQL injection. Quy tắc chọn: dùng cách đơn giản nhất đủ diễn đạt ý định, và đừng ghép nhiều điều kiện tùy chọn bằng cách nối chuỗi.",
+          "citations": [
+            "day20-src-1",
+            "day20-src-2"
+          ]
+        },
+        {
+          "id": "day20-blk-31",
+          "type": "note",
+          "text": "Hai điều thực dụng về phân trang. Thứ nhất, `Page` chạy *thêm* một truy vấn `count` để biết tổng số phần tử; nếu client chỉ cần 'trang kế tiếp' thì `Slice` (hoặc `List`) rẻ hơn vì không cần count. Thứ hai, phân trang *bắt buộc* phải đi kèm sắp xếp xác định: nếu không có `ORDER BY`, database không cam kết thứ tự nào, nên cùng một dữ liệu có thể trả về phần tử trùng ở trang sau và bỏ sót phần tử khác — hãy luôn sort theo một khóa duy nhất (thường thêm `id` làm tiêu chí phụ). Đừng phơi `Pageable` thô ra API mà không giới hạn: một request với `size=1000000` là một cách hạ hệ thống rất dễ, nên hãy đặt trần cho kích thước trang.",
+          "citations": [
+            "day20-src-2",
+            "day20-src-3"
+          ]
         }
       ]
     },
@@ -104,6 +122,24 @@
           "text": "CascadeType.LOCK là một giá trị mở rộng riêng của Hibernate (không thuộc chuẩn Jakarta Persistence), dùng để lan truyền thao tác lock (khoá bi quan) sang entity con trong cùng một persistence context. Vì đây là API riêng của Hibernate, dùng nó sẽ làm giảm khả năng chuyển đổi provider JPA khác nếu cần trong tương lai - nên cân nhắc dùng khoá tường minh qua EntityManager.lock() thay vì gắn cứng CascadeType.LOCK vào định nghĩa quan hệ khi không thực sự cần lan truyền tự động.",
           "citations": [
             "day20-src-8"
+          ]
+        },
+        {
+          "id": "day20-blk-32",
+          "type": "paragraph",
+          "text": "Cơ chế bên dưới `@Transactional` cần hiểu vì nó giải thích gần hết các lỗi 'annotation không có tác dụng': Spring bọc bean của bạn trong một *proxy*; proxy mở transaction trước khi gọi method thật và commit hoặc rollback sau đó. Suy ra ba hệ quả. Một, gọi một method `@Transactional` từ *một method khác trong cùng class* thì annotation bị bỏ qua, vì lời gọi nội bộ không đi qua proxy — muốn có transaction phải gọi qua bean khác. Hai, method `private` hoặc `final` không được áp dụng, vì proxy không can thiệp được. Ba, mặc định Spring chỉ rollback với unchecked exception (`RuntimeException`) và `Error`; nếu bạn ném checked exception thì transaction vẫn *commit* — muốn khác đi phải khai báo `rollbackFor`. Đây là nguồn của loại bug tệ nhất: dữ liệu bị ghi nửa vời mà không có lỗi nào hiện ra.",
+          "citations": [
+            "day20-src-4",
+            "day20-src-5"
+          ]
+        },
+        {
+          "id": "day20-blk-33",
+          "type": "note",
+          "text": "Chọn phạm vi và thuộc tính transaction theo mục đích. Đặt `@Transactional` ở tầng *service*, nơi định nghĩa một đơn vị công việc nghiệp vụ (một use case), chứ không đặt ở repository (từng câu lệnh) hay ở controller (kéo transaction qua cả phần render). Dùng `@Transactional(readOnly = true)` cho các luồng chỉ đọc: nó cho Hibernate bỏ dirty checking và cho driver/DB biết ý định, vừa nhanh hơn vừa ngăn ghi ngoài ý muốn. Về `propagation`, mặc định `REQUIRED` (tham gia transaction đang có) đúng cho gần như mọi trường hợp; `REQUIRES_NEW` chỉ dùng khi bạn *thực sự* muốn một phần việc được commit độc lập, ví dụ ghi audit log phải giữ lại dù nghiệp vụ chính rollback. Quan trọng không kém: giữ transaction *ngắn* — đừng gọi API bên ngoài hay xử lý file trong khi đang giữ kết nối và khóa database.",
+          "citations": [
+            "day20-src-5",
+            "day20-src-6"
           ]
         }
       ]
@@ -139,6 +175,24 @@
             "day20-src-6"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day20-blk-34",
+          "type": "paragraph",
+          "text": "Ba mức auditing giải quyết ba nhu cầu khác nhau, nên hãy chọn theo câu hỏi bạn cần trả lời. Nếu chỉ cần biết *ai tạo/sửa lần cuối và khi nào*, dùng Spring Data auditing: `@CreatedDate`, `@LastModifiedDate`, `@CreatedBy`, `@LastModifiedBy` cùng `@EnableJpaAuditing`, và cung cấp `AuditorAware` để lấy người dùng hiện tại từ security context (Day 22). Nếu cần logic riêng ngay trước khi ghi, callback JPA (`@PrePersist`, `@PreUpdate`) là chỗ đặt — nhưng nhớ rằng nó không nên chứa truy vấn hay gọi service. Nếu cần *toàn bộ lịch sử thay đổi* để truy vết hoặc phục hồi, cần Hibernate Envers với các bảng revision — mạnh nhưng làm tăng dung lượng ghi, nên chỉ bật cho những entity thực sự cần. Một chi tiết dễ bỏ sót: các truy vấn cập nhật hàng loạt bằng JPQL/native SQL *bỏ qua* mọi cơ chế trên vì chúng không đi qua vòng đời entity.",
+          "citations": [
+            "day20-src-7",
+            "day20-src-8"
+          ]
+        },
+        {
+          "id": "day20-blk-35",
+          "type": "warning",
+          "text": "Hai vấn đề đồng thời mà bất kỳ ứng dụng có nhiều người dùng cũng gặp. Thứ nhất là mất cập nhật (lost update): hai người cùng đọc một bản ghi, cùng sửa, người ghi sau xóa sạch thay đổi của người trước mà không ai biết. Cách chữa gọn nhất trong JPA là optimistic locking — thêm một field `@Version`; Hibernate đưa số phiên bản vào điều kiện `WHERE` khi cập nhật, và nếu không có dòng nào khớp thì ném `OptimisticLockException` để bạn xử lý (thường là báo người dùng tải lại). Đây là lựa chọn mặc định nên dùng vì không giữ khóa. Pessimistic locking (`SELECT ... FOR UPDATE`) chỉ dành cho tranh chấp thật sự cao và phải trong transaction ngắn, vì nó chặn người khác và có nguy cơ deadlock. Thứ hai, cập nhật kiểu 'đọc rồi ghi' cho các phép cộng dồn (số lượng tồn kho) nên chuyển thành cập nhật nguyên tử ở database khi có thể.",
+          "citations": [
+            "day20-src-8",
+            "day20-src-9"
+          ]
         }
       ]
     }
@@ -146,7 +200,15 @@
   "commonMistakes": [
     "Luôn dùng Page<T> ngay cả khi không cần tổng số trang, gây câu truy vấn COUNT không cần thiết trên bảng lớn.",
     "Kỳ vọng Spring tự rollback với checked exception mà không khai báo rollbackFor tường minh trên @Transactional.",
-    "Dùng callback @PrePersist/@PreUpdate khi thực chất cần lưu lại toàn bộ lịch sử thay đổi - chỉ Envers mới lưu từng revision."
+    "Dùng callback @PrePersist/@PreUpdate khi thực chất cần lưu lại toàn bộ lịch sử thay đổi - chỉ Envers mới lưu từng revision.",
+    "Gọi method @Transactional từ method khác trong cùng class rồi tưởng transaction đã được mở (lời gọi nội bộ không qua proxy).",
+    "Ném checked exception và bất ngờ vì transaction vẫn commit, do mặc định chỉ rollback với unchecked exception.",
+    "Đặt @Transactional trên method private hoặc final, nơi proxy không thể can thiệp.",
+    "Phân trang mà không sắp xếp theo khóa duy nhất, gây trùng lặp và bỏ sót phần tử giữa các trang.",
+    "Nhận Pageable trực tiếp từ client mà không giới hạn kích thước trang.",
+    "Gọi API bên ngoài hoặc xử lý file trong khi transaction đang mở, giữ kết nối và khóa database quá lâu.",
+    "Không dùng @Version nên để xảy ra lost update giữa hai người dùng sửa cùng bản ghi.",
+    "Trông đợi auditing hoặc callback JPA hoạt động với truy vấn cập nhật hàng loạt bằng JPQL/native SQL."
   ],
   "practices": [
     {
@@ -234,7 +296,13 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Thêm interface-based projection (ví dụ ProductSummary chỉ có getName()/getUnitPrice()) cho một derived query method và so sánh SQL sinh ra với việc trả về full entity.",
-    "Cấu hình Hibernate Envers cho entity Order, thực hiện vài lần update, rồi truy vấn lại lịch sử các revision bằng AuditReader."
+    "Cấu hình Hibernate Envers cho entity Order, thực hiện vài lần update, rồi truy vấn lại lịch sử các revision bằng AuditReader.",
+    "Gọi một method @Transactional từ method khác trong cùng class, cố tình ném RuntimeException và kiểm tra database để chứng minh transaction không hề mở.",
+    "Ném một checked exception trong method @Transactional, xác nhận dữ liệu vẫn được commit, rồi sửa bằng rollbackFor và kiểm chứng lại.",
+    "So sánh số câu SQL sinh ra khi trả về Page và khi trả về Slice cho cùng một truy vấn phân trang.",
+    "Phân trang không có ORDER BY trên tập dữ liệu vài trăm dòng, so sánh phần tử giữa các trang qua nhiều lần chạy để thấy thứ tự không xác định.",
+    "Thêm field @Version vào một entity, mô phỏng hai luồng cùng cập nhật và xử lý OptimisticLockException.",
+    "Bật Spring Data auditing với AuditorAware lấy người dùng từ security context, sau đó thử cập nhật bằng @Modifying query và giải thích vì sao trường audit không đổi."
   ],
   "references": [
     {

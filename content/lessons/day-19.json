@@ -98,6 +98,33 @@
             "day19-src-4"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day19-blk-30",
+          "type": "paragraph",
+          "text": "Mental model của JPA: entity không phải 'một dòng dữ liệu' mà là *một object được persistence context theo dõi*. Trong phạm vi một transaction, mỗi dòng database tương ứng đúng một instance entity được quản lý; bạn sửa field của nó và không cần gọi `save`, vì khi transaction commit Hibernate tự so sánh trạng thái hiện tại với ảnh chụp lúc nạp và sinh câu `UPDATE` cần thiết (dirty checking). Hiểu điều này giải thích hai hiện tượng ban đầu gây bối rối: sửa entity đã nạp trong method `@Transactional` vẫn ghi được xuống DB, còn sửa entity sau khi transaction kết thúc (đã detached) thì không có gì xảy ra. Đây cũng là lý do không nên trả entity trực tiếp ra controller: hãy chuyển sang DTO để việc ghi dữ liệu chỉ xảy ra ở chỗ bạn chủ động.",
+          "citations": [
+            "day19-src-1",
+            "day19-src-2"
+          ]
+        },
+        {
+          "id": "day19-blk-31",
+          "type": "note",
+          "text": "Về khóa chính và chiến lược sinh id: `GenerationType.IDENTITY` dựa vào cột tự tăng của database — đơn giản nhưng buộc Hibernate phải `INSERT` ngay khi bạn gọi `persist` để lấy được id, nên mất khả năng gom nhiều insert thành lô (batch). `SEQUENCE` dùng sequence của database, lấy trước id nên vẫn gom lô được, và là lựa chọn tốt hơn cho PostgreSQL/Oracle khi cần ghi nhiều. `AUTO` để Hibernate tự chọn. Với entity, luôn dùng kiểu bọc (`Long` chứ không `long`) cho id: giá trị `null` là dấu hiệu 'chưa được lưu', điều mà `long` không diễn đạt được vì mặc định là 0. Ngoài ra, nếu override `equals`/`hashCode` cho entity, tuyệt đối đừng dựa vào id sinh tự động khi object còn chưa lưu — hãy dựa trên một business key ổn định, hoặc không override.",
+          "citations": [
+            "day19-src-3",
+            "day19-src-4"
+          ]
+        },
+        {
+          "id": "day19-blk-32",
+          "type": "warning",
+          "text": "Ba điều kiện kỹ thuật của entity mà quên là gặp lỗi khó hiểu: entity phải có constructor không tham số (proxy và việc khởi tạo cần nó — đây cũng chính là lý do `record` không dùng được làm entity), class không được `final` và các method truy cập không được `final` (Hibernate sinh proxy bằng cách kế thừa để hỗ trợ lazy loading), và trong Spring Boot 3 mọi annotation persistence đến từ `jakarta.persistence.*` chứ không phải `javax.persistence.*`. Ngoài ra `@Column(nullable = false)` chỉ ảnh hưởng tới DDL do Hibernate sinh ra, nó *không* là ràng buộc kiểm tra ở tầng ứng dụng — muốn báo lỗi sớm và rõ ràng cho người dùng thì cần Bean Validation (Day 17).",
+          "citations": [
+            "day19-src-4",
+            "day19-src-5"
+          ]
         }
       ]
     },
@@ -135,6 +162,24 @@
             "day19-src-7"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day19-blk-33",
+          "type": "paragraph",
+          "text": "Điểm khó nhất của quan hệ hai chiều là phân biệt *phía sở hữu* (owning side) với *phía nghịch* (inverse side). Phía sở hữu là phía có khóa ngoại — thường là phía `@ManyToOne` — và chỉ những thay đổi ở phía đó mới được ghi xuống database. Phía nghịch được đánh dấu bằng `mappedBy` và chỉ là *khung nhìn* của cùng quan hệ đó. Vì vậy nếu bạn chỉ thêm phần tử vào danh sách bên phía `@OneToMany(mappedBy = ...)` mà quên gán phía `@ManyToOne`, dữ liệu sẽ không được lưu và bạn sẽ mất thời gian tìm 'bug của Hibernate' vốn không tồn tại. Cách phòng ngừa dứt điểm: viết method tiện dụng như `addItem` để gán cả hai chiều trong một chỗ, thay vì để code gọi tự nhớ.",
+          "citations": [
+            "day19-src-6",
+            "day19-src-7"
+          ]
+        },
+        {
+          "id": "day19-blk-34",
+          "type": "note",
+          "text": "Vài quyết định thiết kế đáng giá về sau. Thứ nhất, quan hệ hai chiều không phải mặc định nên có: chỉ thêm chiều nghịch khi bạn *thực sự* cần điều hướng từ phía đó, vì mỗi chiều thêm vào là thêm chỗ để trạng thái bị lệch. Thứ hai, với `@ManyToMany`, dùng `Set` thay cho `List` để tránh việc Hibernate xóa rồi chèn lại toàn bộ bảng nối khi có thay đổi nhỏ; và ngay khi bảng nối cần thêm dữ liệu (thời điểm gán, số lượng, người thực hiện), hãy chuyển thành một entity trung gian với hai quan hệ `@ManyToOne` — đây là tình huống xảy ra thường xuyên trong dự án thật. Thứ ba, khi entity có quan hệ hai chiều, `toString`/`equals` tự sinh dễ gây đệ quy vô hạn hoặc kéo dữ liệu ngoài ý muốn, nên hãy loại các field quan hệ khỏi chúng.",
+          "citations": [
+            "day19-src-7",
+            "day19-src-8"
+          ]
         }
       ]
     },
@@ -196,6 +241,15 @@
             "day19-src-9",
             "day19-src-10"
           ]
+        },
+        {
+          "id": "day19-blk-35",
+          "type": "paragraph",
+          "text": "Cách quyết định cascade không phải học thuộc bảng mà trả lời một câu hỏi: *con có thể tồn tại độc lập với cha không?* Nếu không (dòng chi tiết của một đơn hàng, ảnh của một sản phẩm) thì đó là quan hệ sở hữu thực sự, `cascade = ALL` cùng `orphanRemoval = true` là hợp lý: xóa cha thì con vô nghĩa, và loại con khỏi danh sách nghĩa là xóa nó. Nếu có (một `Product` tham chiếu `Category`) thì cascade là nguy hiểm — xóa một sản phẩm không được phép xóa danh mục mà các sản phẩm khác đang dùng. Phân biệt thêm: `orphanRemoval = true` xóa con khi nó bị *ngắt khỏi* cha, còn `CascadeType.REMOVE` chỉ xóa con khi *cha bị xóa*; hai điều này không thay thế nhau.",
+          "citations": [
+            "day19-src-9",
+            "day19-src-10"
+          ]
         }
       ]
     },
@@ -219,6 +273,24 @@
           "citations": [
             "day19-src-13"
           ]
+        },
+        {
+          "id": "day19-blk-36",
+          "type": "paragraph",
+          "text": "Lazy loading hoạt động bằng cách Hibernate đặt vào field quan hệ một *proxy*: object đó trông như entity thật, nhưng chỉ khi bạn gọi method truy cập nó mới phát câu truy vấn để nạp dữ liệu. Từ cơ chế này suy ra hai hệ quả thực tế. Một là `LazyInitializationException`: nếu bạn chạm vào quan hệ lazy *sau khi* transaction (và persistence context) đã đóng — điển hình là trong controller hoặc khi serialize JSON — thì không còn session nào để truy vấn nữa. Cách chữa đúng là nạp sẵn những gì bạn cần *trong* transaction (`JOIN FETCH` hoặc entity graph) rồi chuyển sang DTO, chứ không phải mở session dài ra hay bật `spring.jpa.open-in-view`. Hai là chọn mặc định: `@ManyToOne`/`@OneToOne` mặc định EAGER — hãy đổi thành `FetchType.LAZY` một cách chủ ý, vì mỗi quan hệ EAGER âm thầm thêm join vào mọi truy vấn dù bạn có cần hay không.",
+          "citations": [
+            "day19-src-11",
+            "day19-src-12"
+          ]
+        },
+        {
+          "id": "day19-blk-37",
+          "type": "warning",
+          "text": "Vấn đề N+1 xuất hiện chính ở đây và là lỗi hiệu năng phổ biến nhất khi dùng JPA: bạn nạp 100 đơn hàng bằng một truy vấn, rồi vòng lặp đọc `order.getCustomer().getName()` khiến thêm 100 truy vấn nữa. Nó không lộ ra khi test với vài dòng dữ liệu và chỉ giết hiệu năng ở production. Cách phát hiện: bật `spring.jpa.show-sql` hoặc đếm truy vấn trong integration test và nhìn *số lượng* câu SQL, không chỉ nhìn kết quả đúng. Cách chữa theo tình huống: `JOIN FETCH` hoặc `@EntityGraph` khi cần dữ liệu liên quan, projection/DTO query khi chỉ cần vài cột, `@BatchSize` khi phải nạp nhiều nhóm nhỏ. Lưu ý một cạm bẫy: `JOIN FETCH` trên quan hệ collection kết hợp phân trang khiến Hibernate phải phân trang trong bộ nhớ — với dữ liệu lớn hãy tách thành hai truy vấn.",
+          "citations": [
+            "day19-src-12",
+            "day19-src-13"
+          ]
         }
       ]
     }
@@ -226,7 +298,15 @@
   "commonMistakes": [
     "Dùng CascadeType.REMOVE hoặc orphanRemoval=true trên quan hệ mà entity con thực chất được nhiều entity cha chia sẻ (aggregation, không phải composition).",
     "Truy cập field @ManyToOne/@OneToMany LAZY sau khi persistence context đã đóng, gây LazyInitializationException.",
-    "Không đồng bộ cả hai phía của quan hệ hai chiều khi thêm/xoá phần tử, dẫn tới trạng thái không nhất quán trong bộ nhớ dù database đã đúng."
+    "Không đồng bộ cả hai phía của quan hệ hai chiều khi thêm/xoá phần tử, dẫn tới trạng thái không nhất quán trong bộ nhớ dù database đã đúng.",
+    "Chỉ thêm phần tử vào phía mappedBy mà quên gán phía @ManyToOne, nên quan hệ không được ghi xuống database.",
+    "Dùng kiểu nguyên thủy long cho id entity, mất khả năng phân biệt 'chưa lưu' với giá trị 0.",
+    "Đặt cascade = ALL cho quan hệ tới dữ liệu tham chiếu dùng chung (như Category), gây xóa lan ngoài ý muốn.",
+    "Nhầm orphanRemoval với CascadeType.REMOVE và trông đợi con bị xóa khi chỉ ngắt khỏi danh sách.",
+    "Để @ManyToOne ở mặc định EAGER, thêm join vào mọi truy vấn dù không cần dữ liệu liên quan.",
+    "Chạm vào quan hệ lazy sau khi transaction đã đóng và nhận LazyInitializationException, rồi 'chữa' bằng cách bật open-in-view.",
+    "Không đếm số câu SQL trong test nên không phát hiện N+1 cho tới khi lên production.",
+    "Dùng javax.persistence.* trong Spring Boot 3, hoặc dùng record/class final làm entity."
   ],
   "practices": [
     {
@@ -338,7 +418,12 @@
   ],
   "enhancedExercises": [
     "Viết helper method addProduct()/removeProduct() trên Category để đồng bộ cả hai phía của quan hệ @OneToMany/@ManyToOne khi thêm/xoá.",
-    "Thử đổi @Enumerated từ STRING sang ORDINAL trên một entity có sẵn, thêm một hằng số enum mới vào giữa danh sách, và quan sát dữ liệu cũ bị đọc sai nghĩa."
+    "Thử đổi @Enumerated từ STRING sang ORDINAL trên một entity có sẵn, thêm một hằng số enum mới vào giữa danh sách, và quan sát dữ liệu cũ bị đọc sai nghĩa.",
+    "Thêm phần tử chỉ ở phía mappedBy rồi kiểm tra database để thấy dữ liệu không được lưu; sau đó viết method addItem gán cả hai chiều và kiểm chứng lại.",
+    "Bật show-sql, nạp danh sách entity rồi đọc một quan hệ lazy trong vòng lặp và đếm số câu SQL; sửa lại bằng JOIN FETCH và so sánh.",
+    "Xóa một phần tử khỏi collection con với orphanRemoval = true và không có nó, quan sát khác biệt trong SQL sinh ra.",
+    "Sửa một field của entity đã nạp trong method @Transactional mà không gọi save, kiểm tra database để hiểu dirty checking; sau đó thử lại ngoài transaction.",
+    "Chuyển một @ManyToMany có dữ liệu bổ sung thành entity trung gian với hai @ManyToOne và giải thích vì sao thiết kế này linh hoạt hơn."
   ],
   "references": [
     {

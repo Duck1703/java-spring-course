@@ -99,6 +99,41 @@
           "citations": [
             "day23-src-5"
           ]
+        },
+        {
+          "id": "day23-blk-20",
+          "type": "paragraph",
+          "text": "Vì sao cần Method Security khi đã có rule theo URL: rule URL bảo vệ *cửa vào*, nhưng cùng một service có thể được gọi từ nhiều controller, từ một scheduled job, hay từ một message listener — những đường không đi qua URL nào. Đặt kiểm tra quyền sát với hành vi nghiệp vụ khiến quy tắc không thể bị đi đường tắt. Cách dùng thực dụng là kết hợp cả hai tầng: `authorizeHttpRequests` chặn thô ở biên (ví dụ `/admin/**` cần ROLE_ADMIN), còn `@PreAuthorize` diễn đạt các quy tắc chi tiết phụ thuộc dữ liệu.",
+          "citations": [
+            "day23-src-1",
+            "day23-src-2"
+          ]
+        },
+        {
+          "id": "day23-blk-21",
+          "type": "paragraph",
+          "text": "Cách hoạt động bên dưới quyết định cả cách bạn viết code: `@EnableMethodSecurity` bật một AOP interceptor, nên Spring bọc bean của bạn trong một proxy và kiểm tra quyền xảy ra *tại proxy* trước khi vào method thật. Từ đó suy ra ba giới hạn: annotation trên method `private` hoặc `final` không có hiệu lực; một method gọi method khác *trong cùng class* (`this.other()`) sẽ bỏ qua proxy nên không được kiểm tra; và bean phải do container quản lý. Biểu thức trong annotation là SpEL, được đánh giá lúc runtime với các biến như `authentication`, `principal` và tham số của method (`#id`).",
+          "citations": [
+            "day23-src-2",
+            "day23-src-4"
+          ]
+        },
+        {
+          "id": "day23-blk-22",
+          "type": "note",
+          "text": "Phân biệt `@PreAuthorize` và `@PostAuthorize`: `@PreAuthorize` chạy *trước*, dùng khi quyết định chỉ dựa vào tham số và danh tính người gọi — đây là lựa chọn mặc định. `@PostAuthorize` chạy *sau* và truy cập được `returnObject`, dùng khi chỉ biết được quyền sau khi đã tải dữ liệu (ví dụ 'chỉ chủ sở hữu mới xem được'), nhưng nhớ rằng method đã thực thi rồi — nếu method có tác dụng phụ (ghi DB, gửi email) thì tác dụng phụ đó *đã xảy ra* dù cuối cùng access bị từ chối. Vì thế đừng đặt `@PostAuthorize` trên method thay đổi dữ liệu.",
+          "citations": [
+            "day23-src-2",
+            "day23-src-3"
+          ]
+        },
+        {
+          "id": "day23-blk-23",
+          "type": "note",
+          "text": "Điểm dễ nhầm giữa role và authority: `hasRole('ADMIN')` tự động thêm tiền tố `ROLE_` rồi so với authority, còn `hasAuthority('ADMIN')` so khớp nguyên văn. Vì vậy nếu trong DB bạn lưu authority là `ADMIN` mà dùng `hasRole('ADMIN')` thì kiểm tra sẽ thất bại (nó tìm `ROLE_ADMIN`). Quy ước thường dùng trong hệ thống thật: `ROLE_*` cho vai trò (ADMIN, USER) và tên không tiền tố cho quyền chi tiết (`order:read`, `order:write`); chọn một quy ước và giữ nhất quán từ DB tới SpEL.",
+          "citations": [
+            "day23-src-2"
+          ]
         }
       ]
     },
@@ -137,6 +172,42 @@
             "day23-src-9",
             "day23-src-10",
             "day23-src-11"
+          ]
+        },
+        {
+          "id": "day23-blk-24",
+          "type": "paragraph",
+          "text": "CORS bị hiểu sai rất phổ biến, nên cần nói rõ bản chất: CORS *không* là một cơ chế bảo mật cho server mà là cách server nới lỏng có kiểm soát chính sách same-origin của *trình duyệt*. Trình duyệt chặn JavaScript đọc response từ origin khác trừ khi server trả header `Access-Control-Allow-Origin` phù hợp; curl hay Postman không có ràng buộc này nên 'lỗi CORS' luôn là chuyện của trình duyệt. Với các request 'không đơn giản' (có `Authorization`, `Content-Type: application/json`, hoặc method PUT/DELETE), trình duyệt gửi trước một preflight `OPTIONS` — đó là lý do endpoint hoạt động bằng curl nhưng thất bại từ frontend.",
+          "citations": [
+            "day23-src-6",
+            "day23-src-7"
+          ]
+        },
+        {
+          "id": "day23-blk-25",
+          "type": "warning",
+          "text": "Cấu hình CORS an toàn: liệt kê origin cụ thể, không dùng `*` cho API có xác thực — và về mặt kỹ thuật `allowCredentials(true)` *không* được đi cùng `allowedOrigins(\"*\")`, Spring sẽ báo lỗi; nếu cần mẫu linh hoạt hãy dùng `allowedOriginPatterns`. Khi đã bật Spring Security, cấu hình CORS phải được đăng ký qua `http.cors(...)` với một `CorsConfigurationSource` bean; chỉ dán `@CrossOrigin` trên controller dễ khiến preflight `OPTIONS` bị filter chain chặn trước khi tới controller (biểu hiện là 401 cho request OPTIONS).",
+          "citations": [
+            "day23-src-6",
+            "day23-src-8"
+          ]
+        },
+        {
+          "id": "day23-blk-26",
+          "type": "paragraph",
+          "text": "CSRF hoạt động được nhờ một đặc tính của trình duyệt: cookie được *tự động* gắn vào mọi request tới domain đó, kể cả request phát sinh từ một trang web độc hại. Kẻ tấn công không đọc được response nhưng vẫn khiến hành động được thực hiện (chuyển tiền, đổi email). Token CSRF phá vỡ điều này vì nó không tự động đi kèm — trang lạ không biết giá trị token. Từ đó suy ra quy tắc quyết định: xác thực bằng cookie/session → phải bật CSRF; xác thực bằng `Authorization: Bearer` do JavaScript tự gắn vào (Day 22) → không có auto-gửi credential nên có thể tắt CSRF một cách hợp lý. Đây là lý do kỹ thuật, không phải mẹo cho qua lỗi.",
+          "citations": [
+            "day23-src-7",
+            "day23-src-8"
+          ]
+        },
+        {
+          "id": "day23-blk-27",
+          "type": "note",
+          "text": "Hai chi tiết dễ sai: (1) CSRF chỉ áp cho các method *thay đổi trạng thái* (POST/PUT/PATCH/DELETE); GET phải là idempotent và không được thay đổi dữ liệu — nếu bạn viết một endpoint GET để xóa, bạn tự tạo lỗ hổng CSRF không thể phòng bằng token; (2) trong Spring Security 6, khi dùng `CookieCsrfTokenRepository.withHttpOnlyFalse()` cho SPA, việc token được *lazy* resolve khiến cookie có thể chưa được gửi nếu không xử lý `CsrfTokenRequestHandler` đúng cách — đây là khác biệt hành vi so với Spring Security 5 mà nhiều hướng dẫn cũ chưa cập nhật.",
+          "citations": [
+            "day23-src-9",
+            "day23-src-10"
           ]
         }
       ]
@@ -192,6 +263,32 @@
           "type": "note",
           "text": "Cả FetchType.EAGER lẫn FetchType.LAZY đều KHÔNG tự động giải quyết N+1 - FetchType chỉ quyết định thời điểm nạp (ngay lập tức hay trì hoãn), không quyết định chiến lược nạp (join một lần hay truy vấn riêng lẻ nhiều lần). Cách khắc phục thực sự (JOIN FETCH, @EntityGraph, batch fetching) sẽ được trình bày ở Day 24 khi áp dụng trực tiếp vào việc sửa N+1 cho API danh sách sản phẩm trong Lab 8.",
           "citations": []
+        },
+        {
+          "id": "day23-blk-28",
+          "type": "paragraph",
+          "text": "Vì sao N+1 nguy hiểm hơn vẻ ngoài: mỗi query thêm đều phải đi qua network tới database, nên 100 bản ghi biến thành 101 lượt round-trip. Trên máy dev với dữ liệu nhỏ và DB cùng máy, chênh lệch không đáng kể — đó chính là lý do lỗi này gần như luôn được phát hiện ở production. Cơ chế sinh ra nó: `FetchType.LAZY` trả về một proxy thay cho collection; khi code chạm vào từng phần tử (trong vòng lặp, trong mapper, hoặc khi Jackson serialize), mỗi lần chạm sinh một query mới. Nói cách khác N+1 không do lazy 'sai' mà do *cách truy cập* dữ liệu.",
+          "citations": [
+            "day23-src-12",
+            "day23-src-13"
+          ]
+        },
+        {
+          "id": "day23-blk-29",
+          "type": "paragraph",
+          "text": "Cách chữa theo thứ tự nên thử: (1) `JOIN FETCH` trong `@Query` — nạp dữ liệu cần thiết trong một câu; (2) `@EntityGraph` trên method repository — cùng tác dụng nhưng khai báo, không phải viết JPQL; (3) projection/DTO query — chỉ chọn đúng cột cần, rẻ nhất cho endpoint chỉ đọc; (4) `@BatchSize` — không loại bỏ query phụ nhưng gộp N query thành N/size query. Điều cần cảnh giác: `JOIN FETCH` nhiều collection cùng lúc tạo tích Descartes làm phồng số dòng, và `JOIN FETCH` kết hợp phân trang khiến Hibernate phải phân trang trong bộ nhớ (cảnh báo `firstResult/maxResults specified with collection fetch`) — trường hợp này nên tách thành hai truy vấn hoặc dùng `@EntityGraph` với id đã phân trang.",
+          "citations": [
+            "day23-src-13",
+            "day23-src-14"
+          ]
+        },
+        {
+          "id": "day23-blk-30",
+          "type": "important",
+          "text": "Không thể tối ưu điều bạn không thấy, nên bước đầu tiên luôn là bật quan sát: `spring.jpa.show-sql=true` để nhìn câu SQL, và tốt hơn là dùng một bộ đếm query (ví dụ datasource-proxy hoặc `hibernate.generate_statistics`) để *khẳng định bằng số* rằng một endpoint chỉ chạy bao nhiêu query. Một cách viết test rất hiệu quả: gọi service rồi assert số câu SQL đã thực thi — như vậy N+1 tái xuất hiện sẽ làm test đỏ thay vì âm thầm làm chậm production.",
+          "citations": [
+            "day23-src-12"
+          ]
         }
       ]
     }
@@ -199,7 +296,13 @@
   "commonMistakes": [
     "Giả định @PreAuthorize luôn được kiểm tra kể cả khi method tự gọi method khác trong cùng class (self-invocation bỏ qua AOP proxy).",
     "Tắt CSRF cho toàn bộ ứng dụng chỉ vì API chính dùng JWT, trong khi vẫn còn phần dùng session/cookie.",
-    "Cho rằng đổi FetchType từ EAGER sang LAZY là đã giải quyết xong N+1, mà không kiểm tra cách field lazy được truy cập trong vòng lặp."
+    "Cho rằng đổi FetchType từ EAGER sang LAZY là đã giải quyết xong N+1, mà không kiểm tra cách field lazy được truy cập trong vòng lặp.",
+    "Đặt @PreAuthorize trên method private/final hoặc gọi method được bảo vệ từ trong cùng class (this.method()), khiến proxy AOP bị bỏ qua và kiểm tra quyền không chạy.",
+    "Dùng hasRole('ADMIN') trong khi DB lưu authority là 'ADMIN' (không có tiền tố ROLE_), làm kiểm tra luôn thất bại.",
+    "Đặt @PostAuthorize trên method có tác dụng phụ: dữ liệu đã bị thay đổi trước khi quyền bị từ chối.",
+    "Tắt CSRF một cách vô thức chỉ để hết lỗi, dù ứng dụng vẫn xác thực bằng cookie/session.",
+    "Kết luận không có N+1 vì test trên dữ liệu nhỏ ở máy dev, trong khi số round-trip chỉ bộc lộ dưới dữ liệu thật.",
+    "JOIN FETCH nhiều collection cùng lúc hoặc kết hợp JOIN FETCH với phân trang, gây phồng dòng và phân trang trong bộ nhớ."
   ],
   "practices": [
     {
@@ -305,7 +408,11 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Viết một test dùng @WithMockUser(roles = \"ADMIN\") xác minh deleteOrder() cho phép ADMIN gọi và một test khác xác minh vai trò khác bị chặn.",
-    "Cấu hình CookieCsrfTokenRepository thay cho lưu trong HttpSession, và giải thích khi nào lựa chọn này phù hợp hơn cho một front-end SPA."
+    "Cấu hình CookieCsrfTokenRepository thay cho lưu trong HttpSession, và giải thích khi nào lựa chọn này phù hợp hơn cho một front-end SPA.",
+    "Bật show-sql, gọi một endpoint trả danh sách kèm quan hệ lazy và đếm số câu SQL; sau đó sửa bằng @EntityGraph rồi đếm lại để chứng minh mức giảm.",
+    "Viết một test assert số query thực thi cho một use case, rồi cố tình bỏ JOIN FETCH để xác nhận test bắt được N+1.",
+    "Thử gọi API từ một trang HTML ở origin khác để gặp lỗi CORS thật, xem preflight OPTIONS trong DevTools, rồi cấu hình CorsConfigurationSource cho đúng origin.",
+    "Bảo vệ một method bằng @PreAuthorize(\"#userId == authentication.name or hasRole('ADMIN')\") và viết test với @WithMockUser cho ba trường hợp: chủ sở hữu, người khác, và admin."
   ],
   "references": [
     {

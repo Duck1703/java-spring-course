@@ -71,6 +71,44 @@
           "citations": [
             "day07-src-1"
           ]
+        },
+        {
+          "id": "day07-blk-20",
+          "type": "paragraph",
+          "text": "Bản chất của interface: nó là một *kiểu* chỉ mô tả hành vi mà không mô tả trạng thái. Vì không có state, nhiều interface có thể được trộn vào một class mà không xung đột dữ liệu — lý do Java cho phép implements nhiều interface nhưng chỉ extends một class. Mọi method khai báo trong interface mặc định là public abstract, mọi field mặc định là public static final; bạn không cần (và không nên) viết lại các modifier đó.",
+          "citations": [
+            "day07-src-1"
+          ]
+        },
+        {
+          "id": "day07-blk-21",
+          "type": "paragraph",
+          "text": "Java 8 trở đi, interface có thêm ba loại thành viên có thân: `default` method (có cài đặt sẵn, class implement có thể dùng luôn hoặc override — cơ chế cho phép thêm method mới vào interface đã phát hành mà không phá vỡ code cũ), `static` method (hàm tiện ích gắn với interface, không kế thừa), và `private` method (Java 9+, dùng để tách code dùng chung giữa các default method). Đây là lý do `List`, `Comparator` có thể nhận thêm hàng loạt method mới qua các phiên bản mà không làm hỏng hàng triệu class đã implement chúng.",
+          "citations": [
+            "day07-src-1"
+          ]
+        },
+        {
+          "id": "day07-blk-22",
+          "type": "code",
+          "language": "java",
+          "code": "interface Validator<T> {\n    boolean isValid(T value);\n\n    // default: them hanh vi moi ma khong pha class da implement\n    default Validator<T> and(Validator<T> other) {\n        return value -> this.isValid(value) && other.isValid(value);\n    }\n\n    // static: ham tien ich, KHONG duoc ke thua boi class implement\n    static Validator<String> notBlank() {\n        return s -> s != null && !s.isBlank();\n    }\n}\n\nclass MaxLength implements Validator<String> {\n    private final int max;\n    MaxLength(int max) { this.max = max; }\n    @Override public boolean isValid(String value) { return value.length() <= max; }\n}\n\nclass ValidatorDemo {\n    public static void main(String[] args) {\n        Validator<String> rule = Validator.notBlank().and(new MaxLength(5));\n        System.out.println(rule.isValid(\"abc\"));      // true\n        System.out.println(rule.isValid(\"  \"));        // false\n        System.out.println(rule.isValid(\"abcdefgh\")); // false\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day07-src-1"
+          ]
+        },
+        {
+          "id": "day07-blk-23",
+          "type": "note",
+          "text": "Edge case 'diamond problem' của default method: nếu một class implement hai interface cùng có default method trùng chữ ký, code sẽ không biên dịch được cho tới khi bạn override tường minh method đó; trong phần override bạn có thể chọn phiên bản cụ thể bằng cú pháp `InterfaceName.super.method()`. Ngoài ra, quy tắc phân giải luôn ưu tiên method của class trước default method của interface ('class wins'), và interface con cụ thể hơn thắng interface cha.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-24",
+          "type": "note",
+          "text": "Liên hệ Spring: mọi interface có đúng một abstract method là một functional interface, dùng được với lambda (Day 10) — `Validator` ở trên là ví dụ. Trong Spring Boot bạn sẽ gặp lại mẫu này liên tục: `CommandLineRunner`, `Converter`, `Filter`, `RowMapper` đều là interface một method mà bạn cài đặt bằng lambda hoặc bean.",
+          "citations": []
         }
       ]
     },
@@ -132,6 +170,27 @@
           "type": "paragraph",
           "text": "Java có bốn loại lớp lồng nhau (nested class): static nested class (khai báo với từ khóa static bên trong lớp ngoài, không giữ tham chiếu tới instance của lớp ngoài), inner class (không static, mỗi instance gắn với một instance cụ thể của lớp ngoài và có thể truy cập trực tiếp field/method của lớp ngoài), local class (khai báo bên trong thân một phương thức, chỉ dùng được trong phạm vi phương thức đó), và anonymous class (lớp không tên, khai báo và khởi tạo cùng lúc, thường dùng để cài đặt nhanh một interface hoặc kế thừa một lớp để tạo đối tượng dùng một lần). Ví dụ: `class Outer { class Inner { ... } static class StaticHelper { ... } Runnable r = new Runnable() { public void run() { ... } }; }` thể hiện lần lượt inner class, static nested class và anonymous class bên trong một lớp Outer.",
           "citations": []
+        },
+        {
+          "id": "day07-blk-25",
+          "type": "paragraph",
+          "text": "Vì sao cần nested class: khi một kiểu chỉ có ý nghĩa bên trong ngữ cảnh của kiểu khác, đặt nó lồng vào trong giúp thu hẹp phạm vi hiển thị và giữ code liên quan cạnh nhau. Cơ chế bên dưới: compiler vẫn sinh ra các file .class riêng (Outer$Inner.class). Điểm khác biệt quan trọng là inner class (không static) được compiler thêm một field ẩn trỏ tới instance của lớp ngoài — nên nó truy cập được thành viên lớp ngoài, nhưng cũng vì thế mà nó *giữ object lớp ngoài không bị thu hồi* khi còn được tham chiếu.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-26",
+          "type": "code",
+          "language": "text",
+          "code": "class Outer {\n    private int state = 42;\n\n    static class Nested {                 // khong giu tham chieu Outer\n        int compute() { return 1; }\n    }\n\n    class Inner {                          // giu tham chieu Outer ngam\n        int read() { return state; }        // truy cap duoc field private cua Outer\n    }\n\n    Runnable localAndAnonymous() {\n        int captured = 10;                 // phai la effectively final\n        class Local { int twice() { return captured * 2; } }\n        Local local = new Local();\n        return new Runnable() {            // anonymous class\n            @Override public void run() {\n                System.out.println(state + local.twice());\n            }\n        };\n    }\n\n    public static void main(String[] args) {\n        Nested n = new Outer.Nested();          // khong can Outer instance\n        Outer outer = new Outer();\n        Inner in = outer.new Inner();           // cu phap bat buoc co instance\n        outer.localAndAnonymous().run();        // 62\n        System.out.println(n.compute() + in.read());\n    }\n}",
+          "citations": [],
+          "compile": false,
+          "partialReason": "Snippet minh hoa cu phap nested class/enum theo kien thuc Java 17 chuan; Day 7 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations), nen khoi code duoc danh dau language=text va khong dua vao buoc javac cua pipeline."
+        },
+        {
+          "id": "day07-blk-27",
+          "type": "note",
+          "text": "Điểm dễ nhầm và hệ quả thực tế: (1) không tạo được inner class không static từ ngữ cảnh static — bắt buộc phải có instance lớp ngoài, cú pháp `outer.new Inner()`; (2) local class và anonymous class chỉ capture được biến local ở dạng effectively final (gán đúng một lần), vì giá trị được copy vào class sinh ra; (3) nếu không cần truy cập trạng thái lớp ngoài, hãy dùng `static` nested class — đây là khuyến nghị phổ biến để tránh rò rỉ bộ nhớ do inner class giữ object lớn (ví dụ giữ cả một entity hoặc cả một Activity/Controller) lâu hơn cần thiết.",
+          "citations": []
         }
       ]
     },
@@ -149,6 +208,27 @@
           "id": "day07-blk-9",
           "type": "paragraph",
           "text": "Enum trong Java là một kiểu dữ liệu đặc biệt dùng để biểu diễn một tập giá trị cố định, hữu hạn (ví dụ: các ngày trong tuần, các trạng thái đơn hàng). Ngoài các hằng số đơn giản, enum có thể có constructor riêng (luôn private hoặc package-private), field, và method — mỗi hằng số enum thực chất là một instance duy nhất của chính kiểu enum đó. Enum cũng dùng được trực tiếp trong switch (cả dạng classic và dạng arrow đã học ở Day 2). Ví dụ: `enum OrderStatus { NEW(false), PROCESSING(false), SHIPPED(true), CANCELLED(true); private final boolean terminal; OrderStatus(boolean terminal) { this.terminal = terminal; } boolean isTerminal() { return terminal; } }` kết hợp với `switch (status) { case NEW -> ...; case SHIPPED, CANCELLED -> ...; }` cho thấy enum có constructor/field/method riêng và dùng trực tiếp trong switch expression.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-28",
+          "type": "paragraph",
+          "text": "Bản chất của enum: mỗi hằng số là một instance singleton được JVM khởi tạo một lần khi class enum được load, và compiler đảm bảo không thể tạo thêm instance nào khác. Vì vậy so sánh enum bằng `==` là an toàn và được ưu tiên (nhanh, null-safe hơn `equals`). Enum ngầm extends `java.lang.Enum` nên không thể extends class khác, nhưng vẫn được implement interface — cách thường dùng để mỗi hằng số mang một hành vi riêng.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-29",
+          "type": "code",
+          "language": "text",
+          "code": "enum OrderStatus {\n    NEW(false), PAID(false), SHIPPED(true), CANCELLED(true);\n\n    private final boolean terminal;                 // state rieng cho moi hang so\n    OrderStatus(boolean terminal) { this.terminal = terminal; }\n    boolean isTerminal() { return terminal; }\n\n    // hanh vi khac nhau theo tung hang so bang cach override\n    OrderStatus next() {\n        return switch (this) {                       // switch tren enum: khong can qualify\n            case NEW -> PAID;\n            case PAID -> SHIPPED;\n            case SHIPPED, CANCELLED -> this;\n        };\n    }\n\n    public static void main(String[] args) {\n        OrderStatus s = OrderStatus.valueOf(\"NEW\"); // nem IllegalArgumentException neu sai\n        System.out.println(s.next());                // PAID\n        System.out.println(s.ordinal() + \" \" + s.name());\n        // EnumMap/EnumSet: cau truc du lieu toi uu rieng cho enum\n        java.util.EnumSet<OrderStatus> open = java.util.EnumSet.of(NEW, PAID);\n        System.out.println(open.contains(SHIPPED)); // false\n    }\n}",
+          "citations": [],
+          "compile": false,
+          "partialReason": "Snippet minh hoa cu phap nested class/enum theo kien thuc Java 17 chuan; Day 7 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations), nen khoi code duoc danh dau language=text va khong dua vao buoc javac cua pipeline."
+        },
+        {
+          "id": "day07-blk-30",
+          "type": "note",
+          "text": "Edge case cần nhớ: `valueOf` ném `IllegalArgumentException` nếu tên không tồn tại (và `NullPointerException` với null) — khi map dữ liệu từ request hoặc DB hãy xử lý rõ ràng thay vì để lỗi 500. Đừng lưu `ordinal()` xuống database: chỉ cần chèn thêm một hằng số vào giữa là toàn bộ dữ liệu cũ lệch nghĩa; với JPA (Day 19) luôn dùng `@Enumerated(EnumType.STRING)`. Trong `switch` trên enum, không viết tiền tố kiểu (`case NEW`, không phải `case OrderStatus.NEW`).",
           "citations": []
         }
       ]
@@ -168,6 +248,24 @@
           "type": "paragraph",
           "text": "SOLID là 5 nguyên tắc thiết kế hướng đối tượng phổ biến: Single Responsibility (mỗi lớp chỉ nên có một lý do để thay đổi), Open/Closed (mở để mở rộng, đóng để sửa đổi — ưu tiên thêm lớp/interface mới thay vì sửa lớp cũ), Liskov Substitution (lớp con phải thay thế được lớp cha mà không làm sai lệch hành vi mong đợi — liên quan trực tiếp đến polymorphism đã học ở Day 5), Interface Segregation (nhiều interface nhỏ, chuyên biệt tốt hơn một interface lớn, ôm đồm), và Dependency Inversion (module cấp cao nên phụ thuộc vào abstraction/interface, không phụ thuộc trực tiếp vào lớp cụ thể).",
           "citations": []
+        },
+        {
+          "id": "day07-blk-31",
+          "type": "paragraph",
+          "text": "SOLID chỉ trở nên cụ thể khi gắn với triệu chứng phải sửa code. Single Responsibility: nếu một class phải sửa vì hai lý do khác nhau (đổi quy tắc nghiệp vụ *và* đổi định dạng xuất file), hãy tách. Open/Closed: nếu thêm một trường hợp mới buộc bạn mở lại một chuỗi if/switch, hãy chuyển trường hợp đó thành một implementation mới của interface — đúng mẫu Strategy ở Day 5. Liskov: nếu lớp con phải ném UnsupportedOperationException hoặc siết chặt điều kiện đầu vào của lớp cha, quan hệ kế thừa đó sai và nên thay bằng composition.",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-32",
+          "type": "paragraph",
+          "text": "Interface Segregation: một interface 10 method buộc mọi implement phải viết cả 10, kể cả những method vô nghĩa với nó — hãy chẻ theo nhóm nhu cầu của bên gọi. Dependency Inversion: module nghiệp vụ không phụ thuộc vào lớp hạ tầng cụ thể (JdbcOrderRepository) mà phụ thuộc vào abstraction (OrderRepository), còn việc chọn implementation là việc của tầng cấu hình. Spring Boot chính là công cụ hiện thực nguyên tắc cuối này ở quy mô ứng dụng: bạn khai báo phụ thuộc bằng interface, container quyết định bean nào được nối vào (Day 14).",
+          "citations": []
+        },
+        {
+          "id": "day07-blk-33",
+          "type": "note",
+          "text": "Cảnh báo thực tế: SOLID là hướng dẫn, không phải chỉ tiêu. Tách interface cho mọi class chỉ có một implementation duy nhất, hoặc tạo abstraction cho thứ chắc chắn không thay đổi, làm code khó đọc hơn mà không thu được tính linh hoạt nào. Áp dụng khi bạn đã thấy trục thay đổi thật (nhiều implementation, cần mock trong test, cần thay hạ tầng), không phải áp dụng trước.",
+          "citations": []
         }
       ]
     }
@@ -175,7 +273,10 @@
   "commonMistakes": [
     "Dùng interface chỉ để khai báo hằng số static final (anti-pattern 'constant interface') thay vì dùng một lớp hằng số thông thường.",
     "Quên rằng inner class (không static) luôn giữ tham chiếu ngầm tới instance của lớp ngoài, dễ gây rò rỉ bộ nhớ nếu giữ inner class sống lâu hơn lớp ngoài cần thiết.",
-    "Khai báo enum constructor là public (enum constructor luôn phải là private hoặc package-private, không thể là public/protected)."
+    "Khai báo enum constructor là public (enum constructor luôn phải là private hoặc package-private, không thể là public/protected).",
+    "Lưu enum xuống database theo ordinal() (hoặc để @Enumerated mặc định là ORDINAL), khiến dữ liệu cũ sai nghĩa ngay khi chèn thêm một hằng số vào giữa danh sách.",
+    "Dùng inner class không static cho những kiểu không cần truy cập trạng thái lớp ngoài, khiến object lớp ngoài bị giữ tham chiếu lâu hơn cần thiết.",
+    "Implement hai interface có default method trùng chữ ký rồi không override tường minh, dẫn tới lỗi biên dịch do xung đột không thể tự phân giải."
   ],
   "practices": [
     {
@@ -260,7 +361,9 @@
   ],
   "enhancedExercises": [
     "Refactor một lớp 'God class' vi phạm SRP (ví dụ: lớp vừa đọc file, vừa tính toán, vừa ghi log) thành nhiều lớp nhỏ theo từng trách nhiệm.",
-    "Chuyển một anonymous class Runnable thành một lambda expression tương đương (chuẩn bị trước cho Day 10 — Functional Interface & Lambda)."
+    "Chuyển một anonymous class Runnable thành một lambda expression tương đương (chuẩn bị trước cho Day 10 — Functional Interface & Lambda).",
+    "Cho một interface Notifier với default method, tạo hai class implement (email, SMS) rồi thử tạo một class implement cả hai interface có default method trùng tên để tự tay gặp và xử lý lỗi diamond bằng Interface.super.method().",
+    "Chuyển một chuỗi if/else chọn hành vi theo OrderStatus thành method được override/khai báo trên chính enum, rồi đối chiếu với nguyên tắc Open/Closed: thêm trạng thái mới cần sửa những chỗ nào?"
   ],
   "references": [
     {

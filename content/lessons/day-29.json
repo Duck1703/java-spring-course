@@ -80,6 +80,33 @@
             "day29-src-4"
           ],
           "partialReason": "Tep cau hinh application.properties/pom.xml, khong phai ma nguon Java bien dich duoc."
+        },
+        {
+          "id": "day29-blk-20",
+          "type": "paragraph",
+          "text": "Vì sao tài liệu API nên được *sinh ra* từ code chứ không viết tay: tài liệu viết tay luôn lệch khỏi thực tế sau vài lần thay đổi, và một tài liệu sai còn gây hại hơn không có tài liệu. springdoc-openapi đọc chính các annotation Spring MVC (`@GetMapping`, `@RequestBody`, `@PathVariable`) cùng cấu trúc DTO để sinh ra tài liệu OpenAPI 3 — nghĩa là mô tả luôn khớp với code đang chạy. Điểm mấu chốt: OpenAPI mô tả *hợp đồng* (đường dẫn, tham số, hình dạng dữ liệu, mã lỗi), còn Swagger UI chỉ là một trình xem hợp đồng đó; tài liệu máy đọc được (`/v3/api-docs`) là phần có giá trị lâu dài vì nó dùng để sinh client, kiểm tra tương thích, hoặc import vào công cụ test.",
+          "citations": [
+            "day29-src-1",
+            "day29-src-2"
+          ]
+        },
+        {
+          "id": "day29-blk-21",
+          "type": "paragraph",
+          "text": "Tài liệu sinh tự động vẫn cần bạn bổ sung phần máy không đoán được: ý nghĩa nghiệp vụ của từng field, các mã lỗi có thể xảy ra và nguyên nhân, ví dụ dữ liệu thật. Ba việc đáng làm nhất: dùng `@Operation`/`@Schema` cho phần mô tả và ví dụ; khai báo tường minh các response lỗi (400, 404, 409) trỏ tới ProblemDetail của Day 17 để client biết cần xử lý gì; và tài liệu hóa cơ chế xác thực (Bearer JWT của Day 23) để người dùng Swagger UI có thể thử endpoint được bảo vệ. Một điểm dễ nhầm: nếu bạn phơi entity JPA thay vì DTO, tài liệu sẽ tiết lộ cả cấu trúc bảng và các quan hệ nội bộ — thêm một lý do nữa để tách DTO khỏi entity.",
+          "citations": [
+            "day29-src-2",
+            "day29-src-3"
+          ]
+        },
+        {
+          "id": "day29-blk-22",
+          "type": "important",
+          "text": "Trên production, hãy quyết định có ý thức về việc phơi Swagger UI: nó liệt kê toàn bộ bề mặt API và giúp người ngoài dò tìm nhanh hơn nhiều. Lựa chọn thường dùng là tắt UI (`springdoc.swagger-ui.enabled=false`) hoặc đặt nó sau xác thực, trong khi vẫn giữ `/v3/api-docs` cho các hệ thống nội bộ. Nếu bật, nhớ rằng Swagger UI cần được cho phép trong cấu hình Spring Security, và đường dẫn đó cũng phải nằm trong tính toán CORS/CSRF của bạn.",
+          "citations": [
+            "day29-src-3",
+            "day29-src-4"
+          ]
         }
       ]
     },
@@ -125,6 +152,41 @@
           "type": "note",
           "text": "Việc lan truyền traceId xuyên suốt một request qua nhiều service (distributed tracing, ví dụ với Micrometer Tracing) không có resource nào trong resourceIds của Day 29 (hay bất kỳ lesson nào khác trong bộ nguồn hiện có) mô tả - đây là khoảng trống kiến thức thật sự. Trình bày dưới dạng ghi chú không trích dẫn.",
           "citations": []
+        },
+        {
+          "id": "day29-blk-23",
+          "type": "paragraph",
+          "text": "Log tồn tại để trả lời câu hỏi *chuyện gì đã xảy ra với request này* khi bạn không thể gắn debugger vào production. Vì thế tiêu chí của một dòng log tốt là: có ngữ cảnh đủ để lần lại (ai, request nào, đối tượng nào), có thể tìm được (dạng cấu trúc, key ổn định), và đúng mức độ. Về mức độ, hãy dùng nhất quán: ERROR cho việc *cần người can thiệp*; WARN cho bất thường nhưng đã tự xử lý (đã retry thành công, dùng fallback); INFO cho các mốc nghiệp vụ đáng kể (đơn được tạo, người dùng đăng nhập thất bại nhiều lần); DEBUG cho chi tiết chỉ cần khi điều tra. Lỗi phổ biến là log mọi thứ ở INFO — khi mọi dòng đều quan trọng thì không dòng nào quan trọng, và chi phí lưu log tăng vô ích.",
+          "citations": [
+            "day29-src-5",
+            "day29-src-6"
+          ]
+        },
+        {
+          "id": "day29-blk-24",
+          "type": "paragraph",
+          "text": "Vì sao cần log dạng cấu trúc (JSON) thay vì văn bản thuần: khi log được thu về một hệ thống tập trung, bạn cần *truy vấn* chúng — 'tất cả request của user X trả 500 trong 10 phút qua'. Với văn bản thuần bạn phải viết regex mong manh; với JSON mỗi thuộc tính là một field có thể tìm và tổng hợp. Đây cũng là lý do MDC quan trọng: đặt một `traceId`/correlation id vào MDC ở filter đầu vào, và mọi dòng log trong request đó tự động mang theo id — nhờ vậy bạn ghép được các dòng rời rạc thành một câu chuyện, kể cả khi hàng trăm request chạy đồng thời.",
+          "citations": [
+            "day29-src-6",
+            "day29-src-7"
+          ]
+        },
+        {
+          "id": "day29-blk-25",
+          "type": "note",
+          "text": "Ba điều dễ sai với MDC: (1) *phải* xóa sau khi xong (`MDC.clear()` trong `finally`) — vì MDC dựa trên ThreadLocal và thread được tái sử dụng từ pool, giá trị sót lại sẽ gán sai id cho request tiếp theo; (2) giá trị MDC *không* tự truyền sang thread `@Async` hay `CompletableFuture` (Day 25) — phải truyền tay hoặc dùng decorator cho executor; (3) đừng đặt dữ liệu lớn vào MDC vì nó được ghi lặp lại ở mọi dòng log.",
+          "citations": [
+            "day29-src-7"
+          ]
+        },
+        {
+          "id": "day29-blk-26",
+          "type": "important",
+          "text": "Không bao giờ ghi vào log: mật khẩu, token/JWT, session id, số thẻ, và các dữ liệu cá nhân không cần thiết. Log thường được lưu lâu, gửi sang hệ thống bên thứ ba và nhiều người đọc được, nên một token trong log tương đương một lần rò rỉ. Hai chỗ hay lộ nhất là log toàn bộ request/response body (Day 26) và log stack trace kèm tham số. Ngoài ra hãy log exception bằng cách truyền chính đối tượng exception cho logger (`log.error(\"...\", ex)`) thay vì `ex.getMessage()` — nếu chỉ lấy message, bạn mất stack trace và mất luôn nguyên nhân gốc của chuỗi exception lồng nhau.",
+          "citations": [
+            "day29-src-5",
+            "day29-src-7"
+          ]
         }
       ]
     },
@@ -160,6 +222,33 @@
           "type": "note",
           "text": "Xuất metrics theo định dạng Prometheus (thường qua micrometer-registry-prometheus và endpoint /actuator/prometheus) không có resource nào trong resourceIds của Day 29 (hay Day 30) mô tả - đây là khoảng trống kiến thức thật sự trong bộ nguồn hiện có. Trình bày dưới dạng ghi chú không trích dẫn.",
           "citations": []
+        },
+        {
+          "id": "day29-blk-27",
+          "type": "paragraph",
+          "text": "Hai câu hỏi mà Actuator giúp trả lời rất khác nhau: *ứng dụng có sống không* (health) và *ứng dụng đang hoạt động thế nào* (metrics). Health là một tín hiệu nhị phân dùng cho hệ thống điều phối; đây là chỗ cần phân biệt liveness và readiness: liveness sai nghĩa là container bị khởi động lại, readiness sai nghĩa là instance bị rút khỏi bộ cân bằng tải nhưng vẫn chạy. Nguyên tắc thiết kế health check: chỉ đưa vào những phụ thuộc mà *thiếu nó thì ứng dụng không thể phục vụ* (database chính). Đưa một dịch vụ bên thứ ba không thiết yếu vào health check là cách tự làm sập chính mình khi đối tác gặp sự cố — thứ đó thuộc về metrics hoặc alert, không thuộc về health.",
+          "citations": [
+            "day29-src-8",
+            "day29-src-9"
+          ]
+        },
+        {
+          "id": "day29-blk-28",
+          "type": "paragraph",
+          "text": "Metrics dạng số cho bạn thấy xu hướng mà log đơn lẻ không thấy: bốn chỉ số cần theo dõi đầu tiên cho một API là tỉ lệ lỗi, độ trễ, lưu lượng, và mức sử dụng tài nguyên (bao gồm connection pool của database — cạn pool là nguyên nhân sự cố rất phổ biến). Về độ trễ, hãy đọc *phân vị* (p95, p99) chứ không đọc trung bình: trung bình 200ms hoàn toàn có thể che một nhóm 5% người dùng đang chờ 5 giây. Micrometer là lớp trừu tượng đo lường trong Spring Boot, và Actuator phơi số liệu ra định dạng mà Prometheus thu thập được, từ đó dựng biểu đồ và đặt cảnh báo.",
+          "citations": [
+            "day29-src-10",
+            "day29-src-11"
+          ]
+        },
+        {
+          "id": "day29-blk-29",
+          "type": "important",
+          "text": "Actuator là bề mặt tấn công nếu để lộ: mặc định chỉ `health` được phơi qua HTTP, và đó là mặc định đúng — hãy giữ nguyên tinh thần này. Không bao giờ mở công khai `env`, `configprops`, `beans`, `heapdump`, `threaddump` hay `loggers`: chúng tiết lộ cấu hình, có thể chứa thông tin bí mật, và một số cho phép thay đổi hành vi ứng dụng lúc đang chạy. Cách làm chuẩn: chỉ phơi những endpoint bạn thực sự cần, yêu cầu xác thực với vai trò riêng cho các endpoint quản trị, và tốt nhất là đặt chúng trên một cổng quản trị (`management.server.port`) chỉ truy cập được từ mạng nội bộ. Cũng cân nhắc `management.endpoint.health.show-details` — chi tiết health có thể lộ tên host và thông tin database.",
+          "citations": [
+            "day29-src-8",
+            "day29-src-11"
+          ]
         }
       ]
     },
@@ -171,6 +260,18 @@
           "id": "day29-blk-11",
           "type": "note",
           "text": "Đóng gói ứng dụng bằng Docker (layered jar, Dockerfile) và chạy phụ thuộc (DB, Redis) bằng docker-compose không có resource nào trong resourceIds của Day 29 - hai resource tương ứng thuộc resourceIds của Day 30, nơi kỹ thuật này được áp dụng trực tiếp vào Lab 10 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+          "citations": []
+        },
+        {
+          "id": "day29-blk-30",
+          "type": "paragraph",
+          "text": "Vấn đề mà container giải quyết là 'trên máy tôi vẫn chạy': image đóng gói cả ứng dụng, JRE và cấu hình hệ thống thành một artifact bất biến, nên môi trường dev, CI và production thật sự giống nhau. Từ đó rút ra hai nguyên tắc thực hành quan trọng. Thứ nhất, *cấu hình phải đến từ bên ngoài* image (biến môi trường, profile), vì cùng một image cần chạy được ở nhiều môi trường — nhồi mật khẩu production vào image là vừa sai thiết kế vừa rò rỉ bí mật. Thứ hai, container là *phù du*: nó có thể bị thay bất cứ lúc nào, nên đừng lưu trạng thái vào hệ thống file bên trong container — file tải lên (Day 26) phải ra storage dùng chung, và log nên ghi ra stdout để hạ tầng thu về, thay vì ghi vào file trong container.",
+          "citations": []
+        },
+        {
+          "id": "day29-blk-31",
+          "type": "note",
+          "text": "Vài điểm đáng biết khi đóng gói ứng dụng Spring Boot: layered jar tách phần dependency (ít đổi) khỏi phần code của bạn (đổi liên tục), nhờ đó build lại và đẩy image nhanh hơn vì các layer cũ được tái sử dụng. Nên chạy tiến trình bằng user không phải root và dùng base image nhỏ để giảm bề mặt tấn công. Với JVM trong container, các bản JDK hiện đại tự nhận biết giới hạn bộ nhớ của container, nhưng vẫn nên đặt giới hạn tường minh khi cần, vì heap quá lớn so với giới hạn container sẽ khiến tiến trình bị hệ thống giết (OOM kill) — hiện tượng dễ bị chẩn đoán sai thành 'ứng dụng tự chết'. Cuối cùng, health check của Actuator chính là cái mà orchestrator dùng để biết container đã sẵn sàng.",
           "citations": []
         }
       ]
@@ -202,6 +303,25 @@
             "day29-src-16"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day29-blk-32",
+          "type": "note",
+          "text": "Testcontainers giải bài toán trung thực của môi trường test: thay vì H2 giả lập, bạn chạy đúng PostgreSQL/Redis mà production dùng, nên các khác biệt về dialect, kiểu dữ liệu và hành vi khóa được phát hiện *trước* khi lên production (xem Day 28). Chi phí là mỗi container tốn thời gian khởi động và yêu cầu Docker khả dụng trên máy dev cũng như trên CI. Hai thực hành giúp giữ tốc độ: tái sử dụng cùng container cho nhiều class test (container tĩnh dùng chung) thay vì khởi động lại mỗi lần, và ghim phiên bản image đúng bằng phiên bản production để test có ý nghĩa. Dữ liệu giữa các test vẫn phải được cô lập — container dùng chung nghĩa là database dùng chung, nên hãy tạo dữ liệu riêng cho từng test hoặc dọn dẹp tường minh.",
+          "citations": [
+            "day29-src-12",
+            "day29-src-13"
+          ]
+        },
+        {
+          "id": "day29-blk-33",
+          "type": "note",
+          "text": "Điểm cần hiểu về cơ chế: container nhận một cổng ngẫu nhiên trên máy chủ, nên URL kết nối không thể viết cứng trong `application.properties` — đó là lý do cần `@DynamicPropertySource` (hoặc `@ServiceConnection` trong Spring Boot 3.1+) để đưa URL/user/password thật vào Spring Environment lúc chạy. Với JPA, hãy để schema được tạo bởi cùng công cụ migration mà production dùng (Flyway/Liquibase) thay vì `ddl-auto`, vì như vậy bạn kiểm chứng luôn cả các script migration — một trong những thứ dễ vỡ nhất khi triển khai.",
+          "citations": [
+            "day29-src-14",
+            "day29-src-15",
+            "day29-src-16"
+          ]
         }
       ]
     }
@@ -209,7 +329,19 @@
   "commonMistakes": [
     "Bật toàn bộ endpoint Actuator (management.endpoints.web.exposure.include=*) trên môi trường production mà không kiểm soát truy cập - lộ thông tin nhạy cảm như biến môi trường, bean nội bộ.",
     "Dùng @DynamicPropertySource thủ công cho mọi container thay vì @ServiceConnection khi container đó đã được hỗ trợ sẵn - dư thừa code không cần thiết.",
-    "Quên MDC.clear() sau khi xử lý xong, khiến trường log của request trước rò rỉ sang request/luồng xử lý sau (đặc biệt khi dùng thread pool tái sử dụng luồng)."
+    "Quên MDC.clear() sau khi xử lý xong, khiến trường log của request trước rò rỉ sang request/luồng xử lý sau (đặc biệt khi dùng thread pool tái sử dụng luồng).",
+    "Viết tài liệu API bằng tay song song với code, để tài liệu lệch dần khỏi hành vi thật.",
+    "Phơi Swagger UI công khai trên production, giúp người ngoài liệt kê toàn bộ bề mặt API.",
+    "Dùng entity JPA làm schema trong tài liệu OpenAPI, làm lộ cấu trúc bảng và quan hệ nội bộ.",
+    "Log mọi thứ ở mức INFO, khiến log quan trọng bị chìm và chi phí lưu trữ tăng vô ích.",
+    "Ghi token, mật khẩu hoặc toàn bộ request/response body vào log.",
+    "Chỉ log ex.getMessage() thay vì truyền exception cho logger, làm mất stack trace và nguyên nhân gốc.",
+    "Không xóa MDC trong finally, khiến traceId của request trước dính sang request sau do thread được tái sử dụng.",
+    "Đưa dịch vụ bên thứ ba không thiết yếu vào health check, làm ứng dụng bị coi là chết khi đối tác gặp sự cố.",
+    "Phơi công khai các Actuator endpoint như env, beans, heapdump, loggers.",
+    "Đọc độ trễ trung bình thay vì p95/p99 và bỏ sót nhóm người dùng bị chậm nghiêm trọng.",
+    "Nhồi cấu hình/bí mật của production vào Docker image thay vì truyền từ bên ngoài lúc chạy.",
+    "Lưu file tải lên hoặc log vào hệ thống file trong container, làm mất dữ liệu khi container bị thay."
   ],
   "practices": [
     {
@@ -315,7 +447,12 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Thêm health group 'readiness' gồm HealthIndicator của database và payment gateway, kiểm tra qua /actuator/health/readiness.",
-    "Cấu hình springdoc để ẩn hoàn toàn các endpoint nội bộ (packagesToScan chỉ trỏ vào package api công khai)."
+    "Cấu hình springdoc để ẩn hoàn toàn các endpoint nội bộ (packagesToScan chỉ trỏ vào package api công khai).",
+    "Thêm @Operation và mô tả response lỗi cho một endpoint, mở /v3/api-docs và đối chiếu tài liệu sinh ra với hành vi thật khi gửi dữ liệu không hợp lệ.",
+    "Viết một filter đặt traceId vào MDC, cố tình không gọi MDC.clear(), gửi nhiều request liên tiếp và quan sát traceId bị dùng lại sai; sau đó thêm finally và kiểm chứng lại.",
+    "So sánh hai cách log exception (chỉ getMessage() so với truyền exception) trên một chuỗi exception lồng nhau và ghi lại thông tin bị mất.",
+    "Viết một HealthIndicator tùy chỉnh phụ thuộc một API bên ngoài, tắt API đó và quan sát trạng thái health chuyển DOWN, rồi lập luận vì sao phụ thuộc này nên nằm ở metrics thay vì health.",
+    "Bật một Actuator endpoint như env trong môi trường dev, đọc kết quả để tự thấy những thông tin bị lộ, rồi cấu hình lại để chỉ phơi qua cổng quản trị có xác thực."
   ],
   "references": [
     {
