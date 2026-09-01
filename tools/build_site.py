@@ -230,6 +230,11 @@ def _slim_authored_lesson(
                 "pageTitle": read.get("pageTitle"),
                 "limitation": limitations.get(rid),
             })
+        else:
+            # Internal cross-reference (points at another lesson's content,
+            # not an external source) — carries its own short authored
+            # description instead of resolved resource metadata.
+            slim["description"] = ref.get("description")
         slim_refs.append(slim)
 
     slim_lesson = {field: record[field] for field in LESSON_FIELDS if field in record}

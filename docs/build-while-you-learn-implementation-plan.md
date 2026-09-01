@@ -695,6 +695,18 @@ Mỗi P1 task: TDD cho phần có logic thuần (thêm vào `site_core.test.js` 
 
 P2 không được phá bất biến P0/P1: 40/15/12-24-4, hai hệ độc lập, external_dependencies=0, smoke test ≥13/13.
 
+## P2 Execution Note (Approach A — chốt 2026-09-01)
+
+Sau audit toàn UI (12 route × 3 viewport × 2 theme, không phát hiện lỗi layout/overflow), phạm vi P2 được chốt là **Approach A: terminology + copy consistency + micro-a11y**, không thêm subsystem, không đổi data contract:
+
+- Hợp nhất 3 nhãn khác nhau cho cùng một khái niệm ("Current Build" / "Current Release" / "Current Build Target") về **"Current Build Target"** tại Dashboard, Project Overview, Architecture.
+- `createFeatureProgress` empty state: "No tracked build task yet" → "Chưa có build task để theo dõi" (đồng bộ tiếng Việt với `createProjectProgress`).
+- `renderProjectEmpty` fallback copy: bỏ từ ngữ implementation ("Dữ liệu project", "bản build") → "Thông tin Spendwise hiện chưa sẵn sàng." (giữ câu trấn an "Learning Track vẫn hoạt động bình thường.").
+- Release Detail — Build Tasks rỗng: "Release này chưa có build task để theo dõi. Bạn vẫn có thể xem Goal, Features, Learning Dependencies và kế hoạch Architecture của release." (đúng vì các mục này đều hiển thị trên cùng trang Release Detail).
+- Project Overview — Build Tasks Workspace rỗng: chỉ đổi thành "Release hiện tại chưa có build task để theo dõi." (**không** dùng nguyên văn câu trên vì Goal/Features/Learning Dependencies không hiển thị trên trang Project Overview — tránh tuyên bố sai về nội dung trang).
+- `.citation-link`: tăng vùng chạm mobile bằng padding vô hình + margin âm bù trừ (không đổi footprint hiển thị/line-height); verify bằng screenshot thật ở 390×844.
+- Giữ nguyên: wording `.json`/JSON trong import-export settings; không thêm milestone progress rollup; không thêm filter persistence/burndown/global search/chart mới.
+
 ---
 
 # 12. Migration Strategy

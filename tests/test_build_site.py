@@ -58,7 +58,7 @@ class PublicationModelTests(unittest.TestCase):
                 allowed = {
                     "id", "type", "resourceId", "citationId",
                     "url", "label", "checkStatus", "readStatus",
-                    "pageTitle", "limitation",
+                    "pageTitle", "limitation", "description",
                 }
                 extra = set(ref) - allowed
                 self.assertEqual(extra, set(), f"unexpected ref keys {extra}")

@@ -708,9 +708,14 @@
       font-size: .6875rem;
       vertical-align: super;
       text-decoration: none;
-      margin-left: .0625rem;
       color: var(--accent, var(--spring-ink));
       font-weight: 700;
+      /* Invisible padding + offsetting negative margin: grows the tap
+         target for touch without changing visual footprint or line-height
+         (no background/border on the padding, so nothing new is painted). */
+      display: inline-block;
+      padding: .5rem .375rem;
+      margin: -.5rem -.375rem -.5rem -.3125rem;
     }
     .authoring-warning {
       border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
@@ -1998,7 +2003,7 @@
           feature.id
         );
         if (!progress.total) {
-          return el('p', 'feature-progress-empty', 'No tracked build task yet');
+          return el('p', 'feature-progress-empty', 'Chưa có build task để theo dõi');
         }
         var wrap = el('div', 'project-progress project-progress--feature');
         wrap.appendChild(el('span', 'project-progress-count', progress.completed + '/' + progress.total + ' · ' + progress.percent + '%'));
@@ -2167,7 +2172,7 @@
       function renderProjectEmpty(container) {
         var empty = el('section', 'project-empty');
         empty.appendChild(el('h1', null, 'Project track chưa sẵn sàng'));
-        empty.appendChild(el('p', null, 'Dữ liệu project chưa có trong bản build này. Learning Track vẫn hoạt động bình thường.'));
+        empty.appendChild(el('p', null, 'Thông tin Spendwise hiện chưa sẵn sàng. Learning Track vẫn hoạt động bình thường.'));
         container.appendChild(empty);
       }
 
@@ -2403,7 +2408,7 @@
 
         var build = el('article', 'project-panel');
         build.setAttribute('data-project-current-release', release.id);
-        build.appendChild(el('div', 'project-section-label', 'Current Build'));
+        build.appendChild(el('div', 'project-section-label', 'Current Build Target'));
         var releaseLine = el('div', 'project-release-line');
         var releaseLink = el('a', 'text-link', releaseDisplay(release));
         releaseLink.href = '#/release/' + release.id;
@@ -2496,7 +2501,7 @@
         if (!parsed || parsed.app !== APP_SCHEMA.app ||
             typeof parsed.schemaVersion !== "number" || !SUPPORTED_IMPORT_VERSIONS.has(parsed.schemaVersion)) {
           previewEl.hidden = false;
-          previewEl.textContent = "Tệp không đúng định dạng tiến độ của khóa học (app/schemaVersion không khớp).";
+          previewEl.textContent = "Tệp không đúng định dạng tiến độ của khóa học (không phải tệp xuất từ khóa học này, hoặc phiên bản tệp không được hỗ trợ).";
           return;
         }
         var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS);
@@ -3087,6 +3092,18 @@
       }
 
       /* ---- references with transparent read status ---------------------- */
+      /* Populates refIndexById (citationId -> 1-based number) ahead of any
+         citation rendering. Must run before renderSections()/appendCitations()
+         look citations up — renderReferences() itself runs later in page
+         composition order (References sits near the bottom of the lesson),
+         but the numbering it defines has to be known before the in-body
+         superscripts that point at it are built. */
+      function buildRefIndex(lesson, refIndexById) {
+        (lesson.references || []).forEach(function(ref, i) {
+          refIndexById.set(String(ref.citationId || ref.id).toLowerCase(), i + 1);
+        });
+      }
+
       function renderReferences(container, lesson, refIndexById, refCards) {
         if (!lesson.references || !lesson.references.length) return;
         var blockEl = el("section", "references-block");
@@ -3094,29 +3111,41 @@
         blockEl.appendChild(el("h2", null, "Nguồn tham chiếu"));
 
         lesson.references.forEach(function(ref, i) {
-          var num = i + 1;
-          refIndexById.set(String(ref.citationId || ref.id).toLowerCase(), num);
+          var num = refIndexById.get(String(ref.citationId || ref.id).toLowerCase()) || (i + 1);
           var card = el("article", "ref-card");
           card.id = "ref-" + lessonIdSlug(lesson.id) + "-" + num;
           var headRow = el("div", "ref-card-head");
           headRow.appendChild(el("span", "ref-num", "[" + num + "]"));
-          headRow.appendChild(el("strong", null, ref.label || ref.pageTitle || ref.resourceId));
-          headRow.appendChild(el("span", "badge-domain", ref.url ? new URL(ref.url).hostname : ""));
-          if (ref.readStatus === "read") headRow.appendChild(el("span", "badge-read", "đã đọc"));
-          card.appendChild(headRow);
-          if (ref.pageTitle) {
-            card.appendChild(el("div", null, "Trang: " + ref.pageTitle));
+          if (ref.type === "external") {
+            headRow.appendChild(el("strong", null, ref.label || ref.pageTitle || ref.resourceId));
+            headRow.appendChild(el("span", "badge-domain", ref.url ? new URL(ref.url).hostname : ""));
+            if (ref.readStatus === "read") headRow.appendChild(el("span", "badge-read", "đã đọc"));
+          } else {
+            /* Internal cross-reference (links back to an earlier lesson's
+               content, not an external source) — has no URL/label/read
+               status to show, so render its authored description instead
+               of leaving the card blank. */
+            headRow.appendChild(el("strong", null, "Liên kết nội dung trong khóa học"));
+            headRow.appendChild(el("span", "badge-domain", "nội bộ"));
           }
-          if (ref.url) {
-            var linkP = el("p");
-            var a = el("a", "ref-url", ref.safeUrl || ref.url);
-            a.href = CourseCore.safeExternalUrl(ref.url) || "#";
-            if (a.href !== "#") {
-              a.target = "_blank";
-              a.rel = "noopener noreferrer";
+          card.appendChild(headRow);
+          if (ref.type === "external") {
+            if (ref.pageTitle) {
+              card.appendChild(el("div", null, "Trang: " + ref.pageTitle));
             }
-            linkP.appendChild(a);
-            card.appendChild(linkP);
+            if (ref.url) {
+              var linkP = el("p");
+              var a = el("a", "ref-url", ref.safeUrl || ref.url);
+              a.href = CourseCore.safeExternalUrl(ref.url) || "#";
+              if (a.href !== "#") {
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+              }
+              linkP.appendChild(a);
+              card.appendChild(linkP);
+            }
+          } else if (ref.description) {
+            card.appendChild(el("p", null, ref.description));
           }
           /* section backlink */
           var back = el("a", null, "↑ Về đầu bài học");
@@ -3132,8 +3161,14 @@
           refCards.push({ ref: ref, num: num });
         });
 
-        /* Supplied but inaccessible resources — separate disclosure. */
-        var unavailable = (lesson.references || []).filter(function(r) { return r.readStatus !== "read"; });
+        /* Supplied but inaccessible resources — separate disclosure.
+           Only applies to external sources (an internal cross-reference
+           has no external check status, so it can never be "unavailable"
+           in this sense — including it here previously produced a blank,
+           misleading card for every internal reference). */
+        var unavailable = (lesson.references || []).filter(function(r) {
+          return r.type === "external" && r.readStatus !== "read";
+        });
         if (unavailable.length) {
           var details = el("details", "ref-unavailable");
           details.appendChild(el("summary", null,
@@ -3195,6 +3230,7 @@
         currentLessonId = lesson.id;
         var refIndexById = new Map();
         var refCards = [];
+        buildRefIndex(lesson, refIndexById);
 
         renderLessonHeader(container, lesson, refIndexById);
         renderProjectContext(container, lesson.id);
@@ -3261,7 +3297,7 @@
         grid.appendChild(vision);
 
         var current = el('section', 'project-panel');
-        current.appendChild(el('div', 'project-section-label', 'Current Release'));
+        current.appendChild(el('div', 'project-section-label', 'Current Build Target'));
         if (release) {
           current.setAttribute('data-project-current-release', release.id);
           var line = el('div', 'project-release-line');
@@ -3359,7 +3395,7 @@
           workspace.appendChild(el('p', null, 'Build tasks của release hiện tại · ' + releaseDisplay(release)));
           appendExpandableBuildTaskList(workspace, release.buildTaskIds);
         } else {
-          workspace.appendChild(el('p', null, 'Release hiện tại chưa có build task nào trong kế hoạch.'));
+          workspace.appendChild(el('p', null, 'Release hiện tại chưa có build task để theo dõi.'));
         }
         container.appendChild(workspace);
       }
@@ -3478,7 +3514,7 @@
         var tasks = el('section', 'project-panel release-section');
         tasks.appendChild(el('h2', null, 'Build Tasks'));
         if ((release.buildTaskIds || []).length) appendExpandableBuildTaskList(tasks, release.buildTaskIds);
-        else tasks.appendChild(el('p', null, 'Release này chưa có build task nào trong kế hoạch.'));
+        else tasks.appendChild(el('p', null, 'Release này chưa có build task để theo dõi. Bạn vẫn có thể xem Goal, Features, Learning Dependencies và kế hoạch Architecture của release.'));
         detail.appendChild(tasks);
 
         // Acceptance Criteria
@@ -3877,16 +3913,20 @@
       }
 
       /* ---- search panel ---------------------------------------------- */
-      var searchInput = document.getElementById('site-search');
-      var searchPanel = document.createElement('div');
-      searchPanel.id = 'search-results';
-      searchPanel.setAttribute('role', 'listbox');
-      searchPanel.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:0 0 var(--radius-md) var(--radius-md);max-height:18rem;overflow-y:auto;display:none;z-index:200;box-shadow:var(--shadow-float);';
-      if (searchInput && searchInput.parentElement) {
+      /* renderApp() (called below, and again inside the self-test) creates
+         #site-search fresh each time it rebuilds the header, so — same as
+         syncThemeButton() — this must be looked up and (re)wired AFTER each
+         renderApp() call, not once at top-level script scope where the
+         element doesn't exist yet. */
+      function wireSearch() {
+        var searchInput = document.getElementById('site-search');
+        if (!searchInput || !searchInput.parentElement) return;
+        var searchPanel = document.createElement('div');
+        searchPanel.id = 'search-results';
+        searchPanel.setAttribute('role', 'listbox');
+        searchPanel.style.cssText = 'position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:0 0 var(--radius-md) var(--radius-md);max-height:18rem;overflow-y:auto;display:none;z-index:200;box-shadow:var(--shadow-float);';
         searchInput.parentElement.style.position = 'relative';
         searchInput.parentElement.appendChild(searchPanel);
-      }
-      if (searchInput) {
         searchInput.oninput = function() {
           var hits = CourseCore.searchLessons(courseData.lessons, courseData.units, searchInput.value);
           searchPanel.textContent = '';
@@ -4166,6 +4206,7 @@
       /* ---- init ------------------------------------------------------ */
       renderApp();
       syncThemeButton();
+      wireSearch();
       renderSidebar();
       updateProgress();
       routeRender();
@@ -4237,6 +4278,7 @@
           /* 5 — unit collapse toggles aria-expanded */
           renderApp();
           syncThemeButton();
+          wireSearch();
           renderSidebar();
           var toggle = document.querySelector(".module-toggle");
           var before = toggle.getAttribute("aria-expanded");
