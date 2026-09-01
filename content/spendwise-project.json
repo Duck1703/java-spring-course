@@ -1,0 +1,1003 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "id": "spendwise",
+    "name": "Spendwise",
+    "type": "Personal Expense & Budget Tracker",
+    "vision": "A Finance Lite backend that lets an individual manage accounts, record transactions, categorize spending, set budgets, transfer money atomically, handle recurring transactions, import CSV statements, auto-apply categorization rules, and view a dashboard/report — built incrementally from a pure-Java domain to a production backend, with optional AI acting only as an advisory layer.",
+    "outOfScope": [
+      "full double-entry accounting",
+      "general ledger",
+      "tax",
+      "stock trading",
+      "investment portfolio",
+      "cryptocurrency",
+      "bank synchronization",
+      "Open Banking",
+      "OCR receipt",
+      "family/shared finance",
+      "financial advisor",
+      "loan system",
+      "payment gateway",
+      "microservices",
+      "Kafka",
+      "Kubernetes",
+      "mobile app",
+      "blockchain",
+      "complex accounting reconciliation",
+      "support for every bank file format",
+      "full multi-currency accounting engine"
+    ]
+  },
+  "releases": [
+    {
+      "id": "v0-1",
+      "version": "V0.1",
+      "title": "Java Domain",
+      "order": 1,
+      "status": "planned",
+      "problem": "Spendwise has no domain yet; there is no safe way to represent money, accounts, or transactions, and financial invariants (valid amount/type/account) are unprotected.",
+      "goal": "Build the core Spendwise domain in pure Java with encapsulated invariants — no Spring, no database, no REST.",
+      "featureIds": ["feat-money", "feat-account", "feat-transaction", "feat-category"],
+      "learningDependencies": ["Class", "Object", "Constructor", "Encapsulation", "Enum", "Inheritance/Polymorphism (when a use case fits)", "Exception"],
+      "acceptanceCriteria": ["Can create an Account", "Can create a Transaction", "Basic business invariants are protected inside the domain", "Money uses BigDecimal (never double/float for business amounts)", "No dependency on Spring, database, or REST"],
+      "buildTaskIds": ["task-money-vo", "task-account-entity", "task-transaction-entity", "task-category-enum", "task-domain-validation"]
+    },
+    {
+      "id": "v0-2",
+      "version": "V0.2",
+      "title": "Java Application",
+      "order": 2,
+      "status": "planned",
+      "problem": "The domain objects exist but there is no working application around them — no way to store, search, aggregate, or persist transactions between runs.",
+      "goal": "Turn the domain into a small working Java application with an in-memory repository, transaction service, basic statistics, and simple CSV read/write.",
+      "featureIds": ["feat-repository", "feat-statistics", "feat-csv-basic"],
+      "learningDependencies": ["Interface", "Generics", "Collections", "Lambda", "Stream", "Exception Handling", "File I/O"],
+      "acceptanceCriteria": ["Can manage transactions in memory", "Can search transactions", "Can group by category and total income/expense", "Can save/load simple data via CSV", "Concurrency applied only when a natural use case exists (not forced)"],
+      "buildTaskIds": ["task-repository-interface", "task-inmemory-repository", "task-transaction-service", "task-statistics-aggregation", "task-csv-read-write"]
+    },
+    {
+      "id": "v0-3",
+      "version": "V0.3",
+      "title": "Spring Boot Core",
+      "order": 3,
+      "status": "planned",
+      "problem": "The Java application wires its own dependencies manually and cannot grow into a real backend without an application container and configuration.",
+      "goal": "Migrate the application onto Spring Boot with IoC/DI-managed service and repository beans, reusing the existing domain unchanged.",
+      "featureIds": ["feat-spring-migration"],
+      "learningDependencies": ["Spring Boot", "IoC", "Dependency Injection", "Bean lifecycle", "Configuration", "Profiles (if needed)"],
+      "acceptanceCriteria": ["Application boots on Spring Boot", "Existing Java domain is reused, not rewritten", "Business logic is not rewritten just because of the Spring migration", "Beans are managed via IoC/DI"],
+      "buildTaskIds": ["task-spring-bootstrap", "task-di-service-beans", "task-config-profiles"]
+    },
+    {
+      "id": "v0-4",
+      "version": "V0.4",
+      "title": "REST API",
+      "order": 4,
+      "status": "planned",
+      "problem": "Spendwise can only be driven from code/CLI; there is no HTTP surface for creating accounts, recording transactions, or managing categories.",
+      "goal": "Expose Spendwise over an HTTP REST API with DTOs, bean validation, and consistent error responses.",
+      "featureIds": ["feat-api"],
+      "learningDependencies": ["Spring MVC", "REST API", "@RequestMapping/@GetMapping/@PostMapping", "@PathVariable", "@RequestParam", "DTO", "Bean Validation", "@RestControllerAdvice", "ProblemDetail"],
+      "acceptanceCriteria": ["Can create an account via HTTP", "Can create, list and filter transactions via HTTP", "Can manage categories via HTTP", "Inputs validated via DTO + Bean Validation", "Errors returned consistently (ProblemDetail / RFC 7807)", "Frontend not yet required (Swagger/Postman usable)"],
+      "buildTaskIds": ["task-rest-controllers", "task-dto-mapping", "task-bean-validation", "task-error-handling-advice"]
+    },
+    {
+      "id": "v0-5",
+      "version": "V0.5",
+      "title": "Persistence",
+      "order": 5,
+      "status": "planned",
+      "problem": "Restarting the application loses all data, and transfers between two accounts can leave balances inconsistent if only one side succeeds.",
+      "goal": "Persist financial data in PostgreSQL via Spring Data JPA and make account transfer atomic with rollback on failure.",
+      "featureIds": ["feat-persistence", "feat-atomic-transfer"],
+      "learningDependencies": ["Spring Data JPA", "Entity", "Relationships", "Persistence Context", "Transaction", "@Transactional", "Query", "Performance fundamentals"],
+      "acceptanceCriteria": ["Data survives application restart", "Transfer (Account A -500000 / Account B +500000) is atomic", "An incomplete/invalid transfer rolls back entirely"],
+      "buildTaskIds": ["task-jpa-entities", "task-jpa-relationships", "task-spring-data-repositories", "task-atomic-transfer", "task-optimistic-locking"]
+    },
+    {
+      "id": "v0-6",
+      "version": "V0.6",
+      "title": "Security & Ownership",
+      "order": 6,
+      "status": "planned",
+      "problem": "The API is open: any caller can read or modify any account, transaction, or budget — Spendwise is not a real multi-user backend.",
+      "goal": "Make Spendwise a proper multi-user backend with register/login/JWT authentication and backend-enforced resource ownership.",
+      "featureIds": ["feat-auth", "feat-ownership"],
+      "learningDependencies": ["Spring Security", "Authentication", "Authorization", "JWT", "SecurityContext", "role", "resource ownership"],
+      "acceptanceCriteria": ["Register/login issue JWT and protected endpoints require it", "Ownership is checked on the backend, not the frontend", "User A cannot read/update/delete User B's Account, Transaction, or Budget"],
+      "buildTaskIds": ["task-jwt-auth", "task-ownership-checks"]
+    },
+    {
+      "id": "v0-7",
+      "version": "V0.7",
+      "title": "Business Engine",
+      "order": 7,
+      "status": "planned",
+      "problem": "Spendwise is still essentially CRUD; it lacks the budgeting, recurring, and rule logic that make it an actual finance product.",
+      "goal": "Push Spendwise beyond CRUD with Budget, Recurring Transaction, a Rule engine, and advanced statistics via domain services.",
+      "featureIds": ["feat-budget", "feat-recurring", "feat-rule"],
+      "learningDependencies": ["Domain Service", "Business Rules", "Transaction", "Scheduling preparation", "JPA query", "aggregation", "testing"],
+      "acceptanceCriteria": ["Budget computes limit / spent / remaining / percentage / status per category+period", "Budget overrun does not delete or edit real transactions", "Recurring transaction has next due date, frequency, active status and avoids duplicates", "Rule engine applies categorization by conditions/actions/priority", "Advanced statistics/aggregation available"],
+      "buildTaskIds": []
+    },
+    {
+      "id": "v0-8",
+      "version": "V0.8",
+      "title": "Data Processing",
+      "order": 8,
+      "status": "planned",
+      "problem": "Users cannot bring real statement data in; importing the same CSV twice would create uncontrolled duplicates and failures could leave the system in an unclear state.",
+      "goal": "Process real transaction data via CSV import with an ImportBatch, validation, deduplication, an import result, optional background import for large datasets, and CSV export.",
+      "featureIds": ["feat-import", "feat-dedup", "feat-async-import"],
+      "learningDependencies": ["File Handling", "Parsing", "Exception Handling", "Batch Processing", "Idempotency", "Async"],
+      "acceptanceCriteria": ["Import reports successful, duplicate, and failed rows", "Importing the same transaction multiple times does not create uncontrolled duplicates", "Import failure does not leave the system in an unclear state", "CSV export is available", "Large datasets can be imported as a background job (optional, 202 Accepted + ImportBatch status)"],
+      "buildTaskIds": []
+    },
+    {
+      "id": "v0-9",
+      "version": "V0.9",
+      "title": "Production Engineering",
+      "order": 9,
+      "status": "planned",
+      "problem": "Dashboard aggregation is recomputed on every request, recurring transactions are not generated automatically, there is no external FX data, and the system lacks tests, observability, and a reproducible environment.",
+      "goal": "Bring Spendwise close to a production backend: Redis dashboard cache with invalidation, recurring scheduler, external exchange-rate API, testing, OpenAPI, logging, monitoring, and Docker.",
+      "featureIds": ["feat-cache", "feat-scheduler", "feat-exchange-rate", "feat-observability"],
+      "learningDependencies": ["Cache", "Redis", "Cache invalidation", "Async", "Scheduler", "External API", "RestClient/WebClient", "Retry", "Circuit Breaker (if syllabus supports)", "Unit Testing", "Integration Testing", "Testcontainers", "Actuator", "Micrometer", "Docker"],
+      "acceptanceCriteria": ["Dashboard aggregation is cached in Redis with correct invalidation", "Recurring scheduler runs periodically without creating duplicates", "External exchange rate fetched via RestClient/WebClient with retry/failure handling", "Unit and integration tests (Testcontainers) pass", "Health check and metrics exposed (Actuator/Micrometer)", "Application runs in a Dockerized environment"],
+      "buildTaskIds": []
+    },
+    {
+      "id": "v1-0",
+      "version": "V1.0",
+      "title": "Smart Finance",
+      "order": 10,
+      "status": "planned",
+      "problem": "Core functionality needs final stabilization, and there is an opportunity to add valuable intelligent features without letting AI take over business rules.",
+      "goal": "Stabilize all core functionality and add optional AI category suggestion and monthly insight as an advisory layer, plus portfolio-readiness.",
+      "featureIds": ["feat-ai-category", "feat-ai-insight"],
+      "learningDependencies": ["refactoring", "architecture review", "test coverage", "production readiness", "documentation", "portfolio README", "final demo"],
+      "acceptanceCriteria": ["All core features stable", "AI category suggestion only suggests; user confirms before data changes", "AI monthly insight turns backend-aggregated numbers into natural language (LLM does not query DB or compute business numbers)", "AI never transfers money, edits transactions/budgets, or deletes data", "Portfolio README, final demo, and test coverage delivered"],
+      "buildTaskIds": []
+    }
+  ],
+  "features": [
+    {
+      "id": "feat-money",
+      "name": "Money Value Object",
+      "description": "Immutable money type backed by BigDecimal with a currency, safe add/subtract, and no floating-point business amounts.",
+      "domainEntities": ["Money"],
+      "introducedInReleaseId": "v0-1"
+    },
+    {
+      "id": "feat-account",
+      "name": "Account Management",
+      "description": "Create and manage accounts of different types (cash, bank, card) with an owned balance that only changes through the domain/service.",
+      "domainEntities": ["Account", "Money"],
+      "introducedInReleaseId": "v0-1"
+    },
+    {
+      "id": "feat-transaction",
+      "name": "Transaction Recording",
+      "description": "Record transactions with a valid amount, type, account, and (later) ownership, using BigDecimal for money.",
+      "domainEntities": ["Transaction", "Account", "Money", "Category"],
+      "introducedInReleaseId": "v0-1"
+    },
+    {
+      "id": "feat-category",
+      "name": "Category Classification",
+      "description": "Classify transactions by category (Food, Transport, Housing, Entertainment, Salary), modeled with enums/entities.",
+      "domainEntities": ["Category", "Transaction"],
+      "introducedInReleaseId": "v0-1"
+    },
+    {
+      "id": "feat-repository",
+      "name": "In-memory Repository & Service",
+      "description": "Generic repository abstraction and transaction service to store, search, and manage transactions in memory.",
+      "domainEntities": ["Transaction", "Account"],
+      "introducedInReleaseId": "v0-2"
+    },
+    {
+      "id": "feat-statistics",
+      "name": "Basic Statistics",
+      "description": "In-memory spending aggregation: group transactions by category and total income/expense using Stream/Collectors.",
+      "domainEntities": ["Transaction", "Category"],
+      "introducedInReleaseId": "v0-2"
+    },
+    {
+      "id": "feat-csv-basic",
+      "name": "Basic CSV Read/Write",
+      "description": "Simple file-based save/load of transactions using Java File I/O (foundation for later import).",
+      "domainEntities": ["Transaction"],
+      "introducedInReleaseId": "v0-2"
+    },
+    {
+      "id": "feat-spring-migration",
+      "name": "Spring Boot Migration",
+      "description": "Bootstrap Spring Boot and manage service/repository beans via IoC/DI and configuration, reusing the existing domain.",
+      "domainEntities": ["Account", "Transaction"],
+      "introducedInReleaseId": "v0-3"
+    },
+    {
+      "id": "feat-api",
+      "name": "REST API",
+      "description": "HTTP endpoints for accounts, transactions, and categories with DTOs, bean validation, and consistent error responses.",
+      "domainEntities": ["Account", "Transaction", "Category"],
+      "introducedInReleaseId": "v0-4"
+    },
+    {
+      "id": "feat-persistence",
+      "name": "JPA Persistence",
+      "description": "Persist accounts, transactions, and categories in PostgreSQL via Spring Data JPA entities, relationships, and repositories.",
+      "domainEntities": ["Account", "Transaction", "Category"],
+      "introducedInReleaseId": "v0-5"
+    },
+    {
+      "id": "feat-atomic-transfer",
+      "name": "Atomic Transfer",
+      "description": "Transfer between two accounts as a single @Transactional unit that rolls back entirely if any part fails.",
+      "domainEntities": ["Account", "Transaction"],
+      "introducedInReleaseId": "v0-5"
+    },
+    {
+      "id": "feat-auth",
+      "name": "Authentication (JWT)",
+      "description": "User registration, login, and stateless JWT authentication with password encoding via Spring Security.",
+      "domainEntities": ["User"],
+      "introducedInReleaseId": "v0-6"
+    },
+    {
+      "id": "feat-ownership",
+      "name": "Resource Ownership",
+      "description": "Backend-enforced authorization so a user can only access their own accounts, transactions, and budgets.",
+      "domainEntities": ["User", "Account", "Transaction", "Budget"],
+      "introducedInReleaseId": "v0-6"
+    },
+    {
+      "id": "feat-budget",
+      "name": "Budget Tracking",
+      "description": "Per-category, per-period budgets computing limit, spent, remaining, percentage, and status without altering real transactions.",
+      "domainEntities": ["Budget", "Category", "Transaction"],
+      "introducedInReleaseId": "v0-7"
+    },
+    {
+      "id": "feat-recurring",
+      "name": "Recurring Transactions",
+      "description": "Recurring transactions with next due date, frequency, and active status, with logic to avoid duplicate generation.",
+      "domainEntities": ["RecurringTransaction", "Transaction"],
+      "introducedInReleaseId": "v0-7"
+    },
+    {
+      "id": "feat-rule",
+      "name": "Rule Engine",
+      "description": "Categorization rules with conditions, actions, and priority (e.g. description contains GRAB -> Transport) without a complex DSL.",
+      "domainEntities": ["Rule", "Transaction", "Category"],
+      "introducedInReleaseId": "v0-7"
+    },
+    {
+      "id": "feat-import",
+      "name": "CSV Import",
+      "description": "Import CSV statements through an ImportBatch pipeline: parse, normalize, validate, categorize, and save with an import result.",
+      "domainEntities": ["ImportBatch", "Transaction"],
+      "introducedInReleaseId": "v0-8"
+    },
+    {
+      "id": "feat-dedup",
+      "name": "Import Deduplication",
+      "description": "Idempotent import that detects duplicate rows so re-importing the same file/transaction does not create uncontrolled duplicates.",
+      "domainEntities": ["ImportBatch", "Transaction"],
+      "introducedInReleaseId": "v0-8"
+    },
+    {
+      "id": "feat-async-import",
+      "name": "Async Import",
+      "description": "Optional background import for large datasets (202 Accepted + ImportBatch status tracking) so requests are not blocked.",
+      "domainEntities": ["ImportBatch"],
+      "introducedInReleaseId": "v0-8"
+    },
+    {
+      "id": "feat-cache",
+      "name": "Dashboard Cache",
+      "description": "Redis-backed caching of expensive dashboard aggregation with correct cache invalidation.",
+      "domainEntities": ["Report"],
+      "introducedInReleaseId": "v0-9"
+    },
+    {
+      "id": "feat-scheduler",
+      "name": "Recurring Scheduler",
+      "description": "Scheduled job that materializes due recurring transactions periodically without creating duplicates.",
+      "domainEntities": ["RecurringTransaction", "Transaction"],
+      "introducedInReleaseId": "v0-9"
+    },
+    {
+      "id": "feat-exchange-rate",
+      "name": "External Exchange Rate",
+      "description": "Fetch exchange rates from an external API via RestClient/WebClient with retry and failure handling.",
+      "domainEntities": ["Money"],
+      "introducedInReleaseId": "v0-9"
+    },
+    {
+      "id": "feat-observability",
+      "name": "Observability & Docker",
+      "description": "Testing (unit/integration/Testcontainers), OpenAPI docs, logging, Actuator/Micrometer metrics, and a Dockerized environment.",
+      "domainEntities": [],
+      "introducedInReleaseId": "v0-9"
+    },
+    {
+      "id": "feat-ai-category",
+      "name": "AI Category Suggestion",
+      "description": "Advisory AI that suggests a category from transaction description and history; the user confirms before any data change.",
+      "domainEntities": ["Transaction", "Category"],
+      "introducedInReleaseId": "v1-0"
+    },
+    {
+      "id": "feat-ai-insight",
+      "name": "AI Monthly Insight",
+      "description": "AI that turns backend-aggregated spending numbers into natural-language monthly insight without querying the DB or computing business numbers.",
+      "domainEntities": ["Report"],
+      "introducedInReleaseId": "v1-0"
+    }
+  ],
+  "buildTasks": [
+    {
+      "id": "task-money-vo",
+      "title": "Money value object (BigDecimal + currency)",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-money"],
+      "problem": "Using double/float for money causes precision errors on financial amounts.",
+      "goal": "An immutable Money type backed by BigDecimal with safe add/subtract and value equality.",
+      "constraints": ["BigDecimal, never double/float", "immutable", "equals/hashCode by amount + currency", "reject operations across mismatched currencies"],
+      "acceptanceCriteria": ["add/subtract are correct", "no precision loss", "operations on mismatched currency are rejected"],
+      "relevantLessonIds": ["day-04", "day-08"],
+      "required": true
+    },
+    {
+      "id": "task-account-entity",
+      "title": "Account domain object with protected balance",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-account"],
+      "problem": "Account balance must not be mutated arbitrarily from outside the domain.",
+      "goal": "An Account with private fields, a typed account kind, and balance changes only via domain methods.",
+      "constraints": ["private fields, validate in constructor", "account type modeled as enum", "balance changes only through domain behavior"],
+      "acceptanceCriteria": ["can create a valid account", "invalid account state is rejected at construction", "balance cannot be set arbitrarily from outside"],
+      "relevantLessonIds": ["day-04", "day-05"],
+      "required": true
+    },
+    {
+      "id": "task-transaction-entity",
+      "title": "Transaction domain object with invariants",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-transaction"],
+      "problem": "A transaction with an invalid amount, type, or account would corrupt financial data.",
+      "goal": "A Transaction that validates amount (Money), type, and account at creation.",
+      "constraints": ["amount is Money (BigDecimal)", "transaction type is an enum", "must reference a valid account"],
+      "acceptanceCriteria": ["valid transaction can be created", "invalid amount/type/account is rejected", "money uses BigDecimal"],
+      "relevantLessonIds": ["day-04", "day-08"],
+      "required": true
+    },
+    {
+      "id": "task-category-enum",
+      "title": "Category classification model",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-category"],
+      "problem": "Transactions need to be classified (Food, Transport, Housing, Entertainment, Salary).",
+      "goal": "A Category model (enum/type) that transactions can reference.",
+      "constraints": ["enum for the MVP category set", "no forced hierarchy in the MVP"],
+      "acceptanceCriteria": ["a transaction can be assigned a category", "unknown category values are rejected"],
+      "relevantLessonIds": ["day-07"],
+      "required": true
+    },
+    {
+      "id": "task-domain-validation",
+      "title": "Domain validation and exceptions",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-account", "feat-transaction"],
+      "problem": "Invariant violations should fail loudly with meaningful domain errors, not silent bad state.",
+      "goal": "Custom domain exceptions thrown when invariants are violated.",
+      "constraints": ["use custom exception types", "validate at construction / mutation boundaries"],
+      "acceptanceCriteria": ["invariant violations raise clear domain exceptions", "valid operations do not throw"],
+      "relevantLessonIds": ["day-04", "day-08"],
+      "required": true
+    },
+    {
+      "id": "task-repository-interface",
+      "title": "Generic Repository<T, ID> interface",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-repository"],
+      "problem": "Storage should be abstracted so the domain does not depend on a concrete data store.",
+      "goal": "A generic repository interface using generics for reuse.",
+      "constraints": ["use generics Repository<T, ID>", "interface only, no storage detail leaking to callers"],
+      "acceptanceCriteria": ["interface supports save/find/findAll/delete", "usable for multiple entity types"],
+      "relevantLessonIds": ["day-07", "day-08"],
+      "required": true
+    },
+    {
+      "id": "task-inmemory-repository",
+      "title": "In-memory repository implementation",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-repository"],
+      "problem": "The application needs a working store before a database exists.",
+      "goal": "A collection-backed repository implementing the generic interface.",
+      "constraints": ["back with Java collections", "implement the Repository interface"],
+      "acceptanceCriteria": ["store and retrieve transactions in memory", "search returns expected results"],
+      "relevantLessonIds": ["day-08"],
+      "required": true
+    },
+    {
+      "id": "task-transaction-service",
+      "title": "Transaction service (search + manage)",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-repository", "feat-transaction"],
+      "problem": "Callers need a service layer to record, search, and manage transactions.",
+      "goal": "A transaction service over the repository exposing record/search/filter operations.",
+      "constraints": ["service depends on repository interface, not implementation", "no business math with double"],
+      "acceptanceCriteria": ["can record and list transactions", "can filter/search by criteria"],
+      "relevantLessonIds": ["day-08", "day-10"],
+      "required": true
+    },
+    {
+      "id": "task-statistics-aggregation",
+      "title": "Spending statistics with Stream/Collectors",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-statistics"],
+      "problem": "Users need spending grouped by category and total income/expense.",
+      "goal": "Aggregation that groups transactions by category and sums income/expense using Stream/Collectors.",
+      "constraints": ["use Stream + Collectors.groupingBy", "sum with BigDecimal"],
+      "acceptanceCriteria": ["group by category returns correct sums", "total income/expense are correct"],
+      "relevantLessonIds": ["day-10"],
+      "required": true
+    },
+    {
+      "id": "task-csv-read-write",
+      "title": "Basic CSV save/load",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-csv-basic"],
+      "problem": "Data disappears between runs with only in-memory storage.",
+      "goal": "Simple File I/O to save and load transactions as CSV.",
+      "constraints": ["use Java File I/O (NIO.2)", "handle IO exceptions"],
+      "acceptanceCriteria": ["can write transactions to a CSV file", "can load them back correctly"],
+      "relevantLessonIds": ["day-11"],
+      "required": true
+    },
+    {
+      "id": "task-spring-bootstrap",
+      "title": "Bootstrap Spring Boot application",
+      "releaseId": "v0-3",
+      "featureIds": ["feat-spring-migration"],
+      "problem": "The manual Java app cannot grow without an application container.",
+      "goal": "A Spring Boot application that boots and hosts the existing domain/service.",
+      "constraints": ["reuse existing domain unchanged", "Spring Boot 3.x / Java 17"],
+      "acceptanceCriteria": ["application starts on Spring Boot", "existing domain is reused, not rewritten"],
+      "relevantLessonIds": ["day-13"],
+      "required": true
+    },
+    {
+      "id": "task-di-service-beans",
+      "title": "Wire service/repository as Spring beans",
+      "releaseId": "v0-3",
+      "featureIds": ["feat-spring-migration"],
+      "problem": "Dependencies are wired manually instead of by the container.",
+      "goal": "Service and repository managed as beans via dependency injection.",
+      "constraints": ["constructor injection", "no manual new for managed collaborators"],
+      "acceptanceCriteria": ["beans are injected by Spring", "business logic unchanged by the migration"],
+      "relevantLessonIds": ["day-14"],
+      "required": true
+    },
+    {
+      "id": "task-config-profiles",
+      "title": "Externalized configuration and profiles",
+      "releaseId": "v0-3",
+      "featureIds": ["feat-spring-migration"],
+      "problem": "Environment-specific settings should not be hard-coded.",
+      "goal": "Externalized configuration with profiles where useful.",
+      "constraints": ["use application properties/profiles", "no secrets in code"],
+      "acceptanceCriteria": ["configuration is externalized", "a profile can switch behavior"],
+      "relevantLessonIds": ["day-14"],
+      "required": false
+    },
+    {
+      "id": "task-rest-controllers",
+      "title": "Account/Transaction/Category REST controllers",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "problem": "Spendwise has no HTTP surface.",
+      "goal": "Spring MVC controllers exposing account, transaction, and category endpoints.",
+      "constraints": ["use @RestController and mapping annotations", "path/query params via @PathVariable/@RequestParam", "return ResponseEntity"],
+      "acceptanceCriteria": ["create account via HTTP", "create/list/filter transactions via HTTP", "manage categories via HTTP"],
+      "relevantLessonIds": ["day-16"],
+      "required": true
+    },
+    {
+      "id": "task-dto-mapping",
+      "title": "Request/response DTOs",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "problem": "Exposing domain objects directly leaks internals and couples the API to the domain.",
+      "goal": "Dedicated DTOs for requests and responses with mapping to/from the domain.",
+      "constraints": ["do not expose entities directly", "map explicitly"],
+      "acceptanceCriteria": ["API uses DTOs, not raw domain objects", "mapping is correct"],
+      "relevantLessonIds": ["day-16"],
+      "required": true
+    },
+    {
+      "id": "task-bean-validation",
+      "title": "Bean Validation on inputs",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "problem": "Invalid transaction/account inputs must be rejected consistently.",
+      "goal": "@Valid + Bean Validation constraints on request DTOs.",
+      "constraints": ["use jakarta.validation constraints", "validate at the controller boundary"],
+      "acceptanceCriteria": ["invalid input is rejected with 400", "valid input passes"],
+      "relevantLessonIds": ["day-17"],
+      "required": true
+    },
+    {
+      "id": "task-error-handling-advice",
+      "title": "Global error handling with ProblemDetail",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "problem": "Errors returned inconsistently make the API hard to consume.",
+      "goal": "A @RestControllerAdvice producing RFC 7807 ProblemDetail responses.",
+      "constraints": ["use @RestControllerAdvice", "map domain/validation errors to ProblemDetail"],
+      "acceptanceCriteria": ["errors return consistent ProblemDetail payloads", "correct HTTP status per error type"],
+      "relevantLessonIds": ["day-17"],
+      "required": true
+    },
+    {
+      "id": "task-jpa-entities",
+      "title": "JPA entities for Account/Transaction/Category",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-persistence"],
+      "problem": "Data is lost on restart because it lives only in memory.",
+      "goal": "JPA entities mapped to PostgreSQL tables.",
+      "constraints": ["use @Entity/@Id/@Table/@Column", "BigDecimal columns for money"],
+      "acceptanceCriteria": ["entities persist to PostgreSQL", "data survives restart"],
+      "relevantLessonIds": ["day-19"],
+      "required": true
+    },
+    {
+      "id": "task-jpa-relationships",
+      "title": "Entity relationships and fetch strategy",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-persistence"],
+      "problem": "Account/Transaction/Category must be related correctly without loading problems.",
+      "goal": "Correct associations with appropriate cascade and fetch types.",
+      "constraints": ["model relationships deliberately", "avoid unintended eager loading"],
+      "acceptanceCriteria": ["relationships map correctly", "no accidental N+1 from default fetch on core reads"],
+      "relevantLessonIds": ["day-19"],
+      "required": true
+    },
+    {
+      "id": "task-spring-data-repositories",
+      "title": "Spring Data JPA repositories and queries",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-persistence"],
+      "problem": "The service needs persistent, queryable access with pagination/sorting.",
+      "goal": "Spring Data repositories replacing the in-memory store, with query methods.",
+      "constraints": ["use Spring Data JPA repositories", "support pagination and sorting"],
+      "acceptanceCriteria": ["CRUD and queries work against PostgreSQL", "paged/sorted listing works"],
+      "relevantLessonIds": ["day-19", "day-20"],
+      "required": true
+    },
+    {
+      "id": "task-atomic-transfer",
+      "title": "Atomic account transfer with @Transactional",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-atomic-transfer"],
+      "problem": "Transferring money must debit one account and credit another; a half-completed transfer corrupts balances.",
+      "goal": "A transfer operation wrapped in @Transactional that rolls back entirely on any failure.",
+      "constraints": ["single @Transactional unit of work", "roll back on invariant violation", "no partial commit"],
+      "acceptanceCriteria": ["successful transfer moves money on both sides", "failed/invalid transfer rolls back completely", "balances never left inconsistent"],
+      "relevantLessonIds": ["day-20"],
+      "required": true
+    },
+    {
+      "id": "task-optimistic-locking",
+      "title": "Optimistic locking with @Version (hardening)",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-atomic-transfer"],
+      "problem": "Concurrent transfers on the same account could overwrite each other's balance changes.",
+      "goal": "Add @Version optimistic locking to guard concurrent updates (portfolio-grade hardening).",
+      "constraints": ["add @Version to the entity", "handle optimistic lock conflicts gracefully"],
+      "acceptanceCriteria": ["concurrent conflicting updates are detected", "conflict is surfaced instead of silently lost"],
+      "relevantLessonIds": ["day-20"],
+      "required": false
+    },
+    {
+      "id": "task-jwt-auth",
+      "title": "Register/login with JWT authentication",
+      "releaseId": "v0-6",
+      "featureIds": ["feat-auth"],
+      "problem": "The API is open; there is no user identity.",
+      "goal": "Stateless JWT authentication with register/login via Spring Security.",
+      "constraints": ["stateless session", "sign/verify JWT", "encode passwords with a delegating encoder"],
+      "acceptanceCriteria": ["register and login issue a valid JWT", "protected endpoints require a valid token"],
+      "relevantLessonIds": ["day-22"],
+      "required": true
+    },
+    {
+      "id": "task-ownership-checks",
+      "title": "Backend resource ownership enforcement",
+      "releaseId": "v0-6",
+      "featureIds": ["feat-ownership"],
+      "problem": "An authenticated user could still access another user's data.",
+      "goal": "Authorization ensuring users only access their own accounts/transactions/budgets.",
+      "constraints": ["enforce ownership on the backend", "do not rely on the frontend", "scope queries to the current user"],
+      "acceptanceCriteria": ["User A cannot read/update/delete User B's data", "ownership checks run on every protected resource"],
+      "relevantLessonIds": ["day-23"],
+      "required": true
+    }
+  ],
+  "milestones": [
+    {
+      "id": "ms-java-foundation",
+      "name": "Java Foundation",
+      "releaseIds": ["v0-1", "v0-2"],
+      "summary": "A solid pure-Java domain and a small working application with in-memory storage, statistics, and basic CSV I/O — no framework yet."
+    },
+    {
+      "id": "ms-spring-api",
+      "name": "Spring App with Persistent API",
+      "releaseIds": ["v0-3", "v0-4", "v0-5"],
+      "summary": "The domain runs on Spring Boot, is exposed over a validated REST API, and persists to PostgreSQL with atomic transfers."
+    },
+    {
+      "id": "ms-product-engine",
+      "name": "Multi-user Product & Data Processing",
+      "releaseIds": ["v0-6", "v0-7", "v0-8"],
+      "summary": "Spendwise becomes a real multi-user product: security/ownership, business engine (budget/recurring/rules), and CSV import with deduplication."
+    },
+    {
+      "id": "ms-production-smart",
+      "name": "Production & Smart Finance",
+      "releaseIds": ["v0-9", "v1-0"],
+      "summary": "Production engineering (cache, scheduler, external FX, testing, monitoring, Docker) plus final stabilization and optional advisory AI."
+    }
+  ],
+  "architectureStages": [
+    {
+      "id": "arch-v0-1",
+      "releaseId": "v0-1",
+      "title": "Pure Java domain",
+      "layers": ["Domain (Money, Account, Transaction, Category)"],
+      "diagram": "Test/CLI -> Domain (Money, Account, Transaction, Category)",
+      "changesFromPrev": "Initial domain model created.",
+      "rationale": "Establish encapsulated financial invariants in plain Java before any framework, DB, or transport."
+    },
+    {
+      "id": "arch-v0-2",
+      "releaseId": "v0-2",
+      "title": "Layered Java application (in-memory + file)",
+      "layers": ["CLI", "Service", "Repository", "Memory / File (CSV)"],
+      "diagram": "CLI -> Service -> Repository -> Memory / File(CSV)",
+      "changesFromPrev": "Added service, generic repository abstraction, statistics, and CSV read/write around the domain.",
+      "rationale": "Make the domain usable as an application with search, aggregation, and simple persistence."
+    },
+    {
+      "id": "arch-v0-3",
+      "releaseId": "v0-3",
+      "title": "Spring Boot container",
+      "layers": ["Spring Boot", "Service (beans)", "Repository", "In-memory"],
+      "diagram": "Spring Boot -> Service (beans) -> Repository -> In-memory",
+      "changesFromPrev": "Beans and configuration now managed by Spring IoC/DI; domain reused unchanged.",
+      "rationale": "Introduce an application container so the project can grow into a real backend without rewriting business logic."
+    },
+    {
+      "id": "arch-v0-4",
+      "releaseId": "v0-4",
+      "title": "REST API over the service layer",
+      "layers": ["HTTP", "Controller", "Service", "Repository (in-memory)"],
+      "diagram": "HTTP -> Controller -> Service -> Repository (in-memory)",
+      "changesFromPrev": "Added Spring MVC controllers, DTOs, validation, and a global exception handler.",
+      "rationale": "Expose Spendwise over HTTP so it can be exercised via Swagger/Postman."
+    },
+    {
+      "id": "arch-v0-5",
+      "releaseId": "v0-5",
+      "title": "JPA persistence on PostgreSQL",
+      "layers": ["HTTP", "Controller", "Service", "Spring Data JPA", "PostgreSQL"],
+      "diagram": "HTTP -> Controller -> Service -> Spring Data JPA -> PostgreSQL",
+      "changesFromPrev": "Replaced in-memory repository with JPA entities/repositories and added @Transactional atomic transfer.",
+      "rationale": "Data must survive restart and transfers must be atomic with rollback."
+    },
+    {
+      "id": "arch-v0-6",
+      "releaseId": "v0-6",
+      "title": "Secured multi-user backend",
+      "layers": ["HTTP", "Security Filter (JWT)", "Controller", "Service (ownership checks)", "Spring Data JPA", "PostgreSQL"],
+      "diagram": "HTTP -> JWT Filter -> Controller -> Service (ownership) -> JPA -> PostgreSQL",
+      "changesFromPrev": "Added Spring Security JWT authentication and backend ownership enforcement.",
+      "rationale": "Each user must only access their own data; protection cannot rely on the frontend."
+    },
+    {
+      "id": "arch-v0-7",
+      "releaseId": "v0-7",
+      "title": "Business engine domain services",
+      "layers": ["HTTP", "Controller", "Domain Services (Budget/Recurring/Rule)", "Spring Data JPA", "PostgreSQL"],
+      "diagram": "HTTP -> Controller -> Domain Services (Budget/Recurring/Rule) -> JPA -> PostgreSQL",
+      "changesFromPrev": "Added budget, recurring, and rule-engine domain services with aggregation queries.",
+      "rationale": "Move Spendwise beyond CRUD into real product behavior."
+    },
+    {
+      "id": "arch-v0-8",
+      "releaseId": "v0-8",
+      "title": "CSV import pipeline",
+      "layers": ["Upload CSV", "Import API", "ImportBatch", "Parser", "Validation", "Deduplication", "Persistence", "Async Job (optional)"],
+      "diagram": "Upload CSV -> Import API -> ImportBatch -> Parser -> Validate -> Dedup -> JPA -> PostgreSQL (async optional: 202 -> job -> batch status)",
+      "changesFromPrev": "Added an ImportBatch-driven parse/validate/dedup pipeline and optional async processing.",
+      "rationale": "Ingest real statement data idempotently without corrupting state."
+    },
+    {
+      "id": "arch-v0-9",
+      "releaseId": "v0-9",
+      "title": "Production backend",
+      "layers": ["Client", "Spring Boot", "PostgreSQL", "Redis", "Scheduler", "External FX API", "Actuator/Metrics", "Docker"],
+      "diagram": "Client -> Spring Boot [PostgreSQL | Redis cache | Scheduler | External FX API] + Actuator/Metrics (Docker)",
+      "changesFromPrev": "Added Redis dashboard cache, recurring scheduler, external FX integration, tests, monitoring, and Docker.",
+      "rationale": "Make the application performant, observable, and reproducible like a production backend."
+    },
+    {
+      "id": "arch-v1-0",
+      "releaseId": "v1-0",
+      "title": "Smart finance (advisory AI)",
+      "layers": ["Client", "Spring Boot REST", "Application/Domain Services", "Spring Data JPA", "PostgreSQL", "Redis/Scheduler/FX", "AI suggestion layer (advisory)"],
+      "diagram": "Client -> Spring Boot REST -> Services -> JPA -> PostgreSQL (+Redis/Scheduler/FX) -> AI suggestion layer (advisory)",
+      "changesFromPrev": "Added an advisory AI layer for category suggestion and monthly insight on top of the stable core.",
+      "rationale": "Add intelligent features without letting AI query the DB or override business rules."
+    }
+  ],
+  "lessonMap": {
+    "day-01": {
+      "applicationType": "direct",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-money"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise represents monetary amounts and must never lose precision or silently overflow. The choice of numeric type (BigDecimal, not double) and the primitive-vs-nullable-wrapper distinction is the technical foundation of the Money value object.",
+      "context": "Spendwise xử lý tiền, nên cách biểu diễn số quyết định tính đúng đắn của toàn hệ thống. Bài học này giải thích vì sao tiền phải dùng BigDecimal (khởi tạo từ String, so sánh bằng compareTo) thay vì double, và khi nào một field nên là wrapper cho phép null thay vì primitive.",
+      "application": "Dùng trong Spendwise ở release V0.1 Java Domain khi xây kiểu giá trị Money: chọn BigDecimal cho số tiền, so sánh bằng compareTo, và dùng wrapper cho các trường/cột có thể NULL để phân biệt 'chưa có dữ liệu' với giá trị 0."
+    },
+    "day-02": {
+      "applicationType": "theory",
+      "context": "Bài nền tảng về toán tử, độ ưu tiên, ba nhóm câu lệnh điều khiển luồng, switch statement/expression và vòng lặp theo chuẩn Java 17 — kiến thức ngôn ngữ chung, chưa xây trực tiếp tính năng Spendwise nào."
+    },
+    "day-03": {
+      "applicationType": "theory",
+      "context": "Lab luyện tập cài đặt StringCalculator (phân tích biểu thức cộng/trừ từ chuỗi) để áp dụng tính bất biến của String và tối ưu bằng kiểu nguyên thủy — bài tập ngôn ngữ chung, không gắn với tính năng Spendwise."
+    },
+    "day-04": {
+      "applicationType": "direct",
+      "releaseId": "v0-1",
+      "featureIds": ["feat-account", "feat-money", "feat-transaction"],
+      "buildTaskIds": ["task-money-vo", "task-account-entity", "task-transaction-entity", "task-domain-validation"],
+      "projectProblem": "Spendwise domain objects (Account, Money, Category) must protect their invariants — a balance cannot go negative, a value object cannot exist half-built — so they need private fields, a validating constructor, and meaningful behaviour instead of open setters.",
+      "context": "V0.1 của Spendwise là tầng domain thuần Java: các lớp như Account và Money phải luôn ở trạng thái hợp lệ. Bài học này dạy đóng gói (field private + constructor xác thực dữ liệu, không phơi setter công khai) — chính là kỹ thuật để xây các lớp đó.",
+      "application": "Dùng trong Spendwise ở release V0.1 Java Domain khi xây Account/Money: field private final, constructor kiểm tra dữ liệu (ví dụ số dư/số tiền không âm), chỉ phơi hành vi có nghĩa (deposit/withdraw) thay vì setBalance; dùng record cho các DTO bất biến chỉ mang dữ liệu."
+    },
+    "day-05": {
+      "applicationType": "future",
+      "releaseId": "v0-7",
+      "featureIds": ["feat-rule"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise's business engine needs pluggable rules/policies (auto-categorization, budget/discount policies) that can be added without editing existing code. Polymorphism plus the Strategy pattern is precisely that mechanism.",
+      "context": "Bài học này dạy đa hình và abstract class; ở phần thiết kế giới thiệu mẫu Strategy — đóng gói mỗi cách xử lý thành một lớp và chọn hành vi bằng cách chọn object. Đây là nền tảng cho engine luật nghiệp vụ của Spendwise ở release sau.",
+      "application": "Sẽ dùng trong Spendwise ở release V0.7 Business Engine: mỗi luật/chính sách là một implementation của một interface chung (như DiscountPolicy trong bài), tầng gọi chỉ phụ thuộc hợp đồng — thêm luật mới không phải sửa code cũ (Open/Closed)."
+    },
+    "day-06": {
+      "applicationType": "theory",
+      "context": "Assignment tổng hợp OOP (Employee/Developer/Manager/PayrollService/EmployeeDTO) để luyện abstract class, kế thừa, polymorphism động và record — bài tập thực hành chung, không xây tính năng Spendwise."
+    },
+    "day-07": {
+      "applicationType": "future",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-repository"],
+      "buildTaskIds": ["task-repository-interface"],
+      "projectProblem": "Spendwise should depend on a Repository abstraction (an interface) rather than a concrete storage class, so persistence can change without touching business logic; and fixed domain sets (transaction/account status/type) should be modeled as enums rather than magic strings.",
+      "context": "Bài học này dạy interface như 'hợp đồng' API và nguyên tắc Dependency Inversion (module nghiệp vụ phụ thuộc vào abstraction, không vào lớp cụ thể), cùng enum cho các tập giá trị cố định. Đây là nền tảng cho tầng repository của Spendwise.",
+      "application": "Sẽ dùng trong Spendwise ở release V0.2 Java Application khi định nghĩa Repository dưới dạng interface: tầng nghiệp vụ phụ thuộc vào abstraction còn implementation lưu trữ được nối vào ở tầng cấu hình; enum dùng cho các trạng thái/loại cố định của domain (và về sau map bằng @Enumerated(STRING))."
+    },
+    "day-08": {
+      "applicationType": "theory",
+      "context": "Core Java language foundation — generics, the Collections Framework, the exception hierarchy and try-with-resources — that every later Spendwise layer relies on but which builds no feature by itself."
+    },
+    "day-09": {
+      "applicationType": "theory",
+      "context": "A practice lab re-implementing an ArrayList, a HashMap and a data-access exception hierarchy from scratch to consolidate Day 8 — generic skill-building, not a Spendwise feature."
+    },
+    "day-10": {
+      "applicationType": "direct",
+      "releaseId": "v0-2",
+      "featureIds": ["feat-statistics", "feat-repository", "feat-transaction"],
+      "buildTaskIds": ["task-transaction-service", "task-statistics-aggregation"],
+      "projectProblem": "Spendwise needs to summarise transactions — total and count of spending grouped by category — which is exactly what a Stream + Collectors.groupingBy/summingDouble pipeline computes over the in-memory domain.",
+      "context": "The Stream API — filter, map, and especially Collectors.groupingBy/summingDouble — is the engine used to compute Spendwise's spending statistics over transactions.",
+      "application": "Used in Spendwise to build the V0.2 statistics feature: grouping transactions by category and summing amounts with a Stream collector pipeline."
+    },
+    "day-11": {
+      "applicationType": "future",
+      "releaseId": "v0-8",
+      "featureIds": ["feat-import"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise's CSV import must read potentially large transaction files line-by-line safely (explicit charset, resource closing, path-traversal defence), which is exactly what java.nio.file Path/Files + Files.lines provide.",
+      "context": "The NIO.2 File I/O half of this lesson (Path/Files, Files.lines, charset and path-traversal safety) is the foundation for Spendwise's later CSV import; the concurrency half is general JVM knowledge.",
+      "application": "Used in Spendwise later (V0.8 Data Processing) to read uploaded CSV transaction files with Files.lines and safe path handling for the import feature."
+    },
+    "day-12": {
+      "applicationType": "future",
+      "releaseId": "v0-8",
+      "featureIds": ["feat-import"],
+      "buildTaskIds": [],
+      "projectProblem": "Reading a large CSV, filtering invalid rows, aggregating revenue by category and exporting a report is the same shape as Spendwise's bulk CSV transaction import and category reporting.",
+      "context": "An assignment building an end-to-end CSV-to-report pipeline (read 500K rows with Files.lines, filter/group/aggregate/top-10, export JSON) — the same skills Spendwise's later CSV import will need.",
+      "application": "Used in Spendwise later (V0.8 Data Processing) as the skill basis for reading and aggregating uploaded CSV transaction files; the groupingBy/summingDouble step also mirrors the V0.2 statistics aggregation."
+    },
+    "day-13": {
+      "applicationType": "direct",
+      "releaseId": "v0-3",
+      "featureIds": ["feat-spring-migration"],
+      "buildTaskIds": ["task-spring-bootstrap"],
+      "projectProblem": "Migrating Spendwise from plain Java to Spring Boot requires understanding the IoC container, bean scopes and stereotype annotations so the domain/service/repository layers become container-managed beans.",
+      "context": "Spring Boot's IoC container, bean scopes and stereotype annotations are the mechanism by which Spendwise's services and repositories become container-managed when it migrates to Spring Boot.",
+      "application": "Used in Spendwise's V0.3 Spring Boot Core migration: wiring services/repositories as stateless @Service/@Repository singleton beans managed by the ApplicationContext."
+    },
+    "day-14": {
+      "applicationType": "direct",
+      "releaseId": "v0-3",
+      "featureIds": ["feat-spring-migration"],
+      "buildTaskIds": ["task-di-service-beans", "task-config-profiles"],
+      "projectProblem": "Spendwise's Spring Boot version must wire its beans correctly — constructor injection for required collaborators, @Configuration/@Bean for third-party objects, and externalised configuration — to stay maintainable and testable.",
+      "context": "Constructor injection, @Configuration/@Bean and externalised configuration are how Spendwise's Spring Boot services are wired together and configured after the migration.",
+      "application": "Used in Spendwise's V0.3 Spring Boot Core migration: constructor-injecting collaborators into services with final fields and declaring third-party/config beans via @Configuration."
+    },
+    "day-15": {
+      "applicationType": "theory",
+      "context": "An assignment that practices Spring configuration and DI patterns by building a standalone multi-module Notification Service (Email/SMS/Push) — general Spring skill-building, not a Spendwise feature."
+    },
+    "day-16": {
+      "applicationType": "direct",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "buildTaskIds": ["task-rest-controllers", "task-dto-mapping"],
+      "projectProblem": "Spendwise needs HTTP endpoints that let clients create and query accounts and transactions with correct REST semantics (status codes, path/query params, JSON bodies).",
+      "context": "The core REST controller lesson: @RestController, HTTP-method mappings, path/query binding, and ResponseEntity — the exact building blocks of Spendwise's API layer.",
+      "application": "Used in Spendwise to build the REST controllers that expose account and transaction endpoints, returning correct status codes (201 + Location on create, 204 on delete) and JSON DTOs rather than raw entities."
+    },
+    "day-17": {
+      "applicationType": "direct",
+      "releaseId": "v0-4",
+      "featureIds": ["feat-api"],
+      "buildTaskIds": ["task-bean-validation", "task-error-handling-advice"],
+      "projectProblem": "Spendwise must reject invalid request payloads (blank fields, bad amounts) and return a single, consistent error format across all endpoints instead of ad-hoc error bodies.",
+      "context": "Building on the Day 16 controllers, this lesson adds input validation (@Valid, custom validators) and centralized error handling (@RestControllerAdvice + ProblemDetail) — the request-hardening layer of the Spendwise API.",
+      "application": "Used in Spendwise to validate incoming request DTOs and to funnel all API errors through a global @RestControllerAdvice that returns standardized ProblemDetail responses."
+    },
+    "day-18": {
+      "applicationType": "theory",
+      "context": "A hands-on lab that consolidates the Day 16-17 REST/validation skills by building a standalone User & Task Management API (CRUD Task with status transitions) — generic practice, not a Spendwise feature."
+    },
+    "day-19": {
+      "applicationType": "direct",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-persistence"],
+      "buildTaskIds": ["task-jpa-entities", "task-jpa-relationships", "task-spring-data-repositories"],
+      "projectProblem": "Spendwise must persist its domain (accounts, transactions, categories) as JPA entities with correct relationships, cascade rules, and fetch strategies so data is stored and navigated correctly.",
+      "context": "This lesson teaches JPA entity mapping and relationships — how to turn Spendwise's domain objects into persisted @Entity classes with the right @ManyToOne/@OneToMany wiring, cascade, and lazy loading.",
+      "application": "Used in Spendwise to map Account, Transaction, and Category as JPA entities with correct owning-side relationships, composition cascade/orphanRemoval, and lazy fetching to avoid N+1."
+    },
+    "day-20": {
+      "applicationType": "direct",
+      "releaseId": "v0-5",
+      "featureIds": ["feat-persistence", "feat-atomic-transfer"],
+      "buildTaskIds": ["task-spring-data-repositories", "task-atomic-transfer", "task-optimistic-locking"],
+      "projectProblem": "Spendwise must list transactions with safe pagination/sorting and guarantee that multi-step money operations (e.g. transfers) either fully commit or fully roll back.",
+      "context": "This lesson covers advanced repositories (pagination/sorting), transaction management with @Transactional, and auditing — the query and consistency guarantees behind Spendwise's transaction data.",
+      "application": "Used in Spendwise to page/sort transaction lists and to wrap money-moving operations in @Transactional so a failure rolls back atomically; optimistic locking (@Version) is optional hardening for concurrent edits."
+    },
+    "day-21": {
+      "applicationType": "theory",
+      "context": "An assignment that consolidates the Day 19-20 persistence skills by building a standalone E-Commerce data layer (5 entities, business queries, Flyway, @DataJpaTest) — generic practice, not the Spendwise schema."
+    },
+    "day-22": {
+      "applicationType": "direct",
+      "releaseId": "v0-6",
+      "featureIds": ["feat-auth"],
+      "buildTaskIds": ["task-jwt-auth"],
+      "projectProblem": "Spendwise is still effectively single-user with no login; it must become a real multi-user backend where each person registers, signs in, and their passwords are stored safely.",
+      "context": "Spendwise has no authentication yet. Today's stateless JWT authentication and secure password hashing are what turn it into a multi-user backend where users can register and sign in.",
+      "application": "Used in Spendwise V0.6 (Security & Ownership) to build register/login with BCrypt-hashed passwords (DelegatingPasswordEncoder) and stateless JWT verification on every API request."
+    },
+    "day-23": {
+      "applicationType": "direct",
+      "releaseId": "v0-6",
+      "featureIds": ["feat-ownership", "feat-auth"],
+      "buildTaskIds": ["task-ownership-checks"],
+      "projectProblem": "Spendwise must guarantee User A cannot read or modify User B's accounts, transactions, or budgets, and must correctly decide CSRF handling for its stateless JWT API.",
+      "context": "Now that users can log in, Spendwise must enforce that each user only touches their own data. Method-level authorization (@PreAuthorize) plus correct CSRF handling deliver that ownership guarantee.",
+      "application": "Used in Spendwise V0.6 to enforce resource ownership with @PreAuthorize/SpEL and to disable CSRF safely for the Bearer-token API; the N+1 material is the performance foundation reused later for dashboard/query optimization (V0.9)."
+    },
+    "day-24": {
+      "applicationType": "direct",
+      "releaseId": "v0-6",
+      "featureIds": ["feat-auth", "feat-ownership"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise needs a complete, working auth service (register/login/refresh/logout with early token revocation) plus role- and owner-based access control and performant list queries.",
+      "context": "This lab assembles Spendwise's full authentication service and ownership checks end to end, wiring register/login/refresh/logout and role-based access into a working secured backend.",
+      "application": "Used in Spendwise V0.6 to ship the end-to-end Auth Service (JWT issuance, logout/revocation via blacklist, @PreAuthorize role and owner checks) and to remove N+1 from list endpoints via JOIN FETCH/@EntityGraph."
+    },
+    "day-25": {
+      "applicationType": "direct",
+      "releaseId": "v0-9",
+      "featureIds": ["feat-cache", "feat-async-import", "feat-scheduler"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise recomputes expensive dashboard/spending aggregations on every request; large imports should not block the request thread, and recurring transactions need periodic processing.",
+      "context": "Spendwise's dashboard recomputes spending aggregates on every request, which is costly. Caching backed by Redis, plus async and scheduled processing, is how those hot reads and background jobs get optimized.",
+      "application": "Used in Spendwise V0.9 to cache dashboard/category aggregations in Redis with TTL and eviction on writes; the @Async and @Scheduled concepts introduced here back async imports (V0.8) and the recurring-transaction scheduler (V0.9)."
+    },
+    "day-26": {
+      "applicationType": "direct",
+      "releaseId": "v0-8",
+      "featureIds": ["feat-import", "feat-exchange-rate"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise users import bank statements as CSV (upload, parse, export) and the app needs foreign-exchange rates from an external service that may be slow or fail.",
+      "context": "Spendwise needs to ingest bank-statement CSV files and fetch exchange rates from an outside service. Safe file upload/CSV handling and resilient external API calls are the techniques that unlock both.",
+      "application": "MultipartFile upload and CSV escaping underpin Spendwise's V0.8 CSV import/export (feat-import); WebClient plus Retry/Circuit Breaker underpin the V0.9 external exchange-rate integration (feat-exchange-rate)."
+    },
+    "day-27": {
+      "applicationType": "theory",
+      "context": "This is a generic e-commerce practice assignment (product listing, orders, payment gateway) that consolidates the Unit 9 techniques on a non-Spendwise domain, so it maps to no Spendwise feature."
+    },
+    "day-28": {
+      "applicationType": "theory",
+      "context": "Foundational testing tooling (JUnit 5, Spring Boot slice and integration tests) that will safeguard Spendwise's financial correctness later, but is a general engineering practice rather than a distinct Spendwise feature."
+    },
+    "day-29": {
+      "applicationType": "direct",
+      "releaseId": "v0-9",
+      "featureIds": ["feat-observability"],
+      "buildTaskIds": [],
+      "projectProblem": "Once Spendwise runs in production you cannot attach a debugger: you must be able to answer 'is the app healthy' and 'what happened to this request'. This needs structured logs, health checks and metrics.",
+      "context": "Khi Spendwise chạy trên production, bạn cần biết ứng dụng có còn khỏe không và điều gì đã xảy ra với mỗi request. Bài này dạy structured logging + MDC, HealthIndicator/Actuator và tài liệu API tự sinh — nền tảng observability cho release V0.9.",
+      "application": "Dùng trong Spendwise ở V0.9 (Production Engineering) để bật structured JSON logging + MDC (traceId), viết HealthIndicator kiểm tra database, giới hạn expose Actuator an toàn, và sinh tài liệu OpenAPI cho API."
+    },
+    "day-30": {
+      "applicationType": "direct",
+      "releaseId": "v0-9",
+      "featureIds": ["feat-observability"],
+      "buildTaskIds": [],
+      "projectProblem": "Spendwise must reach production readiness: packaged as a reproducible Docker image, observable via health/metrics/logs, and verified against a real database rather than H2.",
+      "context": "Lab tổng hợp đưa một ứng dụng đạt chuẩn 'production readiness': đóng gói layered-jar Docker + docker-compose, hoàn thiện observability (Actuator/metrics/HealthIndicator + structured logging) và test hai tầng với Testcontainers — chính là các bước Spendwise cần cho V0.9.",
+      "application": "Dùng trong Spendwise ở V0.9 (Production Engineering) để đóng gói image layered-jar, chạy phụ thuộc (DB/Redis) qua docker-compose, hoàn thiện observability và kiểm thử tích hợp bằng Testcontainers với database thật."
+    },
+    "day-31": {
+      "applicationType": "theory",
+      "context": "Buổi kickoff dự án capstone thương mại điện tử: thống nhất kiến trúc package-per-module, luồng DispatcherServlet và bản API contract trước khi code — kỹ năng thiết kế hệ thống dùng chung, không xây tính năng Spendwise nào."
+    },
+    "day-32": {
+      "applicationType": "theory",
+      "context": "Hoàn thiện thiết kế database (ERD), chiến lược xử lý lỗi toàn cục và quy ước git workflow cho dự án capstone e-commerce — kỹ năng thiết kế/quy trình chung, không gắn với tính năng Spendwise cụ thể."
+    },
+    "day-33": {
+      "applicationType": "theory",
+      "context": "Sprint 1 của dự án capstone e-commerce: hiện thực entity, quan hệ cascade, cấu hình JWT Resource Server và Category CRUD — áp dụng lại kiến thức đã học vào một dự án riêng, không xây tính năng Spendwise."
+    },
+    "day-34": {
+      "applicationType": "theory",
+      "context": "Sprint 2 của dự án capstone e-commerce: Product CRUD, upload ảnh, thiết kế Cart và caching cho Category/Product — thực hành trong dự án riêng, không xây tính năng Spendwise."
+    },
+    "day-35": {
+      "applicationType": "theory",
+      "context": "Sprint 3 của dự án capstone e-commerce: luồng checkout trong @Transactional, gửi email bất đồng bộ, xuất CSV và hoàn thiện Docker/CI — thực hành trong dự án riêng, không xây tính năng Spendwise."
+    },
+    "day-36": {
+      "applicationType": "theory",
+      "context": "Buổi bảo vệ và demo dự án capstone e-commerce kèm bằng chứng kiểm thử, tài liệu API và trả lời phản biện — hoạt động đánh giá, không giới thiệu hay xây tính năng Spendwise mới."
+    },
+    "day-37": {
+      "applicationType": "theory",
+      "context": "A 60-minute offline final theory exam consolidating LO1-LO10 across Java fundamentals, Spring Core/Data, and Spring Web/Security. It is a review/assessment session, not new content and not a build session."
+    },
+    "day-38": {
+      "applicationType": "theory",
+      "context": "A 300-minute offline final practical exam where learners add a new business feature to the existing e-commerce capstone (LO5-LO12), reapplying skills from Day 31-36. It is a timed assessment against a separate capstone project, not a Spendwise build."
+    }
+  }
+}

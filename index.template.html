@@ -38,6 +38,9 @@
       --ok-contrast: #ffffff;
       --info: #2c6e9e;
       --info-soft: #e5f0f8;
+      --project: #336b73;
+      --project-ink: #24545b;
+      --project-soft: #e3f0ef;
       --danger: #b3372a;
       --danger-soft: #fbe9e6;
       --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
@@ -78,6 +81,9 @@
       --ok-contrast: #0b1f0d;
       --info: #7db8e8;
       --info-soft: #17222c;
+      --project: #72c4c5;
+      --project-ink: #8ed8d8;
+      --project-soft: #172929;
       --danger: #e8776e;
       --danger-soft: #2c1815;
       --code-head: rgba(148, 163, 184, .1);
@@ -214,6 +220,32 @@
     .header-search input:focus { background: var(--surface); }
     .header-search input::placeholder { color: var(--muted); }
     .header-actions { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+    .primary-nav {
+      display: flex;
+      align-items: center;
+      gap: .125rem;
+      padding: .1875rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface-strong);
+      flex-shrink: 0;
+    }
+    .primary-nav a {
+      padding: .375rem .625rem;
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-size: .8125rem;
+      font-weight: 650;
+      line-height: 1.25;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .primary-nav a:hover { color: var(--ink); background: var(--surface); }
+    .primary-nav a[aria-current="page"] {
+      color: var(--project-ink);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
     .progress-meter {
       display: flex;
       align-items: center;
@@ -323,7 +355,7 @@
     .module-progress { flex-shrink: 0; font-size: .6875rem; font-weight: 700; color: var(--muted); }
     .module-toggle .chevron { flex-shrink: 0; transition: transform .15s ease; color: var(--muted); }
     .module-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
-    .lesson-list { list-style: none; margin: .125rem 0 .5rem; padding: 0; display: grid; gap: .0625rem; }
+    .lesson-list { list-style: none; margin: .125rem 0 .5rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .0625rem; }
     .lesson-link {
       display: flex;
       align-items: center;
@@ -335,6 +367,11 @@
       font-size: .8438rem;
       line-height: 1.4;
       border-left: 2px solid transparent;
+      /* .lesson-list is an implicit single-column grid, so without this
+         each link's automatic minimum size is its own min-content width —
+         the full unwrapped title — which forces the sidebar (and the
+         viewport) wider than the link's own ellipsis truncation intends. */
+      min-width: 0;
     }
     .lesson-link:hover { background: var(--surface-strong); }
     .lesson-link[aria-current="page"] {
@@ -401,6 +438,28 @@
       #route-view { padding-inline: clamp(1.5rem, 4vw, 3rem); }
     }
     @media (max-width: 63.999rem) {
+      .app-header { gap: .625rem; padding-inline: .875rem; }
+      .primary-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        /* A fixed-position flex CONTAINER sizes by shrink-to-fit, not by
+           stretching between left/right, so without an explicit width its
+           four nowrap labels can force it wider than the viewport (clipping
+           the last link). Pin it to the viewport width explicitly. */
+        width: 100%;
+        z-index: 110;
+        justify-content: space-around;
+        gap: .25rem;
+        border-width: 1px 0 0;
+        border-radius: 0;
+        padding: .4375rem max(.5rem, env(safe-area-inset-right)) calc(.4375rem + env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left));
+        background: var(--surface);
+        box-shadow: 0 -8px 24px rgb(38 35 32 / .08);
+      }
+      .primary-nav a { flex: 1 1 0; padding: .4375rem .25rem; text-align: center; }
+      #route-view { padding-bottom: 6rem; }
       .course-sidebar {
         position: fixed;
         top: var(--header-h);
@@ -413,7 +472,7 @@
         transition: transform .2s ease;
         box-shadow: var(--shadow-float);
       }
-      body.drawer-open .course-sidebar { transform: translateX(0); }
+      body.drawer-open .course-sidebar { z-index: 115; transform: translateX(0); }
       body.drawer-open { overflow: hidden; }
       #route-view { padding-inline: clamp(1rem, 4vw, 2rem); }
     }
@@ -422,16 +481,6 @@
       body.drawer-open { overflow: auto; }
       body.drawer-open .drawer-backdrop { display: none; }
     }
-    @media (max-width: 30rem) {
-      .progress-meter .progress-text-long { display: none; }
-      .progress-meter .progress-text-short { display: none; }
-      .progress-meter progress { width: 4rem; }
-      .header-search input { width: 7rem; }
-      .brand .brand-name-long { display: none; }
-      .curriculum-row { flex-wrap: wrap; row-gap: .25rem; }
-      .dash-progress-card { grid-template-columns: 1fr; }
-    }
-
     pre { max-width: 100%; overflow-x: auto; }
 
     @media (prefers-reduced-motion: reduce) {
@@ -952,7 +1001,11 @@
     }
     .dash-progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--spring-ink), var(--spring)); transition: width .3s ease; }
     .dash-progress-split { display: grid; gap: .875rem; }
-    .dash-progress-row { display: grid; grid-template-columns: minmax(5rem, auto) minmax(0, 1fr) auto; align-items: center; gap: .75rem; }
+    /* min-width: 0 — .dash-progress-split is an implicit single-column
+       grid, so without it each row's automatic minimum size is its own
+       min-content width, which can force the card (and the viewport)
+       wider than its actual available space at narrow widths. */
+    .dash-progress-row { display: grid; grid-template-columns: minmax(5rem, auto) minmax(0, 1fr) auto; align-items: center; gap: .75rem; min-width: 0; }
     .dash-progress-row-label { display: inline-flex; align-items: center; gap: .4375rem; font-size: .875rem; font-weight: 700; color: var(--ink); }
     .dash-progress-row-label::before { content: ""; width: .625rem; height: .625rem; border-radius: 999px; background: var(--muted); flex-shrink: 0; }
     .dash-progress-row--java .dash-progress-row-label::before { background: var(--java); }
@@ -1063,6 +1116,381 @@
     }
     .curriculum-row--done .curriculum-tag { background: var(--ok-soft); color: var(--ok); }
     .curriculum-row--active .curriculum-tag { background: var(--java-soft); color: var(--java-ink); }
+
+    /* ============ Spendwise project track (P0) ============ */
+    .workspace-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .workspace-eyebrow, .project-section-label {
+      margin: 0 0 .375rem;
+      color: var(--project-ink);
+      font-family: var(--mono);
+      font-size: .75rem;
+      font-weight: 750;
+      letter-spacing: .065em;
+      text-transform: uppercase;
+    }
+    .workspace-title { margin: 0; font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.2; letter-spacing: -.02em; }
+    .workspace-summary { max-width: 50rem; margin: .625rem 0 0; color: var(--muted); line-height: 1.65; }
+    .text-link { color: var(--project-ink); font-weight: 700; text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    .project-status {
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      padding: .1875rem .5rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface-strong);
+      font-family: var(--mono);
+      font-size: .6875rem;
+      font-weight: 750;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    .project-status--building { color: var(--project-ink); background: var(--project-soft); border-color: var(--project); }
+    .project-status--released { color: var(--ok); background: var(--ok-soft); border-color: var(--ok); }
+    .project-progress {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .375rem .75rem;
+      align-items: center;
+    }
+    .project-progress-label { font-size: .8125rem; color: var(--muted); }
+    .project-progress-count { font-family: var(--mono); font-size: .75rem; font-weight: 700; color: var(--project-ink); }
+    /* Shown instead of the count+bar when a release has no build task to
+       track, so an empty plan never renders as 0% completion. */
+    .project-progress-note { grid-column: 1 / -1; color: var(--muted); font-size: .8125rem; font-style: italic; }
+    .project-progress progress {
+      grid-column: 1 / -1;
+      width: 100%;
+      height: .5rem;
+      border: 0;
+      border-radius: 999px;
+      overflow: hidden;
+      accent-color: var(--project);
+      background: var(--surface-strong);
+    }
+    .project-progress progress::-webkit-progress-bar { background: var(--surface-strong); }
+    .project-progress progress::-webkit-progress-value { background: var(--project); }
+    .project-progress progress::-moz-progress-bar { background: var(--project); }
+
+    .project-dashboard {
+      margin: .25rem 0 2rem;
+      padding: 1.25rem;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--project);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .project-dashboard-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+    .project-dashboard-head h2 { margin: 0; font-size: 1.125rem; }
+    .project-now-grid, .project-next-grid, .project-overview-grid, .release-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .project-next-grid { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+    .project-panel { min-width: 0; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--canvas); }
+    .project-panel h2, .project-panel h3 { margin: 0 0 .5rem; font-size: 1rem; line-height: 1.4; }
+    .project-panel p { margin: .375rem 0 0; font-size: .9063rem; line-height: 1.6; color: var(--muted); }
+    .project-release-line { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+    .project-release-version { color: var(--project-ink); font-family: var(--mono); font-size: .75rem; font-weight: 800; }
+    .feature-list, .dependency-list, .criteria-list { margin: .625rem 0 0; padding-left: 1.15rem; color: var(--muted); font-size: .875rem; }
+    .feature-list li, .dependency-list li, .criteria-list li { margin: .3125rem 0; }
+
+    .project-context, .project-application {
+      margin: 0 0 2.25rem;
+      padding: 1.125rem 1.25rem;
+      border: 1px solid color-mix(in srgb, var(--project) 45%, var(--line));
+      border-left: 4px solid var(--project);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      background: var(--project-soft);
+    }
+    .project-context h2, .project-application h2 { margin: 0 0 .625rem; font-size: 1rem; letter-spacing: .01em; text-transform: uppercase; }
+    .project-context p, .project-application > p { margin: .5rem 0 0; line-height: 1.7; }
+    .project-context-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .625rem; }
+    .project-type {
+      padding: .15rem .45rem;
+      border: 1px solid color-mix(in srgb, var(--project) 55%, var(--line));
+      border-radius: 999px;
+      color: var(--project-ink);
+      font-family: var(--mono);
+      font-size: .6875rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+    .project-type--future { border-left-color: var(--info); background: var(--info-soft); }
+    .project-type--future .project-type { color: var(--info); border-color: var(--info); }
+    .project-type--theory { border-left-color: var(--line-strong); background: var(--surface-strong); }
+    .project-type--theory .project-type { color: var(--muted); border-color: var(--line-strong); }
+    .project-problem { color: var(--ink) !important; }
+
+    .build-task-list { display: grid; gap: .625rem; margin-top: 1rem; }
+    .build-task {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: .625rem .75rem;
+      align-items: start;
+      padding: .875rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .build-task-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-top: .0625rem;
+      padding: 0;
+      border: 1.5px solid var(--line-strong);
+      border-radius: .375rem;
+      color: transparent;
+      background: var(--surface);
+      cursor: pointer;
+    }
+    .build-task-toggle svg { width: .875rem; height: .875rem; }
+    .build-task-toggle[aria-pressed="true"] { color: #fff; border-color: var(--project-ink); background: var(--project-ink); }
+    .build-task-title { display: flex; flex-wrap: wrap; gap: .375rem; align-items: baseline; font-weight: 700; }
+    .build-task-meta { margin-top: .25rem; color: var(--muted); font-size: .8125rem; line-height: 1.5; }
+    .build-task--done .build-task-title > span:first-child { text-decoration: line-through; text-decoration-thickness: .08em; color: var(--muted); }
+    .task-kind { color: var(--muted); font-family: var(--mono); font-size: .6875rem; font-weight: 700; text-transform: uppercase; }
+
+    .project-overview-grid { margin-bottom: 1.5rem; }
+    .project-overview-grid .project-panel:first-child { grid-column: 1 / -1; }
+    .roadmap-entry {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.5rem;
+      padding: .5rem .875rem;
+      border: 1px solid var(--project);
+      border-radius: var(--radius-md);
+      color: var(--project-ink);
+      background: var(--project-soft);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .project-empty, .project-not-found, .project-placeholder {
+      max-width: 40rem;
+      padding: 1.25rem;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .project-empty h1, .project-not-found h1, .project-placeholder h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
+
+    .roadmap-list { position: relative; display: grid; gap: 0; margin: 1rem 0 0; }
+    .roadmap-release {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1.25fr) minmax(10rem, .75fr);
+      gap: 1rem;
+      padding: 1rem 0;
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--line);
+    }
+    .roadmap-release:last-child { border-bottom: 0; }
+    .roadmap-release::before {
+      content: '';
+      align-self: start;
+      width: .75rem;
+      height: .75rem;
+      margin-top: .35rem;
+      border: 3px solid var(--surface);
+      border-radius: 999px;
+      background: var(--line-strong);
+      box-shadow: 0 0 0 1px var(--line-strong);
+    }
+    .roadmap-release:hover .roadmap-release-title { color: var(--project-ink); text-decoration: underline; text-underline-offset: .18em; }
+    .roadmap-release-version { color: var(--project-ink); font-family: var(--mono); font-size: .75rem; font-weight: 800; }
+    .roadmap-release-title { margin: .125rem 0 .25rem; font-size: 1rem; font-weight: 750; }
+    .roadmap-release-copy { color: var(--muted); font-size: .8438rem; line-height: 1.55; }
+
+    .release-hero { margin-bottom: 1.25rem; }
+    .release-hero h1 { margin: .25rem 0 .5rem; font-size: clamp(1.75rem, 3vw, 2.25rem); }
+    .release-hero p { max-width: 50rem; color: var(--muted); }
+    .release-columns { margin-bottom: 1rem; }
+    .release-section { margin-top: 1rem; }
+    .architecture-stage { margin-top: 1rem; }
+    .architecture-stage pre { margin: .625rem 0 0; padding: .875rem 1rem; border-radius: var(--radius-sm); color: var(--code-ink); background: var(--code-bg); white-space: pre-wrap; }
+
+    /* ---- P1: project sub-nav (Course<->Project Map / Architecture) ---- */
+    .project-subnav { display: flex; flex-wrap: wrap; gap: .375rem; margin: .875rem 0 1.5rem; }
+    .project-subnav a {
+      padding: .375rem .75rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .8125rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .project-subnav a[aria-current="page"] { border-color: var(--project); color: var(--project-ink); background: var(--project-soft); }
+    .project-subnav a:hover { border-color: var(--line-strong); color: var(--ink); }
+
+    /* ---- P1: Release Detail — richer feature cards --------------------- */
+    .feature-detail-list { display: grid; gap: .625rem; margin-top: .75rem; }
+    .feature-card { padding: .875rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .feature-card h3 { margin: 0; font-size: .9375rem; }
+    .feature-entities { margin-top: .5rem; color: var(--muted); font-size: .8125rem; }
+    .feature-entities-label { font-weight: 700; color: var(--ink); }
+    .project-progress--feature { margin-top: .625rem; }
+    .feature-progress-empty { margin-top: .625rem; color: var(--muted); font-size: .8125rem; font-style: italic; }
+
+    /* ---- P1: Build Task expand/collapse detail -------------------------- */
+    .build-task--expandable { grid-template-columns: auto minmax(0, 1fr); }
+    .build-task-detail-toggle {
+      grid-column: 1 / -1;
+      display: inline-flex;
+      align-items: center;
+      gap: .3125rem;
+      width: fit-content;
+      margin-top: .125rem;
+      padding: .25rem .5rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      background: transparent;
+      font-size: .75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .build-task-detail-toggle svg { width: .75rem; height: .75rem; transition: transform .15s ease; }
+    .build-task-detail-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+    .build-task-detail {
+      grid-column: 1 / -1;
+      padding-top: .625rem;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: .8438rem;
+    }
+    .build-task-detail-label { margin-top: .625rem; color: var(--ink); font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    .build-task-detail-label:first-child { margin-top: 0; }
+    .build-task-detail ul { margin: .3125rem 0 0; padding-left: 1.15rem; }
+    .build-task-detail li { margin: .25rem 0; }
+
+    /* ---- P1: Domain Overview -------------------------------------------- */
+    /* align-items:start, not the default stretch: entity cards carry wildly
+       different numbers of features (Rule has 1, Transaction has 14), and
+       stretching every card in a row to the tallest one turns the short ones
+       into tall, mostly-empty boxes. Each card sizes to its own content. */
+    .domain-entity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .625rem; margin-top: .75rem; align-items: start; }
+    .domain-entity-card { padding: .75rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .domain-entity-card h3 { margin: 0 0 .25rem; font-size: .875rem; }
+    .domain-entity-card p { margin: 0; color: var(--muted); font-size: .8125rem; }
+
+    /* ---- P1: Course <-> Project Map -------------------------------------- */
+    .map-filterbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1rem 0 .75rem; }
+    .map-filter-btn {
+      padding: .375rem .75rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--surface);
+      font-size: .8125rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .map-filter-btn[aria-pressed="true"] { border-color: var(--project); color: var(--project-ink); background: var(--project-soft); }
+    .map-filter-release { display: flex; align-items: center; gap: .375rem; margin-left: auto; font-size: .8125rem; color: var(--muted); }
+    .map-filter-release select { padding: .3125rem .5rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+    .map-summary { margin: 0 0 .625rem; color: var(--muted); font-size: .8125rem; }
+    .map-rows { display: grid; gap: .5rem; }
+    .map-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: .75rem;
+      align-items: start;
+      padding: .75rem .875rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .map-row-group { margin-top: .1875rem; color: var(--muted); font-size: .75rem; }
+    .map-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+    .map-row-features { color: var(--muted); font-size: .8125rem; }
+    .map-type--future { color: var(--info); border-color: var(--info); }
+    .map-type--theory { color: var(--muted); border-color: var(--line-strong); }
+    .map-type--unmapped { color: var(--muted); border-color: var(--line-strong); border-style: dashed; }
+
+    /* ---- P1: Architecture Evolution -------------------------------------- */
+    .architecture-stage-nav { display: flex; flex-wrap: wrap; gap: .375rem; margin: 1rem 0 1.25rem; }
+    .architecture-stage-nav-link {
+      padding: .3125rem .625rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .75rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .architecture-stage-nav-link:hover { border-color: var(--project); color: var(--project-ink); }
+    /* Which stage the learner jumped to. Border + weight + background carry
+       the state, not colour alone. */
+    .architecture-stage-nav-link[aria-current="location"] {
+      border-color: var(--project);
+      color: var(--project-ink);
+      background: var(--project-soft);
+    }
+    .architecture-target-note { color: var(--muted); font-size: .8125rem; font-style: italic; }
+    .architecture-stage-controls { display: flex; flex-wrap: wrap; gap: .375rem 1rem; margin-top: .875rem; padding-top: .75rem; border-top: 1px solid var(--line); font-size: .875rem; }
+    .architecture-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: .75rem; }
+    .architecture-compare-col pre { margin: .375rem 0 0; padding: .875rem 1rem; border-radius: var(--radius-sm); color: var(--code-ink); background: var(--code-bg); white-space: pre-wrap; }
+    .architecture-compare-label { color: var(--muted); font-family: var(--mono); font-size: .6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .architecture-compare-changes { margin-top: .625rem; color: var(--muted); font-size: .875rem; }
+
+    /* ---- P1: Roadmap milestone grouping ---------------------------------- */
+    .roadmap-milestone-group { margin-top: 1.75rem; }
+    .roadmap-milestone-group:first-child { margin-top: 1rem; }
+    .roadmap-milestone-head { margin-bottom: .25rem; }
+    .roadmap-milestone-head h2 { margin: 0; font-size: 1.0625rem; }
+    .roadmap-milestone-head p { margin: .25rem 0 0; color: var(--muted); font-size: .875rem; }
+
+    /* This block must stay last: it overrides base rules for several
+       selectors (.dash-progress-card, .project-*-grid, .release-columns,
+       .roadmap-release, .curriculum-row) that are declared further down
+       the cascade than where a "Responsive" section would normally sit.
+       With equal specificity, CSS resolves ties by source order, so this
+       @media block has to appear after every rule it means to override —
+       moving it earlier silently loses to those later base declarations
+       even while the media query itself matches. */
+    @media (max-width: 30rem) {
+      .progress-meter { display: none; }
+      .header-search input { width: min(7rem, 25vw); }
+      .brand .brand-name-long { display: none; }
+      .curriculum-row { flex-wrap: wrap; row-gap: .25rem; }
+      .dash-progress-card { grid-template-columns: 1fr; }
+      .project-now-grid, .project-next-grid, .project-overview-grid, .release-columns { grid-template-columns: 1fr; }
+      .roadmap-release { grid-template-columns: auto minmax(0, 1fr); }
+      .roadmap-release::before { grid-row: 1 / span 2; }
+      .lesson-nav { grid-template-columns: 1fr 1fr; }
+      .lesson-nav .nav-complete { grid-column: 1 / -1; grid-row: 2; }
+      .lesson-nav .nav-next { grid-column: 2; }
+      .map-row { grid-template-columns: 1fr; }
+      .map-filter-release { margin-left: 0; width: 100%; }
+      .architecture-compare { grid-template-columns: 1fr; }
+    }
+    /* Must stay last for the same reason as the block above: the
+       unconditional #toast-region rule (declared earlier, ~line 504) sets
+       bottom: 1rem, so this mobile override — which lifts toasts clear of
+       the fixed bottom tab bar — has to appear after it in source order to
+       win the cascade despite matching specificity. */
+    @media (max-width: 63.999rem) {
+      #toast-region { bottom: 4.25rem; }
+    }
   </style>
   <script>
     /* Theme bootstrap: runs before first paint to avoid a light/dark flash. */
@@ -1107,9 +1535,36 @@
       const raw = String(hash ?? "").replace(/^#\/?/, "");
       if (!raw || raw === "dashboard") return { view: "dashboard" };
       if (raw === "resources") return { view: "resources" };
+      if (raw === "project") return { view: "project" };
+      if (raw === "roadmap") return { view: "roadmap" };
+      if (raw === "map") return { view: "map" };
+      if (raw === "architecture") return { view: "architecture" };
+      const releaseMatch = raw.match(/^release\/(.+)$/);
+      if (releaseMatch) return { view: "release", releaseId: decodeURIComponent(releaseMatch[1]) };
       const lessonMatch = raw.match(/^lesson\/(.+)$/);
       if (lessonMatch) return { view: "lesson", lessonId: decodeURIComponent(lessonMatch[1]) };
       return { view: "dashboard" };
+    }
+
+    function selectCurrentRelease(releases) {
+      const authored = Array.isArray(releases) ? releases : [];
+      const byOrder = (a, b) => Number(a.order || 0) - Number(b.order || 0);
+      return authored.filter((release) => release.status === "building").sort(byOrder)[0]
+        || authored.filter((release) => release.status === "planned").sort(byOrder)[0]
+        || null;
+    }
+
+    function selectNextBuildTask(release, taskSource, completedTaskIds) {
+      if (!release || !Array.isArray(release.buildTaskIds)) return null;
+      const done = new Set(completedTaskIds || []);
+      const taskMap = taskSource instanceof Map
+        ? taskSource
+        : new Map((Array.isArray(taskSource) ? taskSource : []).map((task) => [task.id, task]));
+      for (const taskId of release.buildTaskIds) {
+        const task = taskMap.get(taskId);
+        if (task && task.required !== false && !done.has(taskId)) return task;
+      }
+      return null;
     }
 
     function calculateProgress(lessons, completedIds, group) {
@@ -1117,6 +1572,30 @@
       const done = new Set(completedIds);
       const total = valid.length;
       const completed = valid.filter((l) => done.has(l.id)).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+      return { completed, total, percent };
+    }
+
+    // Project Progress aggregation. Both count ONLY required build tasks so
+    // optional tasks never block a release/feature from reaching 100%. These
+    // read the project build-task list + the completed-id list and are pure,
+    // mirroring calculateProgress. They are independent of course completion.
+    function calculateReleaseProgress(buildTasks, completedTaskIds, releaseId) {
+      const done = new Set(completedTaskIds);
+      const required = (buildTasks || []).filter((t) => t.required !== false && t.releaseId === releaseId);
+      const total = required.length;
+      const completed = required.filter((t) => done.has(t.id)).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+      return { completed, total, percent };
+    }
+
+    function calculateFeatureProgress(buildTasks, completedTaskIds, featureId) {
+      const done = new Set(completedTaskIds);
+      const required = (buildTasks || []).filter(
+        (t) => t.required !== false && (t.featureIds || []).includes(featureId)
+      );
+      const total = required.length;
+      const completed = required.filter((t) => done.has(t.id)).length;
       const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
       return { completed, total, percent };
     }
@@ -1129,7 +1608,105 @@
       return lessons[next].id;
     }
 
-    const STATE_VERSION = 1;
+    // ---- P1: Course <-> Project Map ------------------------------------
+    // Derives one row per lesson (in authored lesson order) describing how
+    // that lesson relates to the project, without mutating either input.
+    // `lessonMap` is the plain object keyed by lesson id (courseData shape),
+    // not a Map, so this stays pure/serializable across the node:vm test
+    // boundary. Lessons absent from lessonMap are "unmapped" (day-39-64
+    // style aggregated lessons) — a UI-only fourth category, never an error.
+    function deriveMapRows(lessons, lessonMap) {
+      const map = lessonMap || {};
+      return (lessons || []).map((lesson) => {
+        const entry = map[lesson.id];
+        const applicationType = entry ? (entry.applicationType || "theory") : "unmapped";
+        return {
+          id: lesson.id,
+          title: lesson.title,
+          group: lesson.group,
+          unitId: lesson.unitId,
+          applicationType,
+          releaseId: entry ? (entry.releaseId || null) : null,
+          featureIds: entry ? (entry.featureIds || []) : [],
+        };
+      });
+    }
+
+    // Client-side filter over deriveMapRows() output. Theory and Unmapped
+    // share one filter bucket ("theory-unmapped") to keep the filter UI to
+    // four buttons, but each row still carries its own precise
+    // applicationType so direct/future/theory/unmapped stay visually
+    // distinct — the filter groups them, it does not merge the data.
+    function filterMapRows(rows, typeFilter, releaseFilter) {
+      const tf = typeFilter || "all";
+      const rf = releaseFilter || "all";
+      return (rows || []).filter((row) => {
+        if (tf === "direct" && row.applicationType !== "direct") return false;
+        if (tf === "future" && row.applicationType !== "future") return false;
+        if (tf === "theory-unmapped" && row.applicationType !== "theory" && row.applicationType !== "unmapped") return false;
+        if (rf !== "all" && row.releaseId !== rf) return false;
+        return true;
+      });
+    }
+
+    // ---- P1: Domain Overview --------------------------------------------
+    // Union+dedup of features[].domainEntities, alphabetically ordered, each
+    // paired with the feature ids that reference it. Never hardcodes entity
+    // names — entities are entirely derived from authored feature data.
+    function deriveDomainEntities(features) {
+      const byEntity = {};
+      (features || []).forEach((feature) => {
+        (feature.domainEntities || []).forEach((name) => {
+          if (!byEntity[name]) byEntity[name] = { entity: name, featureIds: [] };
+          if (!byEntity[name].featureIds.includes(feature.id)) byEntity[name].featureIds.push(feature.id);
+        });
+      });
+      return Object.keys(byEntity).sort().map((name) => byEntity[name]);
+    }
+
+    // ---- P1: Architecture Evolution -------------------------------------
+    // Joins releases to their architectureStage (by releaseId) and orders
+    // the pairs by release.order — the single source of sequencing, never a
+    // hardcoded narrative. Releases without an authored stage are omitted.
+    function orderArchitectureStages(releases, architectureStages) {
+      const stageByRelease = {};
+      (architectureStages || []).forEach((stage) => { stageByRelease[stage.releaseId] = stage; });
+      return (releases || [])
+        .slice()
+        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+        .map((release) => ({ release, stage: stageByRelease[release.id] || null }))
+        .filter((pair) => pair.stage);
+    }
+
+    // ---- P1: Richer Roadmap ----------------------------------------------
+    // Groups releases under their authored milestone (via milestone.releaseIds),
+    // in milestone/release order, with any release not covered by a milestone
+    // trailing in an "ungrouped" bucket — a defensive fallback, not a data
+    // requirement, so the roadmap never silently drops a release.
+    function groupReleasesByMilestone(releases, milestones) {
+      const releaseById = {};
+      (releases || []).forEach((r) => { releaseById[r.id] = r; });
+      const used = {};
+      const groups = (milestones || []).map((milestone) => {
+        const rels = (milestone.releaseIds || [])
+          .map((id) => { used[id] = true; return releaseById[id]; })
+          .filter(Boolean)
+          .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+        return { milestone, releases: rels };
+      });
+      const ungrouped = (releases || [])
+        .filter((r) => !used[r.id])
+        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+      if (ungrouped.length) groups.push({ milestone: null, releases: ungrouped });
+      groups.sort((a, b) => {
+        const ao = a.releases.length ? a.releases[0].order : Infinity;
+        const bo = b.releases.length ? b.releases[0].order : Infinity;
+        return ao - bo;
+      });
+      return groups;
+    }
+
+    const STATE_VERSION = 2;
 
     function defaultState() {
       return {
@@ -1139,10 +1716,15 @@
         practice: {},
         collapsedUnits: [],
         theme: "system",
+        // Project Progress is tracked independently of Course Progress:
+        // completed[] is lesson completion; projectProgress.buildTasks[] is
+        // Spendwise build-task completion. Completing a lesson never touches
+        // this list, and vice versa.
+        projectProgress: { buildTasks: [] },
       };
     }
 
-    function sanitizeState(input, validLessonIds, validUnitIds, validPracticeKeys) {
+    function sanitizeState(input, validLessonIds, validUnitIds, validPracticeKeys, validBuildTaskIds = new Set()) {
       const fresh = defaultState();
       if (!input || typeof input !== "object" || Array.isArray(input)) return fresh;
       const out = { ...fresh };
@@ -1163,6 +1745,15 @@
       }
       if (input.theme === "light" || input.theme === "dark" || input.theme === "system") {
         out.theme = input.theme;
+      }
+      // Project Progress. A fresh, independent object each call so course
+      // fields can never share state with it. A v1 state (no projectProgress)
+      // migrates by simply keeping course fields and starting an empty build
+      // list; version is always normalized to the current STATE_VERSION.
+      out.projectProgress = { buildTasks: [] };
+      const pp = input.projectProgress;
+      if (pp && typeof pp === "object" && !Array.isArray(pp) && Array.isArray(pp.buildTasks)) {
+        out.projectProgress.buildTasks = [...new Set(pp.buildTasks.filter((id) => validBuildTaskIds.has(id)))];
       }
       return out;
     }
@@ -1209,6 +1800,10 @@
       normalizeSearch, parseRoute, calculateProgress, nextLessonId,
       sanitizeState, searchLessons, defaultState, STATE_VERSION,
       escapeHtml, safeExternalUrl,
+      selectCurrentRelease, selectNextBuildTask,
+      calculateReleaseProgress, calculateFeatureProgress,
+      deriveMapRows, filterMapRows, deriveDomainEntities,
+      orderArchitectureStages, groupReleasesByMilestone,
     });
     /* COURSE_CORE_END */
 
@@ -1228,6 +1823,27 @@
       const lessonsById = new Map(courseData.lessons.map(function(l){return [l.id,l];}));
       const unitsById = new Map(courseData.units.map(function(u){return [u.id,u];}));
 
+      /* ---- project data layer (Spendwise) ---------------------------- */
+      // The project artifact is optional: the course renders fully without it.
+      // All Spendwise content lives here in the data layer (never hard-coded),
+      // indexed by stable id so the renderer can look up releases/features/
+      // build tasks and the curriculum->project mapping on demand.
+      var projectData = (courseData && courseData.project) ? courseData.project : null;
+      var releasesById = new Map();
+      var featuresById = new Map();
+      var buildTasksById = new Map();
+      var archStageByReleaseId = new Map();
+      var projectByLessonId = new Map();
+      if (projectData) {
+        (projectData.releases || []).forEach(function(r){ releasesById.set(r.id, r); });
+        (projectData.features || []).forEach(function(f){ featuresById.set(f.id, f); });
+        (projectData.buildTasks || []).forEach(function(t){ buildTasksById.set(t.id, t); });
+        (projectData.architectureStages || []).forEach(function(s){ archStageByReleaseId.set(s.releaseId, s); });
+        var lessonMap = projectData.lessonMap || {};
+        Object.keys(lessonMap).forEach(function(k){ projectByLessonId.set(k, lessonMap[k]); });
+      }
+      var BUILD_TASK_IDS = new Set(buildTasksById.keys());
+
       /* ---- state ----------------------------------------------------- */
       var STORAGE_KEY = 'java-spring-course';
       var state = CourseCore.defaultState();
@@ -1240,12 +1856,30 @@
       function loadState() {
         try {
           var raw = localStorage.getItem(STORAGE_KEY);
-          return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, PRACTICE_IDS) : null;
+          return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS) : null;
         } catch(e) { return null; }
       }
       function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
       var loaded = loadState();
       if (loaded) state = loaded;
+
+      // Toggle a Spendwise build task's completion. This mutates ONLY
+      // projectProgress.buildTasks — course completion (state.completed) is
+      // never touched here, keeping the two progress tracks independent.
+      function toggleBuildTask(taskId) {
+        if (!BUILD_TASK_IDS.has(taskId)) return false;
+        if (!state.projectProgress || typeof state.projectProgress !== 'object') {
+          state.projectProgress = { buildTasks: [] };
+        }
+        if (!Array.isArray(state.projectProgress.buildTasks)) {
+          state.projectProgress.buildTasks = [];
+        }
+        var list = state.projectProgress.buildTasks;
+        var idx = list.indexOf(taskId);
+        if (idx === -1) { list.push(taskId); } else { list.splice(idx, 1); }
+        saveState();
+        return idx === -1;
+      }
 
       /* ---- render helpers -------------------------------------------- */
       function updateProgress() {
@@ -1261,6 +1895,280 @@
         document.querySelectorAll('.lesson-link[aria-current]').forEach(function(a){a.removeAttribute('aria-current');});
         var link = document.querySelector('.lesson-link[data-lesson-id="' + id + '"]');
         if (link) link.setAttribute('aria-current', 'page');
+      }
+      function updateNavActive(view) {
+        /* Release Detail has no primary-nav destination of its own — it is
+           only ever reached by drilling into a release from the Roadmap
+           tab — so it inherits Roadmap's active state rather than leaving
+           every tab dark while the learner is still inside that section.
+           Map and Architecture are likewise sub-views of the Project Track
+           (they are only reachable from the project sub-nav), so they keep
+           the "Dự án" tab lit instead of dropping the wayfinding cue
+           entirely; the sub-nav then shows the precise position. */
+        var navView = view === 'release' ? 'roadmap'
+          : view === 'lesson' ? 'dashboard'
+          : view === 'map' || view === 'architecture' ? 'project'
+          : view;
+        document.querySelectorAll('.primary-nav [data-view]').forEach(function(link) {
+          link.removeAttribute('aria-current');
+          if (link.getAttribute('data-view') === navView) link.setAttribute('aria-current', 'page');
+        });
+      }
+
+      function projectCompletedTaskIds() {
+        return state.projectProgress && Array.isArray(state.projectProgress.buildTasks)
+          ? state.projectProgress.buildTasks
+          : [];
+      }
+
+      function currentProjectRelease() {
+        return projectData ? CourseCore.selectCurrentRelease(projectData.releases || []) : null;
+      }
+
+      function currentProjectMilestone(releaseId) {
+        if (!projectData || !releaseId) return null;
+        return (projectData.milestones || []).find(function(milestone) {
+          return (milestone.releaseIds || []).indexOf(releaseId) !== -1;
+        }) || null;
+      }
+
+      function releaseDisplay(release) {
+        return release ? release.version + ' — ' + release.title : '';
+      }
+
+      function appendStatusBadge(container, status) {
+        container.appendChild(el('span', 'project-status project-status--' + status, status));
+      }
+
+      // Personal build progress for one release. Four releases legitimately
+      // carry no build tasks yet, and calculateReleaseProgress reports those
+      // as 0/0 · 0% — a number that reads like "nothing done" rather than
+      // "nothing to do". Mirror createFeatureProgress and state the honest
+      // reason instead of drawing an empty bar.
+      function createProjectProgress(release, label) {
+        var progress = CourseCore.calculateReleaseProgress(
+          (projectData && projectData.buildTasks) || [],
+          projectCompletedTaskIds(),
+          release ? release.id : null
+        );
+        var text = label || 'Project Progress';
+        var wrap = el('div', 'project-progress');
+        wrap.appendChild(el('span', 'project-progress-label', text));
+        if (!progress.total) {
+          wrap.appendChild(el('span', 'project-progress-note', 'Chưa có build task để theo dõi'));
+          return wrap;
+        }
+        wrap.appendChild(el('span', 'project-progress-count', progress.completed + '/' + progress.total + ' · ' + progress.percent + '%'));
+        var bar = el('progress');
+        bar.max = Math.max(progress.total, 1);
+        bar.value = progress.completed;
+        bar.setAttribute('aria-label', text + ': ' + progress.completed + '/' + progress.total + ', ' + progress.percent + '%');
+        bar.textContent = progress.percent + '%';
+        wrap.appendChild(bar);
+        return wrap;
+      }
+
+      // ASCII architecture diagrams are meaningful content, not decoration:
+      // the <pre> keeps its text in the accessibility tree and gains a
+      // figure role + name saying which stage it belongs to, because a bare
+      // <pre> is announced without any context by a screen reader.
+      function createArchitectureDiagram(diagram, label) {
+        var pre = el('pre', null, diagram);
+        pre.setAttribute('role', 'figure');
+        pre.setAttribute('aria-label', label);
+        return pre;
+      }
+
+      function appendFeatureList(container, featureIds) {
+        var features = (featureIds || []).map(function(id) { return featuresById.get(id); }).filter(Boolean);
+        if (!features.length) return;
+        var list = el('ul', 'feature-list');
+        features.forEach(function(feature) { list.appendChild(el('li', null, feature.name)); });
+        container.appendChild(list);
+      }
+
+      // Per-feature progress widget for the richer Release Detail feature
+      // cards. calculateFeatureProgress only counts required tasks; a
+      // feature with none tracked yet gets an honest "not tracked" note
+      // instead of a fake 0/0 bar.
+      function createFeatureProgress(feature) {
+        var progress = CourseCore.calculateFeatureProgress(
+          (projectData && projectData.buildTasks) || [],
+          projectCompletedTaskIds(),
+          feature.id
+        );
+        if (!progress.total) {
+          return el('p', 'feature-progress-empty', 'No tracked build task yet');
+        }
+        var wrap = el('div', 'project-progress project-progress--feature');
+        wrap.appendChild(el('span', 'project-progress-count', progress.completed + '/' + progress.total + ' · ' + progress.percent + '%'));
+        var bar = el('progress');
+        bar.max = Math.max(progress.total, 1);
+        bar.value = progress.completed;
+        bar.setAttribute('aria-label', feature.name + ' progress: ' + progress.completed + '/' + progress.total + ', ' + progress.percent + '%');
+        bar.textContent = progress.percent + '%';
+        wrap.appendChild(bar);
+        return wrap;
+      }
+
+      // Richer feature cards used by Release Detail: name, description,
+      // domainEntities and per-feature progress — appendFeatureList above
+      // stays the plain-name version already used inside lesson pages.
+      function appendFeatureDetailList(container, featureIds) {
+        var features = (featureIds || []).map(function(id) { return featuresById.get(id); }).filter(Boolean);
+        if (!features.length) { container.appendChild(el('p', null, 'Chưa có feature nào gắn với release này.')); return; }
+        var list = el('div', 'feature-detail-list');
+        features.forEach(function(feature) {
+          var card = el('article', 'feature-card');
+          card.appendChild(el('h3', null, feature.name));
+          if (feature.description) card.appendChild(el('p', null, feature.description));
+          if ((feature.domainEntities || []).length) {
+            var entRow = el('div', 'feature-entities');
+            entRow.appendChild(el('span', 'feature-entities-label', 'Entities: '));
+            entRow.appendChild(document.createTextNode(feature.domainEntities.join(', ')));
+            card.appendChild(entRow);
+          }
+          card.appendChild(createFeatureProgress(feature));
+          list.appendChild(card);
+        });
+        container.appendChild(list);
+      }
+
+      function createBuildTaskItem(task) {
+        var done = projectCompletedTaskIds().indexOf(task.id) !== -1;
+        var item = el('article', 'build-task' + (done ? ' build-task--done' : ''));
+        var toggle = el('button', 'build-task-toggle');
+        toggle.type = 'button';
+        toggle.setAttribute('data-action', 'toggle-build-task');
+        toggle.setAttribute('data-task-id', task.id);
+        toggle.setAttribute('aria-pressed', done ? 'true' : 'false');
+        toggle.setAttribute('aria-label', (done ? 'Đánh dấu chưa hoàn thành: ' : 'Đánh dấu hoàn thành: ') + task.title);
+        toggle.innerHTML = icon('check');
+        toggle.addEventListener('click', function() {
+          var completed = toggleBuildTask(task.id);
+          toggle.setAttribute('aria-pressed', completed ? 'true' : 'false');
+          toggle.setAttribute('aria-label', (completed ? 'Đánh dấu chưa hoàn thành: ' : 'Đánh dấu hoàn thành: ') + task.title);
+          item.classList.toggle('build-task--done', completed);
+          showToast(completed ? 'Đã hoàn thành build task' : 'Đã mở lại build task');
+          routeRender();
+        });
+        item.appendChild(toggle);
+        var body = el('div');
+        var title = el('div', 'build-task-title');
+        title.appendChild(el('span', null, task.title));
+        title.appendChild(el('span', 'task-kind', task.required === false ? 'optional' : 'required'));
+        body.appendChild(title);
+        if (task.problem) body.appendChild(el('div', 'build-task-meta', task.problem));
+        if (task.goal) body.appendChild(el('div', 'build-task-meta', 'Goal: ' + task.goal));
+        item.appendChild(body);
+        return item;
+      }
+
+      function appendBuildTaskList(container, taskIds) {
+        var tasks = (taskIds || []).map(function(id) { return buildTasksById.get(id); }).filter(Boolean);
+        if (!tasks.length) return;
+        var list = el('div', 'build-task-list');
+        tasks.forEach(function(task) { list.appendChild(createBuildTaskItem(task)); });
+        container.appendChild(list);
+      }
+
+      // Appends an optional, compact-by-default disclosure onto a build task
+      // <article> with constraints / acceptance criteria / relevant lessons
+      // (resolved to real #lesson/<id> links, not raw ids). Reuses the same
+      // disclosureButton/wireDisclosure accordion pattern used elsewhere.
+      // No-op when a task has none of these authored, so plain tasks stay flat.
+      function appendBuildTaskDetails(item, task) {
+        var hasConstraints = (task.constraints || []).length > 0;
+        var hasCriteria = (task.acceptanceCriteria || []).length > 0;
+        var lessons = (task.relevantLessonIds || []).map(function(id) { return lessonsById.get(id); }).filter(Boolean);
+        if (!hasConstraints && !hasCriteria && !lessons.length) return;
+        var panelId = 'build-task-detail-' + task.id;
+        var toggleBtn = disclosureButton('Chi tiết', panelId, 'chevron-down');
+        toggleBtn.classList.add('build-task-detail-toggle');
+        var panel = el('div', 'build-task-detail');
+        panel.id = panelId;
+        panel.hidden = true;
+        if (hasConstraints) {
+          panel.appendChild(el('div', 'build-task-detail-label', 'Constraints'));
+          var cList = el('ul');
+          task.constraints.forEach(function(c) { cList.appendChild(el('li', null, c)); });
+          panel.appendChild(cList);
+        }
+        if (hasCriteria) {
+          panel.appendChild(el('div', 'build-task-detail-label', 'Acceptance Criteria'));
+          var aList = el('ul');
+          task.acceptanceCriteria.forEach(function(c) { aList.appendChild(el('li', null, c)); });
+          panel.appendChild(aList);
+        }
+        if (lessons.length) {
+          panel.appendChild(el('div', 'build-task-detail-label', 'Relevant Lessons'));
+          var lList = el('ul');
+          lessons.forEach(function(lesson) {
+            var li = el('li');
+            var a = el('a', 'text-link', lesson.title);
+            a.href = '#lesson/' + lesson.id;
+            li.appendChild(a);
+            lList.appendChild(li);
+          });
+          panel.appendChild(lList);
+        }
+        wireDisclosure(toggleBtn, panel);
+        item.appendChild(toggleBtn);
+        item.appendChild(panel);
+      }
+
+      function createExpandableBuildTaskItem(task) {
+        var item = createBuildTaskItem(task);
+        item.classList.add('build-task--expandable');
+        appendBuildTaskDetails(item, task);
+        return item;
+      }
+
+      // Used by Release Detail's Build Tasks section and the Build Tasks
+      // Workspace — both reuse createBuildTaskItem/toggleBuildTask (single
+      // shared completion state), only adding the expandable detail panel.
+      function appendExpandableBuildTaskList(container, taskIds) {
+        var tasks = (taskIds || []).map(function(id) { return buildTasksById.get(id); }).filter(Boolean);
+        if (!tasks.length) return;
+        var list = el('div', 'build-task-list');
+        tasks.forEach(function(task) { list.appendChild(createExpandableBuildTaskItem(task)); });
+        container.appendChild(list);
+      }
+
+      // Project-scoped sub-navigation shown under the workspace header on
+      // every project-track view. Keeps #/map and #/architecture reachable
+      // without adding two more items to the always-visible primary nav
+      // (which would crowd the 390px fixed bottom tab bar) — this pill row
+      // wraps instead of clipping on narrow viewports.
+      function renderProjectSubNav(container, activeView) {
+        var nav = el('nav', 'project-subnav');
+        nav.setAttribute('aria-label', 'Điều hướng Project Track');
+        [
+          { view: 'project', href: '#/project', label: 'Tổng quan' },
+          /* "Lộ trình release", not a bare "Lộ trình": the primary nav
+             already has a top-level "Lộ trình" tab pointing at this same
+             route, and an unqualified repeat inside the project sub-nav
+             reads like a second, project-scoped roadmap. The qualifier
+             matches this destination's own header ("Release Roadmap"). */
+          { view: 'roadmap', href: '#/roadmap', label: 'Lộ trình release' },
+          { view: 'map', href: '#/map', label: 'Bản đồ' },
+          { view: 'architecture', href: '#/architecture', label: 'Kiến trúc' },
+        ].forEach(function(item) {
+          var link = el('a', null, item.label);
+          link.href = item.href;
+          link.setAttribute('data-subview', item.view);
+          if (item.view === activeView) link.setAttribute('aria-current', 'page');
+          nav.appendChild(link);
+        });
+        container.appendChild(nav);
+        return nav;
+      }
+
+      function renderProjectEmpty(container) {
+        var empty = el('section', 'project-empty');
+        empty.appendChild(el('h1', null, 'Project track chưa sẵn sàng'));
+        empty.appendChild(el('p', null, 'Dữ liệu project chưa có trong bản build này. Learning Track vẫn hoạt động bình thường.'));
+        container.appendChild(empty);
       }
 
       /* ---- curriculum nav ------------------------------------------- */
@@ -1339,8 +2247,14 @@
         if (!view) return;
         view.textContent = '';
         view.classList.toggle('route-view--reading', route.view === 'lesson');
+        updateNavActive(route.view);
         if (route.view === 'lesson') renderLessonView(view, route.lessonId);
         else if (route.view === 'resources') renderResourcesView(view);
+        else if (route.view === 'project') renderProjectOverview(view);
+        else if (route.view === 'roadmap') renderRoadmap(view);
+        else if (route.view === 'release') renderReleaseDetail(view, route.releaseId);
+        else if (route.view === 'map') renderCourseProjectMap(view);
+        else if (route.view === 'architecture') renderArchitecture(view);
         else renderDashboard(view);
         setAriaCurrent(route.lessonId || state.lastLessonId);
       }
@@ -1428,6 +2342,8 @@
         continueCard.appendChild(continueBtn);
         container.appendChild(continueCard);
 
+        renderDashboardProject(container, target);
+
         /* Curriculum overview — plain-language unit list, each row carrying
            its own real completion state (no build-log framing). */
         var overview = el('div', 'curriculum-overview');
@@ -1457,8 +2373,97 @@
         renderSettingsBlock(container);
       }
 
+      function renderDashboardProject(container, currentLessonId) {
+        if (!projectData) return;
+        var release = currentProjectRelease();
+        if (!release) return;
+        var milestone = currentProjectMilestone(release.id);
+        var mapping = projectByLessonId.get(currentLessonId);
+        var nextLessonId = CourseCore.nextLessonId(courseData.lessons, currentLessonId, 1);
+        var nextLesson = nextLessonId ? lessonsById.get(nextLessonId) : null;
+        var nextTask = CourseCore.selectNextBuildTask(release, buildTasksById, projectCompletedTaskIds());
+
+        var section = el('section', 'project-dashboard');
+        section.setAttribute('aria-labelledby', 'dashboard-project-title');
+        var head = el('div', 'project-dashboard-head');
+        head.appendChild(el('h2', null, projectData.product.name));
+        head.firstChild.id = 'dashboard-project-title';
+        var workspaceLink = el('a', 'text-link', 'Mở Project Workspace');
+        workspaceLink.href = '#/project';
+        head.appendChild(workspaceLink);
+        section.appendChild(head);
+
+        var now = el('div', 'project-now-grid');
+        var learning = el('article', 'project-panel');
+        learning.appendChild(el('div', 'project-section-label', 'Current Learning'));
+        var lesson = lessonsById.get(currentLessonId);
+        learning.appendChild(el('h3', null, lesson ? lesson.title : currentLessonId));
+        if (lesson && lesson.unitTitle) learning.appendChild(el('p', null, 'Unit ' + lesson.unitNumber + ' · ' + lesson.unitTitle));
+        now.appendChild(learning);
+
+        var build = el('article', 'project-panel');
+        build.setAttribute('data-project-current-release', release.id);
+        build.appendChild(el('div', 'project-section-label', 'Current Build'));
+        var releaseLine = el('div', 'project-release-line');
+        var releaseLink = el('a', 'text-link', releaseDisplay(release));
+        releaseLink.href = '#/release/' + release.id;
+        releaseLine.appendChild(releaseLink);
+        appendStatusBadge(releaseLine, release.status);
+        build.appendChild(releaseLine);
+        build.appendChild(createProjectProgress(release, 'Project Progress · ' + release.version));
+        if (milestone) build.appendChild(el('p', null, milestone.name + ' · ' + milestone.summary));
+        now.appendChild(build);
+        section.appendChild(now);
+
+        var next = el('div', 'project-next-grid');
+        var impact = el('article', 'project-panel');
+        impact.appendChild(el('div', 'project-section-label', 'Today’s Project Impact'));
+        if (mapping && mapping.application) {
+          impact.appendChild(el('h3', null, mapping.application));
+          appendFeatureList(impact, mapping.featureIds);
+        } else if (mapping && mapping.context) {
+          impact.appendChild(el('p', null, mapping.context));
+        } else {
+          impact.appendChild(el('p', null, 'Bài hiện tại không có project application trực tiếp.'));
+        }
+        next.appendChild(impact);
+
+        var steps = el('article', 'project-panel');
+        steps.appendChild(el('div', 'project-section-label', 'Next'));
+        if (nextLesson) {
+          var learnLink = el('a', 'text-link', 'Learn → ' + nextLesson.title);
+          learnLink.href = '#/lesson/' + nextLesson.id;
+          steps.appendChild(learnLink);
+        } else {
+          steps.appendChild(el('p', null, 'Learning Track đã ở bài cuối.'));
+        }
+        if (nextTask) {
+          /* "Learn →" is a link, so "Build →" must be one too: the two lines
+             are read as a symmetric pair of next actions, and a dead-end
+             label forces the learner back through the workspace to find the
+             task. It points at the release the task belongs to, where the
+             task's constraints, acceptance criteria and relevant lessons
+             live — a different destination from the header's workspace link. */
+          var taskP = el('p');
+          taskP.appendChild(el('strong', null, 'Build → '));
+          var taskLink = el('a', 'text-link', nextTask.title);
+          taskLink.href = '#/release/' + release.id;
+          taskP.appendChild(taskLink);
+          steps.appendChild(taskP);
+        } else {
+          steps.appendChild(el('p', null, 'Mọi required task của release này đã hoàn thành.'));
+        }
+        next.appendChild(steps);
+        section.appendChild(next);
+        container.appendChild(section);
+      }
+
       /* ---- settings: export / import / reset (Site Task 5) -------------- */
-      var APP_SCHEMA = { app: "java-spring-course", schemaVersion: 1 };
+      var APP_SCHEMA = { app: "java-spring-course", schemaVersion: 2 };
+      // Import accepts the current schema and every older one it can migrate:
+      // a v1 export (course progress only) is upgraded by sanitizeState, which
+      // fills in an empty projectProgress. This keeps old backups importable.
+      var SUPPORTED_IMPORT_VERSIONS = new Set([1, 2]);
 
       function downloadProgress() {
         var payload = {
@@ -1488,12 +2493,13 @@
           previewEl.textContent = "Tệp không phải JSON hợp lệ.";
           return;
         }
-        if (!parsed || parsed.app !== APP_SCHEMA.app || parsed.schemaVersion !== APP_SCHEMA.schemaVersion) {
+        if (!parsed || parsed.app !== APP_SCHEMA.app ||
+            typeof parsed.schemaVersion !== "number" || !SUPPORTED_IMPORT_VERSIONS.has(parsed.schemaVersion)) {
           previewEl.hidden = false;
           previewEl.textContent = "Tệp không đúng định dạng tiến độ của khóa học (app/schemaVersion không khớp).";
           return;
         }
-        var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS);
+        var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS);
         previewEl.hidden = false;
         previewEl.textContent = "Sẵn sàng nhập: " + cleaned.completed.length + "/" + courseData.lessons.length +
           " bài đã hoàn thành. Nhấn “Xác nhận nhập” để thay thế tiến độ hiện tại.";
@@ -1560,7 +2566,7 @@
         });
 
         resetBtn.addEventListener("click", function() {
-          if (!window.confirm("Đặt lại toàn bộ tiến độ? Hành động này xóa trạng thái hoàn thành, bài đang học và cài đặt giao diện đã lưu trên máy bạn.")) return;
+          if (!window.confirm("Đặt lại toàn bộ tiến độ? Hành động này xóa trạng thái hoàn thành khóa học, tiến độ build project, bài đang học và cài đặt giao diện đã lưu trên máy bạn.")) return;
           state = CourseCore.defaultState();
           try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
           saveState();
@@ -1839,6 +2845,67 @@
           }
           container.appendChild(cols);
         }
+      }
+
+      function renderProjectContext(container, lessonId) {
+        var mapping = projectByLessonId.get(lessonId);
+        if (!mapping) return;
+        var type = mapping.applicationType || 'theory';
+        var section = el('aside', 'project-context project-type--' + type);
+        section.setAttribute('aria-labelledby', 'project-context-' + lessonIdSlug(lessonId));
+        var meta = el('div', 'project-context-meta');
+        var heading = el('h2', null, 'Why this matters in ' + (projectData ? projectData.product.name : 'the project'));
+        heading.id = 'project-context-' + lessonIdSlug(lessonId);
+        meta.appendChild(el('span', 'project-type', type.toUpperCase()));
+        if (mapping.releaseId) {
+          var release = releasesById.get(mapping.releaseId);
+          if (release) {
+            var releaseLink = el('a', 'text-link', releaseDisplay(release));
+            releaseLink.href = '#/release/' + release.id;
+            meta.appendChild(releaseLink);
+          }
+        }
+        section.appendChild(meta);
+        section.appendChild(heading);
+        section.appendChild(el('p', null, mapping.context));
+        if (type === 'future') {
+          section.appendChild(el(
+            'p',
+            'project-future-note',
+            'Áp dụng ở release sau; đây không phải build ngay trong bài học này.'
+          ));
+        }
+        if (mapping.projectProblem) {
+          var problem = el('p', 'project-problem');
+          problem.appendChild(el('strong', null, 'Project problem: '));
+          problem.appendChild(document.createTextNode(mapping.projectProblem));
+          section.appendChild(problem);
+        }
+        if (type !== 'theory') appendFeatureList(section, mapping.featureIds);
+        container.appendChild(section);
+      }
+
+      function renderProjectApplication(container, lessonId) {
+        var mapping = projectByLessonId.get(lessonId);
+        if (!mapping || !mapping.application) return;
+        var section = el('section', 'project-application project-type--' + mapping.applicationType);
+        section.setAttribute('aria-labelledby', 'project-application-' + lessonIdSlug(lessonId));
+        var heading = el('h2', null, 'Used in ' + (projectData ? projectData.product.name : 'the project'));
+        heading.id = 'project-application-' + lessonIdSlug(lessonId);
+        section.appendChild(heading);
+        var release = releasesById.get(mapping.releaseId);
+        if (release) {
+          var releaseLine = el('div', 'project-release-line');
+          releaseLine.appendChild(el('span', 'project-release-version', release.version));
+          var releaseLink = el('a', 'text-link', release.title);
+          releaseLink.href = '#/release/' + release.id;
+          releaseLine.appendChild(releaseLink);
+          section.appendChild(releaseLine);
+        }
+        section.appendChild(el('p', null, mapping.application));
+        appendFeatureList(section, mapping.featureIds);
+        appendBuildTaskList(section, mapping.buildTaskIds);
+        container.appendChild(section);
       }
 
       function renderSections(container, lesson, refIndexById) {
@@ -2130,9 +3197,11 @@
         var refCards = [];
 
         renderLessonHeader(container, lesson, refIndexById);
+        renderProjectContext(container, lesson.id);
         renderSections(container, lesson, refIndexById);
         renderPractices(container, lesson);
         renderAssignments(container, lesson);
+        renderProjectApplication(container, lesson.id);
         renderReferences(container, lesson, refIndexById, refCards);
         renderLessonNav(container, lesson);
         container.setAttribute("tabindex", "-1");
@@ -2156,6 +3225,520 @@
           return;
         }
         renderFullLesson(container, lesson);
+      }
+
+      /* ---- project workspace (P0) ---------------------------------------- */
+      function renderProjectWorkspaceHeader(container, eyebrow, title, summary) {
+        var header = el('header', 'workspace-header');
+        var copy = el('div');
+        copy.appendChild(el('div', 'workspace-eyebrow', eyebrow));
+        copy.appendChild(el('h1', 'workspace-title', title));
+        if (summary) copy.appendChild(el('p', 'workspace-summary', summary));
+        header.appendChild(copy);
+        container.appendChild(header);
+        return header;
+      }
+
+      function renderProjectOverview(container) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        var product = projectData.product;
+        var release = currentProjectRelease();
+        var milestone = release ? currentProjectMilestone(release.id) : null;
+        var nextTask = release
+          ? CourseCore.selectNextBuildTask(release, buildTasksById, projectCompletedTaskIds())
+          : null;
+        var header = renderProjectWorkspaceHeader(container, 'Project Track', product.name, product.type);
+        header.setAttribute('data-project-overview', '');
+        var headerCopy = header.querySelector('.workspace-summary');
+        if (headerCopy) headerCopy.textContent = product.type + ' · ' + product.vision;
+        renderProjectSubNav(container, 'project');
+
+        var grid = el('div', 'project-overview-grid');
+        var vision = el('section', 'project-panel');
+        vision.appendChild(el('div', 'project-section-label', 'Product Vision'));
+        vision.appendChild(el('h2', null, product.name));
+        vision.appendChild(el('p', null, product.vision));
+        grid.appendChild(vision);
+
+        var current = el('section', 'project-panel');
+        current.appendChild(el('div', 'project-section-label', 'Current Release'));
+        if (release) {
+          current.setAttribute('data-project-current-release', release.id);
+          var line = el('div', 'project-release-line');
+          var releaseLink = el('a', 'text-link', releaseDisplay(release));
+          releaseLink.href = '#/release/' + release.id;
+          line.appendChild(releaseLink);
+          appendStatusBadge(line, release.status);
+          current.appendChild(line);
+          current.appendChild(createProjectProgress(release, 'Project Progress · ' + release.version));
+        } else {
+          current.appendChild(el('p', null, 'Chưa có release hiện tại.'));
+        }
+        grid.appendChild(current);
+
+        var milestonePanel = el('section', 'project-panel');
+        milestonePanel.appendChild(el('div', 'project-section-label', 'Current Milestone'));
+        if (milestone) {
+          milestonePanel.appendChild(el('h2', null, milestone.name));
+          milestonePanel.appendChild(el('p', null, milestone.summary));
+        } else {
+          milestonePanel.appendChild(el('p', null, 'Release hiện tại chưa thuộc milestone nào.'));
+        }
+        grid.appendChild(milestonePanel);
+
+        var next = el('section', 'project-panel');
+        next.appendChild(el('div', 'project-section-label', 'Next Build Task'));
+        if (nextTask) {
+          next.appendChild(el('h2', null, nextTask.title));
+          next.appendChild(el('p', null, nextTask.goal));
+        } else {
+          next.appendChild(el('p', null, 'Không còn required task đang mở trong release hiện tại.'));
+        }
+        grid.appendChild(next);
+
+        var roadmap = el('section', 'project-panel');
+        roadmap.appendChild(el('div', 'project-section-label', 'Roadmap'));
+        roadmap.appendChild(el('p', null, (projectData.releases || []).length + ' release từ ' + projectData.releases[0].version + ' đến ' + projectData.releases[projectData.releases.length - 1].version + '.'));
+        var roadmapLink = el('a', 'roadmap-entry', 'Xem toàn bộ lộ trình');
+        roadmapLink.href = '#/roadmap';
+        roadmap.appendChild(roadmapLink);
+        grid.appendChild(roadmap);
+        container.appendChild(grid);
+
+        // Domain Overview (P1-4) — entities are derived from
+        // features[].domainEntities (union+dedup), never hardcoded, so this
+        // section only ever shows what the project data actually supports.
+        var domainSection = el('section', 'project-panel release-section');
+        domainSection.appendChild(el('h2', null, 'Domain Overview'));
+        var entities = CourseCore.deriveDomainEntities(projectData.features || []);
+        if (entities.length) {
+          domainSection.appendChild(el('p', null, 'Domain entities xuất hiện trong các feature của sản phẩm:'));
+          var entityGrid = el('div', 'domain-entity-grid');
+          entities.forEach(function(entry) {
+            var card = el('article', 'domain-entity-card');
+            card.appendChild(el('h3', null, entry.entity));
+            var featureNames = entry.featureIds.map(function(id) {
+              var feature = featuresById.get(id);
+              return feature ? feature.name : id;
+            });
+            card.appendChild(el('p', null, featureNames.join(', ')));
+            entityGrid.appendChild(card);
+          });
+          domainSection.appendChild(entityGrid);
+        } else {
+          domainSection.appendChild(el('p', null, 'Chưa có domain entity nào trong dữ liệu sản phẩm.'));
+        }
+        container.appendChild(domainSection);
+
+        // Project boundaries — product.outOfScope, behind a disclosure so it
+        // doesn't dominate the page (21 items).
+        var scopeItems = product.outOfScope || [];
+        if (scopeItems.length) {
+          var scopeSection = el('section', 'project-panel release-section');
+          scopeSection.appendChild(el('h2', null, 'Project Boundaries'));
+          var scopePanelId = 'project-out-of-scope';
+          var scopeBtn = disclosureButton('Ngoài phạm vi (' + scopeItems.length + ')', scopePanelId, 'chevron-down');
+          var scopePanel = el('div', null);
+          scopePanel.id = scopePanelId;
+          scopePanel.hidden = true;
+          var scopeList = el('ul', 'criteria-list');
+          scopeItems.forEach(function(item) { scopeList.appendChild(el('li', null, item)); });
+          scopePanel.appendChild(scopeList);
+          wireDisclosure(scopeBtn, scopePanel);
+          scopeSection.appendChild(scopeBtn);
+          scopeSection.appendChild(scopePanel);
+          container.appendChild(scopeSection);
+        }
+
+        // Build Tasks Workspace (P1-5) — ordered by release.buildTaskIds
+        // (the authority for build-task ordering), reusing the same
+        // expandable item + shared toggleBuildTask state as Release Detail.
+        var workspace = el('section', 'project-panel release-section');
+        workspace.appendChild(el('h2', null, 'Build Tasks Workspace'));
+        if (release && (release.buildTaskIds || []).length) {
+          workspace.appendChild(el('p', null, 'Build tasks của release hiện tại · ' + releaseDisplay(release)));
+          appendExpandableBuildTaskList(workspace, release.buildTaskIds);
+        } else {
+          workspace.appendChild(el('p', null, 'Release hiện tại chưa có build task nào trong kế hoạch.'));
+        }
+        container.appendChild(workspace);
+      }
+
+      function createRoadmapReleaseLink(release) {
+        var link = el('a', 'roadmap-release');
+        link.href = '#/release/' + release.id;
+        link.setAttribute('data-release-id', release.id);
+        var copy = el('div');
+        copy.appendChild(el('div', 'roadmap-release-version', release.version));
+        copy.appendChild(el('div', 'roadmap-release-title', release.title));
+        copy.appendChild(el('div', 'roadmap-release-copy', release.problem || release.goal));
+        link.appendChild(copy);
+        var stateCol = el('div');
+        appendStatusBadge(stateCol, release.status);
+        stateCol.appendChild(createProjectProgress(release, 'User progress'));
+        link.appendChild(stateCol);
+        return link;
+      }
+
+      // Three layers — Milestone -> Release -> Personal Progress. Groups are
+      // derived from projectData.milestones (never hardcoded); each release
+      // still renders through the same .roadmap-release timeline item as
+      // before, just nested under a milestone heading.
+      function renderRoadmap(container) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        renderProjectWorkspaceHeader(
+          container,
+          'Release Roadmap',
+          projectData.product.name + ' Roadmap',
+          'Trạng thái kế hoạch của release và tiến độ build cá nhân là hai tín hiệu độc lập.'
+        );
+        renderProjectSubNav(container, 'roadmap');
+        var groups = CourseCore.groupReleasesByMilestone(projectData.releases || [], projectData.milestones || []);
+        groups.forEach(function(group) {
+          var section = el('section', 'roadmap-milestone-group');
+          var head = el('div', 'roadmap-milestone-head');
+          head.appendChild(el('h2', null, group.milestone ? group.milestone.name : 'Release khác'));
+          if (group.milestone && group.milestone.summary) head.appendChild(el('p', null, group.milestone.summary));
+          section.appendChild(head);
+          var list = el('div', 'roadmap-list');
+          group.releases.forEach(function(release) { list.appendChild(createRoadmapReleaseLink(release)); });
+          section.appendChild(list);
+          container.appendChild(section);
+        });
+      }
+
+      function renderReleaseDetail(container, releaseId) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        var release = releasesById.get(releaseId);
+        if (!release) {
+          renderProjectSubNav(container, 'roadmap');
+          var notFound = el('section', 'project-not-found');
+          notFound.appendChild(el('h1', null, 'Không tìm thấy release'));
+          notFound.appendChild(el('p', null, 'Release “' + releaseId + '” không tồn tại trong project data.'));
+          var back = el('a', 'text-link', '← Về Roadmap');
+          back.href = '#/roadmap';
+          notFound.appendChild(back);
+          container.appendChild(notFound);
+          return;
+        }
+
+        // Release Detail inherits the Roadmap tab in both the primary nav
+        // (see updateNavActive) and this contextual sub-nav, since a release
+        // page is reached from — and conceptually belongs to — the roadmap.
+        renderProjectSubNav(container, 'roadmap');
+
+        var detail = el('div');
+        detail.setAttribute('data-release-detail', release.id);
+
+        // RELEASE — hero keeps authored status (badge) and personal build
+        // progress (progress bar) visually side by side but never merged
+        // into one number, so the two signals stay legible as independent.
+        var hero = el('header', 'release-hero');
+        var line = el('div', 'project-release-line');
+        line.appendChild(el('span', 'project-release-version', release.version));
+        appendStatusBadge(line, release.status);
+        hero.appendChild(line);
+        hero.appendChild(el('h1', null, release.title));
+        hero.appendChild(el('p', null, release.goal));
+        hero.appendChild(createProjectProgress(release, 'Release Progress'));
+        detail.appendChild(hero);
+
+        // Problem -> Goal, side by side (closely paired, read together).
+        var problemGoal = el('div', 'release-columns');
+        var problem = el('section', 'project-panel');
+        problem.appendChild(el('div', 'project-section-label', 'Problem'));
+        problem.appendChild(el('p', null, release.problem));
+        problemGoal.appendChild(problem);
+        var goal = el('section', 'project-panel');
+        goal.appendChild(el('div', 'project-section-label', 'Goal'));
+        goal.appendChild(el('p', null, release.goal));
+        problemGoal.appendChild(goal);
+        detail.appendChild(problemGoal);
+
+        // Features — richer cards (description, domainEntities, per-feature
+        // progress) instead of the plain name list used on lesson pages.
+        var features = el('section', 'project-panel release-section');
+        features.appendChild(el('h2', null, 'Features'));
+        appendFeatureDetailList(features, release.featureIds);
+        detail.appendChild(features);
+
+        // Learning Dependencies, reframed as a Learning <-> Project bridge:
+        // readable prose-list of concepts, not a tag cloud.
+        var deps = el('section', 'project-panel release-section');
+        deps.appendChild(el('h2', null, 'Learning ↔ Project'));
+        deps.appendChild(el('p', null, 'Kiến thức khoá học cần có trước khi bắt tay vào release này:'));
+        var depList = el('ul', 'dependency-list');
+        (release.learningDependencies || []).forEach(function(item) { depList.appendChild(el('li', null, item)); });
+        deps.appendChild(depList);
+        detail.appendChild(deps);
+
+        // Build Tasks — expandable items (constraints / acceptance criteria
+        // / relevant lessons) sharing the same toggleBuildTask state as the
+        // Dashboard and lesson Project Application panels.
+        var tasks = el('section', 'project-panel release-section');
+        tasks.appendChild(el('h2', null, 'Build Tasks'));
+        if ((release.buildTaskIds || []).length) appendExpandableBuildTaskList(tasks, release.buildTaskIds);
+        else tasks.appendChild(el('p', null, 'Release này chưa có build task nào trong kế hoạch.'));
+        detail.appendChild(tasks);
+
+        // Acceptance Criteria
+        var criteria = el('section', 'project-panel release-section');
+        criteria.appendChild(el('h2', null, 'Acceptance Criteria'));
+        var criteriaList = el('ul', 'criteria-list');
+        (release.acceptanceCriteria || []).forEach(function(item) { criteriaList.appendChild(el('li', null, item)); });
+        criteria.appendChild(criteriaList);
+        detail.appendChild(criteria);
+
+        // Architecture — this release's planned stage.
+        var architecture = archStageByReleaseId.get(release.id);
+        if (architecture) {
+          var stage = el('section', 'project-panel architecture-stage release-section');
+          stage.appendChild(el('h2', null, 'Architecture: ' + architecture.title));
+          if (release.status === 'planned') stage.appendChild(el('p', 'architecture-target-note', 'Architecture planned for this release — not yet built.'));
+          stage.appendChild(el('p', null, architecture.rationale));
+          if ((architecture.layers || []).length) {
+            var layerList = el('ul', 'criteria-list');
+            architecture.layers.forEach(function(layer) { layerList.appendChild(el('li', null, layer)); });
+            stage.appendChild(layerList);
+          }
+          // The diagram itself is deliberately NOT repeated here: the
+          // Architecture Change section immediately below renders the very
+          // same ASCII diagram as its "After"/"Initial Architecture" column,
+          // and showing it twice inside one viewport is duplicate
+          // presentation of identical data. Title, rationale and layers stay.
+          detail.appendChild(stage);
+
+          // Before/After Architecture Change (P1-7). V0.1 has no prior
+          // release, so it only ever shows "Initial Architecture" — never an
+          // invented "Before" state. V0.2+ resolves the previous release by
+          // order (release.order - 1), never a hardcoded description.
+          var compare = el('section', 'project-panel release-section');
+          compare.appendChild(el('h2', null, 'Architecture Change'));
+          var prevRelease = (projectData.releases || []).find(function(r) { return r.order === release.order - 1; });
+          var prevStage = prevRelease ? archStageByReleaseId.get(prevRelease.id) : null;
+          var compareGrid = el('div', 'architecture-compare');
+          if (prevStage) {
+            var beforeCol = el('div', 'architecture-compare-col');
+            beforeCol.appendChild(el('div', 'architecture-compare-label', 'Before · ' + prevRelease.version));
+            beforeCol.appendChild(createArchitectureDiagram(prevStage.diagram, 'Sơ đồ kiến trúc trước đó · ' + prevRelease.version + ' — ' + prevStage.title));
+            compareGrid.appendChild(beforeCol);
+          }
+          var afterCol = el('div', 'architecture-compare-col');
+          afterCol.appendChild(el('div', 'architecture-compare-label', prevStage ? 'After · ' + release.version : 'Initial Architecture'));
+          afterCol.appendChild(createArchitectureDiagram(architecture.diagram, 'Sơ đồ kiến trúc ' + release.version + ' — ' + architecture.title));
+          compareGrid.appendChild(afterCol);
+          compare.appendChild(compareGrid);
+          if (prevStage && architecture.changesFromPrev) {
+            compare.appendChild(el('p', 'architecture-compare-changes', architecture.changesFromPrev));
+          }
+          detail.appendChild(compare);
+        }
+
+        container.appendChild(detail);
+      }
+
+      var MAP_TYPE_LABELS = { direct: 'Direct', future: 'Future', theory: 'Theory', unmapped: 'Unmapped' };
+
+      function createMapRow(row) {
+        var item = el('div', 'map-row');
+        var main = el('div', 'map-row-main');
+        var link = el('a', 'text-link', row.title);
+        link.href = '#/lesson/' + row.id;
+        main.appendChild(link);
+        if (row.group) main.appendChild(el('div', 'map-row-group', row.group));
+        item.appendChild(main);
+
+        var meta = el('div', 'map-row-meta');
+        // Reuses the .project-type pill shape, but its color modifiers are
+        // named map-type--* (not project-type--*): the latter is already a
+        // bare-class selector applied to the OUTER .project-context/
+        // .project-application container elsewhere (a different, container-
+        // level combo), so reusing it here on a single badge span would leak
+        // border/background rules meant for that container.
+        meta.appendChild(el('span', 'project-type map-type--' + row.applicationType, MAP_TYPE_LABELS[row.applicationType] || row.applicationType));
+        if (row.releaseId) {
+          var release = releasesById.get(row.releaseId);
+          if (release) {
+            var releaseLink = el('a', 'text-link', release.version);
+            releaseLink.href = '#/release/' + release.id;
+            meta.appendChild(releaseLink);
+          }
+        }
+        if ((row.featureIds || []).length) {
+          var names = row.featureIds.map(function(id) {
+            var feature = featuresById.get(id);
+            return feature ? feature.name : id;
+          }).join(', ');
+          meta.appendChild(el('span', 'map-row-features', names));
+        }
+        item.appendChild(meta);
+        return item;
+      }
+
+      // Course <-> Project Map (P1-2). Filters are client-side only, never
+      // persisted — CourseCore.deriveMapRows/filterMapRows do the pure work,
+      // this just wires two filter controls to a re-render of the row list.
+      function renderCourseProjectMap(container) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        renderProjectWorkspaceHeader(
+          container,
+          'Course ↔ Project',
+          'Course ↔ Project Map',
+          'Mỗi bài học liên hệ với ' + projectData.product.name + ' ra sao: direct (xây trực tiếp), future (dùng ở release sau), theory (kiến thức nền), hoặc unmapped (bài tổng hợp chưa gắn với release cụ thể).'
+        );
+        renderProjectSubNav(container, 'map');
+
+        var allRows = CourseCore.deriveMapRows(courseData.lessons, projectData.lessonMap);
+        var filterState = { type: 'all', release: 'all' };
+
+        var filterBar = el('div', 'map-filterbar');
+        filterBar.setAttribute('role', 'group');
+        filterBar.setAttribute('aria-label', 'Lọc bản đồ khoá học ↔ dự án');
+        var TYPE_FILTERS = [
+          { key: 'all', label: 'Tất cả' },
+          { key: 'direct', label: 'Direct' },
+          { key: 'future', label: 'Future' },
+          { key: 'theory-unmapped', label: 'Theory / Unmapped' },
+        ];
+        var typeButtons = TYPE_FILTERS.map(function(filter) {
+          var btn = el('button', 'map-filter-btn', filter.label);
+          btn.type = 'button';
+          btn.setAttribute('aria-pressed', filter.key === 'all' ? 'true' : 'false');
+          btn.addEventListener('click', function() {
+            filterState.type = filter.key;
+            typeButtons.forEach(function(other) { other.setAttribute('aria-pressed', other === btn ? 'true' : 'false'); });
+            renderRows();
+          });
+          filterBar.appendChild(btn);
+          return btn;
+        });
+
+        var releaseWrap = el('div', 'map-filter-release');
+        var releaseLabel = el('label', null, 'Release');
+        releaseLabel.setAttribute('for', 'map-release-filter');
+        var releaseSelect = el('select');
+        releaseSelect.id = 'map-release-filter';
+        var allOption = el('option', null, 'Tất cả release');
+        allOption.value = 'all';
+        releaseSelect.appendChild(allOption);
+        (projectData.releases || []).slice().sort(function(a, b) { return a.order - b.order; }).forEach(function(release) {
+          var opt = el('option', null, release.version + ' — ' + release.title);
+          opt.value = release.id;
+          releaseSelect.appendChild(opt);
+        });
+        releaseSelect.addEventListener('change', function() {
+          filterState.release = releaseSelect.value;
+          renderRows();
+        });
+        releaseWrap.appendChild(releaseLabel);
+        releaseWrap.appendChild(releaseSelect);
+        filterBar.appendChild(releaseWrap);
+        container.appendChild(filterBar);
+
+        var summary = el('p', 'map-summary');
+        container.appendChild(summary);
+        var rowsContainer = el('div', 'map-rows');
+        container.appendChild(rowsContainer);
+
+        function renderRows() {
+          var filtered = CourseCore.filterMapRows(allRows, filterState.type, filterState.release);
+          summary.textContent = filtered.length + ' / ' + allRows.length + ' bài học';
+          rowsContainer.innerHTML = '';
+          if (!filtered.length) {
+            rowsContainer.appendChild(el('p', 'project-empty', 'Không có bài học nào khớp với bộ lọc hiện tại.'));
+            return;
+          }
+          filtered.forEach(function(row) { rowsContainer.appendChild(createMapRow(row)); });
+        }
+        renderRows();
+      }
+
+      // Architecture Evolution (P1-3). Single source of truth:
+      // projectData.architectureStages, joined + ordered via
+      // CourseCore.orderArchitectureStages. Every release currently carries
+      // status "planned", so copy is deliberately honest — only the
+      // resolved current release (selectCurrentRelease) is called out as
+      // the "Current Build Target"; every stage (including that one) is
+      // still labelled "planned", never "currently deployed".
+      function renderArchitecture(container) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        renderProjectWorkspaceHeader(
+          container,
+          'Architecture Evolution',
+          'Architecture Evolution',
+          'Kiến trúc ' + projectData.product.name + ' mở rộng dần theo từng release. Mọi stage dưới đây đều đang ở trạng thái kế hoạch — chưa có stage nào được xây hay đang chạy production.'
+        );
+        renderProjectSubNav(container, 'architecture');
+
+        var pairs = CourseCore.orderArchitectureStages(projectData.releases || [], projectData.architectureStages || []);
+        if (!pairs.length) {
+          container.appendChild(el('p', 'project-empty', 'Chưa có architecture stage nào trong kế hoạch.'));
+          return;
+        }
+        var currentRelease = currentProjectRelease();
+
+        var stageNav = el('nav', 'architecture-stage-nav');
+        stageNav.setAttribute('aria-label', 'Chuyển nhanh giữa các architecture stage');
+        var stageNavLinks = [];
+        /* The pills (and each stage's Prev/Next controls) are in-page jump
+           links, and the hashchange handler deliberately skips re-rendering
+           for in-page anchors so the browser's native scroll works — which
+           means nothing would otherwise update which stage the learner is
+           on. Mark the jumped-to pill with aria-current="location", the
+           accurate value for a position inside the current page (rather
+           than "page", which would claim a separate destination). */
+        function markStageNav(stageId) {
+          stageNavLinks.forEach(function(link) {
+            if (link.getAttribute('data-stage-nav') === stageId) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+          });
+        }
+        function stageJumpLink(className, label, targetReleaseId) {
+          var link = el('a', className, label);
+          link.href = '#architecture-stage-' + targetReleaseId;
+          link.addEventListener('click', function() { markStageNav(targetReleaseId); });
+          return link;
+        }
+        pairs.forEach(function(pair) {
+          var link = stageJumpLink('architecture-stage-nav-link', pair.release.version, pair.release.id);
+          link.setAttribute('data-stage-nav', pair.release.id);
+          stageNav.appendChild(link);
+          stageNavLinks.push(link);
+        });
+        container.appendChild(stageNav);
+
+        pairs.forEach(function(pair, index) {
+          var release = pair.release;
+          var stage = pair.stage;
+          var block = el('section', 'project-panel architecture-stage release-section');
+          block.id = 'architecture-stage-' + release.id;
+          var isCurrent = !!currentRelease && currentRelease.id === release.id;
+          block.appendChild(el('div', 'project-section-label', release.version + ' · ' + release.title));
+          block.appendChild(el('p', 'architecture-target-note', isCurrent
+            ? 'Current Build Target — trạng thái release: ' + release.status + '.'
+            : 'Architecture planned for release ' + release.version + ' (trạng thái release: ' + release.status + ') — chưa được xây.'));
+          block.appendChild(el('h2', null, stage.title));
+          block.appendChild(el('p', null, stage.rationale));
+          if ((stage.layers || []).length) {
+            var layerList = el('ul', 'criteria-list');
+            stage.layers.forEach(function(layer) { layerList.appendChild(el('li', null, layer)); });
+            block.appendChild(layerList);
+          }
+          block.appendChild(createArchitectureDiagram(stage.diagram, 'Sơ đồ kiến trúc ' + release.version + ' — ' + stage.title));
+
+          var controls = el('div', 'architecture-stage-controls');
+          if (index > 0) {
+            controls.appendChild(stageJumpLink('text-link', '← ' + pairs[index - 1].release.version, pairs[index - 1].release.id));
+          }
+          var releaseLink = el('a', 'text-link', 'Xem release ' + release.version);
+          releaseLink.href = '#/release/' + release.id;
+          controls.appendChild(releaseLink);
+          if (index < pairs.length - 1) {
+            controls.appendChild(stageJumpLink('text-link', pairs[index + 1].release.version + ' →', pairs[index + 1].release.id));
+          }
+          block.appendChild(controls);
+          container.appendChild(block);
+        });
       }
 
       /* ---- resources view (Site Task 6) ---------------------------------- */
@@ -2486,6 +4069,22 @@
         brand.innerHTML = '<span class="brand-mark" aria-hidden="true">JS</span>' +
           '<span class="brand-text brand-name-long">Java &amp; Spring Boot</span>';
 
+        var primaryNav = document.createElement('nav');
+        primaryNav.className = 'primary-nav';
+        primaryNav.setAttribute('aria-label', 'Điều hướng chính');
+        [
+          { view: 'dashboard', href: '#/dashboard', label: 'Học' },
+          { view: 'project', href: '#/project', label: 'Dự án' },
+          { view: 'roadmap', href: '#/roadmap', label: 'Lộ trình' },
+          { view: 'resources', href: '#/resources', label: 'Tài nguyên' }
+        ].forEach(function(item) {
+          var link = document.createElement('a');
+          link.href = item.href;
+          link.textContent = item.label;
+          link.setAttribute('data-view', item.view);
+          primaryNav.appendChild(link);
+        });
+
         var searchWrap = document.createElement('div');
         searchWrap.className = 'header-search';
         searchWrap.innerHTML = '<label for="site-search">Tìm kiếm bài học</label>' + icon('search');
@@ -2524,6 +4123,7 @@
         actions.appendChild(menuBtn);
 
         header.appendChild(brand);
+        header.appendChild(primaryNav);
         header.appendChild(searchWrap);
         header.appendChild(progress);
         header.appendChild(actions);
@@ -3021,6 +4621,549 @@
           var focusRestoredOk = !isMobileViewportForEscape || document.activeElement === hamburgerBtn2;
           assert("Escape closes the mobile drawer" + (isMobileViewportForEscape ? " and restores focus to the trigger button" : ""),
             openedForEscape && closedByEscape && focusRestoredOk);
+
+          /* 29 — the Spendwise project data layer is embedded and indexed by
+             stable id. When present it exposes the fixed 10-release spine plus
+             features and build tasks; the renderer degrades gracefully (empty
+             maps) if the artifact is absent, so the course still works. */
+          var projectLayerOk = projectData
+            ? (releasesById.size === 10 && featuresById.size > 0 && buildTasksById.size > 0)
+            : (releasesById.size === 0 && buildTasksById.size === 0);
+          assert("project data layer is embedded and indexed by stable id", projectLayerOk);
+
+          /* 30 — Course Progress and Project Progress are independent (task
+             §8): completing a lesson never marks a build task done, and
+             toggling a build task never marks a lesson complete. */
+          var firstTaskId = buildTasksById.size ? buildTasksById.keys().next().value : null;
+          var indepOk = true;
+          if (firstTaskId) {
+            state.completed = [];
+            state.projectProgress = { buildTasks: [] };
+            state.completed.push("day-01"); /* completing a lesson... */
+            indepOk = indepOk && state.projectProgress.buildTasks.length === 0; /* ...must not touch build tasks */
+            var beforeCompleted = state.completed.slice();
+            toggleBuildTask(firstTaskId); /* toggling a build task... */
+            indepOk = indepOk &&
+              state.projectProgress.buildTasks.indexOf(firstTaskId) !== -1 &&
+              JSON.stringify(state.completed) === JSON.stringify(beforeCompleted); /* ...must not touch completion */
+            toggleBuildTask(firstTaskId); /* toggling again clears it */
+            indepOk = indepOk && state.projectProgress.buildTasks.indexOf(firstTaskId) === -1;
+          }
+          assert("course progress and project progress are tracked independently", indepOk);
+
+          /* 31 — release/feature progress counts ONLY required build tasks, so
+             an optional task never blocks a release from reaching 100%. */
+          var sampleTasks = [
+            { id: "t-req-1", releaseId: "rel-x", featureIds: ["f"], required: true },
+            { id: "t-req-2", releaseId: "rel-x", featureIds: ["f"], required: true },
+            { id: "t-opt-1", releaseId: "rel-x", featureIds: ["f"], required: false },
+          ];
+          var relProg = CourseCore.calculateReleaseProgress(sampleTasks, ["t-req-1", "t-req-2"], "rel-x");
+          var featProg = CourseCore.calculateFeatureProgress(sampleTasks, ["t-req-1", "t-req-2"], "f");
+          assert("release/feature progress counts only required build tasks",
+            relProg.total === 2 && relProg.completed === 2 && relProg.percent === 100 &&
+            featProg.total === 2 && featProg.completed === 2 && featProg.percent === 100);
+
+          /* 32 — a v1 progress export (course progress only, no
+             projectProgress) still imports: sanitizeState migrates it forward,
+             preserving completed/theme and adding an empty project track. */
+          var migrated = CourseCore.sanitizeState(
+            { version: 1, completed: ["day-03"], theme: "dark" },
+            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS
+          );
+          assert("v1 progress migrates forward: keeps completed, adds empty project track",
+            migrated.version === CourseCore.STATE_VERSION &&
+            migrated.completed.indexOf("day-03") !== -1 &&
+            migrated.theme === "dark" &&
+            !!migrated.projectProgress && Array.isArray(migrated.projectProgress.buildTasks) &&
+            migrated.projectProgress.buildTasks.length === 0);
+
+          /* 33 — primary navigation exposes exactly the four P0 destinations
+             as real anchors, and routeRender keeps aria-current in sync. */
+          location.hash = "#/project";
+          routeRender();
+          var primaryNav = document.querySelector(".primary-nav");
+          var primaryLinks = primaryNav ? primaryNav.querySelectorAll("a[data-view]") : [];
+          var activeProjectLink = primaryNav && primaryNav.querySelector('[data-view="project"][aria-current="page"]');
+          assert("primary navigation exposes four P0 routes and marks the active view",
+            primaryLinks.length === 4 && !!activeProjectLink &&
+            Array.prototype.every.call(primaryLinks, function(link) {
+              return /^#\/(dashboard|project|roadmap|resources)$/.test(link.getAttribute("href") || "");
+            }));
+
+          /* 34 — the dashboard derives V0.1 as current because no authored
+             release is building, and keeps course/project progress separate. */
+          location.hash = "#/dashboard";
+          routeRender();
+          var dashboardView = document.getElementById("route-view");
+          var currentReleaseEl = dashboardView.querySelector('[data-project-current-release="v0-1"]');
+          var courseProgressEl = dashboardView.querySelector(".dash-progress-card");
+          var projectProgressEl = dashboardView.querySelector(".project-progress");
+          assert("dashboard derives the current release and renders separate course and project progress",
+            !!currentReleaseEl && !!courseProgressEl && !!projectProgressEl &&
+            currentReleaseEl.textContent.indexOf(releasesById.get("v0-1").title) !== -1);
+
+          /* 35 — Project Overview and Roadmap both read the embedded artifact. */
+          location.hash = "#/project";
+          routeRender();
+          var projectView = document.getElementById("route-view");
+          var productHeading = projectView.querySelector('[data-project-overview] h1');
+          var projectOverviewOk = !!productHeading && productHeading.textContent.indexOf(projectData.product.name) !== -1 &&
+            !!projectView.querySelector('[data-project-current-release="v0-1"]');
+          location.hash = "#/roadmap";
+          routeRender();
+          var roadmapView = document.getElementById("route-view");
+          var releaseRows = roadmapView.querySelectorAll(".roadmap-release");
+          assert("project overview and roadmap render canonical project data",
+            projectOverviewOk && releaseRows.length === projectData.releases.length &&
+            roadmapView.textContent.indexOf(projectData.releases[9].title) !== -1);
+
+          /* 36 — Release Detail resolves all authored V0.1 tasks in release order;
+             an invalid release renders a safe backlink instead of crashing. */
+          location.hash = "#/release/v0-1";
+          routeRender();
+          var releaseView = document.getElementById("route-view");
+          var releaseTaskControls = releaseView.querySelectorAll('[data-action="toggle-build-task"]');
+          var releaseDetailOk = !!releaseView.querySelector('[data-release-detail="v0-1"]') &&
+            releaseTaskControls.length === releasesById.get("v0-1").buildTaskIds.length;
+          location.hash = "#/release/not-real";
+          routeRender();
+          var invalidReleaseView = document.getElementById("route-view");
+          assert("release detail uses authored task ordering and invalid ids render a roadmap backlink",
+            releaseDetailOk && !!invalidReleaseView.querySelector(".project-not-found") &&
+            !!invalidReleaseView.querySelector('a[href="#/roadmap"]'));
+
+          /* 37 — direct/future/theory/unmapped composition semantics. */
+          location.hash = "#/lesson/day-20";
+          routeRender();
+          var directView = document.getElementById("route-view");
+          var directContext = directView.querySelector(".project-context");
+          var directApplication = directView.querySelector(".project-application");
+          var directChildren = Array.prototype.slice.call(directView.children);
+          var directHeader = directView.querySelector(".lesson-header");
+          var directTheory = directView.querySelector(".section-block");
+          var directReferences = directView.querySelector(".references-block");
+          var directOk = !!directContext && !!directApplication &&
+            directChildren.indexOf(directHeader) < directChildren.indexOf(directContext) &&
+            directChildren.indexOf(directContext) < directChildren.indexOf(directTheory) &&
+            (!directReferences || directChildren.indexOf(directApplication) < directChildren.indexOf(directReferences)) &&
+            directView.querySelectorAll('[data-action="toggle-build-task"]').length === 3;
+          location.hash = "#/lesson/day-05";
+          routeRender();
+          var futureView = document.getElementById("route-view");
+          var futureNote = futureView.querySelector(".project-future-note");
+          var futureNoteText = futureNote ? futureNote.textContent.toLowerCase() : "";
+          var futureOk = !!futureView.querySelector(".project-context.project-type--future") &&
+            !!futureView.querySelector(".project-application") &&
+            futureNoteText.indexOf("release sau") !== -1 &&
+            futureNoteText.indexOf("không phải build ngay") !== -1;
+          location.hash = "#/lesson/day-02";
+          routeRender();
+          var theoryView = document.getElementById("route-view");
+          var theoryOk = !!theoryView.querySelector(".project-context.project-type--theory") &&
+            !theoryView.querySelector(".project-application");
+          location.hash = "#/lesson/day-39-64";
+          routeRender();
+          var unmappedView = document.getElementById("route-view");
+          var unmappedOk = !unmappedView.querySelector(".project-context, .project-application");
+          assert("lesson project composition handles direct, future, theory and unmapped lessons",
+            directOk && futureOk && theoryOk && unmappedOk);
+
+          /* 38 — UI build-task controls mutate only Project Progress and expose
+             their updated state to assistive technology. */
+          state.completed = ["day-20"];
+          state.projectProgress = { buildTasks: [] };
+          location.hash = "#/lesson/day-20";
+          routeRender();
+          var taskControl = document.getElementById("route-view").querySelector('[data-action="toggle-build-task"]');
+          var courseBeforeTaskToggle = state.completed.slice();
+          if (taskControl) taskControl.click();
+          assert("build-task controls update project progress without changing course completion",
+            !!taskControl && taskControl.getAttribute("aria-pressed") === "true" &&
+            state.projectProgress.buildTasks.indexOf(taskControl.getAttribute("data-task-id")) !== -1 &&
+            JSON.stringify(state.completed) === JSON.stringify(courseBeforeTaskToggle));
+
+          /* 39a — when a toast appears at a narrow (<=63.999rem) viewport
+             where the primary nav becomes a fixed bottom tab bar, the toast
+             must float clear above it, not overlap/obscure the nav's tap
+             targets. This is a viewport-agnostic invariant (vacuously true
+             when the nav isn't in its fixed bottom-bar mode) that guards
+             against the same @media source-order cascade bug fixed for
+             #40: the toast's "sit above the nav" override was declared
+             earlier in the stylesheet than an unconditional #toast-region
+             rule of equal (ID) specificity, so it silently lost the
+             cascade and toasts rendered on top of the nav instead of
+             above it.
+             Deliberately triggered on the Release Detail route rather than
+             reusing the #38 lesson-page toast above: a long lesson page's
+             content height was found (via CDP diagnostics) to make this
+             headless browser misreport window-level geometry for
+             fixed-position elements, producing unusable measurements —
+             the shorter release page measures the real, rendered
+             position faithfully. */
+          location.hash = "#/release/v0-1";
+          routeRender();
+          var toastTaskControl = document.getElementById("route-view").querySelector('[data-action="toggle-build-task"]');
+          if (toastTaskControl) toastTaskControl.click();
+          var navIsFixedBar = window.matchMedia("(max-width: 63.999rem)").matches;
+          /* #38's toast (2.6s auto-dismiss timer, not yet fired here) can
+             still be in #toast-region alongside this one, appended earlier
+             and thus stacked higher in the flex column — take the LAST
+             (most recently appended, closest to the nav) toast, not the
+             first, so this measures the toast this click actually raised. */
+          var toastEls = document.querySelectorAll(".toast");
+          var toastEl = toastEls[toastEls.length - 1];
+          var navElForToast = document.querySelector(".primary-nav");
+          var toastAboveNavOk = !navIsFixedBar || !toastEl || !navElForToast ||
+            toastEl.getBoundingClientRect().bottom <= navElForToast.getBoundingClientRect().top + 1;
+          assert("a visible toast stays clear above the fixed mobile nav bar, never overlapping it",
+            toastAboveNavOk);
+
+          /* 39 — Layout never overflows the viewport horizontally, and every
+             primary navigation link stays fully visible and reachable within
+             the current viewport width (desktop toolbar or mobile tab bar). */
+          location.hash = "#/dashboard";
+          routeRender();
+          var overflowOk = document.documentElement.scrollWidth <= window.innerWidth + 1;
+          var navLinksForOverflow = Array.prototype.slice.call(
+            document.querySelectorAll(".primary-nav [data-view]")
+          );
+          var navLinksVisibleOk = navLinksForOverflow.length === 4 &&
+            navLinksForOverflow.every(function(link) {
+              var rect = link.getBoundingClientRect();
+              return rect.width > 0 && rect.left >= -1 && rect.right <= window.innerWidth + 1;
+            });
+          assert("layout has no horizontal overflow and all four primary nav links stay within the viewport",
+            overflowOk && navLinksVisibleOk);
+
+          /* 40 — When the narrow-viewport (<=30rem) breakpoint is active,
+             its grid-collapsing overrides actually take effect. This is a
+             viewport-agnostic invariant (vacuously true when the breakpoint
+             isn't active) that specifically guards against @media block
+             source-order regressions: a rule declared earlier in the
+             stylesheet loses to an unconditional same-specificity rule
+             declared later, even while its own media query matches, so a
+             misplaced override can silently stop applying without ever
+             causing horizontal overflow (the columns just get very narrow
+             instead of collapsing to one). */
+          var narrowActive = window.matchMedia("(max-width: 30rem)").matches;
+          var progressCardEl = document.querySelector(".dash-progress-card");
+          var narrowGridOk = !narrowActive || !progressCardEl ||
+            getComputedStyle(progressCardEl).gridTemplateColumns.trim().split(/\s+/).length === 1;
+          assert("narrow-viewport grid-collapse overrides win the cascade when their media query is active",
+            narrowGridOk);
+
+          /* 41 — a Release Detail page is reached only through the Roadmap
+             tab (there is no standalone "Release" primary-nav destination),
+             so its aria-current wayfinding cue should stay on "Lộ trình"
+             rather than going dark — losing the active nav highlight on
+             every release drill-down would strand the learner without a
+             "where am I" cue even though they are still squarely inside
+             the Roadmap section. */
+          location.hash = "#/release/v0-1";
+          routeRender();
+          var releaseNavActive = document.querySelector('.primary-nav [data-view="roadmap"][aria-current="page"]');
+          assert("viewing a release keeps the Roadmap primary-nav tab marked active",
+            !!releaseNavActive);
+
+          /* 42 — Lessons belong to the Learning Track, whose P0 primary-nav
+             destination is Học/Dashboard. The active wayfinding cue must stay
+             on Học while reading any lesson, just as Release Detail inherits
+             the Roadmap cue above. */
+          location.hash = "#/lesson/day-20";
+          routeRender();
+          var lessonNavActive = document.querySelector('.primary-nav [data-view="dashboard"][aria-current="page"]');
+          assert("viewing a lesson keeps the Học primary-nav tab marked active",
+            !!lessonNavActive);
+
+          /* 43 — At the true 390px mobile viewport, the lesson footer must
+             fit within the layout viewport. Its previous three-column intrinsic
+             minimum expanded window.innerWidth beyond visualViewport.width on
+             long lessons, so fixed navigation and screenshots were scaled up. */
+          var mobileVisualWidth = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          var lessonFooterFitsViewport = mobileVisualWidth > 480 ||
+            (window.innerWidth <= mobileVisualWidth + 1 &&
+             document.documentElement.scrollWidth <= mobileVisualWidth + 1);
+          assert("a lesson footer never expands the mobile layout beyond the visual viewport",
+            lessonFooterFitsViewport);
+
+          /* 44 — When the curriculum drawer opens on mobile, it owns the full
+             interaction layer below the header. The fixed bottom primary nav
+             must not sit above and intercept the drawer's final rows. */
+          var drawerLayeringOk = true;
+          if (mobileVisualWidth <= 1024) {
+            openDrawer();
+            var drawerForLayering = document.getElementById("course-sidebar");
+            var navForLayering = document.querySelector(".primary-nav");
+            var drawerZ = drawerForLayering ? Number(getComputedStyle(drawerForLayering).zIndex) : 0;
+            var navZ = navForLayering ? Number(getComputedStyle(navForLayering).zIndex) : 0;
+            drawerLayeringOk = !!drawerForLayering && !!navForLayering && drawerZ > navZ;
+            closeDrawer();
+          }
+          assert("an open mobile curriculum drawer stays above the fixed primary nav",
+            drawerLayeringOk);
+
+          /* 45 — Long authored lesson titles must shrink inside the mobile
+             curriculum drawer instead of making its implicit grid track wider
+             than the drawer and introducing an internal horizontal scrollbar. */
+          var drawerWidthOk = true;
+          if (mobileVisualWidth <= 1024) {
+            openDrawer();
+            var drawerForWidth = document.getElementById("course-sidebar");
+            drawerWidthOk = !!drawerForWidth && drawerForWidth.scrollWidth <= drawerForWidth.clientWidth + 1;
+            closeDrawer();
+          }
+          assert("the mobile curriculum drawer has no internal horizontal overflow",
+            drawerWidthOk);
+
+          /* 46 — Course ↔ Project Map: filters are pure/client-side. The
+             "Theory / Unmapped" control groups two distinct data-level
+             types under one filter without merging their identities. */
+          location.hash = "#/map";
+          routeRender();
+          var mapView = document.getElementById("route-view");
+          var allMapRows = CourseCore.deriveMapRows(courseData.lessons, projectData.lessonMap);
+          var mapRowsAllOk = mapView.querySelectorAll(".map-row").length === allMapRows.length;
+          var mapFilterBtns = mapView.querySelectorAll(".map-filter-btn");
+          var directBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Direct"; });
+          directBtn.click();
+          var directCount = allMapRows.filter(function(r) { return r.applicationType === "direct"; }).length;
+          var directRows = mapView.querySelectorAll(".map-row");
+          var directFilterOk = directRows.length === directCount &&
+            directBtn.getAttribute("aria-pressed") === "true" &&
+            Array.prototype.every.call(directRows, function(row) { return !!row.querySelector(".map-type--direct"); });
+          var theoryUnmappedBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Theory / Unmapped"; });
+          theoryUnmappedBtn.click();
+          var theoryUnmappedCount = allMapRows.filter(function(r) { return r.applicationType === "theory" || r.applicationType === "unmapped"; }).length;
+          var theoryUnmappedRows = mapView.querySelectorAll(".map-row");
+          var theoryUnmappedOk = theoryUnmappedRows.length === theoryUnmappedCount &&
+            directBtn.getAttribute("aria-pressed") === "false" &&
+            Array.prototype.some.call(theoryUnmappedRows, function(row) { return !!row.querySelector(".map-type--theory"); }) &&
+            Array.prototype.some.call(theoryUnmappedRows, function(row) { return !!row.querySelector(".map-type--unmapped"); });
+          var allBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Tất cả"; });
+          allBtn.click();
+          var releaseSelectEl = mapView.querySelector("#map-release-filter");
+          var sampleReleaseId = allMapRows.filter(function(r) { return r.releaseId; })[0].releaseId;
+          releaseSelectEl.value = sampleReleaseId;
+          releaseSelectEl.dispatchEvent(new Event("change"));
+          var releaseFilterCount = allMapRows.filter(function(r) { return r.releaseId === sampleReleaseId; }).length;
+          var releaseFilterOk = mapView.querySelectorAll(".map-row").length === releaseFilterCount;
+          assert("Course ↔ Project Map type and release filters narrow rows correctly, keeping theory/unmapped as distinct data-level types",
+            mapRowsAllOk && directFilterOk && theoryUnmappedOk && releaseFilterOk);
+
+          /* 47 — Architecture Evolution orders stages by release order (not
+             hardcoded), labels only the resolved current release "Current
+             Build Target", and never claims any stage is deployed/running —
+             every authored release.status is "planned". */
+          location.hash = "#/architecture";
+          routeRender();
+          var archView = document.getElementById("route-view");
+          var archPairs = CourseCore.orderArchitectureStages(projectData.releases || [], projectData.architectureStages || []);
+          var archBlocks = archView.querySelectorAll(".architecture-stage");
+          var archOrderOk = archBlocks.length === archPairs.length &&
+            Array.prototype.every.call(archBlocks, function(block, i) { return block.id === "architecture-stage-" + archPairs[i].release.id; });
+          var currentArchRelease = currentProjectRelease();
+          var currentArchBlock = document.getElementById("architecture-stage-" + currentArchRelease.id);
+          var currentNoteOk = !!currentArchBlock &&
+            currentArchBlock.querySelector(".architecture-target-note").textContent.indexOf("Current Build Target") !== -1;
+          var targetNotes = archView.querySelectorAll(".architecture-target-note");
+          var honestWordingOk = targetNotes.length === archPairs.length &&
+            Array.prototype.every.call(targetNotes, function(note) {
+              var lower = note.textContent.toLowerCase();
+              return lower.indexOf("deployed") === -1 && lower.indexOf("đang chạy") === -1;
+            });
+          assert("Architecture Evolution orders stages by release order, marks only the current release as the Current Build Target, and never claims a stage is deployed/running",
+            archOrderOk && currentNoteOk && honestWordingOk);
+
+          /* 48 — Domain Overview derives entities from features[].domainEntities
+             (union+dedup, never hardcoded), and Project Boundaries discloses
+             every product.outOfScope item behind a real accordion. */
+          location.hash = "#/project";
+          routeRender();
+          var overviewView = document.getElementById("route-view");
+          var derivedEntities = CourseCore.deriveDomainEntities(projectData.features || []);
+          var domainCards = overviewView.querySelectorAll(".domain-entity-card");
+          var domainOk = domainCards.length === derivedEntities.length &&
+            Array.prototype.every.call(domainCards, function(card, i) { return card.querySelector("h3").textContent === derivedEntities[i].entity; });
+          var scopeBtn = overviewView.querySelector('[aria-controls="project-out-of-scope"]');
+          var scopePanelEl = document.getElementById("project-out-of-scope");
+          var scopeHiddenBefore = scopePanelEl.hidden;
+          scopeBtn.click();
+          var scopeVisibleAfter = !scopePanelEl.hidden;
+          var scopeItemsOk = scopePanelEl.querySelectorAll("li").length === (projectData.product.outOfScope || []).length;
+          scopeBtn.click(); /* restore */
+          assert("Domain Overview derives entities from features[].domainEntities and Project Boundaries discloses every out-of-scope item",
+            domainOk && scopeHiddenBefore && scopeVisibleAfter && scopeItemsOk);
+
+          /* 49 — Build Tasks Workspace (inside Project Overview) orders tasks
+             per release.buildTaskIds and shares toggleBuildTask state with
+             Release Detail; its own "Chi tiết" detail-disclosure toggle must
+             never be confused with the completion toggle by shared selectors. */
+          var workspaceRelease = currentProjectRelease();
+          var workspaceTaskControls = overviewView.querySelectorAll('[data-action="toggle-build-task"]');
+          var workspaceOrderOk = Array.prototype.every.call(workspaceTaskControls, function(ctrl, i) {
+            return ctrl.getAttribute("data-task-id") === workspaceRelease.buildTaskIds[i];
+          });
+          var noOverlapWithDetailToggle = overviewView.querySelectorAll('[data-action="toggle-build-task"].build-task-detail-toggle').length === 0;
+          assert("Build Tasks Workspace orders tasks per release.buildTaskIds and keeps its detail-disclosure toggle distinct from the completion toggle",
+            workspaceTaskControls.length === workspaceRelease.buildTaskIds.length && workspaceOrderOk && noOverlapWithDetailToggle);
+
+          /* 50 — Roadmap groups every release by its authored milestone (not
+             hardcoded), in milestone-then-release order, matching
+             CourseCore.groupReleasesByMilestone exactly. */
+          location.hash = "#/roadmap";
+          routeRender();
+          var roadmapViewGrouped = document.getElementById("route-view");
+          var milestoneGroups = roadmapViewGrouped.querySelectorAll(".roadmap-milestone-group");
+          var expectedGroups = CourseCore.groupReleasesByMilestone(projectData.releases || [], projectData.milestones || []);
+          var groupCountOk = milestoneGroups.length === expectedGroups.length;
+          var totalReleaseLinksOk = roadmapViewGrouped.querySelectorAll(".roadmap-release").length === projectData.releases.length;
+          var groupHeadingsOk = Array.prototype.every.call(milestoneGroups, function(group, i) {
+            var heading = group.querySelector("h2");
+            var expectedName = expectedGroups[i].milestone ? expectedGroups[i].milestone.name : "Release khác";
+            return !!heading && heading.textContent === expectedName;
+          });
+          assert("Roadmap groups every release under its authored milestone in release order, matching CourseCore.groupReleasesByMilestone",
+            groupCountOk && totalReleaseLinksOk && groupHeadingsOk);
+
+          /* 51 — Release Detail's Architecture Change section shows only
+             "Initial Architecture" on V0.1 (no invented prior state) and a
+             real Before/After comparison + changesFromPrev prose on V0.2+. */
+          location.hash = "#/release/v0-1";
+          routeRender();
+          var v01View = document.getElementById("route-view");
+          var v01Compare = v01View.querySelector(".architecture-compare");
+          var v01Ok = !!v01Compare && v01Compare.querySelectorAll(".architecture-compare-col").length === 1 &&
+            v01Compare.textContent.indexOf("Initial Architecture") !== -1;
+          var v02Release = (projectData.releases || []).find(function(r) { return r.order === 2; });
+          location.hash = "#/release/" + v02Release.id;
+          routeRender();
+          var v02View = document.getElementById("route-view");
+          var v02Compare = v02View.querySelector(".architecture-compare");
+          var v02Stage = archStageByReleaseId.get(v02Release.id);
+          var v02ChangesEl = v02View.querySelector(".architecture-compare-changes");
+          var v02Ok = !!v02Compare && v02Compare.querySelectorAll(".architecture-compare-col").length === 2 &&
+            v02Compare.textContent.indexOf("Before ·") !== -1 && v02Compare.textContent.indexOf("After ·") !== -1 &&
+            (!v02Stage.changesFromPrev || (!!v02ChangesEl && v02ChangesEl.textContent === v02Stage.changesFromPrev));
+          assert("Release Detail's Architecture Change section shows Initial Architecture only for V0.1 and a real Before/After comparison for V0.2+",
+            v01Ok && v02Ok);
+
+          /* 52 — the Project sub-nav (Option B) marks the correct tab active
+             on every one of the 5 project-related views without adding to or
+             duplicating the 4-item primary nav. */
+          var subnavChecks = [
+            ["#/project", "project"],
+            ["#/roadmap", "roadmap"],
+            ["#/release/v0-1", "roadmap"],
+            ["#/map", "map"],
+            ["#/architecture", "architecture"],
+          ];
+          var subnavOk = subnavChecks.every(function(pair) {
+            location.hash = pair[0];
+            routeRender();
+            var subnav = document.getElementById("route-view").querySelector(".project-subnav");
+            var active = subnav && subnav.querySelector('[data-subview="' + pair[1] + '"][aria-current="page"]');
+            var onlyOneActive = subnav && subnav.querySelectorAll('[aria-current="page"]').length === 1;
+            return !!active && onlyOneActive;
+          });
+          var primaryNavStillFour = document.querySelectorAll(".primary-nav [data-view]").length === 4;
+          assert("project sub-nav marks the correct tab active on all 5 project views without growing the 4-item primary nav",
+            subnavOk && primaryNavStillFour);
+
+          /* 53 — four releases legitimately carry no build tasks yet. Those
+             must state that honestly instead of rendering 0/0 · 0% with an
+             empty bar, which reads as "you have completed none of the work"
+             rather than "there is no work tracked here yet". Releases that
+             do have tasks keep the real count + <progress>. */
+          var emptyRelease = (projectData.releases || []).find(function(r) { return (r.buildTaskIds || []).length === 0; });
+          var stockedRelease = (projectData.releases || []).find(function(r) { return (r.buildTaskIds || []).length > 0; });
+          location.hash = "#/release/" + emptyRelease.id;
+          routeRender();
+          var emptyReleaseView = document.getElementById("route-view");
+          var emptyProgressEl = emptyReleaseView.querySelector(".project-progress");
+          var emptyProgressOk = !!emptyProgressEl &&
+            !!emptyProgressEl.querySelector(".project-progress-note") &&
+            !emptyProgressEl.querySelector(".project-progress-count") &&
+            !emptyProgressEl.querySelector("progress") &&
+            emptyReleaseView.textContent.indexOf("0/0") === -1;
+          location.hash = "#/release/" + stockedRelease.id;
+          routeRender();
+          var stockedProgressEl = document.getElementById("route-view").querySelector(".project-progress");
+          var stockedProgressOk = !!stockedProgressEl &&
+            !!stockedProgressEl.querySelector(".project-progress-count") &&
+            !!stockedProgressEl.querySelector("progress") &&
+            !stockedProgressEl.querySelector(".project-progress-note");
+          location.hash = "#/roadmap";
+          routeRender();
+          var roadmapZeroOfZero = document.getElementById("route-view").textContent.indexOf("0/0") === -1;
+          assert("releases with no tracked build task state that honestly instead of showing 0/0 · 0%, while stocked releases keep a real count and bar",
+            emptyProgressOk && stockedProgressOk && roadmapZeroOfZero);
+
+          /* 54 — Map and Architecture are Project Track sub-views reachable
+             only from the project sub-nav, so the primary nav must keep the
+             "Dự án" cue lit rather than leaving every tab dark (same
+             reasoning as #41/#42 for release/lesson). */
+          var inheritedNavOk = ["#/map", "#/architecture"].every(function(hash) {
+            location.hash = hash;
+            routeRender();
+            var active = document.querySelectorAll('.primary-nav [data-view][aria-current="page"]');
+            return active.length === 1 && active[0].getAttribute("data-view") === "project";
+          });
+          assert("Map and Architecture keep the Dự án primary-nav tab marked active instead of leaving the nav without a cue",
+            inheritedNavOk && document.querySelectorAll(".primary-nav [data-view]").length === 4);
+
+          /* 55 — Release Detail must render each release's ASCII diagram
+             once, not twice: the Architecture Change comparison below the
+             Architecture section already shows the same diagram as its
+             After/Initial column. Every diagram <pre> also carries an
+             accessible name naming its stage, since a bare <pre> of ASCII
+             art is announced without any context. */
+          var diagramCheck = ["v0-1", "v0-5"].every(function(id) {
+            location.hash = "#/release/" + id;
+            routeRender();
+            var view = document.getElementById("route-view");
+            var stageDiagram = archStageByReleaseId.get(id).diagram;
+            var pres = Array.prototype.slice.call(view.querySelectorAll("pre"));
+            var sameDiagram = pres.filter(function(p) { return p.textContent === stageDiagram; });
+            var allLabelled = pres.every(function(p) {
+              return p.getAttribute("role") === "figure" && (p.getAttribute("aria-label") || "").length > 0;
+            });
+            return sameDiagram.length === 1 && allLabelled;
+          });
+          assert("Release Detail renders each architecture diagram once and gives every diagram an accessible name",
+            diagramCheck);
+
+          /* 56 — the Architecture stage pills are in-page jump links, and
+             the hashchange handler skips re-rendering for in-page anchors,
+             so the active pill has to be updated on click or the learner
+             loses track of which stage they are on. */
+          location.hash = "#/architecture";
+          routeRender();
+          var archNavView = document.getElementById("route-view");
+          var stagePills = archNavView.querySelectorAll(".architecture-stage-nav-link");
+          var noPillActiveInitially = archNavView.querySelectorAll(".architecture-stage-nav-link[aria-current]").length === 0;
+          var targetPill = stagePills[2];
+          targetPill.click();
+          var activePills = archNavView.querySelectorAll('.architecture-stage-nav-link[aria-current="location"]');
+          assert("Architecture stage pills mark exactly the jumped-to stage as the current location",
+            stagePills.length === CourseCore.orderArchitectureStages(projectData.releases || [], projectData.architectureStages || []).length &&
+            noPillActiveInitially && activePills.length === 1 && activePills[0] === targetPill);
+
+          /* 57 — the Dashboard's two "Next" actions are a symmetric pair:
+             both Learn → and Build → must be real navigable links, or the
+             build half of the loop is a dead end. */
+          location.hash = "#/dashboard";
+          routeRender();
+          var nextPanel = document.getElementById("route-view").querySelector(".project-next-grid");
+          var nextPanelLinks = nextPanel ? Array.prototype.slice.call(nextPanel.querySelectorAll("a[href]")) : [];
+          var dashRelease = currentProjectRelease();
+          var dashNextTask = CourseCore.selectNextBuildTask(dashRelease, buildTasksById, projectCompletedTaskIds());
+          var learnLinkOk = nextPanelLinks.some(function(a) { return /^#\/lesson\//.test(a.getAttribute("href")); });
+          var buildLinkOk = nextPanelLinks.some(function(a) {
+            return a.getAttribute("href") === "#/release/" + dashRelease.id && a.textContent === dashNextTask.title;
+          });
+          assert("dashboard Next panel exposes both the next lesson and the next build task as real links",
+            !!dashNextTask && learnLinkOk && buildLinkOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {

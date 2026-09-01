@@ -34,6 +34,7 @@ class PublicationModelTests(unittest.TestCase):
             manifest_path=ROOT / "content" / "source-manifest.json",
             source_notes_dir=ROOT / "content" / "source-notes",
             built_at="2026-08-23T00:00:00Z",
+            project_path=ROOT / "content" / "spendwise-project.json",
         )
 
     def test_exactly_40_ordered_lessons(self):
@@ -72,6 +73,18 @@ class PublicationModelTests(unittest.TestCase):
         self.assertNotIn('"facts"', raw)
         self.assertNotIn("relevantHeadings", raw)
         self.assertNotIn("fallbackEvidence", raw)
+
+    def test_project_data_layer_embedded(self):
+        project = self.model["project"]
+        self.assertEqual(len(project["releases"]), 10)
+        self.assertEqual(len(project["features"]), 25)
+        self.assertEqual(len(project["buildTasks"]), 24)
+        self.assertEqual(project["product"]["id"], "spendwise")
+
+    def test_project_lesson_map_keys_are_published_lessons(self):
+        lesson_ids = {lesson["id"] for lesson in self.model["lessons"]}
+        for lesson_id in self.model["project"]["lessonMap"]:
+            self.assertIn(lesson_id, lesson_ids)
 
 
 if __name__ == "__main__":

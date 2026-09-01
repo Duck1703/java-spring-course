@@ -18,6 +18,11 @@ import tempfile
 import unicodedata
 from pathlib import Path
 
+try:  # package import when run via pytest (repo root on path)
+    from tools.validate_project import validate_project
+except ImportError:  # script import when run as `python tools/build_site.py`
+    from validate_project import validate_project
+
 EXPECTED_LESSON_IDS = [f"day-{n:02d}" for n in range(1, 39)] + ["day-39-64", "day-65-66"]
 GROUP_ORDER = ["java", "spring", "completion"]
 EXPECTED_GROUP_COUNTS = {"java": 12, "spring": 24, "completion": 4}
@@ -238,6 +243,25 @@ def _load_json(path: Path):
         return json.load(fh)
 
 
+def _load_project_model(project_path: Path, lessons: list[dict]) -> dict:
+    """Load, validate and return the Spendwise project data layer.
+
+    The project artifact is the authoritative source of Spendwise's releases,
+    features, build tasks and curriculum->project mapping (see
+    tools/validate_project.py). It is validated against the SAME lesson ids the
+    publication model actually contains, so a lessonMap entry can never point at
+    a lesson that is not published. Any error refuses the build.
+    """
+    project = _load_json(project_path)
+    lesson_ids = {lesson["id"] for lesson in lessons}
+    errors = validate_project(project, valid_lesson_ids=lesson_ids)
+    if errors:
+        raise ValueError(
+            "spendwise-project.json failed validation:\n  " + "\n  ".join(errors)
+        )
+    return project
+
+
 def build_publication_model(
     catalog_path: Path,
     lesson_index_path: Path,
@@ -245,6 +269,7 @@ def build_publication_model(
     manifest_path: Path,
     source_notes_dir: Path,
     built_at: str,
+    project_path: Path | None = None,
 ) -> dict:
     catalog = _load_json(catalog_path)
     lesson_index = _load_json(lesson_index_path)
@@ -326,7 +351,7 @@ def build_publication_model(
             "limitation": limitations.get(rid),
         })
 
-    return {
+    model = {
         "schemaVersion": 1,
         "app": "java-spring-course",
         "builtAt": built_at,
@@ -334,6 +359,12 @@ def build_publication_model(
         "lessons": lessons_out,
         "resources": resource_cards,
     }
+    # The Spendwise project data layer is an independent artifact; embedding it
+    # under model["project"] lets the renderer answer project questions without
+    # hard-coding Spendwise content, while course lessons stay untouched.
+    if project_path is not None and Path(project_path).exists():
+        model["project"] = _load_project_model(Path(project_path), lessons_out)
+    return model
 
 
 def _json_escape_for_script(payload: str) -> str:
@@ -362,19 +393,25 @@ def main(argv=None) -> int:
     parser.add_argument("--lessons-dir", default="content/lessons")
     parser.add_argument("--manifest", default="content/source-manifest.json")
     parser.add_argument("--source-notes-dir", default="content/source-notes")
+    parser.add_argument("--project", default="content/spendwise-project.json")
     parser.add_argument("--output", default="index.html")
     args = parser.parse_args(argv)
 
     import datetime
 
-    model = build_publication_model(
-        catalog_path=Path(args.catalog),
-        lesson_index_path=Path(args.lesson_index),
-        lessons_dir=Path(args.lessons_dir),
-        manifest_path=Path(args.manifest),
-        source_notes_dir=Path(args.source_notes_dir),
-        built_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
-    )
+    try:
+        model = build_publication_model(
+            catalog_path=Path(args.catalog),
+            lesson_index_path=Path(args.lesson_index),
+            lessons_dir=Path(args.lessons_dir),
+            manifest_path=Path(args.manifest),
+            source_notes_dir=Path(args.source_notes_dir),
+            built_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            project_path=Path(args.project),
+        )
+    except ValueError as exc:
+        print(f"ERROR {exc}", file=sys.stderr)
+        return 2
 
     output = Path(args.output)
     # Always rebuild from the template: index.html is a build artifact whose
@@ -402,11 +439,19 @@ def main(argv=None) -> int:
         1 for l in model["lessons"] for sec in l.get("sections", [])
         for blk in sec.get("blocks", []) if blk.get("citations")
     ) + sum(len(l.get("references", [])) for l in model["lessons"])
+    project = model.get("project")
+    project_note = (
+        f" project=releases:{len(project['releases'])}"
+        f",features:{len(project['features'])}"
+        f",buildTasks:{len(project['buildTasks'])}"
+        f",lessonMap:{len(project['lessonMap'])}"
+        if project else " project=none"
+    )
     print(
         f"PASS output={output.name} units={len(model['units'])} "
         f"lessons={len(model['lessons'])} practices={n_practices} "
         f"citations={n_citations} resources={len(model['resources'])} "
-        f"external_dependencies=0"
+        f"external_dependencies=0{project_note}"
     )
     return 0
 
