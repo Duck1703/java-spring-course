@@ -1,4 +1,6 @@
+import copy
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -6,6 +8,22 @@ from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from tools.course_model import normalize_url, resource_id
+
+_GENERATED_AT_RE = re.compile(rb'"generatedAt": "[^"]*"')
+
+
+def _bytes_ignoring_generated_at(path: Path) -> bytes:
+    """Read a generated JSON file's bytes with its `generatedAt` timestamp
+    value blanked out.
+
+    `generatedAt` is `datetime.now(timezone.utc)` captured fresh on every
+    parse_schedule() call (tools/course_model.py), so it necessarily differs
+    between any two separate CLI invocations -- including two runs with
+    identical supplemental-sources input. Byte-for-byte backward-compat
+    comparisons must ignore this one field; every other byte is compared
+    exactly as written.
+    """
+    return _GENERATED_AT_RE.sub(b'"generatedAt": "IGNORED"', path.read_bytes())
 
 
 class UrlTests(unittest.TestCase):
@@ -208,6 +226,187 @@ class ScheduleParserTests(unittest.TestCase):
         self.assertIn("Java/Spring Course Catalog", markdown)
         self.assertEqual(manifest["resources"][0]["check"], {})
 
+    def test_cli_omitting_supplemental_sources_matches_baseline_output(self):
+        """Test A: no --supplemental-sources flag -> output identical to a
+        plain run (proves the flag is purely additive/backward compatible).
+        """
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            self._write_workbook(workbook)
+
+            baseline_dir = root / "baseline"
+            without_flag_dir = root / "without-flag"
+            for target in (baseline_dir, without_flag_dir):
+                exit_code = main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(target / "course-catalog.json"),
+                        "--markdown", str(target / "course-catalog.md"),
+                        "--manifest", str(target / "content" / "source-manifest.json"),
+                    ]
+                )
+                self.assertEqual(exit_code, 0)
+
+            self.assertEqual(
+                _bytes_ignoring_generated_at(baseline_dir / "course-catalog.json"),
+                _bytes_ignoring_generated_at(without_flag_dir / "course-catalog.json"),
+            )
+            self.assertEqual(
+                (baseline_dir / "course-catalog.md").read_bytes(),
+                (without_flag_dir / "course-catalog.md").read_bytes(),
+            )
+            self.assertEqual(
+                _bytes_ignoring_generated_at(baseline_dir / "content" / "source-manifest.json"),
+                _bytes_ignoring_generated_at(without_flag_dir / "content" / "source-manifest.json"),
+            )
+
+    def test_cli_empty_supplemental_registry_matches_baseline_output(self):
+        """Test B: an empty content/supplemental-sources.json -> output
+        identical to a plain run (byte-for-byte, not just semantically equal).
+        """
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            self._write_workbook(workbook)
+            empty_registry = root / "supplemental-sources.json"
+            empty_registry.write_text(
+                json.dumps({"schemaVersion": 1, "resources": []}), encoding="utf-8"
+            )
+
+            baseline_dir = root / "baseline"
+            with_empty_dir = root / "with-empty"
+            self.assertEqual(
+                main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(baseline_dir / "course-catalog.json"),
+                        "--markdown", str(baseline_dir / "course-catalog.md"),
+                        "--manifest", str(baseline_dir / "content" / "source-manifest.json"),
+                    ]
+                ),
+                0,
+            )
+            self.assertEqual(
+                main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(with_empty_dir / "course-catalog.json"),
+                        "--markdown", str(with_empty_dir / "course-catalog.md"),
+                        "--manifest", str(with_empty_dir / "content" / "source-manifest.json"),
+                        "--supplemental-sources", str(empty_registry),
+                    ]
+                ),
+                0,
+            )
+
+            self.assertEqual(
+                _bytes_ignoring_generated_at(baseline_dir / "course-catalog.json"),
+                _bytes_ignoring_generated_at(with_empty_dir / "course-catalog.json"),
+            )
+            self.assertEqual(
+                (baseline_dir / "course-catalog.md").read_bytes(),
+                (with_empty_dir / "course-catalog.md").read_bytes(),
+            )
+            self.assertEqual(
+                _bytes_ignoring_generated_at(baseline_dir / "content" / "source-manifest.json"),
+                _bytes_ignoring_generated_at(with_empty_dir / "content" / "source-manifest.json"),
+            )
+
+    def test_cli_one_supplemental_source_appears_in_catalog_and_manifest(self):
+        """Test C + D: a new supplemental resource mapped to day-01 appears
+        in both course-catalog.json's lesson resourceIds and the manifest.
+        """
+        from tools.course_model import resource_id
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            self._write_workbook(workbook)
+            registry = root / "supplemental-sources.json"
+            registry.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resources": [
+                            {
+                                "url": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+                                "title": "7.2.1.1. Joined Tables",
+                                "publisher": "PostgreSQL Global Development Group",
+                                "lessonIds": ["day-01"],
+                                "purpose": "test fixture only",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            catalog_path = root / "course-catalog.json"
+            manifest_path = root / "content" / "source-manifest.json"
+
+            exit_code = main(
+                [
+                    "--workbook", str(workbook),
+                    "--json", str(catalog_path),
+                    "--markdown", str(root / "course-catalog.md"),
+                    "--manifest", str(manifest_path),
+                    "--supplemental-sources", str(registry),
+                ]
+            )
+            self.assertEqual(exit_code, 0)
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        new_id = resource_id("https://www.postgresql.org/docs/current/queries-table-expressions.html")
+        day01 = next(lesson for lesson in catalog["lessons"] if lesson["id"] == "day-01")
+        self.assertIn(new_id, day01["resourceIds"])
+        self.assertIn(new_id, {resource["id"] for resource in catalog["resources"]})
+        self.assertIn(new_id, {resource["resourceId"] for resource in manifest["resources"]})
+
+    def test_cli_unknown_lesson_id_fails_loudly_and_writes_nothing(self):
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            self._write_workbook(workbook)
+            registry = root / "supplemental-sources.json"
+            registry.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resources": [
+                            {
+                                "url": "https://example.com/nowhere",
+                                "title": "Nowhere",
+                                "publisher": "Example",
+                                "lessonIds": ["day-99"],
+                                "purpose": "test fixture only",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            catalog_path = root / "course-catalog.json"
+
+            exit_code = main(
+                [
+                    "--workbook", str(workbook),
+                    "--json", str(catalog_path),
+                    "--markdown", str(root / "course-catalog.md"),
+                    "--manifest", str(root / "content" / "source-manifest.json"),
+                    "--supplemental-sources", str(registry),
+                ]
+            )
+            self.assertEqual(exit_code, 1)
+            self.assertFalse(catalog_path.exists())
+
     @staticmethod
     def _write_workbook(path):
         shared_strings = [
@@ -266,3 +465,249 @@ class ScheduleParserTests(unittest.TestCase):
                 f'<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">{sst}</sst>',
             )
             archive.writestr("xl/worksheets/sheet1.xml", worksheet)
+
+
+def _fixture_catalog():
+    """Small in-memory catalog shaped like a real parse_schedule() result,
+    with one workbook-derived resource already linked to day-19.
+    """
+    existing_url = "https://example.com/existing-resource"
+    existing_id = resource_id(existing_url)
+    return {
+        "generatedAt": "2026-08-22T00:00:00Z",
+        "source": {"workbook": "fixture.xlsx", "sheet": "JavaSpring_Schedule"},
+        "units": [{"id": "unit-07", "number": 7, "title": "Unit 7", "group": "spring", "lessonIds": ["day-19", "day-20"], "sourceRows": []}],
+        "lessons": [
+            {"id": "day-19", "unitId": "unit-07", "outline": [], "resourceIds": [existing_id]},
+            {"id": "day-20", "unitId": "unit-07", "outline": [], "resourceIds": []},
+        ],
+        "resources": [
+            {
+                "id": existing_id,
+                "url": normalize_url(existing_url),
+                "labels": ["Existing Resource"],
+                "lessonIds": ["day-19"],
+                "sourceRows": [],
+                "occurrences": [],
+            }
+        ],
+    }
+
+
+def _supplemental_entry(url="https://example.com/new-resource", title="New Resource",
+                         publisher="Example Publisher", lesson_ids=("day-20",),
+                         purpose="test fixture only"):
+    """Build an entry shaped exactly like load_supplemental_sources()'s output
+    -- merge_supplemental_resources() only ever receives already-normalized
+    entries (normalizedUrl/resourceId precomputed), never raw authored JSON.
+    """
+    return {
+        "url": url,
+        "normalizedUrl": normalize_url(url),
+        "resourceId": resource_id(url),
+        "title": title,
+        "publisher": publisher,
+        "lessonIds": list(lesson_ids),
+        "purpose": purpose,
+    }
+
+
+def _write_supplemental_file(path, entries):
+    path.write_text(
+        json.dumps({"schemaVersion": 1, "resources": entries}), encoding="utf-8"
+    )
+
+
+class SupplementalSourceLoadTests(unittest.TestCase):
+    """load_supplemental_sources: structural validation of the authored file."""
+
+    def test_rejects_unsupported_schema_version(self):
+        from tools.course_model import SupplementalSourceError, load_supplemental_sources
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            path.write_text(json.dumps({"schemaVersion": 2, "resources": []}), encoding="utf-8")
+            with self.assertRaises(SupplementalSourceError):
+                load_supplemental_sources(path)
+
+    def test_rejects_missing_required_field(self):
+        from tools.course_model import SupplementalSourceError, load_supplemental_sources
+
+        entry = _supplemental_entry()
+        del entry["publisher"]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            _write_supplemental_file(path, [entry])
+            with self.assertRaises(SupplementalSourceError):
+                load_supplemental_sources(path)
+
+    def test_rejects_malformed_url(self):
+        from tools.course_model import SupplementalSourceError, load_supplemental_sources
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            _write_supplemental_file(path, [_supplemental_entry(url="not-a-url")])
+            with self.assertRaises(SupplementalSourceError):
+                load_supplemental_sources(path)
+
+    def test_rejects_duplicate_url_within_file(self):
+        """Test G: two entries whose URL normalizes the same must fail as an
+        authoring error, not be silently deduplicated.
+        """
+        from tools.course_model import SupplementalSourceError, load_supplemental_sources
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            _write_supplemental_file(
+                path,
+                [
+                    _supplemental_entry(url="https://example.com/dup#a", lesson_ids=("day-19",)),
+                    _supplemental_entry(url="https://example.com/dup#b", lesson_ids=("day-20",)),
+                ],
+            )
+            with self.assertRaises(SupplementalSourceError):
+                load_supplemental_sources(path)
+
+    def test_returns_normalized_entry_with_deterministic_resource_id(self):
+        from tools.course_model import load_supplemental_sources
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            _write_supplemental_file(path, [_supplemental_entry(url="https://example.com/x#frag")])
+            entries = load_supplemental_sources(path)
+
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0]["resourceId"], resource_id("https://example.com/x#frag"))
+        self.assertEqual(entries[0]["resourceId"], resource_id("https://example.com/x"))
+
+    def test_empty_registry_returns_empty_list(self):
+        """Test B (unit level): an empty resources array parses to []."""
+        from tools.course_model import load_supplemental_sources
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "supplemental-sources.json"
+            _write_supplemental_file(path, [])
+            self.assertEqual(load_supplemental_sources(path), [])
+
+
+class SupplementalSourceMergeTests(unittest.TestCase):
+    """merge_supplemental_resources: identity/merge rules against a catalog."""
+
+    def test_no_entries_is_a_no_op(self):
+        """Test A (unit level): omitted/empty entries leave the catalog untouched."""
+        from tools.course_model import merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        before = json.dumps(catalog, sort_keys=True)
+        merge_supplemental_resources(catalog, [])
+        after = json.dumps(catalog, sort_keys=True)
+        self.assertEqual(before, after)
+
+    def test_new_resource_is_added_and_linked_to_lesson(self):
+        """Test C + D: a brand-new resource is created and its lessonId is
+        added to both the resource and the lesson's resourceIds.
+        """
+        from tools.course_model import merge_supplemental_resources, resource_id
+
+        catalog = _fixture_catalog()
+        entry_url = "https://www.postgresql.org/docs/current/queries-table-expressions.html"
+        entries = [_supplemental_entry(url=entry_url, lesson_ids=("day-20",))]
+
+        merge_supplemental_resources(catalog, entries)
+
+        new_id = resource_id(entry_url)
+        day20 = next(lesson for lesson in catalog["lessons"] if lesson["id"] == "day-20")
+        self.assertIn(new_id, day20["resourceIds"])
+        new_resource = next(r for r in catalog["resources"] if r["id"] == new_id)
+        self.assertEqual(new_resource["lessonIds"], ["day-20"])
+
+    def test_existing_resource_new_lesson_id_merges_under_same_resource_id(self):
+        """Test E: same normalized resource + new lessonId -> lessonIds are
+        unioned, resourceId is unchanged, no second resource is created.
+        """
+        from tools.course_model import merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        existing_id = catalog["resources"][0]["id"]
+        existing_url = catalog["resources"][0]["url"]
+        entries = [
+            _supplemental_entry(
+                url=existing_url, title="Existing Resource", lesson_ids=("day-20",)
+            )
+        ]
+
+        merge_supplemental_resources(catalog, entries)
+
+        self.assertEqual(len(catalog["resources"]), 1, "must not create a second resource")
+        resource = catalog["resources"][0]
+        self.assertEqual(resource["id"], existing_id, "resourceId must not change")
+        self.assertEqual(sorted(resource["lessonIds"]), ["day-19", "day-20"])
+        day20 = next(lesson for lesson in catalog["lessons"] if lesson["id"] == "day-20")
+        self.assertIn(existing_id, day20["resourceIds"])
+        day19 = next(lesson for lesson in catalog["lessons"] if lesson["id"] == "day-19")
+        self.assertIn(existing_id, day19["resourceIds"])
+
+    def test_existing_resource_identical_lesson_id_is_idempotent(self):
+        """Test E variant: re-merging the same (resource, lessonId) pair is a no-op."""
+        from tools.course_model import merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        existing_url = catalog["resources"][0]["url"]
+        entries = [
+            _supplemental_entry(url=existing_url, title="Existing Resource", lesson_ids=("day-19",))
+        ]
+
+        merge_supplemental_resources(catalog, entries)
+
+        self.assertEqual(len(catalog["resources"]), 1)
+        self.assertEqual(catalog["resources"][0]["lessonIds"], ["day-19"])
+
+    def test_conflicting_metadata_for_existing_resource_fails_loudly(self):
+        """Test F: same normalized URL, but a title that doesn't match any
+        existing label -> SupplementalSourceError, nothing is merged.
+        """
+        from tools.course_model import SupplementalSourceError, merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        existing_url = catalog["resources"][0]["url"]
+        entries = [
+            _supplemental_entry(
+                url=existing_url, title="A Completely Different Title", lesson_ids=("day-20",)
+            )
+        ]
+
+        with self.assertRaises(SupplementalSourceError):
+            merge_supplemental_resources(catalog, entries)
+
+        # nothing was merged: day-20 must not have picked up the resource
+        day20 = next(lesson for lesson in catalog["lessons"] if lesson["id"] == "day-20")
+        self.assertEqual(day20["resourceIds"], [])
+
+    def test_unknown_lesson_id_fails_loudly(self):
+        """Test H: a lessonId that doesn't exist in the catalog fails,
+        without mutating the catalog.
+        """
+        from tools.course_model import SupplementalSourceError, merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        before = json.dumps(catalog, sort_keys=True)
+        entries = [_supplemental_entry(lesson_ids=("day-99",))]
+
+        with self.assertRaises(SupplementalSourceError):
+            merge_supplemental_resources(catalog, entries)
+
+        self.assertEqual(json.dumps(catalog, sort_keys=True), before)
+
+    def test_existing_workbook_resource_id_is_never_changed_by_merge(self):
+        """Test I (unit-level proxy): merging in an unrelated new resource
+        must not touch the id or fields of a pre-existing resource.
+        """
+        from tools.course_model import merge_supplemental_resources
+
+        catalog = _fixture_catalog()
+        existing_before = copy.deepcopy(catalog["resources"][0])
+        entries = [_supplemental_entry(url="https://example.com/unrelated", lesson_ids=("day-20",))]
+
+        merge_supplemental_resources(catalog, entries)
+
+        self.assertEqual(catalog["resources"][0], existing_before)

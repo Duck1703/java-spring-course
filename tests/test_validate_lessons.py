@@ -204,6 +204,102 @@ class ValidateLessonAcceptsValidFixtureTests(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_supplemental_resource_satisfies_sourceusage_validation_unmodified(self):
+        """Test J: a resource merged into a catalog lesson via
+        tools.course_model.merge_supplemental_resources (the supplemental-source
+        pipeline) satisfies validate_lesson()'s sourceUsage/references checks
+        with zero changes to tools/validate_lessons.py -- proving the citation
+        validator is provenance-agnostic, per the approved architecture.
+
+        Uses fixture/temp data only; this does not add a real SQL source (or
+        any resource) to the production corpus.
+        """
+        from tools.course_model import load_supplemental_sources, merge_supplemental_resources, resource_id
+
+        supplemental_url = "https://example.test/supplemental-fixture"
+        new_resource_id = resource_id(supplemental_url)
+
+        catalog_lesson = _catalog_lesson()
+        catalog = {
+            "lessons": [catalog_lesson],
+            "resources": [
+                {
+                    "id": "res-acff7fd27edc",
+                    "url": "https://example.test/a",
+                    "labels": ["A"],
+                    "lessonIds": ["day-01"],
+                    "sourceRows": [],
+                    "occurrences": [],
+                },
+                {
+                    "id": "res-99801d0b7043",
+                    "url": "https://example.test/b",
+                    "labels": ["B"],
+                    "lessonIds": ["day-01"],
+                    "sourceRows": [],
+                    "occurrences": [],
+                },
+            ],
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            registry_path = Path(directory) / "supplemental-sources.json"
+            registry_path.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resources": [
+                            {
+                                "url": supplemental_url,
+                                "title": "Supplemental Fixture Source",
+                                "publisher": "Example Publisher",
+                                "lessonIds": ["day-01"],
+                                "purpose": "test fixture only",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            entries = load_supplemental_sources(registry_path)
+
+        merge_supplemental_resources(catalog, entries)
+
+        # The merge actually happened: the catalog lesson now carries the new
+        # resourceId alongside the two it already had.
+        self.assertIn(new_resource_id, catalog_lesson["resourceIds"])
+
+        lesson = _lesson(
+            sections=[_section(blocks=[
+                _paragraph_block(citations=["cite-supplemental"]),
+                _code_block(),
+            ])],
+            sourceUsage=[
+                _sourceusage_entry(),
+                _sourceusage_entry(
+                    "cite-supplemental",
+                    resource_id=new_resource_id,
+                    locator="p. 1",
+                    topic="supplemental fixture topic",
+                ),
+            ],
+            references=[
+                {"id": "ref-01", "type": "external", "resourceId": "res-acff7fd27edc", "citationId": "cite-01"},
+                {
+                    "id": "ref-supplemental",
+                    "type": "external",
+                    "resourceId": new_resource_id,
+                    "citationId": "cite-supplemental",
+                },
+            ],
+        )
+        supplemental_note = _source_note(resource_id=new_resource_id, locator="p. 1", heading="Fixture Heading")
+        source_index = _source_index([_source_note(), supplemental_note])
+
+        errors = validate_lesson(lesson, catalog_lesson, source_index)
+
+        self.assertEqual(errors, [])
+
 
 class ValidateLessonRejectionTests(unittest.TestCase):
     def setUp(self):

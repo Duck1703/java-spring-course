@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import posixpath
 import re
 from datetime import datetime, timedelta, timezone
@@ -19,6 +20,9 @@ URL_RE = re.compile(r"https?://[^\s<>]+", re.IGNORECASE)
 DAY_RE = re.compile(r"^Day\s*(\d+)(?:\s*-\s*(?:Day\s*)?(\d+))?", re.IGNORECASE)
 UNIT_RE = re.compile(r"\d+")
 
+SUPPLEMENTAL_SCHEMA_VERSION = 1
+SUPPLEMENTAL_REQUIRED_FIELDS = ("url", "title", "publisher", "lessonIds", "purpose")
+
 
 def normalize_url(url: str) -> str:
     cleaned = url.strip().rstrip(TRAILING_URL_PUNCTUATION)
@@ -32,6 +36,202 @@ def normalize_url(url: str) -> str:
 def resource_id(url: str) -> str:
     digest = sha256(normalize_url(url).encode("utf-8")).hexdigest()[:12]
     return f"res-{digest}"
+
+
+class SupplementalSourceError(ValueError):
+    """Raised when content/supplemental-sources.json is malformed, or a
+    supplemental resource conflicts with an already-known resource identity
+    (same normalized URL, incompatible metadata) or references an unknown
+    lesson id. Callers must not write any generated output when this is
+    raised — see tools/extract_catalog.py.
+    """
+
+
+def load_supplemental_sources(path: Path) -> list[dict]:
+    """Parse and structurally validate an authored supplemental-sources file.
+
+    Returns a list of normalized entry dicts (url, normalizedUrl, resourceId,
+    title, publisher, lessonIds, purpose) ready to pass to
+    `merge_supplemental_resources`. Raises `SupplementalSourceError` on any
+    structural problem: unreadable/malformed JSON, unsupported
+    schemaVersion, a missing/blank required field, a malformed URL, or two
+    entries whose URL normalizes to the same value (one entry per distinct
+    URL — list every lesson it serves in that one entry's lessonIds).
+
+    This function never touches course-catalog.json; lesson id existence and
+    cross-resource identity conflicts are checked by
+    `merge_supplemental_resources`, which needs the catalog to check against.
+    """
+    path = Path(path)
+    try:
+        raw_text = path.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SupplementalSourceError(f"{path}: cannot read supplemental sources file: {error}") from error
+    try:
+        payload = json.loads(raw_text)
+    except ValueError as error:
+        raise SupplementalSourceError(f"{path}: invalid JSON: {error}") from error
+
+    if not isinstance(payload, dict):
+        raise SupplementalSourceError(f"{path}: root must be a JSON object")
+    if payload.get("schemaVersion") != SUPPLEMENTAL_SCHEMA_VERSION:
+        raise SupplementalSourceError(
+            f"{path}: unsupported schemaVersion {payload.get('schemaVersion')!r} "
+            f"(expected {SUPPLEMENTAL_SCHEMA_VERSION})"
+        )
+
+    resources = payload.get("resources")
+    if not isinstance(resources, list):
+        raise SupplementalSourceError(f"{path}: 'resources' must be a list")
+
+    entries = []
+    seen_by_normalized_url = {}
+    seen_by_resource_id = {}
+    for index, raw in enumerate(resources):
+        location = f"{path}: resources[{index}]"
+        if not isinstance(raw, dict):
+            raise SupplementalSourceError(f"{location}: entry must be an object")
+
+        missing = [field for field in SUPPLEMENTAL_REQUIRED_FIELDS if not raw.get(field)]
+        if missing:
+            raise SupplementalSourceError(f"{location}: missing required field(s): {', '.join(missing)}")
+
+        url = raw["url"]
+        if not isinstance(url, str) or not _is_http_url(url):
+            raise SupplementalSourceError(f"{location}: url must be an absolute http(s) URL, got {url!r}")
+
+        title, publisher, purpose = raw["title"], raw["publisher"], raw["purpose"]
+        if not all(isinstance(value, str) and value.strip() for value in (title, publisher, purpose)):
+            raise SupplementalSourceError(f"{location}: title/publisher/purpose must be nonempty strings")
+
+        lesson_ids = raw["lessonIds"]
+        if (
+            not isinstance(lesson_ids, list)
+            or not lesson_ids
+            or not all(isinstance(item, str) and item for item in lesson_ids)
+        ):
+            raise SupplementalSourceError(f"{location}: lessonIds must be a nonempty list of nonempty strings")
+
+        normalized_url = normalize_url(url)
+        item_id = resource_id(url)
+
+        if normalized_url in seen_by_normalized_url:
+            raise SupplementalSourceError(
+                f"{location}: duplicate resource definition — url normalizes the same as "
+                f"resources[{seen_by_normalized_url[normalized_url]}] ({normalized_url}); "
+                f"one entry per distinct URL, list every lessonId on that one entry"
+            )
+        if item_id in seen_by_resource_id and seen_by_resource_id[item_id] != normalized_url:
+            raise SupplementalSourceError(
+                f"{location}: resourceId collision {item_id} between "
+                f"{seen_by_resource_id[item_id]!r} and {normalized_url!r}"
+            )
+        seen_by_normalized_url[normalized_url] = index
+        seen_by_resource_id[item_id] = normalized_url
+
+        entries.append(
+            {
+                "url": url,
+                "normalizedUrl": normalized_url,
+                "resourceId": item_id,
+                "title": title.strip(),
+                "publisher": publisher.strip(),
+                "lessonIds": list(dict.fromkeys(lesson_ids)),
+                "purpose": purpose.strip(),
+            }
+        )
+
+    return entries
+
+
+def merge_supplemental_resources(catalog: dict, supplemental_entries: list[dict]) -> dict:
+    """Merge authored supplemental resources into a workbook-parsed catalog.
+
+    Mutates and returns `catalog`. Called with an empty/None `supplemental_entries`
+    this is a no-op and returns `catalog` unchanged — that is what keeps
+    generation backward compatible when no supplemental file is supplied.
+
+    Identity rule: a supplemental entry names the SAME resource as an
+    existing one iff `resource_id(entry["url"]) == existing["id"]` (the same
+    deterministic, content-derived id used for every workbook resource — see
+    `resource_id`). For a match:
+      - if the entry's title is not among the existing resource's `labels`,
+        this is a metadata conflict -> SupplementalSourceError (fail loudly,
+        no partial merge of this entry).
+      - otherwise, any lessonIds not already linked to the resource are
+        added (resource.lessonIds and each newly linked lesson's
+        resourceIds are both updated) and a "SUPPLEMENT ... merge" line is
+        printed. If every lessonId was already linked, this is a no-op
+        (still prints a line, for visibility, but changes nothing).
+    A supplemental entry naming a resource id that doesn't exist yet creates
+    a new resource record and prints a "SUPPLEMENT ... new resource" line.
+
+    Any lessonId (new or merged) that doesn't exist in `catalog["lessons"]`
+    fails the whole entry loudly before anything is mutated for that entry.
+    """
+    if not supplemental_entries:
+        return catalog
+
+    lessons_by_id = {lesson["id"]: lesson for lesson in catalog["lessons"]}
+    resources_by_id = {resource["id"]: resource for resource in catalog["resources"]}
+
+    for entry in supplemental_entries:
+        unknown_lessons = [lid for lid in entry["lessonIds"] if lid not in lessons_by_id]
+        if unknown_lessons:
+            raise SupplementalSourceError(
+                f"supplemental resource {entry['url']!r} references unknown lesson id(s): "
+                f"{', '.join(unknown_lessons)}"
+            )
+
+        item_id = entry["resourceId"]
+        existing = resources_by_id.get(item_id)
+
+        if existing is None:
+            resource = {
+                "id": item_id,
+                "url": entry["normalizedUrl"],
+                "labels": [entry["title"]],
+                "lessonIds": [],
+                "sourceRows": [],
+                "occurrences": [],
+            }
+            resources_by_id[item_id] = resource
+            catalog["resources"].append(resource)
+            print(
+                f"SUPPLEMENT {item_id} new resource url={entry['normalizedUrl']} "
+                f"lessonIds={entry['lessonIds']}"
+            )
+        else:
+            if entry["title"] not in existing["labels"]:
+                raise SupplementalSourceError(
+                    f"supplemental resource {item_id} ({entry['normalizedUrl']}) title "
+                    f"{entry['title']!r} conflicts with existing label(s) {existing['labels']!r} "
+                    f"for the same normalized URL — fix the title to match exactly, or cite a "
+                    f"different/more specific URL if this is really a distinct reference"
+                )
+            resource = existing
+
+        newly_linked = []
+        for lesson_id in entry["lessonIds"]:
+            if lesson_id not in resource["lessonIds"]:
+                resource["lessonIds"].append(lesson_id)
+                newly_linked.append(lesson_id)
+            lesson = lessons_by_id[lesson_id]
+            if item_id not in lesson["resourceIds"]:
+                lesson["resourceIds"].append(item_id)
+
+        if existing is not None:
+            if newly_linked:
+                print(f"SUPPLEMENT {item_id} merge lessonIds+={newly_linked} -> {resource['lessonIds']}")
+            else:
+                print(f"SUPPLEMENT {item_id} no-op (already linked to {entry['lessonIds']})")
+
+    return catalog
+
+
+def _is_http_url(url: str) -> bool:
+    parts = urlsplit(url.strip())
+    return parts.scheme.lower() in {"http", "https"} and bool(parts.netloc)
 
 
 def parse_schedule(

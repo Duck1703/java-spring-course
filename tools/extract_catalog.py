@@ -8,7 +8,13 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from tools.course_model import parse_schedule, render_catalog_markdown
+from tools.course_model import (
+    SupplementalSourceError,
+    load_supplemental_sources,
+    merge_supplemental_resources,
+    parse_schedule,
+    render_catalog_markdown,
+)
 
 
 BATCH_BY_UNIT = {
@@ -78,9 +84,27 @@ def main(argv=None) -> int:
     parser.add_argument("--json", required=True, type=Path)
     parser.add_argument("--markdown", required=True, type=Path)
     parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument(
+        "--supplemental-sources",
+        type=Path,
+        default=None,
+        help=(
+            "Optional content/supplemental-sources.json of authored, non-workbook "
+            "resources to merge in. Omit for exact current behavior."
+        ),
+    )
     args = parser.parse_args(argv)
 
     catalog = parse_schedule(args.workbook)
+
+    if args.supplemental_sources is not None:
+        try:
+            supplemental_entries = load_supplemental_sources(args.supplemental_sources)
+            merge_supplemental_resources(catalog, supplemental_entries)
+        except SupplementalSourceError as error:
+            print(f"ERROR supplemental-sources: {error}")
+            return 1
+
     manifest = build_manifest(catalog)
     write_json(args.json, catalog)
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
