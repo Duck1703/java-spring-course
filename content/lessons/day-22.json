@@ -162,7 +162,7 @@
           "id": "day22-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            // Khai bao endpoint cong khai truoc, cu the hon anyRequest();\n            // Spring Security xet cac rule theo dung thu tu khai bao.\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .anyRequest().authenticated())\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
           "compile": false,
           "citations": [
             "day22-src-9"
@@ -231,7 +231,7 @@
           "id": "day22-blk-13",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.security.crypto.factory.PasswordEncoderFactories;\nimport org.springframework.security.crypto.password.PasswordEncoder;\n\nclass PasswordConfig {\n\n    PasswordEncoder passwordEncoder() {\n        return PasswordEncoderFactories.createDelegatingPasswordEncoder();\n    }\n\n    void registerExample(PasswordEncoder encoder) {\n        String stored = encoder.encode(\"my-plain-password\");\n        // stored co dang \"{bcrypt}$2a$10$...\" - tien to {id} xac dinh\n        // encoder nao da dung, DelegatingPasswordEncoder tu chon lai\n        // dung encoder khi kiem tra matches().\n    }\n}\n",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.crypto.factory.PasswordEncoderFactories;\nimport org.springframework.security.crypto.password.PasswordEncoder;\n\n@Configuration\nclass PasswordConfig {\n\n    @Bean\n    PasswordEncoder passwordEncoder() {\n        return PasswordEncoderFactories.createDelegatingPasswordEncoder();\n    }\n\n    void registerExample(PasswordEncoder encoder) {\n        String stored = encoder.encode(\"my-plain-password\");\n        // stored co dang \"{bcrypt}$2a$10$...\" - tien to {id} xac dinh\n        // encoder nao da dung, DelegatingPasswordEncoder tu chon lai\n        // dung encoder khi kiem tra matches().\n    }\n}\n",
           "compile": false,
           "citations": [
             "day22-src-6",
@@ -277,7 +277,8 @@
     "Đặt dữ liệu nhạy cảm trong payload JWT vì tưởng token đã được mã hóa, trong khi base64url chỉ là mã hóa dạng biểu diễn.",
     "Xác minh mật khẩu bằng encode(raw).equals(stored) thay vì matches(raw, stored), luôn cho kết quả sai vì salt ngẫu nhiên.",
     "Vẫn dùng WebSecurityConfigurerAdapter theo tài liệu cũ trong khi Spring Security 6 đã loại bỏ nó và yêu cầu bean SecurityFilterChain.",
-    "Kỳ vọng logout làm token hết hiệu lực ngay, trong khi JWT chỉ mất hiệu lực khi hết hạn nếu không có danh sách chặn phía server."
+    "Kỳ vọng logout làm token hết hiệu lực ngay, trong khi JWT chỉ mất hiệu lực khi hết hạn nếu không có danh sách chặn phía server.",
+    "Quên gọi authorizeHttpRequests(...) (hoặc quên @Configuration/@Bean) khi khai báo SecurityFilterChain, khiến toàn bộ API vô tình trở thành công khai dù các cấu hình khác (STATELESS, oauth2ResourceServer) trông như đã 'bảo mật'."
   ],
   "practices": [
     {
@@ -318,13 +319,13 @@
       "id": "day22-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viết một @Bean SecurityFilterChain cấu hình sessionCreationPolicy STATELESS và bật oauth2ResourceServer().jwt() với cấu hình mặc định.",
+      "prompt": "Viết một @Bean SecurityFilterChain cấu hình: (1) authorizeHttpRequests sao cho mọi request đều phải xác thực trừ một nhóm endpoint public do bạn tự chọn, (2) sessionCreationPolicy STATELESS, và (3) bật oauth2ResourceServer().jwt() với cấu hình mặc định.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Kết hợp sessionManagement(...) và oauth2ResourceServer(...) trên cùng builder HttpSecurity.",
-      "solution": "@Bean\nSecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n        .build();\n}",
-      "explanation": "Áp dụng lại mẫu cấu hình stateless + JWT resource server đã học trong bài.",
-      "rubric": "Đánh giá đúng: sessionCreationPolicy là STATELESS, oauth2ResourceServer bật jwt().",
+      "hint": "Kết hợp authorizeHttpRequests(...), sessionManagement(...) và oauth2ResourceServer(...) trên cùng builder HttpSecurity; luôn chốt bằng anyRequest().authenticated() sau các rule cụ thể hơn.",
+      "solution": "@Bean\nSecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n        .authorizeHttpRequests(auth -> auth\n            .requestMatchers(\"/api/public/**\").permitAll()\n            .anyRequest().authenticated())\n        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n        .build();\n}",
+      "explanation": "Áp dụng lại mẫu cấu hình stateless + JWT resource server đã học trong bài, cộng thêm authorizeHttpRequests để đảm bảo không endpoint nào vô tình bị bỏ ngỏ.",
+      "rubric": "Đánh giá đúng: có authorizeHttpRequests với anyRequest().authenticated() là rule cuối cùng (không được bỏ trống hoặc để mọi endpoint mở), sessionCreationPolicy là STATELESS, và oauth2ResourceServer bật jwt().",
       "sourceUsage": [
         "day22-src-9",
         "day22-src-3"

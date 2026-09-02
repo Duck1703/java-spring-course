@@ -36,7 +36,7 @@
     "LO7"
   ],
   "prerequisites": [
-    "Đã hoàn thành Unit 6 (Spring Data JPA cơ bản: Repository, @Query, kết nối database) - bài này đào sâu vào entity mapping và quan hệ mà Unit 6 giả định đã biết ở mức cơ bản."
+    "Đã hoàn thành Unit 5-6 (Spring Boot, Dependency Injection, Spring MVC: Controller/Request-Response, Validation & Exception Handling) - các controller ở Day 16/18 đã dùng Repository ở mức cơ bản (findById/save) nhưng chưa học entity mapping hay quan hệ JPA; bài này bắt đầu Unit 7 để lấp đúng khoảng đó. Lưu ý: @Query và các kỹ thuật Repository nâng cao (paging, @Transactional, auditing) chưa được học ở đây - sẽ học ở Day 20."
   ],
   "outcomes": [
     "Ánh xạ đúng entity JPA bằng @Entity/@Id/@GeneratedValue/@Table/@Column.",
@@ -135,7 +135,7 @@
         {
           "id": "day19-blk-6",
           "type": "paragraph",
-          "text": "Quan hệ một chiều (unidirectional) chỉ có một phía entity biết về entity còn lại - ví dụ ProductEntity giữ tham chiếu tới Category qua @ManyToOne và @JoinColumn, nhưng Category không có field nào trỏ ngược lại danh sách Product. Quan hệ hai chiều (bidirectional) khai báo cả hai phía, và phía 'inverse' (thường là phía @OneToMany) dùng thuộc tính mappedBy để chỉ ra field ở phía sở hữu (owning side) chịu trách nhiệm ánh xạ khoá ngoại - tránh JPA tạo nhầm bảng join trung gian không cần thiết.",
+          "text": "Quan hệ một chiều (unidirectional) chỉ có một phía entity biết về entity còn lại - ví dụ Product giữ tham chiếu tới Category qua @ManyToOne và @JoinColumn, nhưng Category không có field nào trỏ ngược lại danh sách Product. Quan hệ hai chiều (bidirectional) khai báo cả hai phía, và phía 'inverse' (thường là phía @OneToMany) dùng thuộc tính mappedBy để chỉ ra field ở phía sở hữu (owning side) chịu trách nhiệm ánh xạ khoá ngoại - tránh JPA tạo nhầm bảng join trung gian không cần thiết.",
           "citations": [
             "day19-src-5",
             "day19-src-6"
@@ -154,7 +154,7 @@
           "id": "day19-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.persistence.*;\nimport java.util.ArrayList;\nimport java.util.List;\n\n@Entity\npublic class Category {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @OneToMany(mappedBy = \"category\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<Product> products = new ArrayList<>();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    private Category category;\n\n    @ManyToMany\n    @JoinTable(\n        name = \"product_tag\",\n        joinColumns = @JoinColumn(name = \"product_id\"),\n        inverseJoinColumns = @JoinColumn(name = \"tag_id\")\n    )\n    private List<TagEntity> tags = new ArrayList<>();\n}\n\n@Entity\nclass TagEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToMany(mappedBy = \"tags\")\n    private List<ProductEntity> products = new ArrayList<>();\n}\n",
+          "code": "import jakarta.persistence.*;\nimport java.util.ArrayList;\nimport java.util.List;\n\n@Entity\npublic class Category {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @OneToMany(mappedBy = \"category\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<Product> products = new ArrayList<>();\n}\n\n@Entity\nclass Product {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    private Category category;\n\n    @ManyToMany\n    @JoinTable(\n        name = \"product_tag\",\n        joinColumns = @JoinColumn(name = \"product_id\"),\n        inverseJoinColumns = @JoinColumn(name = \"tag_id\")\n    )\n    private List<TagEntity> tags = new ArrayList<>();\n}\n\n@Entity\nclass TagEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToMany(mappedBy = \"tags\")\n    private List<Product> products = new ArrayList<>();\n}\n",
           "compile": false,
           "citations": [
             "day19-src-5",

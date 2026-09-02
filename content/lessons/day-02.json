@@ -153,6 +153,16 @@
           ]
         },
         {
+          "id": "day02-blk-38",
+          "type": "code",
+          "language": "java",
+          "code": "class GuardClauseDemo {\n\n    // Cach viet cu: else long nhau, duong di chinh bi thut le sau dan.\n    static String classifyNested(int score) {\n        String result;\n        if (score < 0) {\n            result = \"Invalid\";\n        } else {\n            if (score < 50) {\n                result = \"Fail\";\n            } else {\n                if (score < 80) {\n                    result = \"Pass\";\n                } else {\n                    result = \"Distinction\";\n                }\n            }\n        }\n        return result;\n    }\n\n    // Guard clause: xu ly truong hop khong hop le truoc, return ngay;\n    // phan con lai la duong di chinh, khong long else.\n    static String classifyGuard(int score) {\n        if (score < 0) {\n            return \"Invalid\";\n        }\n        if (score < 50) {\n            return \"Fail\";\n        }\n        if (score < 80) {\n            return \"Pass\";\n        }\n        return \"Distinction\";\n    }\n\n    public static void main(String[] args) {\n        int[] samples = {-5, 42, 65, 95};\n        for (int score : samples) {\n            System.out.println(score + \" -> nested=\" + classifyNested(score)\n                    + \", guard=\" + classifyGuard(score));\n        }\n    }\n}\n",
+          "compile": true,
+          "citations": [
+            "day02-src-3"
+          ]
+        },
+        {
           "id": "day02-blk-33",
           "type": "warning",
           "text": "Ba lỗi luồng điều khiển kinh điển: (1) `if (x = true)` thay vì `==` — với `boolean` thì đây là phép gán và vẫn compile, nên điều kiện luôn đúng; (2) `if (cond);` với dấu chấm phẩy lạc chỗ khiến thân lệnh rỗng và khối bên dưới luôn chạy; (3) bỏ dấu ngoặc nhọn cho thân `if` một dòng rồi sau này thêm dòng thứ hai — dòng mới nằm ngoài `if` dù thụt lề trông như bên trong. Cả ba đều compile được và không có cảnh báo rõ ràng, nên hãy luôn dùng ngoặc nhọn và bật cảnh báo của IDE.",
@@ -286,7 +296,7 @@
         {
           "id": "day02-blk-15",
           "type": "paragraph",
-          "text": "Java Stream API (gói java.util.stream) cung cấp một cách khai báo (declarative) để xử lý dãy phần tử — ví dụ numbers.stream().filter(n -> n % 2 == 0).sum() thay cho một vòng for thủ công. Ngày 2 chỉ giới thiệu khái niệm để so sánh với vòng lặp truyền thống; Stream API sẽ được học sâu ở các buổi Collections/Streams của Unit sau.",
+          "text": "Java Stream API (gói java.util.stream) cung cấp một cách khai báo (declarative) để xử lý dãy phần tử — ví dụ Arrays.stream(numbers).filter(n -> n % 2 == 0).sum() thay cho một vòng for thủ công (numbers là mảng int đã dùng ở ví dụ vòng lặp phía trên; Arrays.stream(...) chuyển mảng int thành một IntStream, loại stream có sẵn phương thức sum()). Ngày 2 chỉ giới thiệu khái niệm để so sánh với vòng lặp truyền thống; Stream API sẽ được học sâu ở các buổi Collections/Streams của Unit sau.",
           "citations": []
         },
         {
