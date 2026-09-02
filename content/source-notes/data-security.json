@@ -75,7 +75,8 @@
         "Cross Site Request Forgery (CSRF)",
         "Understanding CSRF Protection's Components",
         "Persisting the CsrfToken",
-        "Handling the CsrfToken"
+        "Handling the CsrfToken",
+        "Using the XorCsrfTokenRequestAttributeHandler (BREACH)"
       ],
       "topics": [
         "Kiến trúc CsrfFilter",
@@ -266,7 +267,8 @@
         "Minimal Configuration for JWTs",
         "Startup Expectations",
         "Runtime Expectations",
-        "How JWT Authentication Works"
+        "How JWT Authentication Works",
+        "Specifying the Authorization Server"
       ],
       "topics": [
         "Cấu hình JWT resource server",
@@ -430,7 +432,8 @@
       "relevantHeadings": [
         "Introduction",
         "Domain Model",
-        "Testing the Hibernate SoftDelete annotation on the Tag entity"
+        "Testing the Hibernate SoftDelete annotation on the Tag entity",
+        "The post_comments table is mapped to the PostComment entity as follows"
       ],
       "topics": [
         "@SoftDelete annotation (Hibernate 6.4)",

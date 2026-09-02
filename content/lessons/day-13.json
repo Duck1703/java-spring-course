@@ -51,7 +51,7 @@
         {
           "id": "day13-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment' như một buổi ôn tập/thực hành lại các ví dụ IoC container, bean scope và bean lifecycle đã trình bày trong bài. Không có deliverable nộp riêng cho Day 13; hãy tự chạy lại các ví dụ trong bài và đảm bảo giải thích được vai trò của BeanFactory/ApplicationContext, phân biệt 6 bean scope, và thứ tự callback khởi tạo/hủy trước khi sang Day 14.",
           "citations": []
         },
         {
@@ -299,12 +299,12 @@
       "prompt": "Singleton scope của Spring khác gì so với Singleton Pattern kinh điển (GoF)?",
       "choices": [
         {
-          "id": "day13-prac-1-a",
-          "text": "Singleton của Spring là per-container và per-bean definition, không phải một instance duy nhất cho toàn JVM/ClassLoader như GoF"
-        },
-        {
           "id": "day13-prac-1-b",
           "text": "Singleton của Spring luôn thread-safe còn GoF thì không"
+        },
+        {
+          "id": "day13-prac-1-a",
+          "text": "Singleton của Spring là per-container và per-bean definition, không phải một instance duy nhất cho toàn JVM/ClassLoader như GoF"
         },
         {
           "id": "day13-prac-1-c",
@@ -319,8 +319,8 @@
         "day13-prac-1-a"
       ],
       "hint": "Đọc lại định nghĩa scope trong tài liệu Spring Bean Scopes.",
-      "solution": "day13-prac-1-a",
-      "explanation": "Tài liệu Spring xác định singleton scope là per-container và per-bean: một bean definition trong một container Spring tạo đúng một instance, khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader.",
+      "solution": "“Singleton của Spring là per-container và per-bean definition, không phải một instance duy nhất cho toàn JVM/ClassLoader như GoF” là đáp án đúng vì mỗi bean definition trong một Spring container tạo đúng một instance, trong khi Singleton Pattern GoF hard-code một instance cho mỗi ClassLoader.",
+      "explanation": "Singleton scope của Spring chỉ quy định một instance cho mỗi bean definition trong mỗi container. Điều đó không tự bảo đảm thread-safety: bài cảnh báo một singleton có field mutable vẫn có thể bị nhiều request ghi đè và phải được thiết kế stateless. Spring bean vẫn được container tạo qua constructor nên nhận định “không thể có constructor” trái với phần lifecycle/DI; và hai cơ chế không hoàn toàn giống nhau vì Spring singleton là per-container/per-bean, còn GoF là một instance được hard-code cho mỗi ClassLoader.",
       "rubric": "Chọn đúng điểm khác biệt về phạm vi (container/bean) thay vì nhầm lẫn với thread-safety hay cú pháp.",
       "sourceUsage": [
         "day13-src-5"
@@ -403,6 +403,48 @@
       "id": "day13-ref-3",
       "type": "internal",
       "description": "Chuẩn bị nền tảng IoC/bean trước khi học sâu về DI và cấu hình (@Configuration/@Bean/@ConfigurationProperties) ở Day 14-15."
+    },
+    {
+      "id": "day13-ref-4",
+      "type": "external",
+      "resourceId": "res-bb04db80cab2",
+      "citationId": "day13-src-2"
+    },
+    {
+      "id": "day13-ref-5",
+      "type": "external",
+      "resourceId": "res-bb04db80cab2",
+      "citationId": "day13-src-3"
+    },
+    {
+      "id": "day13-ref-6",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day13-src-5"
+    },
+    {
+      "id": "day13-ref-7",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day13-src-6"
+    },
+    {
+      "id": "day13-ref-8",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day13-src-7"
+    },
+    {
+      "id": "day13-ref-9",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day13-src-8"
+    },
+    {
+      "id": "day13-ref-10",
+      "type": "external",
+      "resourceId": "res-56487c83dc65",
+      "citationId": "day13-src-9"
     }
   ],
   "sourceUsage": [

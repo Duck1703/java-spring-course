@@ -452,12 +452,12 @@
       "prompt": "Điểm khác biệt chính giữa trạng thái BLOCKED và WAITING của Thread là gì?",
       "choices": [
         {
-          "id": "day11-prac-1-a",
-          "text": "BLOCKED là đang chờ để vào một synchronized method/block bị khóa; WAITING là chờ vô thời hạn một hành động của thread khác (ví dụ wait()/join() không timeout)"
-        },
-        {
           "id": "day11-prac-1-b",
           "text": "BLOCKED và WAITING là một, chỉ khác tên gọi"
+        },
+        {
+          "id": "day11-prac-1-a",
+          "text": "BLOCKED là đang chờ để vào một synchronized method/block bị khóa; WAITING là chờ vô thời hạn một hành động của thread khác (ví dụ wait()/join() không timeout)"
         },
         {
           "id": "day11-prac-1-c",
@@ -472,8 +472,8 @@
         "day11-prac-1-a"
       ],
       "hint": "Xem lại định nghĩa từng trạng thái trong 6 trạng thái vòng đời Thread.",
-      "solution": "day11-prac-1-a",
-      "explanation": "BLOCKED gắn với việc chờ khóa monitor để vào synchronized; WAITING gắn với việc chờ một hành động từ thread khác (không có timeout).",
+      "solution": "BLOCKED là đang chờ để vào một synchronized method/block bị khóa, còn WAITING là chờ vô thời hạn một hành động của thread khác như wait()/join() không timeout; bài phân biệt hai trạng thái bằng nguyên nhân chờ monitor và nguyên nhân chờ hành động.",
+      "explanation": "BLOCKED gắn với việc chờ khóa monitor để vào synchronized; WAITING gắn với việc chờ một hành động từ thread khác (không có timeout). Thread.State liệt kê chúng là hai trạng thái riêng với nguyên nhân khác nhau, không phải một trạng thái chỉ đổi tên. NEW là thread đã tạo nhưng chưa start(), còn TERMINATED là thread đã kết thúc, nên mô tả BLOCKED 'sau TERMINATED' và WAITING 'trước NEW' trái với các định nghĩa vòng đời này. BLOCKED có thể phát sinh khi chờ một synchronized method/block đang bị giữ monitor; WAITING đến từ wait(), join() hoặc park() không timeout, chứ hai trạng thái không được chia theo synchronized static hay synchronized instance.",
       "rubric": "Chọn đúng nguyên nhân dẫn tới từng trạng thái.",
       "sourceUsage": []
     },
@@ -483,10 +483,6 @@
       "interaction": "multiple-choice",
       "prompt": "Trong RaceConditionDemo ở trên, hai thread t1/t2 cùng gọi counter.increment() 1000 lần qua method synchronized. Giá trị counter.get() sau khi cả hai thread join() là bao nhiêu?",
       "choices": [
-        {
-          "id": "day11-prac-2-a",
-          "text": "Luôn là 2000"
-        },
         {
           "id": "day11-prac-2-b",
           "text": "Có thể nhỏ hơn 2000 do race condition"
@@ -498,14 +494,18 @@
         {
           "id": "day11-prac-2-d",
           "text": "Không xác định được, có thể là bất kỳ số nào"
+        },
+        {
+          "id": "day11-prac-2-a",
+          "text": "Luôn là 2000"
         }
       ],
       "correctChoiceIds": [
         "day11-prac-2-a"
       ],
       "hint": "increment() và get() đều là synchronized instance method trên cùng một Counter.",
-      "solution": "day11-prac-2-a",
-      "explanation": "Vì cả increment() và get() đều synchronized trên cùng một instance Counter, mỗi lần gọi increment() là nguyên tử (atomic) đối với field count — không còn race condition, nên kết quả luôn đúng 2000 (2 thread × 1000 lần).",
+      "solution": "Giá trị luôn là 2000 vì hai thread đều hoàn tất 1000 lần increment() trước khi đọc, và các method synchronized trên cùng một Counter làm mỗi lần tăng nguyên tử nên không mất lần cập nhật nào.",
+      "explanation": "Vì cả increment() và get() đều synchronized trên cùng một instance Counter, mỗi lần gọi increment() là nguyên tử (atomic) đối với field count — không còn race condition, nên kết quả luôn đúng 2000 (2 thread × 1000 lần). Kết quả chỉ có thể nhỏ hơn 2000 do lost update nếu nhiều thread cùng cập nhật dữ liệu mutable mà không đồng bộ; synchronized đã ngăn trường hợp đó. 1000 chỉ tính số lần tăng của một thread và bỏ sót 1000 lần của thread còn lại. Kết quả cũng không thể là số bất kỳ vì t1.join() và t2.join() bảo đảm cả hai thread đã hoàn tất trước khi counter.get() đọc giá trị đã được bảo vệ đồng bộ.",
       "rubric": "Đánh giá học viên hiểu đúng synchronized loại bỏ race condition trong ví dụ này.",
       "sourceUsage": []
     },
@@ -604,6 +604,84 @@
       "id": "day11-ref-10",
       "type": "internal",
       "description": "Tiếp nối Stream API (Day 10) — Day 12 sẽ kết hợp Stream, File I/O và (nếu cần) concurrency vào một pipeline xử lý dữ liệu hoàn chỉnh."
+    },
+    {
+      "id": "day11-ref-11",
+      "type": "external",
+      "resourceId": "res-fc9869512a5f",
+      "citationId": "day11-src-11"
+    },
+    {
+      "id": "day11-ref-12",
+      "type": "external",
+      "resourceId": "res-fe3cc9768091",
+      "citationId": "day11-src-13"
+    },
+    {
+      "id": "day11-ref-13",
+      "type": "external",
+      "resourceId": "res-d6607fed4419",
+      "citationId": "day11-src-17"
+    },
+    {
+      "id": "day11-ref-14",
+      "type": "external",
+      "resourceId": "res-d6607fed4419",
+      "citationId": "day11-src-18"
+    },
+    {
+      "id": "day11-ref-15",
+      "type": "external",
+      "resourceId": "res-3393c8cbdaaf",
+      "citationId": "day11-src-2"
+    },
+    {
+      "id": "day11-ref-16",
+      "type": "external",
+      "resourceId": "res-0c7109cb4fa8",
+      "citationId": "day11-src-20"
+    },
+    {
+      "id": "day11-ref-17",
+      "type": "external",
+      "resourceId": "res-0c7109cb4fa8",
+      "citationId": "day11-src-21"
+    },
+    {
+      "id": "day11-ref-18",
+      "type": "external",
+      "resourceId": "res-0c7109cb4fa8",
+      "citationId": "day11-src-22"
+    },
+    {
+      "id": "day11-ref-19",
+      "type": "external",
+      "resourceId": "res-3393c8cbdaaf",
+      "citationId": "day11-src-3"
+    },
+    {
+      "id": "day11-ref-20",
+      "type": "external",
+      "resourceId": "res-a553d0d4478d",
+      "citationId": "day11-src-5"
+    },
+    {
+      "id": "day11-ref-21",
+      "type": "external",
+      "resourceId": "res-a553d0d4478d",
+      "citationId": "day11-src-6"
+    },
+    {
+      "id": "day11-ref-22",
+      "type": "external",
+      "resourceId": "res-9a6cde117315",
+      "citationId": "day11-src-8"
+    },
+    {
+      "id": "day11-ref-23",
+      "type": "external",
+      "resourceId": "res-9a6cde117315",
+      "citationId": "day11-src-9"
     }
   ],
   "sourceUsage": [

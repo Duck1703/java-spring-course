@@ -170,16 +170,16 @@
       "prompt": "CrudRepository.save(entity) gọi entityManager.merge() khi nào?",
       "choices": [
         {
-          "id": "day32-prac-1-a",
-          "text": "Khi entity đã được xác định là KHÔNG mới (isNew() == false), ví dụ id đã có giá trị"
-        },
-        {
           "id": "day32-prac-1-b",
           "text": "Luôn luôn, bất kể entity mới hay đã tồn tại"
         },
         {
           "id": "day32-prac-1-c",
           "text": "Chỉ khi gọi trong một @Transactional method"
+        },
+        {
+          "id": "day32-prac-1-a",
+          "text": "Khi entity đã được xác định là KHÔNG mới (isNew() == false), ví dụ id đã có giá trị"
         },
         {
           "id": "day32-prac-1-d",
@@ -190,8 +190,8 @@
         "day32-prac-1-a"
       ],
       "hint": "Liên hệ với cơ chế Entity State-detection Strategies.",
-      "solution": "day32-prac-1-a",
-      "explanation": "save() gọi persist() khi isNew() == true (entity mới); ngược lại gọi merge() khi entity đã được xác định là không mới - mặc định dựa trên version/id property, hoặc tường minh qua Persistable.isNew().",
+      "solution": "CrudRepository.save(entity) gọi entityManager.merge() khi entity đã được xác định là KHÔNG mới (isNew() == false), ví dụ id đã có giá trị — save() dành persist() cho entity mới và dùng merge() cho trường hợp ngược lại.",
+      "explanation": "save() gọi persist() khi isNew() == true (entity mới); ngược lại gọi merge() khi entity đã được xác định là không mới - mặc định dựa trên version/id property, hoặc tường minh qua Persistable.isNew(). Vì vậy save() không luôn gọi merge() cho mọi trạng thái và cũng không bao giờ chỉ gọi persist(). Bài gắn lựa chọn persist hay merge với cơ chế phát hiện trạng thái entity, không với việc lời gọi nằm trong một @Transactional method, nên @Transactional không phải điều kiện quyết định được nêu ở đây.",
       "rubric": "Liên hệ đúng điều kiện gọi merge() với trạng thái 'không mới' của entity.",
       "sourceUsage": [
         "day32-src-1"
@@ -219,10 +219,6 @@
       "prompt": "Vì sao GlobalExceptionHandler nên là MỘT @RestControllerAdvice duy nhất thay vì mỗi controller tự viết @ExceptionHandler riêng?",
       "choices": [
         {
-          "id": "day32-prac-3-a",
-          "text": "Đảm bảo định dạng lỗi (ProblemDetail) nhất quán cho toàn bộ API, tránh mỗi module trả lỗi một kiểu khác nhau"
-        },
-        {
           "id": "day32-prac-3-b",
           "text": "Vì @ExceptionHandler cục bộ trong controller không hợp lệ về mặt cú pháp"
         },
@@ -233,14 +229,18 @@
         {
           "id": "day32-prac-3-d",
           "text": "Không có lý do kỹ thuật, chỉ là quy ước tùy chọn"
+        },
+        {
+          "id": "day32-prac-3-a",
+          "text": "Đảm bảo định dạng lỗi (ProblemDetail) nhất quán cho toàn bộ API, tránh mỗi module trả lỗi một kiểu khác nhau"
         }
       ],
       "correctChoiceIds": [
         "day32-prac-3-a"
       ],
       "hint": "Nghĩ về việc dự án có nhiều module (Category/Product/Cart/Order) phát triển song song.",
-      "solution": "day32-prac-3-a",
-      "explanation": "@ExceptionHandler cục bộ vẫn hợp lệ về cú pháp, nhưng khi nhiều người phát triển song song nhiều module, để mỗi controller tự định nghĩa cách trả lỗi riêng dễ dẫn tới định dạng không nhất quán; gom vào một @RestControllerAdvice chung đảm bảo mọi lỗi trả về cùng cấu trúc ProblemDetail.",
+      "solution": "Một GlobalExceptionHandler dưới dạng @RestControllerAdvice duy nhất đảm bảo định dạng lỗi ProblemDetail nhất quán cho toàn bộ API, tránh mỗi module trả lỗi một kiểu khác nhau khi nhiều module được phát triển song song.",
+      "explanation": "@ExceptionHandler cục bộ vẫn hợp lệ về cú pháp, nhưng khi nhiều người phát triển song song nhiều module, để mỗi controller tự định nghĩa cách trả lỗi riêng dễ dẫn tới định dạng không nhất quán; gom vào một @RestControllerAdvice chung đảm bảo mọi lỗi trả về cùng cấu trúc ProblemDetail. Bài không đưa hiệu năng nhanh hơn làm lý do chọn @RestControllerAdvice, nên so sánh tốc độ với handler cục bộ không phải đáp án. Đây cũng không chỉ là quy ước tùy chọn không có lý do kỹ thuật: cách tổ chức tập trung trực tiếp bảo đảm một cấu trúc lỗi thống nhất cho mọi module.",
       "rubric": "Liên hệ đúng lý do nhất quán định dạng lỗi khi làm việc nhóm nhiều module.",
       "sourceUsage": [
         "day32-src-4"
@@ -282,6 +282,24 @@
       "id": "day32-ref-3",
       "type": "internal",
       "description": "BaseEntity và GlobalExceptionHandler thiết kế ở bài này được toàn bộ entity/controller của Sprint 1-3 (Day 33-35) kế thừa/sử dụng lại."
+    },
+    {
+      "id": "day32-ref-4",
+      "type": "external",
+      "resourceId": "res-afbebe6cf212",
+      "citationId": "day32-src-1"
+    },
+    {
+      "id": "day32-ref-5",
+      "type": "external",
+      "resourceId": "res-b307e54a2685",
+      "citationId": "day32-src-3"
+    },
+    {
+      "id": "day32-ref-6",
+      "type": "external",
+      "resourceId": "res-b307e54a2685",
+      "citationId": "day32-src-5"
     }
   ],
   "sourceUsage": [

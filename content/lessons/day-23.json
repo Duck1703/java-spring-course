@@ -332,8 +332,8 @@
         "day23-prac-1-a"
       ],
       "hint": "Xem lại phần Method Security trong bài.",
-      "solution": "day23-prac-1-a",
-      "explanation": "@PreAuthorize đánh giá biểu thức SpEL trước khi method được gọi, chặn hoàn toàn lời gọi nếu không thoả; @PostAuthorize đánh giá sau khi method đã chạy xong, có thể dựa vào cả kết quả trả về (returnObject) - phù hợp khi quyền truy cập phụ thuộc chính dữ liệu vừa nạp.",
+      "solution": "@PreAuthorize đánh giá biểu thức trước khi method chạy và chặn hoàn toàn lời gọi khi điều kiện không thoả, còn @PostAuthorize đánh giá sau khi method đã chạy và có thể dùng returnObject khi quyền phụ thuộc vào dữ liệu vừa được trả về.",
+      "explanation": "Sự khác biệt không dựa trên việc method là void hay có giá trị trả về; mốc trước/sau mới là điểm phân biệt, dù @PostAuthorize có thể dùng returnObject. Hai annotation không tương đương vì @PostAuthorize chạy sau khi tác dụng của method có thể đã xảy ra, còn @PreAuthorize chặn trước. Thứ tự thực thi do ngữ nghĩa pre/post của annotation quyết định, không liên quan tới thứ tự bảng chữ cái.",
       "rubric": "Chọn đúng mốc thời điểm đánh giá (trước/sau khi method chạy) và khả năng dùng returnObject.",
       "sourceUsage": [
         "day23-src-2"
@@ -376,16 +376,16 @@
       "prompt": "FetchType.LAZY có tự động tránh được vấn đề N+1 không?",
       "choices": [
         {
-          "id": "day23-prac-4-a",
-          "text": "Không - LAZY chỉ trì hoãn thời điểm nạp; nếu code truy cập field lazy bên trong vòng lặp thì vẫn phát sinh N truy vấn riêng lẻ"
-        },
-        {
           "id": "day23-prac-4-b",
           "text": "Có - LAZY luôn gộp tất cả truy vấn liên kết thành một câu JOIN duy nhất"
         },
         {
           "id": "day23-prac-4-c",
           "text": "Có, nhưng chỉ khi dùng chung với @Transactional"
+        },
+        {
+          "id": "day23-prac-4-a",
+          "text": "Không - LAZY chỉ trì hoãn thời điểm nạp; nếu code truy cập field lazy bên trong vòng lặp thì vẫn phát sinh N truy vấn riêng lẻ"
         },
         {
           "id": "day23-prac-4-d",
@@ -396,8 +396,8 @@
         "day23-prac-4-a"
       ],
       "hint": "Xem lại bảng so sánh FetchType và N+1 trong bài.",
-      "solution": "day23-prac-4-a",
-      "explanation": "FetchType chỉ quyết định thời điểm nạp (ngay lập tức hay trì hoãn), không quyết định chiến lược nạp; LAZY vẫn gây N+1 nếu code truy cập field lazy của từng phần tử bên trong vòng lặp, vì mỗi lần truy cập lần đầu sẽ phát sinh một truy vấn riêng.",
+      "solution": "FetchType.LAZY không tự động tránh N+1 vì nó chỉ trì hoãn thời điểm nạp; nếu code chạm vào field lazy của từng phần tử trong vòng lặp, mỗi lần truy cập đầu tiên vẫn có thể phát sinh một truy vấn riêng.",
+      "explanation": "LAZY không tự gộp các quan hệ thành một câu JOIN; muốn chủ động nạp cùng truy vấn phải dùng giải pháp như JOIN FETCH hoặc @EntityGraph đã nêu trong bài. @Transactional chỉ giữ persistence context mở để proxy có thể nạp dữ liệu, không biến N truy vấn thành một truy vấn. N+1 có thể xảy ra với cả LAZY lẫn EAGER, vì FetchType quyết định thời điểm nạp chứ không quyết định chiến lược join hay select riêng lẻ.",
       "rubric": "Phân biệt rõ 'thời điểm nạp' (FetchType) với 'chiến lược nạp' (nguyên nhân thực sự của N+1).",
       "sourceUsage": [
         "day23-src-13",
@@ -437,6 +437,72 @@
       "id": "day23-ref-4",
       "type": "internal",
       "description": "Chuẩn bị kiến thức authorization/CSRF/N+1 trước khi áp dụng vào Lab 8 (Auth Service + Performance Optimization) ở Day 24, nơi N+1 sẽ được sửa thực tế bằng JOIN FETCH/@EntityGraph/batch fetching."
+    },
+    {
+      "id": "day23-ref-5",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day23-src-1"
+    },
+    {
+      "id": "day23-ref-6",
+      "type": "external",
+      "resourceId": "res-1559f0cd62e7",
+      "citationId": "day23-src-10"
+    },
+    {
+      "id": "day23-ref-7",
+      "type": "external",
+      "resourceId": "res-1559f0cd62e7",
+      "citationId": "day23-src-11"
+    },
+    {
+      "id": "day23-ref-8",
+      "type": "external",
+      "resourceId": "res-ce09de5e928a",
+      "citationId": "day23-src-13"
+    },
+    {
+      "id": "day23-ref-9",
+      "type": "external",
+      "resourceId": "res-ce09de5e928a",
+      "citationId": "day23-src-14"
+    },
+    {
+      "id": "day23-ref-10",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day23-src-3"
+    },
+    {
+      "id": "day23-ref-11",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day23-src-4"
+    },
+    {
+      "id": "day23-ref-12",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day23-src-5"
+    },
+    {
+      "id": "day23-ref-13",
+      "type": "external",
+      "resourceId": "res-d1d09e3813e4",
+      "citationId": "day23-src-6"
+    },
+    {
+      "id": "day23-ref-14",
+      "type": "external",
+      "resourceId": "res-d1d09e3813e4",
+      "citationId": "day23-src-7"
+    },
+    {
+      "id": "day23-ref-15",
+      "type": "external",
+      "resourceId": "res-1559f0cd62e7",
+      "citationId": "day23-src-9"
     }
   ],
   "sourceUsage": [

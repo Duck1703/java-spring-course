@@ -29,7 +29,7 @@
         {
           "topic": "Pham vi JLS 17",
           "summary": "The Java Language Specification, Java SE 17 Edition (JLS 17) dinh nghia toan bo cu phap va ngon ngu Java 17, bao gom cac tinh nang moi nhu sealed classes, pattern matching for switch, records, text blocks.",
-          "locator": "Trang bia: 'Java SE 17 Edition' + Table of Contents chay tu Chapter 1 den Chapter 19"
+          "locator": "Table of Contents — trang bìa 'Java SE 17 Edition', các chương 1 đến 19"
         },
         {
           "topic": "Cau truc chuan",

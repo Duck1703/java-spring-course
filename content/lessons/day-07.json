@@ -286,12 +286,12 @@
       "prompt": "Điểm khác biệt cơ bản nhất giữa abstract class và interface về khả năng kế thừa/implement là gì?",
       "choices": [
         {
-          "id": "day07-prac-1-a",
-          "text": "Một lớp chỉ extends được một abstract class, nhưng implements được nhiều interface cùng lúc"
-        },
-        {
           "id": "day07-prac-1-b",
           "text": "Interface không thể có method, còn abstract class thì có"
+        },
+        {
+          "id": "day07-prac-1-a",
+          "text": "Một lớp chỉ extends được một abstract class, nhưng implements được nhiều interface cùng lúc"
         },
         {
           "id": "day07-prac-1-c",
@@ -306,8 +306,8 @@
         "day07-prac-1-a"
       ],
       "hint": "Xem lại bảng so sánh Abstract class vs Interface.",
-      "solution": "day07-prac-1-a",
-      "explanation": "extends là đơn kế thừa (một abstract class), implements là đa năng (nhiều interface cùng lúc) — đây là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java.",
+      "solution": "Một lớp chỉ extends được một abstract class (đơn kế thừa), nhưng implements được nhiều interface cùng lúc — đây là điểm khác biệt kế thừa cơ bản nhất giữa hai cơ chế, và là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java.",
+      "explanation": "extends là đơn kế thừa (một abstract class), implements là đa năng (nhiều interface cùng lúc) — đây là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java. Interface vẫn có thể có method (mặc định là abstract, và từ Java 8 có thêm default/static method), nên 'interface không thể có method' là sai. Constructor riêng là đặc quyền của abstract class; trước Java 8 interface chỉ có hằng số static final và không có constructor, nên khẳng định ngược lại là sai. Và cả hai cơ chế đều KHÔNG cho phép đa kế thừa không giới hạn — abstract class vẫn giới hạn đơn kế thừa qua extends; chỉ interface mới hỗ trợ nhiều implement cùng lúc.",
       "rubric": "Chọn đúng đáp án về đơn kế thừa vs đa implement.",
       "sourceUsage": [
         "day07-src-1"

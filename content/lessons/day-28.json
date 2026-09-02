@@ -51,7 +51,7 @@
         {
           "id": "day28-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment'. Không có deliverable nộp riêng cho Day 28; deliverable thực tế là viết test cho các tính năng đã xây dựng ở Assignment 9 (Day 27) bằng các kỹ thuật kiểm thử trong bài này (JUnit 5, @WebMvcTest/@DataJpaTest/@JsonTest, @SpringBootTest), để chuẩn bị cho Lab 10 - Production Readiness ở Day 30.",
           "citations": []
         },
         {
@@ -95,7 +95,7 @@
             "day28-src-3",
             "day28-src-4"
           ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+          "partialReason": "TEST_CLASSPATH_REQUIRED: snippet chỉ import org.junit.jupiter.api.*, cần classpath JUnit Jupiter (không có trong pipeline javac hiện tại của validator) nên không compile được qua bước kiểm tra tự động; không phải lỗi cú pháp."
         },
         {
           "id": "day28-blk-20",
@@ -376,16 +376,16 @@
       "prompt": "@WebMvcTest khác @SpringBootTest ở điểm nào?",
       "choices": [
         {
-          "id": "day28-prac-1-a",
-          "text": "@WebMvcTest chỉ khởi tạo controller + hạ tầng MVC (nhanh hơn), còn @SpringBootTest nạp toàn bộ Spring context như ứng dụng thật"
-        },
-        {
           "id": "day28-prac-1-b",
           "text": "@WebMvcTest chạy chậm hơn @SpringBootTest vì phải mở cổng mạng thật"
         },
         {
           "id": "day28-prac-1-c",
           "text": "Hai annotation này hoàn toàn tương đương nhau"
+        },
+        {
+          "id": "day28-prac-1-a",
+          "text": "@WebMvcTest chỉ khởi tạo controller + hạ tầng MVC (nhanh hơn), còn @SpringBootTest nạp toàn bộ Spring context như ứng dụng thật"
         },
         {
           "id": "day28-prac-1-d",
@@ -396,8 +396,8 @@
         "day28-prac-1-a"
       ],
       "hint": "Nghĩ về khái niệm 'chỉ nạp slice cần thiết' đã học trong bài.",
-      "solution": "day28-prac-1-a",
-      "explanation": "@WebMvcTest chỉ khởi tạo controller được chỉ định cùng hạ tầng MVC liên quan, không nạp Service/Repository thật - nhanh hơn nhiều. @SpringBootTest nạp toàn bộ Spring context giống ứng dụng chạy thật, phù hợp kiểm tra tích hợp đầu-cuối.",
+      "solution": "@WebMvcTest chỉ khởi tạo controller và hạ tầng MVC nên nhanh hơn, còn @SpringBootTest nạp toàn bộ Spring context như ứng dụng thật; sự khác biệt này cho phép dùng slice test cho hợp đồng HTTP và full context cho kiểm thử tích hợp đầu-cuối.",
+      "explanation": "@WebMvcTest chỉ nạp controller được chỉ định cùng hạ tầng MVC và thay dependency như Service bằng mock, nên nhanh hơn; @SpringBootTest nạp toàn bộ Spring context để kiểm tra các mảnh ghép tích hợp. @WebMvcTest dùng MockMvc trong bộ nhớ và không mở cổng mạng thật, nên không chậm hơn vì lý do đó. Hai annotation không tương đương vì phạm vi context khác nhau. @SpringBootTest được dùng chính để kiểm tra ứng dụng đầy đủ, bao gồm ứng dụng có controller, và với RANDOM_PORT còn có thể khởi động server HTTP thật.",
       "rubric": "Liên hệ đúng khái niệm slice test (nạp một phần) với full context (nạp toàn bộ).",
       "sourceUsage": [
         "day28-src-5",
@@ -446,8 +446,8 @@
         "day28-prac-3-a"
       ],
       "hint": "Nhớ lại các dòng khối code kiểm tra exception trong ví dụ OrderCalculatorTest.",
-      "solution": "day28-prac-3-a",
-      "explanation": "assertThrows(ExceptionClass.class, executable) kiểm tra rằng đoạn code trong executable ném ra đúng loại exception được chỉ định, thất bại nếu không có exception nào hoặc sai loại.",
+      "solution": "assertThrows dùng để kiểm tra một đoạn code có ném đúng loại exception mong đợi hay không; nó nhận lớp exception và executable, rồi làm test thất bại nếu đoạn code không ném exception hoặc ném sai loại.",
+      "explanation": "assertThrows(ExceptionClass.class, executable) xác minh executable ném đúng loại exception đã chỉ định và còn trả về exception để có thể kiểm tra thông điệp hoặc mã lỗi. Bỏ qua test khi giả định sai là vai trò của assumeTrue, không phải assertThrows. Gom nhiều assertion để tất cả cùng chạy và cùng được báo cáo là vai trò của assertAll. Sinh test động tại runtime thuộc về @TestFactory kết hợp DynamicTest.",
       "rubric": "Liên hệ đúng mục đích kiểm tra exception của assertThrows.",
       "sourceUsage": [
         "day28-src-4"
@@ -513,6 +513,84 @@
       "id": "day28-ref-5",
       "type": "internal",
       "description": "Testcontainers sẽ được áp dụng đầy đủ có trích dẫn vào bộ test tích hợp ở Lab 10, Day 30."
+    },
+    {
+      "id": "day28-ref-6",
+      "type": "external",
+      "resourceId": "res-bccebfeaf062",
+      "citationId": "day28-src-1"
+    },
+    {
+      "id": "day28-ref-7",
+      "type": "external",
+      "resourceId": "res-3807593857d1",
+      "citationId": "day28-src-10"
+    },
+    {
+      "id": "day28-ref-8",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day28-src-11"
+    },
+    {
+      "id": "day28-ref-9",
+      "type": "external",
+      "resourceId": "res-31a2e0685799",
+      "citationId": "day28-src-12"
+    },
+    {
+      "id": "day28-ref-10",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day28-src-13"
+    },
+    {
+      "id": "day28-ref-11",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day28-src-16"
+    },
+    {
+      "id": "day28-ref-12",
+      "type": "external",
+      "resourceId": "res-31a2e0685799",
+      "citationId": "day28-src-17"
+    },
+    {
+      "id": "day28-ref-13",
+      "type": "external",
+      "resourceId": "res-bccebfeaf062",
+      "citationId": "day28-src-3"
+    },
+    {
+      "id": "day28-ref-14",
+      "type": "external",
+      "resourceId": "res-bccebfeaf062",
+      "citationId": "day28-src-4"
+    },
+    {
+      "id": "day28-ref-15",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day28-src-6"
+    },
+    {
+      "id": "day28-ref-16",
+      "type": "external",
+      "resourceId": "res-31a2e0685799",
+      "citationId": "day28-src-7"
+    },
+    {
+      "id": "day28-ref-17",
+      "type": "external",
+      "resourceId": "res-3807593857d1",
+      "citationId": "day28-src-8"
+    },
+    {
+      "id": "day28-ref-18",
+      "type": "external",
+      "resourceId": "res-3807593857d1",
+      "citationId": "day28-src-9"
     }
   ],
   "sourceUsage": [

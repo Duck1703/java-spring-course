@@ -51,7 +51,7 @@
         {
           "id": "day22-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment' như một buổi ôn tập/thực hành lại các cấu hình bảo mật. Không có deliverable nộp riêng cho Day 22; hãy tự thực hành lại luồng xác thực JWT qua Spring Security OAuth2 Resource Server, cấu hình session stateless, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder để chuẩn bị cho Lab 8 (Auth Service) ở Day 24.",
           "citations": []
         },
         {
@@ -307,8 +307,8 @@
         "day22-prac-1-a"
       ],
       "hint": "Xem lại phần Stateless Session trong bài.",
-      "solution": "day22-prac-1-a",
-      "explanation": "JWT tự chứa đủ thông tin xác thực trong token nên không cần server tạo/duy trì session; SessionCreationPolicy.STATELESS tắt việc tạo session, giúp ứng dụng dễ scale ngang mà không cần sticky session.",
+      "solution": "Mỗi JWT đã tự chứa đủ thông tin xác thực, nên server không cần tạo hoặc duy trì HttpSession; SessionCreationPolicy.STATELESS vì thế giúp ứng dụng scale ngang mà không cần sticky session hay sao chép session giữa các instance.",
+      "explanation": "JWT không cần HttpSession để lưu chữ ký: mỗi request gửi token và Spring Security xác thực chữ ký bằng khoá công khai. STATELESS không bỏ bước xác thực chữ ký; JwtAuthenticationProvider vẫn phải xác minh chữ ký và các claim trên từng request. Đây chính là cấu hình của Spring Security cho API JWT, không phải chế độ chỉ dùng được khi không có Spring Security.",
       "rubric": "Chọn đúng lý do kỹ thuật (JWT tự chứa thông tin) thay vì nhầm lẫn về vai trò của session.",
       "sourceUsage": [
         "day22-src-9"
@@ -353,10 +353,6 @@
       "prompt": "Vì sao User.withDefaultPasswordEncoder() không được dùng trong production?",
       "choices": [
         {
-          "id": "day22-prac-4-a",
-          "text": "Vì mật khẩu mẫu được hash bằng một khoá cố định công khai trong mã nguồn Spring Security, không an toàn cho tài khoản thật"
-        },
-        {
           "id": "day22-prac-4-b",
           "text": "Vì phương thức này đã bị xoá khỏi Spring Security 6"
         },
@@ -367,14 +363,18 @@
         {
           "id": "day22-prac-4-d",
           "text": "Vì phương thức này không tương thích với DelegatingPasswordEncoder"
+        },
+        {
+          "id": "day22-prac-4-a",
+          "text": "Vì mật khẩu mẫu được hash bằng một khoá cố định công khai trong mã nguồn Spring Security, không an toàn cho tài khoản thật"
         }
       ],
       "correctChoiceIds": [
         "day22-prac-4-a"
       ],
       "hint": "Xem lại khối important về User.withDefaultPasswordEncoder() trong bài.",
-      "solution": "day22-prac-4-a",
-      "explanation": "Tài liệu Spring Security xác nhận User.withDefaultPasswordEncoder() chỉ dành cho mục đích getting-started/demo; mật khẩu mẫu được hash bằng khoá cố định công khai trong mã nguồn, hoàn toàn không an toàn để dùng cho tài khoản thật trong production.",
+      "solution": "User.withDefaultPasswordEncoder() không được dùng trong production vì mật khẩu mẫu được hash bằng một khoá cố định công khai trong mã nguồn Spring Security, nên cách này chỉ phù hợp cho getting-started hoặc demo chứ không an toàn cho tài khoản thật.",
+      "explanation": "Vấn đề là khoá cố định công khai, không phải phương thức đã bị xoá khỏi Spring Security 6; bài vẫn nêu phương thức này như một tiện ích getting-started. Nó được dùng để tạo user mẫu nên nhận định rằng chỉ hoạt động với database, không hoạt động với in-memory user là sai. Bài cũng không nói nó không tương thích với DelegatingPasswordEncoder; lựa chọn production được khuyến nghị là tạo DelegatingPasswordEncoder bằng PasswordEncoderFactories.createDelegatingPasswordEncoder() hoặc dùng BCryptPasswordEncoder tường minh.",
       "rubric": "Chọn đúng lý do bảo mật (khoá cố định công khai) thay vì các lý do kỹ thuật không chính xác.",
       "sourceUsage": [
         "day22-src-8"
@@ -418,6 +418,54 @@
       "id": "day22-ref-4",
       "type": "internal",
       "description": "Chuẩn bị nền tảng xác thực JWT trước khi học authorization (@PreAuthorize, CORS/CSRF) và tối ưu hiệu năng ở Day 23, rồi ghép thành Auth Service hoàn chỉnh ở Lab 8 (Day 24)."
+    },
+    {
+      "id": "day22-ref-5",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day22-src-1"
+    },
+    {
+      "id": "day22-ref-6",
+      "type": "external",
+      "resourceId": "res-f301a3d0645a",
+      "citationId": "day22-src-10"
+    },
+    {
+      "id": "day22-ref-7",
+      "type": "external",
+      "resourceId": "res-f301a3d0645a",
+      "citationId": "day22-src-11"
+    },
+    {
+      "id": "day22-ref-8",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day22-src-2"
+    },
+    {
+      "id": "day22-ref-9",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day22-src-4"
+    },
+    {
+      "id": "day22-ref-10",
+      "type": "external",
+      "resourceId": "res-d5aebfb9d1ed",
+      "citationId": "day22-src-5"
+    },
+    {
+      "id": "day22-ref-11",
+      "type": "external",
+      "resourceId": "res-d5aebfb9d1ed",
+      "citationId": "day22-src-7"
+    },
+    {
+      "id": "day22-ref-12",
+      "type": "external",
+      "resourceId": "res-d5aebfb9d1ed",
+      "citationId": "day22-src-8"
     }
   ],
   "sourceUsage": [

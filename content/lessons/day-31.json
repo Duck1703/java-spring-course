@@ -210,10 +210,6 @@
       "prompt": "Vì sao Spring Boot khuyến cáo KHÔNG đặt class @SpringBootApplication trong default package?",
       "choices": [
         {
-          "id": "day31-prac-1-a",
-          "text": "Vì @ComponentScan/@ConfigurationPropertiesScan/@EntityScan sẽ quét TẤT CẢ class từ mọi jar trên classpath, không giới hạn được phạm vi"
-        },
-        {
           "id": "day31-prac-1-b",
           "text": "Vì Java không cho phép class không có package declaration"
         },
@@ -224,14 +220,18 @@
         {
           "id": "day31-prac-1-d",
           "text": "Vì default package làm chậm tốc độ khởi động ứng dụng"
+        },
+        {
+          "id": "day31-prac-1-a",
+          "text": "Vì @ComponentScan/@ConfigurationPropertiesScan/@EntityScan sẽ quét TẤT CẢ class từ mọi jar trên classpath, không giới hạn được phạm vi"
         }
       ],
       "correctChoiceIds": [
         "day31-prac-1-a"
       ],
       "hint": "Nghĩ về phạm vi quét (scan scope) khi package rỗng.",
-      "solution": "day31-prac-1-a",
-      "explanation": "Class không có package declaration khiến các cơ chế auto-scan (@ComponentScan, @EntityScan, @ConfigurationPropertiesScan) mất điểm neo (base package) để giới hạn phạm vi, dẫn tới quét toàn bộ mọi class từ mọi jar - vừa chậm vừa dễ nạp nhầm bean ngoài ý muốn.",
+      "solution": "@ComponentScan/@ConfigurationPropertiesScan/@EntityScan sẽ quét TẤT CẢ class từ mọi jar trên classpath, không giới hạn được phạm vi — class trong default package không cung cấp base package để các cơ chế auto-scan neo và giới hạn vùng quét.",
+      "explanation": "Class không có package declaration khiến các cơ chế auto-scan (@ComponentScan, @EntityScan, @ConfigurationPropertiesScan) mất điểm neo (base package) để giới hạn phạm vi, dẫn tới quét toàn bộ mọi class từ mọi jar - vừa chậm vừa dễ nạp nhầm bean ngoài ý muốn. Java vẫn cho phép class không có package declaration, nên đây không phải hạn chế cú pháp của Java; bài cũng không nêu Maven bắt buộc mọi class phải có package. Default package có thể làm việc quét chậm hơn, nhưng đó là hệ quả của việc quét toàn classpath, không phải nguyên nhân cốt lõi mà khuyến cáo nhắm tới.",
       "rubric": "Liên hệ đúng nguyên nhân: mất base package cho auto-scan.",
       "sourceUsage": [
         "day31-src-2"
@@ -279,8 +279,8 @@
         "day31-prac-3-a"
       ],
       "hint": "Đây là servlet trung tâm được đăng ký tự động bởi Spring Boot.",
-      "solution": "day31-prac-3-a",
-      "explanation": "DispatcherServlet là front controller duy nhất của Spring MVC: mọi request đều qua nó trước, sau đó nó delegate tới handler mapping tương ứng rồi tới controller method cụ thể.",
+      "solution": "DispatcherServlet là front controller tiếp nhận tất cả request trong Spring MVC — request đi qua servlet trung tâm này trước khi được định tuyến theo mapping tới controller method phù hợp.",
+      "explanation": "DispatcherServlet là front controller duy nhất của Spring MVC: mọi request đều qua nó trước, sau đó nó delegate tới handler mapping tương ứng rồi tới controller method cụ thể. @RestControllerAdvice trong bài dùng để xử lý lỗi thống nhất, không phải servlet tiếp nhận mọi request. CategoryController chỉ là controller của một module và là đích được DispatcherServlet định tuyến tới cho các mapping tương ứng, không phải front controller toàn ứng dụng. ApplicationContext cũng không được bài xác định là thành phần tiếp nhận request; vai trò đó thuộc về DispatcherServlet.",
       "rubric": "Liên hệ đúng vai trò DispatcherServlet với mô hình front controller.",
       "sourceUsage": [
         "day31-src-4"
@@ -330,6 +330,24 @@
       "id": "day31-ref-4",
       "type": "internal",
       "description": "Bản thiết kế API contract ở bài này được hiện thực dần qua Sprint 1-3 (Day 33-35)."
+    },
+    {
+      "id": "day31-ref-5",
+      "type": "external",
+      "resourceId": "res-06398bb0cc69",
+      "citationId": "day31-src-3"
+    },
+    {
+      "id": "day31-ref-6",
+      "type": "external",
+      "resourceId": "res-348a6a4cb0b8",
+      "citationId": "day31-src-4"
+    },
+    {
+      "id": "day31-ref-7",
+      "type": "external",
+      "resourceId": "res-348a6a4cb0b8",
+      "citationId": "day31-src-5"
     }
   ],
   "sourceUsage": [

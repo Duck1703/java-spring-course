@@ -51,7 +51,7 @@
         {
           "id": "day25-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment' như một buổi ôn tập/thực hành lại các kỹ thuật tối ưu hiệu năng. Không có deliverable nộp riêng cho Day 25; hãy tự thực hành lại cơ chế cache của Spring, cấu hình RedisCacheManager, và xử lý bất đồng bộ/định kỳ bằng @Async/@Scheduled để chuẩn bị cho Assignment 9 (Product & Order Features) ở Day 27.",
           "citations": []
         },
         {
@@ -297,16 +297,16 @@
       "prompt": "Khác biệt cốt lõi giữa @Cacheable và @CachePut là gì?",
       "choices": [
         {
-          "id": "day25-prac-1-a",
-          "text": "@Cacheable bỏ qua việc gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
-        },
-        {
           "id": "day25-prac-1-b",
           "text": "@Cacheable dùng cho Redis, @CachePut chỉ dùng cho cache trong bộ nhớ"
         },
         {
           "id": "day25-prac-1-c",
           "text": "@CachePut xoá cache, còn @Cacheable ghi cache"
+        },
+        {
+          "id": "day25-prac-1-a",
+          "text": "@Cacheable bỏ qua việc gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
         },
         {
           "id": "day25-prac-1-d",
@@ -317,8 +317,8 @@
         "day25-prac-1-a"
       ],
       "hint": "So sánh hành vi khi cache đã có sẵn dữ liệu cho key đang truy vấn.",
-      "solution": "day25-prac-1-a",
-      "explanation": "@Cacheable kiểm tra cache trước; nếu đã có dữ liệu thì bỏ qua việc gọi method (phù hợp đọc dữ liệu). @CachePut luôn thực thi method rồi mới cập nhật kết quả vào cache, đảm bảo cache phản ánh đúng dữ liệu vừa ghi.",
+      "solution": "@Cacheable bỏ qua việc gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache — vì @Cacheable kiểm tra cache trước để có thể bỏ qua method đọc, còn @CachePut luôn thực thi method rồi ghi kết quả mới nhằm giữ cache đồng bộ sau thao tác cập nhật.",
+      "explanation": "@Cacheable kiểm tra cache trước; nếu đã có dữ liệu thì bỏ qua việc gọi method, nên phù hợp với truy vấn đọc. @CachePut luôn thực thi method rồi mới cập nhật kết quả vào cache, nên phù hợp khi dữ liệu vừa được ghi hoặc sửa. Hai annotation không bị giới hạn lần lượt cho Redis và cache trong bộ nhớ, vì bài trình bày chúng trong Spring Cache abstraction và Redis chỉ là một backend qua RedisCacheManager. @CachePut không có nhiệm vụ xoá cache; thao tác xoá entry hoặc toàn bộ cache thuộc về @CacheEvict. Vì hành vi gọi method khác nhau rõ ràng, @Cacheable và @CachePut không tương đương nhau.",
       "rubric": "Liên hệ đúng: @Cacheable = đọc có điều kiện bỏ qua, @CachePut = luôn ghi.",
       "sourceUsage": [
         "day25-src-2"
@@ -346,12 +346,12 @@
       "prompt": "Vì sao TTI (time-to-idle) trong Spring Data Redis cần Redis từ phiên bản 6.2.0 trở lên?",
       "choices": [
         {
-          "id": "day25-prac-3-a",
-          "text": "Vì Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle"
-        },
-        {
           "id": "day25-prac-3-b",
           "text": "Vì Redis chỉ hỗ trợ TTL, không có khái niệm TTI nên phải nâng cấp phiên bản để bổ sung tính năng mới"
+        },
+        {
+          "id": "day25-prac-3-a",
+          "text": "Vì Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle"
         },
         {
           "id": "day25-prac-3-c",
@@ -366,8 +366,8 @@
         "day25-prac-3-a"
       ],
       "hint": "Nhớ lại lệnh Redis nào được dùng để vừa đọc vừa reset thời hạn.",
-      "solution": "day25-prac-3-a",
-      "explanation": "Redis không có TTI (time-to-idle) như một khái niệm gốc; Spring Data Redis mô phỏng nó bằng cách gọi GETEX (lệnh đọc kèm reset TTL) mỗi lần đọc entry, và GETEX chỉ có từ Redis 6.2.0.",
+      "solution": "Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle — vì Redis không có TTI gốc và chính khả năng vừa đọc vừa gia hạn của GETEX là cơ chế Spring Data Redis dùng để mô phỏng nó.",
+      "explanation": "Redis không có TTI như một khái niệm gốc; Spring Data Redis mô phỏng nó bằng cách gọi GETEX để vừa đọc entry vừa reset TTL, và lệnh này chỉ có từ Redis 6.2.0. Nâng cấp không bổ sung một tính năng TTI gốc vào Redis, nên lý do không đơn thuần là Redis chỉ hỗ trợ TTL. Bài vẫn dùng RedisCacheManager.builder để cấu hình cache mà không gắn API builder đó với phiên bản Redis 6.2.0; yêu cầu phiên bản đến từ lệnh GETEX. Spring Boot cũng không yêu cầu Redis 6.2.0 cho mọi tính năng cache, mà mốc này chỉ liên quan đến việc bật hiệu ứng TTI qua GETEX.",
       "rubric": "Liên hệ đúng lệnh GETEX với yêu cầu phiên bản Redis tối thiểu.",
       "sourceUsage": [
         "day25-src-9"
@@ -432,6 +432,42 @@
       "id": "day25-ref-5",
       "type": "internal",
       "description": "@Async và @Scheduled sẽ được áp dụng có trích dẫn đầy đủ ở Assignment 9, Day 27."
+    },
+    {
+      "id": "day25-ref-6",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day25-src-1"
+    },
+    {
+      "id": "day25-ref-7",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day25-src-3"
+    },
+    {
+      "id": "day25-ref-8",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day25-src-4"
+    },
+    {
+      "id": "day25-ref-9",
+      "type": "external",
+      "resourceId": "res-347895e9400e",
+      "citationId": "day25-src-6"
+    },
+    {
+      "id": "day25-ref-10",
+      "type": "external",
+      "resourceId": "res-710573bd4385",
+      "citationId": "day25-src-8"
+    },
+    {
+      "id": "day25-ref-11",
+      "type": "external",
+      "resourceId": "res-710573bd4385",
+      "citationId": "day25-src-9"
     }
   ],
   "sourceUsage": [

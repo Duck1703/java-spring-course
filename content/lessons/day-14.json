@@ -46,7 +46,7 @@
         {
           "id": "day14-blk-1",
           "type": "deliverable",
-          "text": "Guides/Review",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học ghi 'Guides/Review', tức là buổi ôn tập lý thuyết và thực hành lại các ví dụ đã học. Không có deliverable nộp riêng cho Day 14; hãy tự thực hành lại 3 kiểu Dependency Injection, cơ chế @Autowired resolve dependency theo type/tên/index, và cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot trước khi sang Day 15 (Assignment 5).",
           "citations": []
         },
         {
@@ -347,8 +347,8 @@
         "day14-prac-1-a"
       ],
       "hint": "Đọc lại bảng so sánh 3 kiểu DI trong bài.",
-      "solution": "day14-prac-1-a",
-      "explanation": "Tài liệu xác định field injection dùng reflection để gán giá trị, tốn chi phí hơn cách gọi trực tiếp, và dễ khiến lớp gánh quá nhiều dependency mà không bị phát hiện (vì không có constructor/setter ràng buộc), vi phạm Single Responsibility Principle.",
+      "solution": "“Vì field injection dùng reflection tốn chi phí hơn và dễ khiến lớp gánh quá nhiều dependency, vi phạm Single Responsibility Principle” là đáp án đúng: @Autowired gán trực tiếp vào field qua reflection, che khuất danh sách dependency, trong khi constructor làm các dependency bắt buộc hiển thị rõ và dễ kiểm thử.",
+      "explanation": "Field injection dùng reflection để gán dependency và có thể che khuất việc một lớp đang gánh quá nhiều dependency, nên dễ vi phạm Single Responsibility Principle. @Service là stereotype đăng ký bean chứ không phải lý do cấm @Autowired trên field; kiểu injection cũng không bị giới hạn ở scope prototype, vì bài còn phân tích DI trên bean singleton và quan hệ giữa các scope. Nhận định field injection yêu cầu mọi field phải final còn đảo ngược nội dung bài: field được inject trực tiếp không thể final, trong khi constructor injection mới cho phép dependency được khai báo final.",
       "rubric": "Chọn đúng lý do liên quan reflection/SRP, không nhầm với các lý do không có trong tài liệu.",
       "sourceUsage": [
         "day14-src-4"
@@ -426,6 +426,48 @@
       "id": "day14-ref-3",
       "type": "internal",
       "description": "Chuẩn bị nền tảng DI/@Configuration trước khi học @ConfigurationProperties và Profiles chi tiết ở Day 15 (Assignment 5)."
+    },
+    {
+      "id": "day14-ref-4",
+      "type": "external",
+      "resourceId": "res-02399daadb94",
+      "citationId": "day14-src-1"
+    },
+    {
+      "id": "day14-ref-5",
+      "type": "external",
+      "resourceId": "res-02399daadb94",
+      "citationId": "day14-src-3"
+    },
+    {
+      "id": "day14-ref-6",
+      "type": "external",
+      "resourceId": "res-02399daadb94",
+      "citationId": "day14-src-4"
+    },
+    {
+      "id": "day14-ref-7",
+      "type": "external",
+      "resourceId": "res-b6fc716e051f",
+      "citationId": "day14-src-6"
+    },
+    {
+      "id": "day14-ref-8",
+      "type": "external",
+      "resourceId": "res-b6fc716e051f",
+      "citationId": "day14-src-7"
+    },
+    {
+      "id": "day14-ref-9",
+      "type": "external",
+      "resourceId": "res-b6fc716e051f",
+      "citationId": "day14-src-8"
+    },
+    {
+      "id": "day14-ref-10",
+      "type": "external",
+      "resourceId": "res-bf1095022eae",
+      "citationId": "day14-src-9"
     }
   ],
   "sourceUsage": [

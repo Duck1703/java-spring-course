@@ -209,10 +209,6 @@
       "prompt": "Vì sao cần một cơ chế blacklist (ví dụ lưu trong Redis) khi logout với xác thực JWT stateless, thay vì chỉ xoá token phía client?",
       "choices": [
         {
-          "id": "day24-prac-1-a",
-          "text": "Vì JWT tự xác thực bằng chữ ký, server không lưu trạng thái phiên nào - nếu chỉ xoá token phía client, token đó (nếu bị đánh cắp trước đó) vẫn còn hợp lệ tới khi hết hạn tự nhiên"
-        },
-        {
           "id": "day24-prac-1-b",
           "text": "Vì Spring Security tự động vô hiệu hoá mọi JWT khi client gọi API logout"
         },
@@ -223,14 +219,18 @@
         {
           "id": "day24-prac-1-d",
           "text": "Vì xoá token phía client sẽ tự động xoá luôn token đó khỏi mọi server khác"
+        },
+        {
+          "id": "day24-prac-1-a",
+          "text": "Vì JWT tự xác thực bằng chữ ký, server không lưu trạng thái phiên nào - nếu chỉ xoá token phía client, token đó (nếu bị đánh cắp trước đó) vẫn còn hợp lệ tới khi hết hạn tự nhiên"
         }
       ],
       "correctChoiceIds": [
         "day24-prac-1-a"
       ],
       "hint": "Nhớ lại đặc điểm stateless của JWT đã học ở Day 22 - server không lưu trạng thái phiên.",
-      "solution": "day24-prac-1-a",
-      "explanation": "JWT tự xác thực bằng chữ ký và không có trạng thái phía server; chỉ xoá token ở client không ngăn được ai đó dùng token đó (nếu đã bị lộ) cho tới khi nó tự hết hạn - cần một blacklist phía server (ví dụ Redis, tra cứu nhanh và tự hết hạn theo TTL) để chủ động thu hồi trước hạn.",
+      "solution": "JWT tự xác thực bằng chữ ký và server không lưu trạng thái phiên, nên việc chỉ xoá token phía client không làm token đã bị đánh cắp mất hiệu lực; blacklist phía server, chẳng hạn trong Redis, cho phép từ chối token đó cho tới khi nó hết hạn tự nhiên.",
+      "explanation": "Spring Security không tự vô hiệu hoá mọi JWT khi client gọi logout; JWT vẫn hợp lệ tới lúc hết hạn nếu server không bổ sung cơ chế thu hồi. JWT cũng không bắt buộc phải lưu trong Redis để hoạt động, vì bản chất của nó là stateless; Redis chỉ là nơi có thể lưu blacklist. Xoá bản sao token trên một client không thể xoá những bản sao đã bị lấy ở nơi khác hay làm các server tự từ chối chúng, nên cần kiểm tra blacklist phía server.",
       "rubric": "Liên hệ tới đặc điểm stateless của JWT đã học ở Day 22.",
       "sourceUsage": [
         "day24-src-1"
@@ -274,12 +274,12 @@
       "prompt": "@NotFound(action = NotFoundAction.IGNORE) trên một @ManyToOne LAZY dùng để làm gì?",
       "choices": [
         {
-          "id": "day24-prac-4-a",
-          "text": "Trả về null thay vì ném EntityNotFoundException khi entity liên kết không còn tồn tại/đã bị soft-delete"
-        },
-        {
           "id": "day24-prac-4-b",
           "text": "Tự động xoá bản ghi cha nếu entity liên kết không tồn tại"
+        },
+        {
+          "id": "day24-prac-4-a",
+          "text": "Trả về null thay vì ném EntityNotFoundException khi entity liên kết không còn tồn tại/đã bị soft-delete"
         },
         {
           "id": "day24-prac-4-c",
@@ -294,8 +294,8 @@
         "day24-prac-4-a"
       ],
       "hint": "Xem lại phần soft delete và @NotFound trong bài.",
-      "solution": "day24-prac-4-a",
-      "explanation": "Khi entity liên kết có thể bị soft-delete (@SoftDelete của Hibernate 6.4), proxy lazy mặc định sẽ ném EntityNotFoundException nếu bản ghi không còn 'sống'; @NotFound(action = NotFoundAction.IGNORE) khiến Hibernate trả về null thay vì ném exception trong tình huống này.",
+      "solution": "@NotFound(action = NotFoundAction.IGNORE) trả về null thay vì ném EntityNotFoundException khi entity được tham chiếu không còn tồn tại hoặc đã bị soft-delete, nhờ đó quan hệ @ManyToOne có thể xử lý trường hợp bản ghi liên kết không còn được xem là 'sống'.",
+      "explanation": "@NotFound(action = NotFoundAction.IGNORE) không xoá bản ghi cha; nó chỉ thay kết quả lỗi bằng null khi entity liên kết không nạp được. Nó cũng không đổi chiến lược fetch từ LAZY sang EAGER. Annotation này xử lý cách Hibernate phản ứng với liên kết bị thiếu hoặc soft-delete, chứ không vô hiệu hoá hoàn toàn việc kiểm tra khoá ngoại ở tầng database.",
       "rubric": "Liên hệ @NotFound với tình huống entity liên kết bị soft-delete, không phải xoá cứng khỏi database.",
       "sourceUsage": [
         "day24-src-5",
@@ -342,6 +342,42 @@
       "id": "day24-ref-5",
       "type": "internal",
       "description": "Ghép toàn bộ kiến thức xác thực JWT (Day 22), authorization/N+1 (Day 23) thành một Auth Service hoàn chỉnh có tối ưu hiệu năng - hoàn tất Unit 8."
+    },
+    {
+      "id": "day24-ref-6",
+      "type": "external",
+      "resourceId": "res-28c8c8bc71df",
+      "citationId": "day24-src-10"
+    },
+    {
+      "id": "day24-ref-7",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day24-src-2"
+    },
+    {
+      "id": "day24-ref-8",
+      "type": "external",
+      "resourceId": "res-ce09de5e928a",
+      "citationId": "day24-src-4"
+    },
+    {
+      "id": "day24-ref-9",
+      "type": "external",
+      "resourceId": "res-8437fa16cd25",
+      "citationId": "day24-src-6"
+    },
+    {
+      "id": "day24-ref-10",
+      "type": "external",
+      "resourceId": "res-28c8c8bc71df",
+      "citationId": "day24-src-8"
+    },
+    {
+      "id": "day24-ref-11",
+      "type": "external",
+      "resourceId": "res-28c8c8bc71df",
+      "citationId": "day24-src-9"
     }
   ],
   "sourceUsage": [

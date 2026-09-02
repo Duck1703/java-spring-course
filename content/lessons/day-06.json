@@ -224,8 +224,8 @@
       ],
       "hint": "Nhớ lại ràng buộc song song giữa abstract method và abstract class đã học ở Day 5.",
       "solution": "Vì nó khai báo ít nhất một abstract method (calculateSalary()) không có thân.",
-      "explanation": "Employee khai báo calculateSalary() chỉ với chữ ký, không có thân phương thức — theo quy tắc Java, một lớp có ít nhất một abstract method thì bản thân lớp đó bắt buộc phải khai báo abstract, nếu không trình biên dịch sẽ báo lỗi. Đây không liên quan tới hiệu năng (đáp án B sai), không phải mọi lớp cha đều phải abstract (đáp án C sai, chỉ khi có abstract method), và Employee vẫn có 3 field id/name/baseSalary (đáp án D sai).",
-      "rubric": "Chọn đúng đáp án A và giải thích được vì sao B, C, D sai.",
+      "explanation": "Employee khai báo calculateSalary() chỉ với chữ ký, không có thân phương thức — theo quy tắc Java, một lớp có ít nhất một abstract method thì bản thân lớp đó bắt buộc phải khai báo abstract, nếu không trình biên dịch sẽ báo lỗi. Lý do không liên quan tới việc chạy nhanh hơn (chọn 'abstract class chạy nhanh hơn' là sai); không phải mọi lớp cha đều bắt buộc phải abstract, ràng buộc này chỉ áp dụng cho lớp có khai báo abstract method (chọn 'Java bắt buộc mọi lớp cha phải là abstract' là sai); và Employee vẫn có đủ 3 field id/name/baseSalary chứ không phải lớp rỗng (chọn 'Employee không có field nào' là sai).",
+      "rubric": "Chọn đúng đáp án 'Vì nó khai báo ít nhất một abstract method (calculateSalary()) không có thân' và giải thích được vì sao ba lựa chọn còn lại sai.",
       "sourceUsage": [
         "day06-src-7",
         "day06-src-8"
@@ -286,6 +286,30 @@
       "id": "day06-ref-5",
       "type": "internal",
       "description": "Áp dụng trực tiếp kiến thức kế thừa/polymorphism/abstract class đã học ở Day 5 (Inheritance, Polymorphism & Abstract)."
+    },
+    {
+      "id": "day06-ref-6",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day06-src-3"
+    },
+    {
+      "id": "day06-ref-7",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day06-src-4"
+    },
+    {
+      "id": "day06-ref-8",
+      "type": "external",
+      "resourceId": "res-36a8d5deef22",
+      "citationId": "day06-src-6"
+    },
+    {
+      "id": "day06-ref-9",
+      "type": "external",
+      "resourceId": "res-b5dd43254a15",
+      "citationId": "day06-src-8"
     }
   ],
   "sourceUsage": [

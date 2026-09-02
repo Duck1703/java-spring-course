@@ -257,8 +257,8 @@
         "day30-prac-1-a"
       ],
       "hint": "Nghĩ về việc Docker cache layer nào không đổi giữa các lần build.",
-      "solution": "day30-prac-1-a",
-      "explanation": "Layered jar tách jar thành 4 layer riêng biệt; layer dependencies hiếm khi đổi nên Docker cache lại, chỉ layer application (code của chúng ta) cần rebuild khi code thay đổi - nhanh hơn nhiều so với việc phải build lại toàn bộ fat jar một layer duy nhất.",
+      "solution": "4 layer (dependencies/snapshot-dependencies/loader/application) được cache riêng nên Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar — đây là lý do layered jar giúp build nhanh hơn khi code ứng dụng thay đổi, vì các layer dependency không đổi được tái sử dụng từ cache.",
+      "explanation": "Layered jar tách jar thành 4 layer riêng biệt; layer dependencies hiếm khi đổi nên Docker cache lại, chỉ layer application (code của chúng ta) cần rebuild khi code thay đổi - nhanh hơn nhiều so với việc phải build lại toàn bộ fat jar một layer duy nhất. Bài không xác định layered jar nhỏ hơn fat jar về dung lượng; lợi ích được nêu là khả năng cache riêng từng layer. Dockerfile vẫn dùng image JRE và lệnh java để chạy ứng dụng, nên việc 'không cần JDK' không phải cơ chế làm Docker build nhanh hơn. Tương tự, bài không mô tả Docker tự động nén layered jar tốt hơn; tốc độ đến từ việc tái sử dụng các layer không đổi, không phải từ nén.",
       "rubric": "Liên hệ đúng cơ chế cache theo layer của Docker với cấu trúc 4 layer mặc định.",
       "sourceUsage": [
         "day30-src-9"
@@ -301,12 +301,12 @@
       "prompt": "Theo đề bài Lab 10, thứ tự đúng của pipeline GitHub Actions CI là gì?",
       "choices": [
         {
-          "id": "day30-prac-4-a",
-          "text": "build -> test -> docker build"
-        },
-        {
           "id": "day30-prac-4-b",
           "text": "docker build -> build -> test"
+        },
+        {
+          "id": "day30-prac-4-a",
+          "text": "build -> test -> docker build"
         },
         {
           "id": "day30-prac-4-c",
@@ -321,8 +321,8 @@
         "day30-prac-4-a"
       ],
       "hint": "Nhớ lại đúng thứ tự được ghi trong đề bài Lab 10.",
-      "solution": "day30-prac-4-a",
-      "explanation": "Pipeline chạy tuần tự: build (biên dịch) trước, rồi test (chỉ test code đã build thành công), cuối cùng mới docker build (chỉ đóng gói image khi test đã pass) - tránh lãng phí thời gian đóng gói image từ code chưa được kiểm chứng.",
+      "solution": "build -> test -> docker build là thứ tự đúng theo đề bài Lab 10: biên dịch trước, kiểm thử code đã build thành công, rồi chỉ đóng gói Docker image sau khi test đã pass.",
+      "explanation": "Pipeline chạy tuần tự: build (biên dịch) trước, rồi test (chỉ test code đã build thành công), cuối cùng mới docker build (chỉ đóng gói image khi test đã pass) - tránh lãng phí thời gian đóng gói image từ code chưa được kiểm chứng. 'docker build -> build -> test' đóng gói image trước cả biên dịch và kiểm thử nên đi ngược quy trình này. 'test -> docker build -> build' đặt bước build sau test và đóng gói, không đúng quan hệ tuần tự đã nêu. Ba bước cũng không thể chạy song song hoàn toàn vì test cần code đã build thành công và docker build chỉ nên chạy sau khi test pass.",
       "rubric": "Liên hệ đúng thứ tự build -> test -> docker build như đề bài yêu cầu.",
       "sourceUsage": []
     }
@@ -372,6 +372,54 @@
       "id": "day30-ref-6",
       "type": "internal",
       "description": "Testcontainers chi tiết, structured logging, và Actuator/HealthIndicator áp dụng lại nguyên mẫu đã có trích dẫn đầy đủ ở Day 29."
+    },
+    {
+      "id": "day30-ref-7",
+      "type": "external",
+      "resourceId": "res-ae66be8c9f5f",
+      "citationId": "day30-src-1"
+    },
+    {
+      "id": "day30-ref-8",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day30-src-10"
+    },
+    {
+      "id": "day30-ref-9",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day30-src-11"
+    },
+    {
+      "id": "day30-ref-10",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day30-src-13"
+    },
+    {
+      "id": "day30-ref-11",
+      "type": "external",
+      "resourceId": "res-84fc38d27c0a",
+      "citationId": "day30-src-3"
+    },
+    {
+      "id": "day30-ref-12",
+      "type": "external",
+      "resourceId": "res-84fc38d27c0a",
+      "citationId": "day30-src-4"
+    },
+    {
+      "id": "day30-ref-13",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day30-src-6"
+    },
+    {
+      "id": "day30-ref-14",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day30-src-8"
     }
   ],
   "sourceUsage": [

@@ -150,12 +150,12 @@
       "prompt": "JLS 17 (Java SE 17 Edition) định nghĩa phạm vi nội dung nào?",
       "choices": [
         {
-          "id": "day37-prac-1-a",
-          "text": "Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks"
-        },
-        {
           "id": "day37-prac-1-b",
           "text": "Chỉ các API của thư viện chuẩn java.util"
+        },
+        {
+          "id": "day37-prac-1-a",
+          "text": "Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks"
         },
         {
           "id": "day37-prac-1-c",
@@ -170,8 +170,8 @@
         "day37-prac-1-a"
       ],
       "hint": "JLS là 'Language Specification', không phải đặc tả JVM hay tài liệu API.",
-      "solution": "day37-prac-1-a",
-      "explanation": "The Java Language Specification, Java SE 17 Edition (JLS 17) định nghĩa toàn bộ cú pháp và ngôn ngữ Java 17, bao gồm các tính năng mới nhất như sealed classes, pattern matching for switch, records, text blocks.",
+      "solution": "\"Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks\" là đáp án đúng vì JLS 17 là đặc tả ngôn ngữ Java SE 17, không phải tài liệu của một thư viện hay đặc tả bytecode.",
+      "explanation": "JLS 17 bao quát cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm các tính năng Java 17 được nêu trong đáp án đúng. Giới hạn phạm vi ở java.util nhầm đặc tả ngôn ngữ với tài liệu API thư viện; giới hạn ở cú pháp trước Java 8 mâu thuẫn với Java SE 17 Edition và việc bài nêu các tính năng mới; coi JLS chỉ là đặc tả JVM bytecode nhầm Language Specification với phạm vi JVM và loại bỏ sai phần cú pháp ngôn ngữ.",
       "rubric": "Liên hệ đúng phạm vi của JLS: ngôn ngữ Java, không phải thư viện hay JVM bytecode.",
       "sourceUsage": [
         "day37-src-1"
@@ -204,8 +204,8 @@
         "day37-prac-2-a"
       ],
       "hint": "Nghĩ về trải nghiệm 'getting started' và triết lý 'opinionated' của Spring Boot.",
-      "solution": "day37-prac-2-a",
-      "explanation": "Spring Boot có 3 mục tiêu: getting-started experience nhanh hơn; opinionated out-of-the-box nhưng get out of the way khi cần tùy chỉnh; cung cấp sẵn các tính năng non-functional chung (embedded server, security, metrics, health checks, externalized config).",
+      "solution": "\"Khởi động nhanh cho Spring development; opinionated defaults nhưng vẫn tùy chỉnh được; cung cấp sẵn các tính năng non-functional (embedded server, health check, externalized config)\" là đáp án đúng vì nó nêu đủ ba mục tiêu Spring Boot được tổng kết trong bài.",
+      "explanation": "Ba mục tiêu là trải nghiệm khởi động nhanh, mặc định opinionated nhưng vẫn tùy chỉnh được, và các tính năng non-functional có sẵn như embedded server, health checks cùng externalized config. Phương án thay thế Spring Framework, bắt buộc XML và chỉ chạy Tomcat trái với vai trò hỗ trợ Spring development; phương án sinh toàn bộ code và không cần Java không thuộc ba mục tiêu; phương án chỉ tập trung testing bỏ qua rõ ràng mục tiêu cấu hình và triển khai thông qua các non-functional features.",
       "rubric": "Liên hệ đúng 3 mục tiêu: khởi động nhanh, opinionated + tùy chỉnh được, non-functional features có sẵn.",
       "sourceUsage": [
         "day37-src-3"
@@ -280,13 +280,19 @@
       "id": "day37-ref-6",
       "type": "internal",
       "description": "Phạm vi ôn tập bao trùm toàn bộ Day 1-36 của khóa học, không chỉ giới hạn ở các resource được trích dẫn trực tiếp trong bài thi này."
+    },
+    {
+      "id": "day37-ref-7",
+      "type": "external",
+      "resourceId": "res-004dba8a7332",
+      "citationId": "day37-src-1"
     }
   ],
   "sourceUsage": [
     {
       "id": "day37-src-1",
       "resourceId": "res-004dba8a7332",
-      "locator": "Trang bia: 'Java SE 17 Edition' + Table of Contents chay tu Chapter 1 den Chapter 19",
+      "locator": "Table of Contents — trang bìa 'Java SE 17 Edition', các chương 1 đến 19",
       "topic": "Phạm vi JLS 17"
     },
     {

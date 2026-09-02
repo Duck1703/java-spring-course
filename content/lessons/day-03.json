@@ -281,6 +281,18 @@
       "id": "day03-ref-4",
       "type": "internal",
       "description": "Kế thừa trực tiếp kiến thức String Pool/tính bất biến từ Day 1 (JVM, JRE, JDK & Data Types)."
+    },
+    {
+      "id": "day03-ref-5",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day03-src-2"
+    },
+    {
+      "id": "day03-ref-6",
+      "type": "external",
+      "resourceId": "res-df903793f0b9",
+      "citationId": "day03-src-3"
     }
   ],
   "sourceUsage": [

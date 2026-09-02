@@ -541,7 +541,7 @@
         {
           "topic": "Bảng ánh xạ kiểu nguyên thủy - lớp bọc",
           "summary": "Tài liệu liệt kê đủ 8 cặp kiểu nguyên thủy và lớp bọc: boolean-Boolean, byte-Byte, char-Character, float-Float, int-Integer, long-Long, short-Short, double-Double.",
-          "locator": "Bảng cuối trang: Primitive type / Wrapper class"
+          "locator": "Autoboxing and Unboxing — bảng cuối trang liệt kê Primitive type/Wrapper class"
         }
       ],
       "limitation": null

@@ -321,12 +321,11 @@
           "type": "code",
           "language": "java",
           "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Neu truong chua dau phay, dau nhay kep, hoac xuong dong: bao trong nhay kep\n    // va nhan doi moi dau nhay kep ben trong (theo quy uoc CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\") || value.contains(\"\\n\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
-          "compile": false,
+          "compile": true,
           "citations": [
             "day26-src-14",
             "day26-src-15"
-          ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+          ]
         },
         {
           "id": "day26-blk-15",
@@ -366,10 +365,6 @@
       "prompt": "Vì sao FileSystemStorageService phải kiểm tra đường dẫn đích thực sự nằm trong rootLocation trước khi ghi file?",
       "choices": [
         {
-          "id": "day26-prac-1-a",
-          "text": "Để chống tấn công path traversal (tên file như \"../../etc/passwd\" có thể ghi đè file ngoài thư mục cho phép)"
-        },
-        {
           "id": "day26-prac-1-b",
           "text": "Để tăng tốc độ ghi file"
         },
@@ -380,14 +375,18 @@
         {
           "id": "day26-prac-1-d",
           "text": "Để tự động nén file trước khi lưu"
+        },
+        {
+          "id": "day26-prac-1-a",
+          "text": "Để chống tấn công path traversal (tên file như \"../../etc/passwd\" có thể ghi đè file ngoài thư mục cho phép)"
         }
       ],
       "correctChoiceIds": [
         "day26-prac-1-a"
       ],
       "hint": "Nghĩ về việc tên file gốc (originalFilename) đến từ client, không đáng tin cậy.",
-      "solution": "day26-prac-1-a",
-      "explanation": "originalFilename do client gửi lên, không đáng tin cậy - nếu ghép trực tiếp vào đường dẫn lưu mà không chuẩn hoá và kiểm tra, kẻ tấn công có thể dùng \"../\" để ghi file ra ngoài thư mục được phép (path traversal).",
+      "solution": "Kiểm tra đường dẫn đích nằm trong rootLocation là để chống tấn công path traversal, vì originalFilename đến từ client có thể chứa chuỗi như \"../../etc/passwd\"; chuẩn hoá rồi xác nhận phạm vi thư mục ngăn file bị ghi ra ngoài nơi cho phép.",
+      "explanation": "originalFilename do client gửi lên nên không đáng tin cậy; nếu ghép trực tiếp vào đường dẫn lưu mà không chuẩn hoá và kiểm tra, kẻ tấn công có thể dùng \"../\" để ghi file ra ngoài rootLocation. Bước kiểm tra này là lớp bảo vệ phạm vi lưu trữ, không làm tăng tốc độ ghi. Bài cũng không nói Spring Boot cần bước đó để khởi động; đây là trách nhiệm bảo mật của code lưu file. Việc chuẩn hoá và kiểm tra đường dẫn không nén nội dung, nên nó không thể tự động nén file trước khi lưu.",
       "rubric": "Liên hệ đúng rủi ro bảo mật path traversal với bước kiểm tra rootLocation.",
       "sourceUsage": [
         "day26-src-5"
@@ -415,16 +414,16 @@
       "prompt": "Khác biệt cốt lõi giữa Retry và Circuit Breaker là gì?",
       "choices": [
         {
-          "id": "day26-prac-3-a",
-          "text": "Retry không lưu trạng thái (thử lại ngay khi lỗi tạm thời), còn Circuit Breaker theo dõi trạng thái theo thời gian để chặn hẳn khi hệ thống đích đang gặp sự cố"
-        },
-        {
           "id": "day26-prac-3-b",
           "text": "Retry chỉ dùng cho WebClient, Circuit Breaker chỉ dùng cho RestTemplate"
         },
         {
           "id": "day26-prac-3-c",
           "text": "Circuit Breaker luôn thử lại vô hạn, Retry chỉ thử một lần duy nhất"
+        },
+        {
+          "id": "day26-prac-3-a",
+          "text": "Retry không lưu trạng thái (thử lại ngay khi lỗi tạm thời), còn Circuit Breaker theo dõi trạng thái theo thời gian để chặn hẳn khi hệ thống đích đang gặp sự cố"
         },
         {
           "id": "day26-prac-3-d",
@@ -435,8 +434,8 @@
         "day26-prac-3-a"
       ],
       "hint": "So sánh việc có/không lưu trạng thái theo thời gian giữa hai cơ chế.",
-      "solution": "day26-prac-3-a",
-      "explanation": "Retry stateless, xử lý từng lỗi độc lập, phù hợp lỗi tạm thời ngắn hạn. Circuit Breaker có trạng thái (Closed/Open/Half-Open), theo dõi tỉ lệ lỗi qua thời gian để chủ động chặn request khi hệ thống đích đang gặp sự cố kéo dài, tránh làm nặng thêm.",
+      "solution": "Retry không lưu trạng thái và thử lại khi gặp lỗi tạm thời, còn Circuit Breaker theo dõi trạng thái theo thời gian để chặn lời gọi khi hệ thống đích đang gặp sự cố — vì Retry xử lý từng lỗi độc lập, trong khi Circuit Breaker chuyển giữa Closed, Open và Half-Open dựa trên tỉ lệ lỗi.",
+      "explanation": "Retry là cơ chế stateless, xử lý từng lỗi độc lập và phù hợp với lỗi tạm thời; Circuit Breaker có các trạng thái Closed, Open và Half-Open, theo dõi tỉ lệ lỗi để chủ động chặn request khi hệ thống đích đang gặp sự cố kéo dài. Bài phân biệt hai cơ chế theo mục đích và trạng thái, không theo HTTP client WebClient hay RestTemplate. Circuit Breaker không thử lại vô hạn: ở trạng thái Open nó chặn lời gọi, còn Half-Open chỉ cho một số request thử; Retry cũng có thể thử nhiều lần có giới hạn chứ không bị định nghĩa là chỉ thử một lần. Vì một bên thử lại lỗi tạm thời còn một bên ngăn gọi liên tục tới hệ thống đang lỗi, hai khái niệm không tương đương nhau.",
       "rubric": "Liên hệ đúng khái niệm stateless vs có trạng thái theo thời gian.",
       "sourceUsage": [
         "day26-src-13"
@@ -502,6 +501,72 @@
       "id": "day26-ref-6",
       "type": "internal",
       "description": "Cả bốn kỹ thuật (upload, WebClient, resilience, CSV) sẽ được áp dụng trực tiếp có trích dẫn vào Assignment 9, Day 27."
+    },
+    {
+      "id": "day26-ref-7",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day26-src-1"
+    },
+    {
+      "id": "day26-ref-8",
+      "type": "external",
+      "resourceId": "res-b8b29a249f37",
+      "citationId": "day26-src-11"
+    },
+    {
+      "id": "day26-ref-9",
+      "type": "external",
+      "resourceId": "res-f6c8ab355f09",
+      "citationId": "day26-src-12"
+    },
+    {
+      "id": "day26-ref-10",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day26-src-14"
+    },
+    {
+      "id": "day26-ref-11",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day26-src-16"
+    },
+    {
+      "id": "day26-ref-12",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day26-src-3"
+    },
+    {
+      "id": "day26-ref-13",
+      "type": "external",
+      "resourceId": "res-6543ba492a80",
+      "citationId": "day26-src-4"
+    },
+    {
+      "id": "day26-ref-14",
+      "type": "external",
+      "resourceId": "res-6543ba492a80",
+      "citationId": "day26-src-6"
+    },
+    {
+      "id": "day26-ref-15",
+      "type": "external",
+      "resourceId": "res-6543ba492a80",
+      "citationId": "day26-src-7"
+    },
+    {
+      "id": "day26-ref-16",
+      "type": "external",
+      "resourceId": "res-b8b29a249f37",
+      "citationId": "day26-src-8"
+    },
+    {
+      "id": "day26-ref-17",
+      "type": "external",
+      "resourceId": "res-b8b29a249f37",
+      "citationId": "day26-src-9"
     }
   ],
   "sourceUsage": [

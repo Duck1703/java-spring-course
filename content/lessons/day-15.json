@@ -180,10 +180,6 @@
       "prompt": "Từ Spring Boot 2.6, cách nào được dùng trực tiếp làm lớp @ConfigurationProperties bất biến mà không cần thêm @ConstructorBinding?",
       "choices": [
         {
-          "id": "day15-prac-1-a",
-          "text": "Một Java record với một constructor duy nhất"
-        },
-        {
           "id": "day15-prac-1-b",
           "text": "Một interface với default method"
         },
@@ -194,14 +190,18 @@
         {
           "id": "day15-prac-1-d",
           "text": "Một lớp abstract với constructor protected"
+        },
+        {
+          "id": "day15-prac-1-a",
+          "text": "Một Java record với một constructor duy nhất"
         }
       ],
       "correctChoiceIds": [
         "day15-prac-1-a"
       ],
       "hint": "Đọc lại phần Constructor binding và Java record trong bài.",
-      "solution": "day15-prac-1-a",
-      "explanation": "Tài liệu xác nhận từ Spring Boot 2.6, một Java record với một constructor duy nhất có thể dùng trực tiếp làm @ConfigurationProperties mà không cần thêm @ConstructorBinding, tạo ra lớp cấu hình bất biến.",
+      "solution": "“Một Java record với một constructor duy nhất” là đáp án đúng vì từ Spring Boot 2.6 record này có thể được dùng trực tiếp làm @ConfigurationProperties mà không cần @ConstructorBinding, đồng thời tạo lớp cấu hình bất biến không cần setter.",
+      "explanation": "Phần constructor binding xác nhận một Java record với một constructor duy nhất là dạng được dùng trực tiếp làm @ConfigurationProperties bất biến từ Spring Boot 2.6. Interface với default method không phải record chứa các tham số cấu hình để bind qua constructor; enum với field tĩnh không biểu diễn đối tượng cấu hình riêng cho từng nhà cung cấp như các record SmtpProperties/TwilioProperties/FirebaseProperties trong bài; và lớp abstract với constructor protected cũng không thỏa dạng record một constructor mà bài xác nhận có thể dùng trực tiếp không cần @ConstructorBinding.",
       "rubric": "Chọn đúng 'Java record' thay vì các kiểu không hỗ trợ constructor binding tự động.",
       "sourceUsage": [
         "day15-src-4",
@@ -278,6 +278,42 @@
       "id": "day15-ref-3",
       "type": "internal",
       "description": "Kế thừa mẫu DI/@Qualifier từ Day 14 và bean scope từ Day 13 khi thiết kế NotificationClient."
+    },
+    {
+      "id": "day15-ref-4",
+      "type": "external",
+      "resourceId": "res-7bf1b25b2e6b",
+      "citationId": "day15-src-2"
+    },
+    {
+      "id": "day15-ref-5",
+      "type": "external",
+      "resourceId": "res-7bf1b25b2e6b",
+      "citationId": "day15-src-3"
+    },
+    {
+      "id": "day15-ref-6",
+      "type": "external",
+      "resourceId": "res-7bf1b25b2e6b",
+      "citationId": "day15-src-4"
+    },
+    {
+      "id": "day15-ref-7",
+      "type": "external",
+      "resourceId": "res-aee8bfb64b8c",
+      "citationId": "day15-src-6"
+    },
+    {
+      "id": "day15-ref-8",
+      "type": "external",
+      "resourceId": "res-aee8bfb64b8c",
+      "citationId": "day15-src-7"
+    },
+    {
+      "id": "day15-ref-9",
+      "type": "external",
+      "resourceId": "res-bb04db80cab2",
+      "citationId": "day15-src-8"
     }
   ],
   "sourceUsage": [

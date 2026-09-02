@@ -178,10 +178,6 @@
       "prompt": "Theo StatusTransitionValidator trong bài, chuyển trạng thái nào dưới đây là KHÔNG hợp lệ?",
       "choices": [
         {
-          "id": "day18-prac-1-a",
-          "text": "DONE -> IN_PROGRESS"
-        },
-        {
           "id": "day18-prac-1-b",
           "text": "TODO -> IN_PROGRESS"
         },
@@ -192,14 +188,18 @@
         {
           "id": "day18-prac-1-d",
           "text": "IN_PROGRESS -> TODO"
+        },
+        {
+          "id": "day18-prac-1-a",
+          "text": "DONE -> IN_PROGRESS"
         }
       ],
       "correctChoiceIds": [
         "day18-prac-1-a"
       ],
       "hint": "Xem lại bảng ALLOWED trong StatusTransitionValidator.",
-      "solution": "day18-prac-1-a",
-      "explanation": "Trong ALLOWED map của ví dụ, TaskStatus.DONE ánh xạ tới Set.of() (tập rỗng) — nghĩa là từ DONE không được phép chuyển sang bất kỳ trạng thái nào khác, nên DONE -> IN_PROGRESS là không hợp lệ.",
+      "solution": "“DONE -> IN_PROGRESS” là đáp án đúng vì map ALLOWED ánh xạ TaskStatus.DONE tới Set.of(), nên DONE không có bất kỳ trạng thái chuyển tiếp hợp lệ nào.",
+      "explanation": "Map ALLOWED cho phép TODO -> IN_PROGRESS vì tập của TODO chứa IN_PROGRESS. Tập của IN_PROGRESS chứa cả DONE và TODO, nên IN_PROGRESS -> DONE và IN_PROGRESS -> TODO đều hợp lệ. Riêng DONE ánh xạ tới tập rỗng, vì vậy DONE -> IN_PROGRESS là chuyển trạng thái không hợp lệ duy nhất trong bốn lựa chọn.",
       "rubric": "Đối chiếu từng lựa chọn với Map ALLOWED trong code ví dụ; đánh giá đúng nếu nhận ra DONE là trạng thái cuối (không có chuyển tiếp hợp lệ).",
       "sourceUsage": [
         "day18-src-3",
@@ -281,6 +281,30 @@
       "id": "day18-ref-3",
       "type": "internal",
       "description": "Tổng hợp trực tiếp các mẫu đã học ở Day 16 (controller/mapping) và Day 17 (validation/ProblemDetail) vào một API hoàn chỉnh."
+    },
+    {
+      "id": "day18-ref-4",
+      "type": "external",
+      "resourceId": "res-2aefb097db80",
+      "citationId": "day18-src-2"
+    },
+    {
+      "id": "day18-ref-5",
+      "type": "external",
+      "resourceId": "res-7f4116f00d7f",
+      "citationId": "day18-src-3"
+    },
+    {
+      "id": "day18-ref-6",
+      "type": "external",
+      "resourceId": "res-7f4116f00d7f",
+      "citationId": "day18-src-4"
+    },
+    {
+      "id": "day18-ref-7",
+      "type": "external",
+      "resourceId": "res-8a73cd80ad49",
+      "citationId": "day18-src-6"
     }
   ],
   "sourceUsage": [

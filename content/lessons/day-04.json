@@ -343,12 +343,12 @@
       "prompt": "Trong một constructor, lời gọi this(...) để gọi một constructor khác cùng class phải nằm ở đâu?",
       "choices": [
         {
-          "id": "day04-prac-1-a",
-          "text": "Ở bất kỳ vị trí nào trong thân constructor"
-        },
-        {
           "id": "day04-prac-1-b",
           "text": "Là câu lệnh đầu tiên trong thân constructor"
+        },
+        {
+          "id": "day04-prac-1-a",
+          "text": "Ở bất kỳ vị trí nào trong thân constructor"
         },
         {
           "id": "day04-prac-1-c",
@@ -377,16 +377,16 @@
       "prompt": "Một lớp top-level (không phải nested class) trong Java được phép khai báo với access modifier nào?",
       "choices": [
         {
-          "id": "day04-prac-2-a",
-          "text": "public hoặc default (không ghi modifier)"
+          "id": "day04-prac-2-c",
+          "text": "private hoặc protected"
         },
         {
           "id": "day04-prac-2-b",
           "text": "public, protected, hoặc default"
         },
         {
-          "id": "day04-prac-2-c",
-          "text": "private hoặc protected"
+          "id": "day04-prac-2-a",
+          "text": "public hoặc default (không ghi modifier)"
         },
         {
           "id": "day04-prac-2-d",
@@ -458,6 +458,30 @@
       "id": "day04-ref-4",
       "type": "internal",
       "description": "Kế thừa (extends), method overriding và super sẽ được học sâu ở Day 5 (Inheritance, Polymorphism & Abstract)."
+    },
+    {
+      "id": "day04-ref-5",
+      "type": "external",
+      "resourceId": "res-4f42c781654a",
+      "citationId": "day04-src-2"
+    },
+    {
+      "id": "day04-ref-6",
+      "type": "external",
+      "resourceId": "res-4f42c781654a",
+      "citationId": "day04-src-3"
+    },
+    {
+      "id": "day04-ref-7",
+      "type": "external",
+      "resourceId": "res-563d80135c91",
+      "citationId": "day04-src-6"
+    },
+    {
+      "id": "day04-ref-8",
+      "type": "external",
+      "resourceId": "res-563d80135c91",
+      "citationId": "day04-src-7"
     }
   ],
   "sourceUsage": [

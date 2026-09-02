@@ -218,12 +218,12 @@
       "prompt": "Khác biệt chính giữa Page<T> và Slice<T> trong Spring Data JPA là gì?",
       "choices": [
         {
-          "id": "day20-prac-1-a",
-          "text": "Page<T> chạy thêm một câu truy vấn COUNT để biết tổng số phần tử/trang; Slice<T> chỉ kiểm tra 'còn trang tiếp theo hay không' nên rẻ hơn"
-        },
-        {
           "id": "day20-prac-1-b",
           "text": "Slice<T> chỉ dùng được với @Query, còn Page<T> chỉ dùng được với derived query method"
+        },
+        {
+          "id": "day20-prac-1-a",
+          "text": "Page<T> chạy thêm một câu truy vấn COUNT để biết tổng số phần tử/trang; Slice<T> chỉ kiểm tra 'còn trang tiếp theo hay không' nên rẻ hơn"
         },
         {
           "id": "day20-prac-1-c",
@@ -238,8 +238,8 @@
         "day20-prac-1-a"
       ],
       "hint": "Xem lại phần so sánh Page<T> và Slice<T> trong bài.",
-      "solution": "day20-prac-1-a",
-      "explanation": "Page<T> cần biết tổng số phần tử/trang nên phải chạy thêm truy vấn COUNT; Slice<T> chỉ truy vấn thêm đúng một phần tử để biết hasNext(), tránh COUNT tốn kém trên bảng lớn.",
+      "solution": "Page<T> chạy thêm một câu truy vấn COUNT để biết tổng số phần tử và tổng số trang, còn Slice<T> chỉ lấy thêm một phần tử để xác định hasNext(), nên tránh được COUNT tốn kém khi giao diện chỉ cần biết có trang tiếp theo hay không.",
+      "explanation": "Khác biệt nằm ở metadata và chi phí truy vấn, không nằm ở cách khai báo truy vấn: bài cho thấy repository có thể nhận Pageable, còn derived query và @Query là hai cách diễn đạt truy vấn riêng. Page<T> và Slice<T> không giống hệt nhau vì Page có tổng số phần tử/trang còn Slice chỉ cho biết còn trang tiếp theo. Slice vẫn phân trang theo page và size; nó không trả toàn bộ dữ liệu mà chỉ nhẹ hơn vì không chạy COUNT.",
       "rubric": "Chọn đúng lý do kỹ thuật (truy vấn COUNT bổ sung) thay vì nhầm lẫn về cách khai báo repository.",
       "sourceUsage": [
         "day20-src-3"
@@ -321,6 +321,48 @@
       "id": "day20-ref-3",
       "type": "internal",
       "description": "Tổng hợp trực tiếp các mẫu repository/transaction/auditing đã học ở Day 19-20 để dùng cho Assignment 7 (E-Commerce Data Layer) ở Day 21."
+    },
+    {
+      "id": "day20-ref-4",
+      "type": "external",
+      "resourceId": "res-2e4a3dd62ec7",
+      "citationId": "day20-src-2"
+    },
+    {
+      "id": "day20-ref-5",
+      "type": "external",
+      "resourceId": "res-2e4a3dd62ec7",
+      "citationId": "day20-src-3"
+    },
+    {
+      "id": "day20-ref-6",
+      "type": "external",
+      "resourceId": "res-2e4a3dd62ec7",
+      "citationId": "day20-src-4"
+    },
+    {
+      "id": "day20-ref-7",
+      "type": "external",
+      "resourceId": "res-82b36b19c96f",
+      "citationId": "day20-src-6"
+    },
+    {
+      "id": "day20-ref-8",
+      "type": "external",
+      "resourceId": "res-82b36b19c96f",
+      "citationId": "day20-src-7"
+    },
+    {
+      "id": "day20-ref-9",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day20-src-8"
+    },
+    {
+      "id": "day20-ref-10",
+      "type": "external",
+      "resourceId": "res-749fa81acd48",
+      "citationId": "day20-src-9"
     }
   ],
   "sourceUsage": [

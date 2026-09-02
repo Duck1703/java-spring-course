@@ -149,10 +149,6 @@
           "prompt": "Khi gặp một blocker kỹ thuật mà bạn không tự giải quyết được trong buổi làm việc, hành động đúng nhất theo quy trình OJT ở trên là gì?",
           "choices": [
             {
-              "id": "day3964-prac-4-a",
-              "text": "Escalate ngay cho mentor trong buổi check-in gần nhất, kèm evidence cụ thể về những gì đã thử và lỗi gặp phải"
-            },
-            {
               "id": "day3964-prac-4-b",
               "text": "Bỏ qua task đó và tự chuyển sang task khác mà không báo với ai"
             },
@@ -161,15 +157,19 @@
               "text": "Cố tự giải quyết bằng mọi giá và không ghi nhận gì vào nhật ký công việc"
             },
             {
+              "id": "day3964-prac-4-a",
+              "text": "Escalate ngay cho mentor trong buổi check-in gần nhất, kèm evidence cụ thể về những gì đã thử và lỗi gặp phải"
+            },
+            {
               "id": "day3964-prac-4-d",
               "text": "Chờ đến buổi check-in định kỳ tiếp theo (có thể cả tuần sau) mới báo cho mentor"
             }
           ],
           "correctChoiceIds": ["day3964-prac-4-a"],
           "hint": "Xem lại checklist 'Mẫu buổi check-in với mentor' ở trên - blocker nên được đưa vào ngay khi có cơ hội gần nhất, không phải chờ định kỳ.",
-          "solution": "day3964-prac-4-a",
-          "explanation": "Checklist check-in ở trên yêu cầu liệt kê blocker cụ thể kèm những gì đã thử ngay tại buổi check-in gần nhất - escalate sớm với evidence cụ thể giúp mentor hỗ trợ đúng lúc và tránh trễ tiến độ, thay vì im lặng chịu đựng hoặc chờ tới kỳ check-in xa.",
-          "rubric": "Chọn đúng phương án escalate sớm kèm evidence cụ thể (phương án a).",
+          "solution": "Escalate ngay cho mentor trong buổi check-in gần nhất, kèm evidence cụ thể về những gì đã thử và lỗi gặp phải — đây là hành động đúng theo quy trình OJT vì nó giúp mentor hỗ trợ đúng lúc và tránh trễ tiến độ.",
+          "explanation": "Checklist check-in ở trên yêu cầu liệt kê blocker cụ thể kèm những gì đã thử ngay tại buổi check-in gần nhất - escalate sớm với evidence cụ thể giúp mentor hỗ trợ đúng lúc và tránh trễ tiến độ. Bỏ qua task và tự chuyển sang việc khác mà không báo với ai là im lặng chịu đựng, khiến mentor không có cơ hội hỗ trợ. Cố tự giải quyết bằng mọi giá mà không ghi nhận gì vào nhật ký công việc làm mất dấu vết cho mentor hoặc đồng đội tham khảo nếu vấn đề lặp lại. Chờ tới buổi check-in định kỳ tiếp theo (có thể cả tuần sau) mới báo là trễ không cần thiết, vì checklist yêu cầu đưa blocker vào ngay buổi check-in gần nhất chứ không phải chờ định kỳ.",
+          "rubric": "Chọn đúng phương án escalate ngay cho mentor kèm evidence cụ thể (không bỏ qua task, không im lặng tự xử lý, không chờ tới kỳ check-in xa).",
           "sourceUsage": []
         }
       ],

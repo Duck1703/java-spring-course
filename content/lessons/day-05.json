@@ -366,12 +366,12 @@
       "prompt": "Nếu một class khai báo ít nhất một abstract method, điều gì bắt buộc phải đúng?",
       "choices": [
         {
-          "id": "day05-prac-1-a",
-          "text": "Class đó cũng phải được khai báo abstract"
-        },
-        {
           "id": "day05-prac-1-b",
           "text": "Class đó có thể khởi tạo trực tiếp bằng new nếu cần"
+        },
+        {
+          "id": "day05-prac-1-a",
+          "text": "Class đó cũng phải được khai báo abstract"
         },
         {
           "id": "day05-prac-1-c",
@@ -387,8 +387,8 @@
       ],
       "hint": "Nhớ ràng buộc song song giữa abstract method và abstract class.",
       "solution": "Class đó cũng phải được khai báo abstract.",
-      "explanation": "Java bắt buộc: nếu một class có ít nhất một abstract method (method chỉ có chữ ký, không thân), bản thân class đó phải abstract, vì việc khởi tạo một đối tượng thiếu cài đặt cho một method là không hợp lệ. Vì vậy class đó không thể khởi tạo trực tiếp (đáp án B sai), quy tắc áp dụng cho chính class khai báo method chứ không chỉ lớp con (đáp án C sai), và abstract method không có thân {} chứ không phải thân rỗng (đáp án D sai — abstract method kết thúc bằng dấu chấm phẩy, không có cặp ngoặc nhọn nào).",
-      "rubric": "Chọn đúng đáp án A và giải thích được vì sao ba lựa chọn còn lại sai.",
+      "explanation": "Java bắt buộc: nếu một class có ít nhất một abstract method (method chỉ có chữ ký, không thân), bản thân class đó phải abstract, vì việc khởi tạo một đối tượng thiếu cài đặt cho một method là không hợp lệ. Vì vậy class đó không thể khởi tạo trực tiếp bằng new (chọn 'có thể khởi tạo trực tiếp bằng new' là sai); ràng buộc phải-abstract áp dụng cho chính class khai báo abstract method, không chỉ cho lớp con của nó (chọn 'chỉ lớp con mới cần abstract' là sai); và abstract method không có thân {} — nó kết thúc bằng dấu chấm phẩy, hoàn toàn không có cặp ngoặc nhọn nào kể cả rỗng (chọn 'phải có thân rỗng {}' là sai).",
+      "rubric": "Chọn đúng đáp án 'Class đó cũng phải được khai báo abstract' và giải thích được vì sao ba lựa chọn còn lại sai.",
       "sourceUsage": [
         "day05-src-9"
       ]
@@ -491,6 +491,48 @@
       "id": "day05-ref-4",
       "type": "internal",
       "description": "Mở rộng trực tiếp phần constructor/access modifier đã học ở Day 4 (Classes, Objects, Encapsulation)."
+    },
+    {
+      "id": "day05-ref-5",
+      "type": "external",
+      "resourceId": "res-b5dd43254a15",
+      "citationId": "day05-src-10"
+    },
+    {
+      "id": "day05-ref-6",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day05-src-2"
+    },
+    {
+      "id": "day05-ref-7",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day05-src-3"
+    },
+    {
+      "id": "day05-ref-8",
+      "type": "external",
+      "resourceId": "res-aad15fef0599",
+      "citationId": "day05-src-4"
+    },
+    {
+      "id": "day05-ref-9",
+      "type": "external",
+      "resourceId": "res-36a8d5deef22",
+      "citationId": "day05-src-6"
+    },
+    {
+      "id": "day05-ref-10",
+      "type": "external",
+      "resourceId": "res-36a8d5deef22",
+      "citationId": "day05-src-7"
+    },
+    {
+      "id": "day05-ref-11",
+      "type": "external",
+      "resourceId": "res-b5dd43254a15",
+      "citationId": "day05-src-9"
     }
   ],
   "sourceUsage": [

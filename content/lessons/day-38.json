@@ -153,16 +153,16 @@
       "prompt": "Khi thêm một exception nghiệp vụ mới (ví dụ CouponExpiredException) cho tính năng bổ sung trong bài thi, nên xử lý nó ở đâu để nhất quán với kiến trúc đã xây dựng?",
       "choices": [
         {
-          "id": "day38-prac-1-a",
-          "text": "Thêm @ExceptionHandler cho nó trong GlobalExceptionHandler (@RestControllerAdvice) chung của dự án, trả về ProblemDetail"
-        },
-        {
           "id": "day38-prac-1-b",
           "text": "Viết try-catch riêng trong từng controller cần dùng"
         },
         {
           "id": "day38-prac-1-c",
           "text": "Bỏ qua, để exception tự lan ra ngoài thành lỗi 500 mặc định"
+        },
+        {
+          "id": "day38-prac-1-a",
+          "text": "Thêm @ExceptionHandler cho nó trong GlobalExceptionHandler (@RestControllerAdvice) chung của dự án, trả về ProblemDetail"
         },
         {
           "id": "day38-prac-1-d",
@@ -173,8 +173,8 @@
         "day38-prac-1-a"
       ],
       "hint": "Nhớ lại quy ước xử lý lỗi thống nhất đã thiết lập từ Day 31 (kiến trúc tổng thể).",
-      "solution": "day38-prac-1-a",
-      "explanation": "Toàn bộ dự án dùng một GlobalExceptionHandler (@RestControllerAdvice) duy nhất trả về ProblemDetail cho mọi lỗi nghiệp vụ (quy ước từ Day 31) - exception mới nên được thêm @ExceptionHandler vào đúng class này để nhất quán, không tạo handler rải rác hay riêng lẻ.",
+      "solution": "\"Thêm @ExceptionHandler cho nó trong GlobalExceptionHandler (@RestControllerAdvice) chung của dự án, trả về ProblemDetail\" là đáp án đúng vì tính năng mới phải tái sử dụng cơ chế xử lý lỗi tập trung và định dạng lỗi nhất quán đã có của dự án.",
+      "explanation": "Thêm exception mới vào GlobalExceptionHandler chung giữ xử lý lỗi tập trung và ProblemDetail nhất quán. Try-catch trong từng controller làm handler rải rác và lặp lại; để exception thành lỗi 500 mặc định bỏ qua yêu cầu xử lý lỗi nghiệp vụ nhất quán; tạo một GlobalExceptionHandler riêng cho tính năng mới phân mảnh cơ chế chung thay vì tái sử dụng kiến trúc hiện có.",
       "rubric": "Liên hệ đúng quy ước xử lý lỗi tập trung đã thiết lập từ đầu dự án.",
       "sourceUsage": []
     },
@@ -198,10 +198,6 @@
       "prompt": "Nếu tính năng bổ sung trong bài thi cần gửi thông báo (ví dụ email xác nhận coupon) mà không muốn chặn response API, nên áp dụng lại kỹ thuật nào đã học ở Sprint 3?",
       "choices": [
         {
-          "id": "day38-prac-3-a",
-          "text": "Đánh dấu method gửi thông báo bằng @Async (kèm @EnableAsync ở class cấu hình) để chạy trên luồng khác"
-        },
-        {
           "id": "day38-prac-3-b",
           "text": "Gọi trực tiếp method gửi email trong cùng luồng xử lý request"
         },
@@ -212,14 +208,18 @@
         {
           "id": "day38-prac-3-d",
           "text": "Tạo một cron job riêng chạy mỗi phút để quét thông báo chưa gửi"
+        },
+        {
+          "id": "day38-prac-3-a",
+          "text": "Đánh dấu method gửi thông báo bằng @Async (kèm @EnableAsync ở class cấu hình) để chạy trên luồng khác"
         }
       ],
       "correctChoiceIds": [
         "day38-prac-3-a"
       ],
       "hint": "Đây chính là kỹ thuật đã dùng cho NotificationService ở Sprint 3, Day 35.",
-      "solution": "day38-prac-3-a",
-      "explanation": "@Async (với @EnableAsync) cho phép method gửi thông báo chạy trên luồng riêng, không chặn luồng xử lý request chính - đúng kỹ thuật đã áp dụng cho NotificationService.sendOrderConfirmation() ở Sprint 3.",
+      "solution": "\"Đánh dấu method gửi thông báo bằng @Async (kèm @EnableAsync ở class cấu hình) để chạy trên luồng khác\" là đáp án đúng vì đây là kỹ thuật Sprint 3 dùng để gửi thông báo mà không chặn luồng xử lý request chính.",
+      "explanation": "@Async cùng @EnableAsync chuyển việc gửi thông báo sang luồng khác, tái sử dụng đúng cách làm của NotificationService trong Sprint 3. Gọi email trực tiếp trong cùng luồng vẫn chặn request; Thread.sleep() chỉ trì hoãn và tiếp tục giữ luồng request thay vì tách công việc; cron job quét mỗi phút là một cơ chế mới, có độ trễ theo lịch và không phải kỹ thuật @Async mà câu hỏi yêu cầu áp dụng lại.",
       "rubric": "Liên hệ đúng: tái sử dụng @Async đã học thay vì đề xuất giải pháp mới không nhất quán với kiến trúc dự án.",
       "sourceUsage": []
     },
@@ -256,7 +256,7 @@
     {
       "id": "day38-ref-3",
       "type": "internal",
-      "description": "Day 36 (Final Defense) là nơi các kỹ thuật kiểm thử (@DataJpaTest/@WebMvcTest/Testcontainers) được trình bày chi tiết, áp dụng lại cho tiêu chí kiểm thử của bài thi này."
+      "description": "Day 28 (Testing Spring Boot) là nơi các kỹ thuật kiểm thử (@DataJpaTest/@WebMvcTest/Testcontainers) được trình bày chi tiết, áp dụng lại cho tiêu chí kiểm thử của bài thi này."
     }
   ],
   "sourceUsage": [],

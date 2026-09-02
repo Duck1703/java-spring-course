@@ -330,16 +330,16 @@
       "prompt": "Trong một switch labeled statement kiểu cũ (dùng dấu hai chấm), điều gì xảy ra nếu một nhánh case thiếu lệnh break?",
       "choices": [
         {
+          "id": "day02-prac-1-c",
+          "text": "Thực thi rơi tiếp (fall-through) xuống case kế tiếp cho tới khi gặp break hoặc hết block"
+        },
+        {
           "id": "day02-prac-1-a",
           "text": "Chương trình báo lỗi biên dịch"
         },
         {
           "id": "day02-prac-1-b",
           "text": "switch tự động dừng lại như có break"
-        },
-        {
-          "id": "day02-prac-1-c",
-          "text": "Thực thi rơi tiếp (fall-through) xuống case kế tiếp cho tới khi gặp break hoặc hết block"
         },
         {
           "id": "day02-prac-1-d",
@@ -463,6 +463,48 @@
       "type": "external",
       "resourceId": "res-740a979a150e",
       "citationId": "day02-src-11"
+    },
+    {
+      "id": "day02-ref-6",
+      "type": "external",
+      "resourceId": "res-284db3d782e6",
+      "citationId": "day02-src-10"
+    },
+    {
+      "id": "day02-ref-7",
+      "type": "external",
+      "resourceId": "res-740a979a150e",
+      "citationId": "day02-src-12"
+    },
+    {
+      "id": "day02-ref-8",
+      "type": "external",
+      "resourceId": "res-df903793f0b9",
+      "citationId": "day02-src-2"
+    },
+    {
+      "id": "day02-ref-9",
+      "type": "external",
+      "resourceId": "res-28fe8d3fda30",
+      "citationId": "day02-src-5"
+    },
+    {
+      "id": "day02-ref-10",
+      "type": "external",
+      "resourceId": "res-28fe8d3fda30",
+      "citationId": "day02-src-6"
+    },
+    {
+      "id": "day02-ref-11",
+      "type": "external",
+      "resourceId": "res-284db3d782e6",
+      "citationId": "day02-src-8"
+    },
+    {
+      "id": "day02-ref-12",
+      "type": "external",
+      "resourceId": "res-284db3d782e6",
+      "citationId": "day02-src-9"
     }
   ],
   "sourceUsage": [

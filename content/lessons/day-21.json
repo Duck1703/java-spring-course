@@ -158,8 +158,8 @@
         "day21-prac-1-a"
       ],
       "hint": "Xem lại tiêu chí composition/aggregation đã học ở Day 19 để chọn CascadeType phù hợp.",
-      "solution": "day21-prac-1-a",
-      "explanation": "OrderItem chỉ thuộc về đúng một Order (composition), nên CascadeType.PERSIST giúp lưu Order sẽ tự lưu luôn các OrderItem con, và orphanRemoval=true đảm bảo gỡ một OrderItem khỏi collection của Order sẽ xoá nó khỏi database - an toàn vì không entity Order nào khác chia sẻ OrderItem đó.",
+      "solution": "OrderItem là quan hệ composition, chỉ thuộc về đúng một Order, nên CascadeType.PERSIST cho phép lưu Order lan truyền việc lưu tới các OrderItem và orphanRemoval=true xoá OrderItem khi nó bị gỡ khỏi collection của Order; cách này an toàn vì OrderItem không được Order khác chia sẻ.",
+      "explanation": "OrderItem không được nhiều Order tham chiếu cùng lúc; chính việc chỉ thuộc một Order mới làm orphanRemoval phù hợp. CascadeType.PERSIST được cấu hình trên quan hệ @OneToMany của Order, nên CascadeType không chỉ có tác dụng với @ManyToOne. orphanRemoval cũng không bắt buộc đi cùng CascadeType.REMOVE: bài dùng CascadeType.PERSIST cùng orphanRemoval=true để lần lượt xử lý việc lưu con và việc xoá con khi bị gỡ khỏi collection.",
       "rubric": "Áp dụng lại tiêu chí composition/aggregation đã học ở Day 19 vào một cặp entity cụ thể của Assignment 7.",
       "sourceUsage": []
     },
@@ -232,6 +232,12 @@
       "id": "day21-ref-3",
       "type": "internal",
       "description": "Áp dụng trực tiếp toàn bộ mẫu entity/quan hệ/cascade đã học ở Day 19 và repository/pagination/auditing đã học ở Day 20 vào Assignment 7."
+    },
+    {
+      "id": "day21-ref-4",
+      "type": "external",
+      "resourceId": "res-2e4a3dd62ec7",
+      "citationId": "day21-src-2"
     }
   ],
   "sourceUsage": [

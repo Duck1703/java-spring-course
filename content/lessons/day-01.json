@@ -447,12 +447,12 @@
       "prompt": "Mỗi lần một phương thức được gọi, JVM tạo một frame mới và đẩy frame đó vào vùng nhớ nào?",
       "choices": [
         {
-          "id": "day01-prac-1-a",
-          "text": "Heap"
-        },
-        {
           "id": "day01-prac-1-b",
           "text": "JVM Stack của thread đang gọi phương thức"
+        },
+        {
+          "id": "day01-prac-1-a",
+          "text": "Heap"
         },
         {
           "id": "day01-prac-1-c",
@@ -586,6 +586,66 @@
       "type": "external",
       "resourceId": "res-f7cc3f86702d",
       "citationId": "day01-src-11"
+    },
+    {
+      "id": "day01-ref-6",
+      "type": "external",
+      "resourceId": "res-9d76570d9362",
+      "citationId": "day01-src-10"
+    },
+    {
+      "id": "day01-ref-7",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day01-src-13"
+    },
+    {
+      "id": "day01-ref-8",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day01-src-14"
+    },
+    {
+      "id": "day01-ref-9",
+      "type": "external",
+      "resourceId": "res-1cec64c5e683",
+      "citationId": "day01-src-15"
+    },
+    {
+      "id": "day01-ref-10",
+      "type": "external",
+      "resourceId": "res-99801d0b7043",
+      "citationId": "day01-src-3"
+    },
+    {
+      "id": "day01-ref-11",
+      "type": "external",
+      "resourceId": "res-acff7fd27edc",
+      "citationId": "day01-src-4"
+    },
+    {
+      "id": "day01-ref-12",
+      "type": "external",
+      "resourceId": "res-acff7fd27edc",
+      "citationId": "day01-src-5"
+    },
+    {
+      "id": "day01-ref-13",
+      "type": "external",
+      "resourceId": "res-99801d0b7043",
+      "citationId": "day01-src-6"
+    },
+    {
+      "id": "day01-ref-14",
+      "type": "external",
+      "resourceId": "res-99801d0b7043",
+      "citationId": "day01-src-7"
+    },
+    {
+      "id": "day01-ref-15",
+      "type": "external",
+      "resourceId": "res-9d76570d9362",
+      "citationId": "day01-src-9"
     }
   ],
   "sourceUsage": [
@@ -646,7 +706,7 @@
     {
       "id": "day01-src-10",
       "resourceId": "res-9d76570d9362",
-      "locator": "Bảng cuối trang: Primitive type / Wrapper class",
+      "locator": "Autoboxing and Unboxing — bảng cuối trang liệt kê Primitive type/Wrapper class",
       "topic": "Bảng ánh xạ kiểu nguyên thủy - lớp bọc"
     },
     {

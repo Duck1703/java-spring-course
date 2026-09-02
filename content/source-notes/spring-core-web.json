@@ -130,7 +130,8 @@
       "relevantHeadings": [
         "3. A Simple Domain Class",
         "4. Implementing a REST Controller",
-        "5. The @ExceptionHandler Annotation"
+        "5. The @ExceptionHandler Annotation",
+        "2. The Maven Dependencies"
       ],
       "topics": [
         "Bean Validation",
@@ -388,7 +389,8 @@
       "relevantHeadings": [
         "4. ProblemDetail Specification",
         "5.1. Enabling ProblemDetail Using Application Property",
-        "5.2. Implementing ProblemDetail in Exception Handler"
+        "5.2. Implementing ProblemDetail in Exception Handler",
+        "3. Traditional Error Handling Approaches"
       ],
       "topics": [
         "ProblemDetail",

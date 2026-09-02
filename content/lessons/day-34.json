@@ -197,16 +197,16 @@
       "prompt": "Vì sao endpoint upload ảnh sản phẩm cần cấu hình spring.servlet.multipart.max-file-size?",
       "choices": [
         {
-          "id": "day34-prac-1-a",
-          "text": "Để tránh bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng"
-        },
-        {
           "id": "day34-prac-1-b",
           "text": "Vì Spring Boot không hỗ trợ upload file nếu không cấu hình thuộc tính này"
         },
         {
           "id": "day34-prac-1-c",
           "text": "Để tăng tốc độ upload file"
+        },
+        {
+          "id": "day34-prac-1-a",
+          "text": "Để tránh bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng"
         },
         {
           "id": "day34-prac-1-d",
@@ -217,8 +217,8 @@
         "day34-prac-1-a"
       ],
       "hint": "Nghĩ về rủi ro khi không giới hạn dung lượng file client gửi lên.",
-      "solution": "day34-prac-1-a",
-      "explanation": "Không giới hạn max-file-size/max-request-size khiến endpoint upload có thể bị lạm dụng để gửi file rất lớn, chiếm băng thông/bộ nhớ và có thể làm quá tải server.",
+      "solution": "Cấu hình spring.servlet.multipart.max-file-size để tránh endpoint bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng; giới hạn tường minh kiểm soát kích thước dữ liệu mà client có thể upload.",
+      "explanation": "Không giới hạn max-file-size/max-request-size khiến endpoint upload có thể bị lạm dụng để gửi file rất lớn, chiếm băng thông/bộ nhớ và có thể làm quá tải server. Spring Boot vẫn hỗ trợ upload khi có spring-boot-starter-web mà không cần khai báo cấu hình servlet thủ công, nên max-file-size không phải điều kiện để tính năng upload tồn tại. Bài trình bày thuộc tính này như giới hạn bảo vệ server, không phải cách tăng tốc upload. @RequestParam(\"file\") MultipartFile là cách nhận file trong controller và ví dụ hoạt động độc lập với việc khai báo giới hạn, nên annotation này không bắt buộc phải có max-file-size.",
       "rubric": "Liên hệ đúng lý do: phòng ngừa lạm dụng dung lượng upload.",
       "sourceUsage": [
         "day34-src-4"
@@ -231,12 +231,12 @@
       "prompt": "Khác biệt cốt lõi giữa @Cacheable và @CachePut khi áp dụng cho CategoryService là gì?",
       "choices": [
         {
-          "id": "day34-prac-2-a",
-          "text": "@Cacheable bỏ qua gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
-        },
-        {
           "id": "day34-prac-2-b",
           "text": "@Cacheable dùng cho ghi dữ liệu, @CachePut dùng cho đọc dữ liệu"
+        },
+        {
+          "id": "day34-prac-2-a",
+          "text": "@Cacheable bỏ qua gọi method nếu cache đã có dữ liệu; @CachePut luôn gọi method rồi cập nhật kết quả vào cache"
         },
         {
           "id": "day34-prac-2-c",
@@ -251,8 +251,8 @@
         "day34-prac-2-a"
       ],
       "hint": "So sánh hành vi khi cache đã có sẵn dữ liệu cho key đang truy vấn.",
-      "solution": "day34-prac-2-a",
-      "explanation": "@Cacheable kiểm tra cache trước, nếu có dữ liệu thì bỏ qua gọi method (phù hợp CategoryService.findAll() vì đọc nhiều); @CachePut luôn thực thi rồi mới cập nhật cache, phù hợp khi cần đảm bảo dữ liệu mới nhất sau mỗi lần ghi.",
+      "solution": "@Cacheable bỏ qua gọi method nếu cache đã có dữ liệu, còn @CachePut luôn gọi method rồi cập nhật kết quả vào cache — khác biệt cốt lõi nằm ở việc method có được thực thi khi key đã có trong cache hay không.",
+      "explanation": "@Cacheable kiểm tra cache trước, nếu có dữ liệu thì bỏ qua gọi method (phù hợp CategoryService.findAll() vì đọc nhiều); @CachePut luôn thực thi rồi mới cập nhật cache, phù hợp khi cần đảm bảo dữ liệu mới nhất sau mỗi lần ghi. Vì vậy đảo @Cacheable thành annotation ghi và @CachePut thành annotation đọc là trái với hành vi được mô tả. Việc xóa cache thuộc @CacheEvict(allEntries = true) trong bài, không phải @CachePut; @Cacheable có thể lưu kết quả nhưng đặc trưng phân biệt là có thể bỏ qua method khi cache hit. Hai annotation cũng không tương đương vì một bên có thể bỏ qua lời gọi còn bên kia luôn thực thi method.",
       "rubric": "Liên hệ đúng: @Cacheable = đọc có điều kiện bỏ qua, @CachePut = luôn ghi.",
       "sourceUsage": [
         "day34-src-6"
@@ -309,6 +309,42 @@
       "id": "day34-ref-3",
       "type": "internal",
       "description": "Cart/CartItem thiết kế ở bài này sẽ được chuyển thành Order/OrderItem khi checkout ở Sprint 3 (Day 35)."
+    },
+    {
+      "id": "day34-ref-4",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day34-src-1"
+    },
+    {
+      "id": "day34-ref-5",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day34-src-3"
+    },
+    {
+      "id": "day34-ref-6",
+      "type": "external",
+      "resourceId": "res-74d398e3d23c",
+      "citationId": "day34-src-4"
+    },
+    {
+      "id": "day34-ref-7",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day34-src-5"
+    },
+    {
+      "id": "day34-ref-8",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day34-src-7"
+    },
+    {
+      "id": "day34-ref-9",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day34-src-8"
     }
   ],
   "sourceUsage": [

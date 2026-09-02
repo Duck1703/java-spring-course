@@ -414,8 +414,8 @@
         "day08-prac-1-a"
       ],
       "hint": "Xem lại phần phân cấp Throwable -> Exception -> RuntimeException.",
-      "solution": "day08-prac-1-a",
-      "explanation": "Checked exception (kế thừa Exception, không qua RuntimeException) bị trình biên dịch bắt buộc xử lý; unchecked exception (kế thừa RuntimeException) thì không.",
+      "solution": "Checked exception bắt buộc khai báo throws hoặc xử lý bằng try-catch và được kiểm tra lúc biên dịch, còn unchecked exception thuộc nhánh RuntimeException nên compiler không bắt buộc phải xử lý.",
+      "explanation": "Checked exception (kế thừa Exception, không qua RuntimeException) bị trình biên dịch bắt buộc khai báo throws hoặc xử lý bằng try-catch; unchecked exception (kế thừa RuntimeException) thì không. Cả hai đều là exception phát sinh khi chương trình thực thi; 'checked' nói về việc compiler kiểm tra nghĩa vụ xử lý, không có nghĩa checked chỉ xảy ra lúc runtime còn unchecked chỉ xảy ra lúc biên dịch. Unchecked exception vẫn có thể được xử lý bằng catch block; điểm khác biệt là compiler không bắt buộc phải bắt nó. Vì hai nhánh có quy tắc kiểm tra khác nhau trong exception hierarchy, đây không chỉ là quy ước đặt tên.",
       "rubric": "Chọn đúng định nghĩa checked vs unchecked.",
       "sourceUsage": [
         "day08-src-10"
@@ -428,10 +428,6 @@
       "prompt": "Trong một khối try-with-resources khai báo 'try (A a = new A(); B b = new B()) { ... }', resource nào được đóng (close()) trước?",
       "choices": [
         {
-          "id": "day08-prac-2-a",
-          "text": "b (resource khai báo sau cùng được đóng trước)"
-        },
-        {
           "id": "day08-prac-2-b",
           "text": "a (resource khai báo đầu tiên được đóng trước)"
         },
@@ -442,14 +438,18 @@
         {
           "id": "day08-prac-2-d",
           "text": "Không resource nào được tự động đóng"
+        },
+        {
+          "id": "day08-prac-2-a",
+          "text": "b (resource khai báo sau cùng được đóng trước)"
         }
       ],
       "correctChoiceIds": [
         "day08-prac-2-a"
       ],
       "hint": "Thứ tự đóng ngược với thứ tự khai báo.",
-      "solution": "day08-prac-2-a",
-      "explanation": "try-with-resources đóng resource theo thứ tự ngược lại với thứ tự khai báo: b được đóng trước, a được đóng sau.",
+      "solution": "b, resource được khai báo sau cùng, được đóng trước vì try-with-resources luôn gọi close() theo thứ tự ngược với thứ tự khai báo/khởi tạo.",
+      "explanation": "try-with-resources đóng resource theo thứ tự ngược lại với thứ tự khai báo: b được đóng trước, a được đóng sau, nên a không thể được đóng trước. Hai resource không đóng đồng thời hay theo thứ tự bất định; compiler tạo logic finally ngầm để đóng lần lượt theo thứ tự đảo ngược. Và cả hai đều được tự động đóng khi khối try kết thúc, kể cả khi có exception, nên khẳng định không resource nào được tự động đóng là sai.",
       "rubric": "Chọn đúng resource được đóng trước.",
       "sourceUsage": [
         "day08-src-15"
@@ -520,6 +520,66 @@
       "type": "external",
       "resourceId": "res-9762250d04d9",
       "citationId": "day08-src-12"
+    },
+    {
+      "id": "day08-ref-6",
+      "type": "external",
+      "resourceId": "res-30d834f8fef0",
+      "citationId": "day08-src-10"
+    },
+    {
+      "id": "day08-ref-7",
+      "type": "external",
+      "resourceId": "res-30d834f8fef0",
+      "citationId": "day08-src-11"
+    },
+    {
+      "id": "day08-ref-8",
+      "type": "external",
+      "resourceId": "res-9762250d04d9",
+      "citationId": "day08-src-13"
+    },
+    {
+      "id": "day08-ref-9",
+      "type": "external",
+      "resourceId": "res-9762250d04d9",
+      "citationId": "day08-src-14"
+    },
+    {
+      "id": "day08-ref-10",
+      "type": "external",
+      "resourceId": "res-9762250d04d9",
+      "citationId": "day08-src-15"
+    },
+    {
+      "id": "day08-ref-11",
+      "type": "external",
+      "resourceId": "res-8abee0bfd5a7",
+      "citationId": "day08-src-2"
+    },
+    {
+      "id": "day08-ref-12",
+      "type": "external",
+      "resourceId": "res-8abee0bfd5a7",
+      "citationId": "day08-src-4"
+    },
+    {
+      "id": "day08-ref-13",
+      "type": "external",
+      "resourceId": "res-8abee0bfd5a7",
+      "citationId": "day08-src-5"
+    },
+    {
+      "id": "day08-ref-14",
+      "type": "external",
+      "resourceId": "res-12fa3a9d4910",
+      "citationId": "day08-src-7"
+    },
+    {
+      "id": "day08-ref-15",
+      "type": "external",
+      "resourceId": "res-74dcb3852a23",
+      "citationId": "day08-src-8"
     }
   ],
   "sourceUsage": [

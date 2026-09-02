@@ -145,7 +145,7 @@
           "citations": [
             "day29-src-7"
           ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+          "partialReason": "SLF4J_CLASSPATH_REQUIRED: snippet chỉ import org.slf4j.*, cần classpath SLF4J (không có trong pipeline javac hiện tại của validator) nên không compile được qua bước kiểm tra tự động; không phải lỗi cú pháp."
         },
         {
           "id": "day29-blk-7",
@@ -351,12 +351,12 @@
       "prompt": "Mặc định, Actuator expose những endpoint HTTP nào?",
       "choices": [
         {
-          "id": "day29-prac-1-a",
-          "text": "Chỉ /health và /info"
-        },
-        {
           "id": "day29-prac-1-b",
           "text": "Tất cả endpoint (bao gồm /beans, /env, /loggers)"
+        },
+        {
+          "id": "day29-prac-1-a",
+          "text": "Chỉ /health và /info"
         },
         {
           "id": "day29-prac-1-c",
@@ -371,8 +371,8 @@
         "day29-prac-1-a"
       ],
       "hint": "Nhớ lại lý do bảo mật khiến Spring Boot không mở rộng mặc định.",
-      "solution": "day29-prac-1-a",
-      "explanation": "Vì lý do bảo mật, Actuator mặc định chỉ expose /health và /info qua HTTP - các endpoint nhạy cảm hơn (như /env, /beans, /loggers) cần được bật rõ ràng qua management.endpoints.web.exposure.include.",
+      "solution": "Mặc định Actuator chỉ expose /health và /info qua HTTP, vì Spring Boot giới hạn bề mặt quản trị vì lý do bảo mật và yêu cầu bật rõ ràng các endpoint khác bằng management.endpoints.web.exposure.include.",
+      "explanation": "Actuator mặc định chỉ expose /health và /info qua HTTP để hạn chế bề mặt quản trị. Các endpoint nhạy cảm như /beans, /env và /loggers không được mở đồng loạt; chúng phải được chọn tường minh qua management.endpoints.web.exposure.include và cần kiểm soát truy cập. /metrics là một endpoint có thể bật thêm chứ không phải endpoint duy nhất được expose mặc định. Vì /health và /info đã có sẵn, nhận định không expose endpoint nào trước khi bật thủ công cũng sai.",
       "rubric": "Liên hệ đúng lý do bảo mật với việc giới hạn expose mặc định.",
       "sourceUsage": [
         "day29-src-9"
@@ -400,16 +400,16 @@
       "prompt": "@ServiceConnection khác @DynamicPropertySource ở điểm nào?",
       "choices": [
         {
-          "id": "day29-prac-3-a",
-          "text": "@ServiceConnection tự động tạo ConnectionDetails cho các loại container phổ biến (không cần cấu hình thủ công), @DynamicPropertySource cần khai báo tay từng property"
-        },
-        {
           "id": "day29-prac-3-b",
           "text": "@DynamicPropertySource chỉ dùng được với PostgreSQL, @ServiceConnection dùng cho mọi database"
         },
         {
           "id": "day29-prac-3-c",
           "text": "Hai annotation này không thể dùng cùng lúc trong một test class"
+        },
+        {
+          "id": "day29-prac-3-a",
+          "text": "@ServiceConnection tự động tạo ConnectionDetails cho các loại container phổ biến (không cần cấu hình thủ công), @DynamicPropertySource cần khai báo tay từng property"
         },
         {
           "id": "day29-prac-3-d",
@@ -420,8 +420,8 @@
         "day29-prac-3-a"
       ],
       "hint": "Nghĩ về việc annotation nào tự động hoá, annotation nào cần khai báo thủ công từng property.",
-      "solution": "day29-prac-3-a",
-      "explanation": "@ServiceConnection nhận diện loại container (Postgres, Redis, Neo4j...) và tự động tạo ConnectionDetails phù hợp, trỏ Spring Boot vào container mà không cần khai báo property thủ công. @DynamicPropertySource vẫn cần thiết cho những cấu hình mà @ServiceConnection chưa hỗ trợ sẵn.",
+      "solution": "@ServiceConnection tự động tạo ConnectionDetails cho các loại container được hỗ trợ nên không cần cấu hình kết nối thủ công, còn @DynamicPropertySource đăng ký từng property bằng code; vì vậy cơ chế thứ hai vẫn dùng cho cấu hình mà @ServiceConnection chưa hỗ trợ sẵn.",
+      "explanation": "@ServiceConnection nhận diện loại container được hỗ trợ và tự động tạo ConnectionDetails để trỏ Spring Boot vào container, còn @DynamicPropertySource đăng ký thủ công từng property cần thiết. @DynamicPropertySource không bị giới hạn cho PostgreSQL; ví dụ trong bài dùng nó cho một feature flag ngoài cấu hình datasource. Hai annotation có thể dùng cùng một test class: ví dụ Testcontainers của bài dùng @ServiceConnection cho PostgreSQL và @DynamicPropertySource cho cấu hình bổ sung. @ServiceConnection cũng được đặt trực tiếp trên field @Container trong class có @Testcontainers, nên không hề yêu cầu bỏ @Testcontainers.",
       "rubric": "Liên hệ đúng mức độ tự động hoá giữa hai cơ chế.",
       "sourceUsage": [
         "day29-src-13",
@@ -489,6 +489,72 @@
       "id": "day29-ref-6",
       "type": "internal",
       "description": "Docker/docker-compose sẽ được áp dụng đầy đủ có trích dẫn ở Lab 10, Day 30."
+    },
+    {
+      "id": "day29-ref-7",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day29-src-1"
+    },
+    {
+      "id": "day29-ref-8",
+      "type": "external",
+      "resourceId": "res-fa57300ac53c",
+      "citationId": "day29-src-10"
+    },
+    {
+      "id": "day29-ref-9",
+      "type": "external",
+      "resourceId": "res-fa57300ac53c",
+      "citationId": "day29-src-11"
+    },
+    {
+      "id": "day29-ref-10",
+      "type": "external",
+      "resourceId": "res-be79b4f73d01",
+      "citationId": "day29-src-12"
+    },
+    {
+      "id": "day29-ref-11",
+      "type": "external",
+      "resourceId": "res-be79b4f73d01",
+      "citationId": "day29-src-14"
+    },
+    {
+      "id": "day29-ref-12",
+      "type": "external",
+      "resourceId": "res-84fc38d27c0a",
+      "citationId": "day29-src-16"
+    },
+    {
+      "id": "day29-ref-13",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day29-src-3"
+    },
+    {
+      "id": "day29-ref-14",
+      "type": "external",
+      "resourceId": "res-79cbefdda273",
+      "citationId": "day29-src-4"
+    },
+    {
+      "id": "day29-ref-15",
+      "type": "external",
+      "resourceId": "res-93813d9b62f4",
+      "citationId": "day29-src-5"
+    },
+    {
+      "id": "day29-ref-16",
+      "type": "external",
+      "resourceId": "res-93813d9b62f4",
+      "citationId": "day29-src-7"
+    },
+    {
+      "id": "day29-ref-17",
+      "type": "external",
+      "resourceId": "res-fa57300ac53c",
+      "citationId": "day29-src-8"
     }
   ],
   "sourceUsage": [

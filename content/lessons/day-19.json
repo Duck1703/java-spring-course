@@ -52,7 +52,7 @@
         {
           "id": "day19-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment' như một buổi ôn tập/thực hành lại các ví dụ entity mapping. Không có deliverable nộp riêng cho Day 19; hãy tự thực hành lại các annotation JPA cốt lõi, quan hệ một chiều/hai chiều (bao gồm @ManyToMany), cascade type/orphan removal, và chiến lược fetch eager/lazy để chuẩn bị cho Assignment 7 (E-Commerce Data Layer) ở Day 21.",
           "citations": []
         },
         {
@@ -316,16 +316,16 @@
       "prompt": "Trong quan hệ @OneToMany/@ManyToOne hai chiều, thuộc tính mappedBy được khai báo ở đâu và có ý nghĩa gì?",
       "choices": [
         {
-          "id": "day19-prac-1-a",
-          "text": "Khai báo ở phía @OneToMany (phía nghịch đảo), trỏ tên field ở phía sở hữu (@ManyToOne) chịu trách nhiệm ánh xạ khoá ngoại"
-        },
-        {
           "id": "day19-prac-1-b",
           "text": "Khai báo ở phía @ManyToOne, trỏ tên cột khoá ngoại trong database"
         },
         {
           "id": "day19-prac-1-c",
           "text": "mappedBy chỉ dùng cho @ManyToMany, không dùng cho @OneToMany"
+        },
+        {
+          "id": "day19-prac-1-a",
+          "text": "Khai báo ở phía @OneToMany (phía nghịch đảo), trỏ tên field ở phía sở hữu (@ManyToOne) chịu trách nhiệm ánh xạ khoá ngoại"
         },
         {
           "id": "day19-prac-1-d",
@@ -336,8 +336,8 @@
         "day19-prac-1-a"
       ],
       "hint": "Xem lại phần so sánh quan hệ một chiều và hai chiều trong bài.",
-      "solution": "day19-prac-1-a",
-      "explanation": "mappedBy được khai báo ở phía nghịch đảo (thường là @OneToMany) và trỏ tới tên field ở phía sở hữu quan hệ (thường là @ManyToOne cùng @JoinColumn) - phía sở hữu mới là phía JPA dùng để ánh xạ khoá ngoại thực tế.",
+      "solution": "Khai báo mappedBy ở phía @OneToMany (phía nghịch đảo), trỏ tới tên field @ManyToOne ở phía sở hữu chịu trách nhiệm ánh xạ khoá ngoại; điều này giúp JPA nhận ra hai field là hai phía của cùng một quan hệ và tránh tạo bảng join trung gian không cần thiết.",
+      "explanation": "mappedBy thuộc phía nghịch đảo, thường là @OneToMany, và nhận tên field Java ở phía sở hữu @ManyToOne; nó không được khai báo ở @ManyToOne và không nhận tên cột database. mappedBy cũng dùng được cho @OneToMany chứ không chỉ @ManyToMany. Nó không thay thế @JoinColumn ở cả hai phía: phía sở hữu vẫn dùng @JoinColumn để ánh xạ khoá ngoại thực tế, còn phía nghịch đảo dùng mappedBy để trỏ về field sở hữu.",
       "rubric": "Chọn đúng phía khai báo mappedBy và vai trò 'chỉ tên field phía sở hữu' thay vì nhầm với tên cột database.",
       "sourceUsage": [
         "day19-src-6"
@@ -382,10 +382,6 @@
       "prompt": "Theo Jakarta Persistence, FetchType mặc định của @OneToMany và @ManyToMany là gì, và vì sao?",
       "choices": [
         {
-          "id": "day19-prac-4-a",
-          "text": "LAZY, vì quan hệ 'nhiều' có thể chứa tập dữ liệu lớn nên tránh nạp toàn bộ ngay lập tức"
-        },
-        {
           "id": "day19-prac-4-b",
           "text": "EAGER, giống hệt @ManyToOne và @OneToOne"
         },
@@ -396,14 +392,18 @@
         {
           "id": "day19-prac-4-d",
           "text": "LAZY chỉ áp dụng cho @ManyToMany, còn @OneToMany mặc định EAGER"
+        },
+        {
+          "id": "day19-prac-4-a",
+          "text": "LAZY, vì quan hệ 'nhiều' có thể chứa tập dữ liệu lớn nên tránh nạp toàn bộ ngay lập tức"
         }
       ],
       "correctChoiceIds": [
         "day19-prac-4-a"
       ],
       "hint": "Đối chiếu bảng FetchType mặc định theo từng loại quan hệ trong bài.",
-      "solution": "day19-prac-4-a",
-      "explanation": "Jakarta Persistence quy định @OneToMany và @ManyToMany mặc định LAZY (khác với @ManyToOne/@OneToOne mặc định EAGER) vì phía 'nhiều' tiềm ẩn nguy cơ nạp một tập dữ liệu rất lớn nếu nạp eager ngay lập tức.",
+      "solution": "@OneToMany và @ManyToMany mặc định là LAZY vì các quan hệ 'nhiều' có thể chứa tập dữ liệu lớn, nên Jakarta Persistence tránh nạp toàn bộ dữ liệu liên kết ngay khi nạp entity chủ.",
+      "explanation": "EAGER là mặc định của @ManyToOne và @OneToOne, không phải của hai quan hệ 'nhiều'. Jakarta Persistence có quy định mặc định nên không bắt buộc lúc nào cũng khai báo fetch tường minh. Cả @OneToMany lẫn @ManyToMany đều mặc định LAZY; không có ngoại lệ khiến riêng @OneToMany mặc định EAGER.",
       "rubric": "Chọn đúng giá trị mặc định LAZY và lý do liên quan tới kích thước tập dữ liệu tiềm năng.",
       "sourceUsage": [
         "day19-src-12"
@@ -448,6 +448,66 @@
       "id": "day19-ref-4",
       "type": "internal",
       "description": "Chuẩn bị nền tảng entity/quan hệ trước khi học query, transaction và auditing ở Day 20, rồi áp dụng trực tiếp vào Assignment 7 (E-Commerce Data Layer) ở Day 21."
+    },
+    {
+      "id": "day19-ref-5",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day19-src-10"
+    },
+    {
+      "id": "day19-ref-6",
+      "type": "external",
+      "resourceId": "res-749fa81acd48",
+      "citationId": "day19-src-11"
+    },
+    {
+      "id": "day19-ref-7",
+      "type": "external",
+      "resourceId": "res-749fa81acd48",
+      "citationId": "day19-src-12"
+    },
+    {
+      "id": "day19-ref-8",
+      "type": "external",
+      "resourceId": "res-749fa81acd48",
+      "citationId": "day19-src-13"
+    },
+    {
+      "id": "day19-ref-9",
+      "type": "external",
+      "resourceId": "res-01d4c9bc1c9c",
+      "citationId": "day19-src-2"
+    },
+    {
+      "id": "day19-ref-10",
+      "type": "external",
+      "resourceId": "res-01d4c9bc1c9c",
+      "citationId": "day19-src-3"
+    },
+    {
+      "id": "day19-ref-11",
+      "type": "external",
+      "resourceId": "res-01d4c9bc1c9c",
+      "citationId": "day19-src-4"
+    },
+    {
+      "id": "day19-ref-12",
+      "type": "external",
+      "resourceId": "res-d20f2a5470d7",
+      "citationId": "day19-src-6"
+    },
+    {
+      "id": "day19-ref-13",
+      "type": "external",
+      "resourceId": "res-d20f2a5470d7",
+      "citationId": "day19-src-7"
+    },
+    {
+      "id": "day19-ref-14",
+      "type": "external",
+      "resourceId": "res-d20f2a5470d7",
+      "citationId": "day19-src-8"
     }
   ],
   "sourceUsage": [

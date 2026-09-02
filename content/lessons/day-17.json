@@ -46,7 +46,7 @@
         {
           "id": "day17-blk-1",
           "type": "deliverable",
-          "text": "Guides/Review",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học ghi 'Guides/Review', tức là buổi ôn tập và thực hành lại ví dụ. Không có deliverable nộp riêng cho Day 17; hãy tự thực hành lại Bean Validation (jakarta.validation), viết một custom validator, xử lý lỗi tập trung bằng @RestControllerAdvice, và trả về ProblemDetail chuẩn hóa trước khi tiếp tục các bài sau.",
           "citations": []
         },
         {
@@ -284,16 +284,16 @@
       "prompt": "Từ Spring Boot 2.3, dependency nào phải được khai báo tường minh để Bean Validation hoạt động (ngoài spring-boot-starter-web)?",
       "choices": [
         {
-          "id": "day17-prac-1-a",
-          "text": "spring-boot-starter-validation"
-        },
-        {
           "id": "day17-prac-1-b",
           "text": "spring-boot-starter-actuator"
         },
         {
           "id": "day17-prac-1-c",
           "text": "spring-boot-starter-security"
+        },
+        {
+          "id": "day17-prac-1-a",
+          "text": "spring-boot-starter-validation"
         },
         {
           "id": "day17-prac-1-d",
@@ -304,8 +304,8 @@
         "day17-prac-1-a"
       ],
       "hint": "Đọc lại fact về 'Dependency cần thiết từ Boot 2.3' trong bài.",
-      "solution": "day17-prac-1-a",
-      "explanation": "Tài liệu xác nhận từ Spring Boot 2.3, phải khai báo tường minh spring-boot-starter-validation thì Bean Validation mới hoạt động.",
+      "solution": "“spring-boot-starter-validation” là đáp án đúng vì từ Spring Boot 2.3, ngoài spring-boot-starter-web, phải khai báo starter này để có Hibernate Validator và làm cho @Valid cùng các constraint Jakarta Validation hoạt động.",
+      "explanation": "spring-boot-starter-validation là dependency duy nhất trong các lựa chọn được bài chỉ định tường minh cho Bean Validation từ Spring Boot 2.3 và là starter cung cấp implementation Hibernate Validator. spring-boot-starter-actuator không phải starter mà phần Bean Validation yêu cầu; spring-boot-starter-security cũng không thay thế dependency validation cần cho cơ chế @Valid được mô tả; và spring-boot-starter-aop không cung cấp implementation Validator mà bài yêu cầu. Chỉ có spring-boot-starter-web từ phiên bản này là chưa đủ.",
       "rubric": "Chọn đúng tên starter, không nhầm với các starter khác không liên quan validation.",
       "sourceUsage": [
         "day17-src-4"
@@ -384,6 +384,60 @@
       "id": "day17-ref-3",
       "type": "internal",
       "description": "Áp dụng validation/exception handling trực tiếp lên các controller đã xây dựng ở Day 16."
+    },
+    {
+      "id": "day17-ref-4",
+      "type": "external",
+      "resourceId": "res-8a73cd80ad49",
+      "citationId": "day17-src-10"
+    },
+    {
+      "id": "day17-ref-5",
+      "type": "external",
+      "resourceId": "res-8a73cd80ad49",
+      "citationId": "day17-src-11"
+    },
+    {
+      "id": "day17-ref-6",
+      "type": "external",
+      "resourceId": "res-1f904f56cc5a",
+      "citationId": "day17-src-2"
+    },
+    {
+      "id": "day17-ref-7",
+      "type": "external",
+      "resourceId": "res-1f904f56cc5a",
+      "citationId": "day17-src-3"
+    },
+    {
+      "id": "day17-ref-8",
+      "type": "external",
+      "resourceId": "res-1f904f56cc5a",
+      "citationId": "day17-src-4"
+    },
+    {
+      "id": "day17-ref-9",
+      "type": "external",
+      "resourceId": "res-7f4116f00d7f",
+      "citationId": "day17-src-5"
+    },
+    {
+      "id": "day17-ref-10",
+      "type": "external",
+      "resourceId": "res-7f4116f00d7f",
+      "citationId": "day17-src-6"
+    },
+    {
+      "id": "day17-ref-11",
+      "type": "external",
+      "resourceId": "res-7f4116f00d7f",
+      "citationId": "day17-src-7"
+    },
+    {
+      "id": "day17-ref-12",
+      "type": "external",
+      "resourceId": "res-8a73cd80ad49",
+      "citationId": "day17-src-9"
     }
   ],
   "sourceUsage": [

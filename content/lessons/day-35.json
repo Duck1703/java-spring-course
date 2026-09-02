@@ -192,7 +192,7 @@
             "day35-src-16",
             "day35-src-17"
           ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+          "partialReason": "INCOMPLETE_SCAFFOLD: snippet tham chiếu type Order chưa được khai báo trong cùng khối code (không phải vấn đề classpath Spring/Jakarta) — javac báo lỗi 'cannot find symbol: class Order'; không compile được qua bước kiểm tra tự động."
         },
         {
           "id": "day35-blk-16",
@@ -292,12 +292,12 @@
       "prompt": "Propagation mặc định của @Transactional trong Spring là gì?",
       "choices": [
         {
-          "id": "day35-prac-1-a",
-          "text": "REQUIRED - dùng transaction hiện có hoặc tạo mới nếu chưa có"
-        },
-        {
           "id": "day35-prac-1-b",
           "text": "REQUIRES_NEW - luôn tạo transaction mới, suspend transaction cũ"
+        },
+        {
+          "id": "day35-prac-1-a",
+          "text": "REQUIRED - dùng transaction hiện có hoặc tạo mới nếu chưa có"
         },
         {
           "id": "day35-prac-1-c",
@@ -312,8 +312,8 @@
         "day35-prac-1-a"
       ],
       "hint": "Đây là propagation phù hợp cho phần lớn method nghiệp vụ, kể cả checkout().",
-      "solution": "day35-prac-1-a",
-      "explanation": "REQUIRED là propagation mặc định của @Transactional: dùng transaction hiện có nếu đang trong một, hoặc tạo transaction mới nếu chưa có - phù hợp cho checkout() vì Order và Cart cần cùng nằm trong một transaction.",
+      "solution": "\"REQUIRED - dùng transaction hiện có hoặc tạo mới nếu chưa có\" là đáp án đúng vì đây là propagation mặc định của @Transactional; với checkout(), hành vi này đặt việc tạo Order và xóa Cart trong cùng một transaction để hai thao tác cùng thành công hoặc cùng thất bại.",
+      "explanation": "REQUIRED dùng transaction hiện có hoặc tạo mới khi chưa có, đúng với hành vi mặc định được nêu cho checkout(). REQUIRES_NEW sai vì hành vi luôn tạo transaction mới và suspend transaction cũ không phải mặc định đó; NESTED sai vì tạo savepoint không phải hành vi mặc định của checkout(); MANDATORY sai vì yêu cầu phải có transaction sẵn trái với khả năng tạo mới khi chưa có.",
       "rubric": "Liên hệ đúng propagation mặc định với hành vi mong muốn của checkout().",
       "sourceUsage": [
         "day35-src-1"
@@ -326,16 +326,16 @@
       "prompt": "Vì sao sendOrderConfirmation() nên trả về CompletableFuture<Void> thay vì void?",
       "choices": [
         {
-          "id": "day35-prac-2-a",
-          "text": "Để caller (nếu cần) có thể theo dõi/chờ khi tác vụ bất đồng bộ hoàn thành, dù bản thân không cần lấy giá trị kết quả"
-        },
-        {
           "id": "day35-prac-2-b",
           "text": "Vì @Async bắt buộc method phải trả về CompletableFuture, không cho phép void"
         },
         {
           "id": "day35-prac-2-c",
           "text": "Để tăng tốc độ gửi email"
+        },
+        {
+          "id": "day35-prac-2-a",
+          "text": "Để caller (nếu cần) có thể theo dõi/chờ khi tác vụ bất đồng bộ hoàn thành, dù bản thân không cần lấy giá trị kết quả"
         },
         {
           "id": "day35-prac-2-d",
@@ -346,8 +346,8 @@
         "day35-prac-2-a"
       ],
       "hint": "@Async cho phép cả void lẫn Future/CompletableFuture làm kiểu trả về.",
-      "solution": "day35-prac-2-a",
-      "explanation": "@Async hỗ trợ cả void lẫn Future/CompletableFuture; trả về CompletableFuture (dù completedFuture(null)) cho phép caller gọi .get() để chờ hoàn thành khi cần, điều mà void không hỗ trợ được.",
+      "solution": "\"Để caller (nếu cần) có thể theo dõi/chờ khi tác vụ bất đồng bộ hoàn thành, dù bản thân không cần lấy giá trị kết quả\" là đáp án đúng vì CompletableFuture<Void> biểu diễn việc hoàn thành của tác vụ và vẫn có thể trả completedFuture(null) khi không có giá trị kết quả.",
+      "explanation": "CompletableFuture<Void> cho phép caller theo dõi hoặc chờ tác vụ hoàn thành dù không nhận giá trị. Nhận định @Async bắt buộc CompletableFuture sai vì bài nêu @Async cũng hỗ trợ method trả void; kiểu trả về này không tự làm email gửi nhanh hơn mà chỉ cung cấp cách theo dõi việc hoàn thành; @Service cũng không loại trừ method void, nên lý do về khả năng dùng chung với @Service không liên quan.",
       "rubric": "Liên hệ đúng lợi ích của CompletableFuture so với void cho @Async method.",
       "sourceUsage": [
         "day35-src-5"
@@ -360,10 +360,6 @@
       "prompt": "Layered jar mặc định của Spring Boot chia jar thành mấy layer?",
       "choices": [
         {
-          "id": "day35-prac-3-a",
-          "text": "4 layer: dependencies, snapshot-dependencies, resources, application"
-        },
-        {
           "id": "day35-prac-3-b",
           "text": "2 layer: code và dependencies"
         },
@@ -374,14 +370,18 @@
         {
           "id": "day35-prac-3-d",
           "text": "1 layer duy nhất, giống fat jar truyền thống"
+        },
+        {
+          "id": "day35-prac-3-a",
+          "text": "4 layer: dependencies, snapshot-dependencies, resources, application"
         }
       ],
       "correctChoiceIds": [
         "day35-prac-3-a"
       ],
       "hint": "Các layer được phân tách theo tần suất thay đổi.",
-      "solution": "day35-prac-3-a",
-      "explanation": "Bật layers trong spring-boot-maven-plugin tạo file layers.idx chia jar thành 4 layer mặc định: dependencies, snapshot-dependencies, resources, application - tách theo tần suất thay đổi để Docker cache hiệu quả hơn fat jar truyền thống.",
+      "solution": "\"4 layer: dependencies, snapshot-dependencies, resources, application\" là đáp án đúng vì Spring Boot mặc định tách layered jar theo tần suất thay đổi, giúp Docker tái sử dụng cache khi chỉ phần ứng dụng thay đổi.",
+      "explanation": "Layered jar mặc định gồm dependencies, snapshot-dependencies, resources và application. Phương án 2 layer gộp code với tài nguyên và không phản ánh bốn lớp mặc định; phương án 6 layer theo Maven scope không phải cách phân lớp được nêu trong bài; phương án 1 layer mô tả fat jar truyền thống, chính là cách làm mất lợi ích caching mà layered jar khắc phục.",
       "rubric": "Liên hệ đúng 4 layer mặc định và mục đích tách theo tần suất thay đổi.",
       "sourceUsage": [
         "day35-src-10"
@@ -443,6 +443,72 @@
       "id": "day35-ref-6",
       "type": "internal",
       "description": "Toàn bộ deliverable của Sprint 1-3 (Day 33-35) là nội dung được demo và bảo vệ ở Final Defense, Day 36."
+    },
+    {
+      "id": "day35-ref-7",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day35-src-11"
+    },
+    {
+      "id": "day35-ref-8",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day35-src-13"
+    },
+    {
+      "id": "day35-ref-9",
+      "type": "external",
+      "resourceId": "res-8d5e61cc0a53",
+      "citationId": "day35-src-15"
+    },
+    {
+      "id": "day35-ref-10",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day35-src-16"
+    },
+    {
+      "id": "day35-ref-11",
+      "type": "external",
+      "resourceId": "res-ea68bcb99823",
+      "citationId": "day35-src-18"
+    },
+    {
+      "id": "day35-ref-12",
+      "type": "external",
+      "resourceId": "res-2c011d89d6e0",
+      "citationId": "day35-src-2"
+    },
+    {
+      "id": "day35-ref-13",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day35-src-4"
+    },
+    {
+      "id": "day35-ref-14",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day35-src-5"
+    },
+    {
+      "id": "day35-ref-15",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day35-src-7"
+    },
+    {
+      "id": "day35-ref-16",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day35-src-8"
+    },
+    {
+      "id": "day35-ref-17",
+      "type": "external",
+      "resourceId": "res-e3236d24d45f",
+      "citationId": "day35-src-9"
     }
   ],
   "sourceUsage": [

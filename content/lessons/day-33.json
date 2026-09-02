@@ -207,12 +207,12 @@
       "prompt": "Khi gọi categoryRepository.save(existingCategory) với một Category đã tồn tại trong DB, Spring Data JPA gọi phương thức nào của EntityManager?",
       "choices": [
         {
-          "id": "day33-prac-1-a",
-          "text": "entityManager.merge()"
-        },
-        {
           "id": "day33-prac-1-b",
           "text": "entityManager.persist()"
+        },
+        {
+          "id": "day33-prac-1-a",
+          "text": "entityManager.merge()"
         },
         {
           "id": "day33-prac-1-c",
@@ -227,8 +227,8 @@
         "day33-prac-1-a"
       ],
       "hint": "Category đã tồn tại nghĩa là isNew() == false.",
-      "solution": "day33-prac-1-a",
-      "explanation": "Vì isNew() trả về false với entity đã tồn tại (BaseEntity đánh dấu isNew=false sau @PostLoad/@PostPersist), save() sẽ gọi entityManager.merge() để cập nhật dữ liệu.",
+      "solution": "categoryRepository.save(existingCategory) gọi entityManager.merge() vì Category đã tồn tại nên isNew() == false; theo cơ chế save() trong bài, merge() được dùng cho entity không còn mới để cập nhật dữ liệu.",
+      "explanation": "Vì isNew() trả về false với entity đã tồn tại (BaseEntity đánh dấu isNew=false sau @PostLoad/@PostPersist), save() sẽ gọi entityManager.merge() để cập nhật dữ liệu. entityManager.persist() dành cho entity mới khi isNew() == true, nên không phù hợp với existingCategory. Bài chỉ mô tả save() lựa chọn giữa persist() và merge() theo trạng thái isNew(); DETACH và REMOVE được nêu trong danh sách thao tác cascade, không phải hai nhánh mà save() lựa chọn để lưu entity.",
       "rubric": "Liên hệ đúng giữa trạng thái isNew()==false và việc gọi merge().",
       "sourceUsage": [
         "day33-src-1"
@@ -241,16 +241,16 @@
       "prompt": "Vì sao quan hệ User-UserProfile trong bài dùng CascadeType.ALL kèm orphanRemoval = true?",
       "choices": [
         {
-          "id": "day33-prac-2-a",
-          "text": "Để lưu/xóa User tự động lan truyền sang UserProfile liên kết, tránh phải quản lý vòng đời UserProfile thủ công riêng"
-        },
-        {
           "id": "day33-prac-2-b",
           "text": "Để tăng tốc độ truy vấn UserProfile"
         },
         {
           "id": "day33-prac-2-c",
           "text": "Vì JPA bắt buộc mọi quan hệ @OneToOne phải có cascade"
+        },
+        {
+          "id": "day33-prac-2-a",
+          "text": "Để lưu/xóa User tự động lan truyền sang UserProfile liên kết, tránh phải quản lý vòng đời UserProfile thủ công riêng"
         },
         {
           "id": "day33-prac-2-d",
@@ -261,8 +261,8 @@
         "day33-prac-2-a"
       ],
       "hint": "Nghĩ về ý nghĩa CascadeType.ALL kết hợp với orphanRemoval.",
-      "solution": "day33-prac-2-a",
-      "explanation": "CascadeType.ALL lan truyền mọi thao tác (persist, merge, remove...) từ User sang UserProfile liên kết - kết hợp orphanRemoval=true đảm bảo khi User bị xóa hoặc profile bị gỡ liên kết, UserProfile không còn chủ sở hữu cũng bị xóa theo, tránh dữ liệu mồ côi.",
+      "solution": "CascadeType.ALL kèm orphanRemoval = true được dùng để thao tác lưu/xóa User tự động lan truyền sang UserProfile liên kết và xóa profile khi bị gỡ liên kết, nhờ đó không phải quản lý riêng vòng đời UserProfile và tránh dữ liệu mồ côi.",
+      "explanation": "CascadeType.ALL lan truyền mọi thao tác (persist, merge, remove...) từ User sang UserProfile liên kết - kết hợp orphanRemoval=true đảm bảo khi User bị xóa hoặc profile bị gỡ liên kết, UserProfile không còn chủ sở hữu cũng bị xóa theo, tránh dữ liệu mồ côi. Bài không gắn cascade hay orphanRemoval với tốc độ truy vấn, mà với sự lan truyền thao tác và quản lý vòng đời. Việc khai báo cascade được trình bày như lựa chọn thiết kế cho quan hệ User-UserProfile, không phải yêu cầu rằng mọi quan hệ @OneToOne đều bắt buộc có cascade. passwordHash chỉ là một field của User trong ví dụ entity; CascadeType.ALL và orphanRemoval không thực hiện mã hóa mật khẩu.",
       "rubric": "Liên hệ đúng lợi ích: quản lý vòng đời UserProfile tự động theo User.",
       "sourceUsage": [
         "day33-src-5"
@@ -275,10 +275,6 @@
       "prompt": "Trong JwtAuthenticationToken, một scope 'admin' trong JWT được ánh xạ thành granted authority nào?",
       "choices": [
         {
-          "id": "day33-prac-3-a",
-          "text": "SCOPE_admin"
-        },
-        {
           "id": "day33-prac-3-b",
           "text": "ROLE_admin"
         },
@@ -289,14 +285,18 @@
         {
           "id": "day33-prac-3-d",
           "text": "AUTHORITY_admin"
+        },
+        {
+          "id": "day33-prac-3-a",
+          "text": "SCOPE_admin"
         }
       ],
       "correctChoiceIds": [
         "day33-prac-3-a"
       ],
       "hint": "Nhớ lại tiền tố mặc định mà JwtAuthenticationConverter dùng cho scope.",
-      "solution": "day33-prac-3-a",
-      "explanation": "JwtAuthenticationProvider dùng JwtAuthenticationConverter để ánh xạ mỗi scope trong JWT thành granted authority có tiền tố SCOPE_ - vì vậy @PreAuthorize phải dùng hasAuthority('SCOPE_admin') chứ không phải hasRole('admin').",
+      "solution": "Scope 'admin' trong JWT được ánh xạ thành granted authority SCOPE_admin vì JwtAuthenticationConverter thêm tiền tố SCOPE_ cho mỗi scope; do đó @PreAuthorize phải kiểm tra hasAuthority('SCOPE_admin').",
+      "explanation": "JwtAuthenticationProvider dùng JwtAuthenticationConverter để ánh xạ mỗi scope trong JWT thành granted authority có tiền tố SCOPE_ - vì vậy @PreAuthorize phải dùng hasAuthority('SCOPE_admin') chứ không phải hasRole('admin'). ROLE_admin thể hiện nhầm scope thành role, còn chuỗi admin bỏ mất tiền tố SCOPE_ mà converter thêm mặc định. AUTHORITY_admin cũng dùng một tiền tố không được bài mô tả; quy ước được nêu cụ thể là SCOPE_ cho scope-based authority.",
       "rubric": "Liên hệ đúng tiền tố SCOPE_ mặc định cho scope-based authority.",
       "sourceUsage": [
         "day33-src-10"
@@ -344,6 +344,48 @@
       "id": "day33-ref-4",
       "type": "internal",
       "description": "API contract (Day 31) và BaseEntity/GlobalExceptionHandler (Day 32) là nền tảng trực tiếp cho toàn bộ code hiện thực ở Sprint 1 này."
+    },
+    {
+      "id": "day33-ref-5",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day33-src-10"
+    },
+    {
+      "id": "day33-ref-6",
+      "type": "external",
+      "resourceId": "res-afbebe6cf212",
+      "citationId": "day33-src-2"
+    },
+    {
+      "id": "day33-ref-7",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day33-src-3"
+    },
+    {
+      "id": "day33-ref-8",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day33-src-4"
+    },
+    {
+      "id": "day33-ref-9",
+      "type": "external",
+      "resourceId": "res-cf695e39df80",
+      "citationId": "day33-src-6"
+    },
+    {
+      "id": "day33-ref-10",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day33-src-7"
+    },
+    {
+      "id": "day33-ref-11",
+      "type": "external",
+      "resourceId": "res-65703b737426",
+      "citationId": "day33-src-8"
     }
   ],
   "sourceUsage": [

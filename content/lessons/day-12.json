@@ -204,8 +204,8 @@
         "day12-prac-1-a"
       ],
       "hint": "Xem lại đặc điểm lazy của Stream trả về từ Files.lines().",
-      "solution": "day12-prac-1-a",
-      "explanation": "Files.lines() trả về một Stream<String> lazy: các dòng chỉ thật sự được đọc khi terminal operation (như collect()) được gọi, giúp tránh tải toàn bộ file lớn vào bộ nhớ cùng một lúc.",
+      "solution": "Files.lines() trả về Stream<String> lazy, đọc từng dòng khi cần thay vì tải toàn bộ file vào bộ nhớ cùng lúc; vì vậy nó phù hợp với CSV 500K dòng mà không cần nạp toàn bộ nội dung một lần.",
+      "explanation": "Files.lines() trả về một Stream<String> lazy: các dòng chỉ thật sự được đọc khi terminal operation (như collect()) được gọi, giúp tránh tải toàn bộ file lớn vào bộ nhớ cùng một lúc. Files.lines() không tự động chạy song song; phần benchmark của bài phân biệt rõ stream() tuần tự với parallelStream() song song. Stream này vẫn cần được đóng, nên ví dụ SalesCsvReader đặt nó trong try-with-resources. Nó cũng không tự bỏ qua dòng lỗi: code phải gọi parseLine() rồi filter(SalesRow::valid) để loại dữ liệu không hợp lệ.",
       "rubric": "Chọn đúng lý do liên quan tới tính lazy của Stream.",
       "sourceUsage": [
         "day12-src-3"
@@ -278,6 +278,12 @@
       "id": "day12-ref-3",
       "type": "internal",
       "description": "Tổng hợp Stream API (Day 10) và synchronized/concurrency (Day 11) vào một pipeline xử lý dữ liệu dự án thực tế."
+    },
+    {
+      "id": "day12-ref-4",
+      "type": "external",
+      "resourceId": "res-d6607fed4419",
+      "citationId": "day12-src-4"
     }
   ],
   "sourceUsage": [

@@ -207,8 +207,8 @@
         "day09-prac-2-a"
       ],
       "hint": "Xem lại phần phân biệt checked vs unchecked ở Day 8.",
-      "solution": "day09-prac-2-a",
-      "explanation": "Checked exception phù hợp với lỗi ngoại cảnh không thể tránh được dù code đúng (ví dụ IOException); lỗi truy cập dữ liệu sai (key trùng, key không tồn tại) là lỗi logic có thể tránh được bằng kiểm tra điều kiện trước, phù hợp làm unchecked exception.",
+      "solution": "Đây là lỗi logic nghiệp vụ phát sinh lúc runtime khi thao tác key không hợp lệ, không phải lỗi ngoại cảnh bắt buộc mọi nơi gọi phải xử lý ngay; vì vậy DataAccessException phù hợp kế thừa RuntimeException để trở thành unchecked exception.",
+      "explanation": "Checked exception phù hợp với lỗi ngoại cảnh không thể tránh được dù code đúng (ví dụ IOException); lỗi truy cập dữ liệu sai (key trùng, key không tồn tại) là lỗi logic có thể tránh được bằng kiểm tra điều kiện trước, phù hợp làm unchecked exception. Bài phân biệt hai nhánh theo ý nghĩa lỗi và nghĩa vụ xử lý chứ không theo tốc độ, nên 'RuntimeException chạy nhanh hơn Exception' không phải lý do. Constructor nhận String message là constructor do chính lớp exception khai báo — phần cài đặt cho thấy DataAccessException định nghĩa constructor này rồi gọi super(message) — nên khả năng nhận message không phải tiêu chí phân biệt checked và unchecked. Việc bài cân nhắc RuntimeException 'thay vì Exception' cũng cho thấy kế thừa Exception là một lựa chọn cú pháp có thể thực hiện; nó không phù hợp ở đây vì ngữ nghĩa lỗi, chứ không phải vì Java cấm tự tạo checked exception.",
       "rubric": "Chọn đúng lý do RuntimeException phù hợp hơn Exception cho trường hợp này.",
       "sourceUsage": [
         "day09-src-5"
@@ -255,6 +255,12 @@
       "id": "day09-ref-3",
       "type": "internal",
       "description": "Áp dụng trực tiếp generics/collections/exception hierarchy đã học ở Day 8."
+    },
+    {
+      "id": "day09-ref-4",
+      "type": "external",
+      "resourceId": "res-30d834f8fef0",
+      "citationId": "day09-src-5"
     }
   ],
   "sourceUsage": [

@@ -326,16 +326,16 @@
       "prompt": "Stream.filter() nhận vào tham số kiểu gì và làm gì với stream nguồn?",
       "choices": [
         {
-          "id": "day10-prac-1-a",
-          "text": "Nhận một Predicate<T>, trả về stream mới chỉ gồm các phần tử thỏa điều kiện Predicate"
-        },
-        {
           "id": "day10-prac-1-b",
           "text": "Nhận một Function<T,R>, biến đổi từng phần tử sang kiểu mới"
         },
         {
           "id": "day10-prac-1-c",
           "text": "Nhận một Comparator<T>, sắp xếp lại stream"
+        },
+        {
+          "id": "day10-prac-1-a",
+          "text": "Nhận một Predicate<T>, trả về stream mới chỉ gồm các phần tử thỏa điều kiện Predicate"
         },
         {
           "id": "day10-prac-1-d",
@@ -346,8 +346,8 @@
         "day10-prac-1-a"
       ],
       "hint": "Xem lại định nghĩa filter() là intermediate operation lọc phần tử.",
-      "solution": "day10-prac-1-a",
-      "explanation": "filter() là intermediate operation, luôn nhận Predicate<T> (điều kiện trả về boolean) và giữ lại những phần tử thỏa điều kiện đó.",
+      "solution": "Stream.filter() nhận một Predicate<T> và trả về stream mới chỉ gồm các phần tử thỏa điều kiện Predicate, vì filter() dùng kết quả boolean của Predicate để quyết định giữ lại từng phần tử.",
+      "explanation": "filter() là intermediate operation, luôn nhận Predicate<T> (điều kiện trả về boolean) và giữ lại những phần tử thỏa điều kiện đó. Function<T,R> dùng apply() để biến đổi dữ liệu, không phải kiểu tham số của filter(). Sắp xếp là thao tác sorted tách biệt với filter, nên Comparator<T> không thay cho điều kiện Predicate của filter(). Consumer<T> có accept() trả về void, trong khi filter cần một điều kiện boolean và trả về stream mới; nó không tự in phần tử rồi trả về stream rỗng.",
       "rubric": "Chọn đúng kiểu tham số và hành vi của filter().",
       "sourceUsage": [
         "day10-src-1"
@@ -360,10 +360,6 @@
       "prompt": "Cho `List<Integer> nums = List.of(1, 2, 3, 4, 5, 6);` và `nums.stream().filter(n -> n % 2 == 0 && n > 2).collect(Collectors.toList())`. Kết quả trả về là gì?",
       "choices": [
         {
-          "id": "day10-prac-2-a",
-          "text": "[4, 6]"
-        },
-        {
           "id": "day10-prac-2-b",
           "text": "[2, 4, 6]"
         },
@@ -374,14 +370,18 @@
         {
           "id": "day10-prac-2-d",
           "text": "[3, 4, 5, 6]"
+        },
+        {
+          "id": "day10-prac-2-a",
+          "text": "[4, 6]"
         }
       ],
       "correctChoiceIds": [
         "day10-prac-2-a"
       ],
       "hint": "Áp dụng cả hai điều kiện && cùng lúc cho từng phần tử.",
-      "solution": "day10-prac-2-a",
-      "explanation": "Điều kiện kết hợp 'n % 2 == 0 && n > 2' chỉ giữ lại các số chẵn và lớn hơn 2: trong dãy [1..6] chỉ có 4 và 6 thỏa cả hai điều kiện.",
+      "solution": "Kết quả là [4, 6] vì filter chỉ giữ các phần tử đồng thời là số chẵn và lớn hơn 2; trong danh sách đã cho chỉ 4 và 6 thỏa cả hai vế của điều kiện &&.",
+      "explanation": "Điều kiện kết hợp 'n % 2 == 0 && n > 2' chỉ giữ lại các số chẵn và lớn hơn 2: trong dãy [1..6] chỉ có 4 và 6 thỏa cả hai điều kiện. [2, 4, 6] chỉ kiểm tra tính chẵn và giữ nhầm 2 dù 2 không lớn hơn 2. [1, 3, 5] là nhóm số lẻ nên không thỏa vế n % 2 == 0. [3, 4, 5, 6] chỉ phản ánh điều kiện lớn hơn 2 và giữ nhầm 3, 5 dù chúng không chẵn.",
       "rubric": "Đánh giá đúng kết quả lọc theo nhiều điều kiện kết hợp bằng &&.",
       "sourceUsage": [
         "day10-src-2"
@@ -446,6 +446,18 @@
       "id": "day10-ref-3",
       "type": "internal",
       "description": "Áp dụng trực tiếp generics/collections đã học ở Day 8-9 làm nền tảng cho Stream API."
+    },
+    {
+      "id": "day10-ref-4",
+      "type": "external",
+      "resourceId": "res-713a3e371ba0",
+      "citationId": "day10-src-2"
+    },
+    {
+      "id": "day10-ref-5",
+      "type": "external",
+      "resourceId": "res-713a3e371ba0",
+      "citationId": "day10-src-3"
     }
   ],
   "sourceUsage": [

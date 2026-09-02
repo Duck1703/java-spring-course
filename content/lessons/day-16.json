@@ -51,7 +51,7 @@
         {
           "id": "day16-blk-1",
           "type": "deliverable",
-          "text": "Assignment",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học chỉ ghi 'Assignment' như một buổi ôn tập/thực hành lại các ví dụ. Không có deliverable nộp riêng cho Day 16; hãy tự thực hành lại việc xây dựng controller với @RestController, khai báo mapping bằng @RequestMapping và các shortcut theo HTTP method, xử lý tham số path/query, và dùng ResponseEntity để kiểm soát response trước khi tiếp tục Day 17.",
           "citations": []
         },
         {
@@ -296,8 +296,8 @@
         "day16-prac-1-a"
       ],
       "hint": "Đọc lại bảng cú pháp URI pattern trong bài.",
-      "solution": "day16-prac-1-a",
-      "explanation": "{name:regex} bắt biến path segment theo biểu thức chính quy; {id:[\\d]+} chỉ khớp giá trị gồm toàn chữ số, các lựa chọn còn lại (*, **, ?) chỉ khớp ký tự/segment bất kỳ, không ràng buộc kiểu dữ liệu.",
+      "solution": "“/products/{id:[\\d]+}” là đáp án đúng vì cú pháp {name:regex} vừa bắt một path segment vào biến id, vừa áp dụng regex [\\d]+ để chỉ chấp nhận một hoặc nhiều chữ số.",
+      "explanation": "/products/{id:[\\d]+} bắt biến id và dùng regex để chỉ khớp một segment gồm toàn chữ số. /products/* chỉ khớp không hoặc nhiều ký tự bất kỳ trong một segment nên không ràng buộc giá trị số; /products/** còn rộng hơn vì khớp không hoặc nhiều segment; còn /products/? chỉ khớp đúng một ký tự bất kỳ trong segment, ký tự đó không nhất thiết là chữ số và pattern cũng không tạo biến id. Vì vậy chỉ lựa chọn dùng {name:regex} đáp ứng đầy đủ yêu cầu.",
       "rubric": "Chọn đúng cú pháp {name:regex}, phân biệt với các wildcard * ** ? không ràng buộc kiểu.",
       "sourceUsage": [
         "day16-src-2",
@@ -381,6 +381,54 @@
       "id": "day16-ref-3",
       "type": "internal",
       "description": "Controller trong bài là bean được Spring quản lý như đã học ở Day 13-15."
+    },
+    {
+      "id": "day16-ref-4",
+      "type": "external",
+      "resourceId": "res-06dd51e41e25",
+      "citationId": "day16-src-10"
+    },
+    {
+      "id": "day16-ref-5",
+      "type": "external",
+      "resourceId": "res-2aefb097db80",
+      "citationId": "day16-src-2"
+    },
+    {
+      "id": "day16-ref-6",
+      "type": "external",
+      "resourceId": "res-2aefb097db80",
+      "citationId": "day16-src-3"
+    },
+    {
+      "id": "day16-ref-7",
+      "type": "external",
+      "resourceId": "res-2aefb097db80",
+      "citationId": "day16-src-4"
+    },
+    {
+      "id": "day16-ref-8",
+      "type": "external",
+      "resourceId": "res-d8a874d76b06",
+      "citationId": "day16-src-5"
+    },
+    {
+      "id": "day16-ref-9",
+      "type": "external",
+      "resourceId": "res-d8a874d76b06",
+      "citationId": "day16-src-6"
+    },
+    {
+      "id": "day16-ref-10",
+      "type": "external",
+      "resourceId": "res-d8a874d76b06",
+      "citationId": "day16-src-7"
+    },
+    {
+      "id": "day16-ref-11",
+      "type": "external",
+      "resourceId": "res-06dd51e41e25",
+      "citationId": "day16-src-9"
     }
   ],
   "sourceUsage": [

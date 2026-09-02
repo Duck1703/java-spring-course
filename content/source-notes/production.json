@@ -127,7 +127,8 @@
         "Auto-configured Tests",
         "Auto-configured JSON Tests",
         "Auto-configured Spring MVC Tests",
-        "Auto-configured Data JPA Tests"
+        "Auto-configured Data JPA Tests",
+        "Mocking and Spying Beans"
       ],
       "topics": [
         "@SpringBootTest",

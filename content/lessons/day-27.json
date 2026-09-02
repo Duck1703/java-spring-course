@@ -219,12 +219,12 @@
       "prompt": "Vì sao dùng @CacheEvict(allEntries = true) trên toàn bộ cache 'products' khi tạo/sửa/xoá sản phẩm, thay vì @CachePut cho từng sản phẩm thay đổi?",
       "choices": [
         {
-          "id": "day27-prac-1-a",
-          "text": "Vì cache danh sách được key theo trang/bộ lọc - việc tính chính xác những key nào bị ảnh hưởng bởi một thay đổi phức tạp hơn nhiều so với việc xoá toàn bộ và để lần đọc kế tiếp nạp lại"
-        },
-        {
           "id": "day27-prac-1-b",
           "text": "Vì @CachePut không tồn tại trong Spring Cache"
+        },
+        {
+          "id": "day27-prac-1-a",
+          "text": "Vì cache danh sách được key theo trang/bộ lọc - việc tính chính xác những key nào bị ảnh hưởng bởi một thay đổi phức tạp hơn nhiều so với việc xoá toàn bộ và để lần đọc kế tiếp nạp lại"
         },
         {
           "id": "day27-prac-1-c",
@@ -239,8 +239,8 @@
         "day27-prac-1-a"
       ],
       "hint": "Nghĩ về việc cache 'products' được key theo trang/bộ lọc, không theo từng sản phẩm riêng lẻ.",
-      "solution": "day27-prac-1-a",
-      "explanation": "Cache danh sách sản phẩm được key theo tham số phân trang/bộ lọc, không theo từng ID sản phẩm - một thay đổi (tạo/sửa/xoá) có thể ảnh hưởng tới nhiều key khác nhau, nên xoá toàn bộ cache đơn giản và an toàn hơn nhiều so với cố tính chính xác key nào cần cập nhật.",
+      "solution": "Cache danh sách được key theo trang/bộ lọc, nên việc tính chính xác những key bị ảnh hưởng bởi một lần tạo, sửa hoặc xoá phức tạp hơn nhiều so với xoá toàn bộ và để lần đọc kế tiếp nạp lại; vì vậy @CacheEvict(allEntries = true) là lựa chọn đơn giản và an toàn cho cache 'products' này.",
+      "explanation": "Cache danh sách sản phẩm được key theo tham số phân trang hoặc bộ lọc, không theo từng ID sản phẩm; một thay đổi có thể làm cũ nhiều key, nên xoá toàn bộ cache đơn giản và an toàn hơn việc cố cập nhật chọn lọc. @CachePut không phải là annotation 'không tồn tại'; chính câu hỏi đang đối chiếu nó với @CacheEvict, và lý do không chọn nó ở đây là một sản phẩm có thể ảnh hưởng nhiều key danh sách. Bài chọn allEntries = true do hình dạng key của cache, không khẳng định nó luôn nhanh hơn hay nên thay mọi annotation khác. Redis là backend cache của assignment chứ không phải hạn chế đối với @CachePut; quyết định vẫn xuất phát từ cách cache 'products' được key theo trang hoặc bộ lọc.",
       "rubric": "Liên hệ đúng lý do: cache theo trang/bộ lọc khiến việc evict chọn lọc phức tạp không đáng.",
       "sourceUsage": [
         "day27-src-2"
@@ -283,10 +283,6 @@
       "prompt": "fallbackMethod trong @CircuitBreaker dùng để làm gì?",
       "choices": [
         {
-          "id": "day27-prac-4-a",
-          "text": "Cung cấp hành vi thay thế khi lời gọi tới payment gateway thất bại hoặc circuit đang ở trạng thái Open, thay vì để lỗi lan ra toàn bộ luồng tạo đơn hàng"
-        },
-        {
           "id": "day27-prac-4-b",
           "text": "Tự động thử lại lời gọi vô hạn lần cho tới khi thành công"
         },
@@ -297,14 +293,18 @@
         {
           "id": "day27-prac-4-d",
           "text": "Tăng timeout của WebClient lên gấp đôi"
+        },
+        {
+          "id": "day27-prac-4-a",
+          "text": "Cung cấp hành vi thay thế khi lời gọi tới payment gateway thất bại hoặc circuit đang ở trạng thái Open, thay vì để lỗi lan ra toàn bộ luồng tạo đơn hàng"
         }
       ],
       "correctChoiceIds": [
         "day27-prac-4-a"
       ],
       "hint": "Nhớ lại vai trò của Circuit Breaker: ngăn lỗi từ hệ thống ngoài lan rộng.",
-      "solution": "day27-prac-4-a",
-      "explanation": "fallbackMethod cung cấp một đường xử lý thay thế (ví dụ đánh dấu đơn hàng cần review thủ công) khi lời gọi payment gateway thất bại hoặc circuit đang mở, giúp luồng tạo đơn hàng không bị crash toàn bộ vì một dịch vụ bên ngoài gặp sự cố.",
+      "solution": "fallbackMethod cung cấp hành vi thay thế khi lời gọi tới payment gateway thất bại hoặc circuit đang Open, thay vì để lỗi lan ra toàn bộ luồng tạo đơn hàng; ví dụ trong bài, fallback trả kết quả PENDING_MANUAL_REVIEW để đơn hàng đi theo đường xử lý dự phòng.",
+      "explanation": "fallbackMethod là đường xử lý thay thế, chẳng hạn trả trạng thái PENDING_MANUAL_REVIEW để đơn hàng được review thủ công, khi payment gateway thất bại hoặc circuit đang mở; nhờ đó lỗi của dịch vụ ngoài không làm hỏng toàn bộ luồng tạo đơn. Đoạn code không có vòng lặp hay cấu hình thử lại vô hạn; fallback chỉ được gọi để trả một PaymentResult thay thế. Chỉ ghi log rồi ném lại exception vẫn để lỗi lan ra, trái với hành vi dự phòng được minh hoạ. Tăng timeout của WebClient cũng không phải nhiệm vụ của fallbackMethod và chỉ kéo dài thời gian chờ thay vì cung cấp kết quả thay thế.",
       "rubric": "Liên hệ đúng vai trò cách ly lỗi của fallbackMethod.",
       "sourceUsage": [
         "day27-src-10"
@@ -368,6 +368,24 @@
       "id": "day27-ref-8",
       "type": "internal",
       "description": "Kỹ thuật upload/CSV áp dụng lại nguyên mẫu đã học có trích dẫn ở Day 26."
+    },
+    {
+      "id": "day27-ref-9",
+      "type": "external",
+      "resourceId": "res-e95ba2d69401",
+      "citationId": "day27-src-2"
+    },
+    {
+      "id": "day27-ref-10",
+      "type": "external",
+      "resourceId": "res-033c4bfa05f5",
+      "citationId": "day27-src-4"
+    },
+    {
+      "id": "day27-ref-11",
+      "type": "external",
+      "resourceId": "res-97fce5fda99a",
+      "citationId": "day27-src-6"
     }
   ],
   "sourceUsage": [
