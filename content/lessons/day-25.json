@@ -41,7 +41,7 @@
   "outcomes": [
     "Phân biệt đúng @Cacheable/@CachePut/@CacheEvict và biết dùng condition/unless.",
     "Cấu hình được RedisCacheManager với TTL/TTI phù hợp.",
-    "Giải thích được vai trò của @Async và @Scheduled trong việc tách xử lý khỏi luồng request chính."
+    "Giải thích được @Async chuyển công việc caller không cần chờ sang executor, còn @Scheduled kích hoạt công việc theo thời gian."
   ],
   "sections": [
     {
@@ -78,7 +78,7 @@
         {
           "id": "day25-blk-4",
           "type": "paragraph",
-          "text": "Ba annotation cache chính có ngữ nghĩa khác nhau: @Cacheable kiểm tra cache trước, nếu đã có dữ liệu thì BỎ QUA không gọi method (phù hợp truy vấn đọc); @CachePut LUÔN gọi method rồi cập nhật kết quả vào cache, dùng khi cần đảm bảo dữ liệu cache mới nhất sau mỗi lần ghi; @CacheEvict xoá entry (hoặc toàn bộ cache với allEntries=true) khi dữ liệu gốc thay đổi lớn. Cả ba đều hỗ trợ tham số condition (SpEL, đánh giá trước khi gọi method, dựa trên input) và unless (SpEL, đánh giá sau khi có kết quả, dựa trên output như #result) để chỉ cache khi thoả điều kiện cụ thể.",
+          "text": "Ba annotation cache chính có ngữ nghĩa khác nhau: @Cacheable kiểm tra cache trước, nếu đã có dữ liệu thì BỎ QUA không gọi method (phù hợp truy vấn đọc); @CachePut LUÔN gọi method rồi cập nhật kết quả vào cache, dùng khi cần đảm bảo dữ liệu cache mới nhất sau mỗi lần ghi; @CacheEvict xoá entry (hoặc toàn bộ cache với allEntries=true) khi dữ liệu gốc thay đổi lớn. `condition` là điều kiện SpEL đánh giá trước khi gọi method và có trên cả ba annotation; `unless` đánh giá sau khi có kết quả (có thể dùng `#result`) chỉ có trên @Cacheable và @CachePut, không có trên @CacheEvict.",
           "citations": [
             "day25-src-2",
             "day25-src-3",
@@ -90,7 +90,7 @@
           "id": "day25-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.CachePut;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass ProductQueryService {\n\n    // Kiem tra cache truoc; neu co du lieu thi BO QUA khong goi method.\n    @Cacheable(value = \"products\", key = \"#id\", unless = \"#result == null\")\n    public ProductDTO findById(Long id) {\n        return loadFromDatabase(id);\n    }\n\n    // LUON goi method, roi cap nhat ket qua vao cache - dung khi ghi du lieu.\n    @CachePut(value = \"products\", key = \"#result.id\")\n    public ProductDTO update(ProductDTO updated) {\n        return saveToDatabase(updated);\n    }\n\n    // Xoa toan bo entry trong cache \"products\" khi can lam moi hang loat.\n    @CacheEvict(value = \"products\", allEntries = true)\n    public void evictAllProducts() {\n        // Spring xoa cache SAU KHI method chay xong; khong can code them trong body.\n    }\n\n    private ProductDTO loadFromDatabase(Long id) { return null; }\n\n    private ProductDTO saveToDatabase(ProductDTO dto) { return dto; }\n}\n",
+          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.CachePut;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass ProductQueryService {\n\n    // Kiem tra cache truoc; neu co du lieu thi BO QUA khong goi method.\n    @Cacheable(value = \"products\", key = \"#id\", unless = \"#result == null\")\n    public ProductDTO findById(Long id) {\n        return loadFromDatabase(id);\n    }\n\n    // LUON goi method, roi cap nhat ket qua vao cache - dung khi ghi du lieu.\n    @CachePut(value = \"products\", key = \"#result.id\")\n    public ProductDTO update(ProductDTO updated) {\n        return saveToDatabase(updated);\n    }\n\n    // Xoa toan bo entry trong cache \"products\" khi can lam moi hang loat.\n    @CacheEvict(value = \"products\", allEntries = true)\n    public void evictAllProducts() {\n        // Spring xoa cache SAU KHI method chay xong; khong can code them trong body.\n    }\n\n    // Mo phong truy van DB that (vi du repository.findById(id)): tra ve gia tri THAT neu\n    // id hop le, tra ve null neu khong tim thay - de CA HAI nhanh cua \"unless\" o @Cacheable\n    // phia tren deu co the xay ra (id hop le duoc cache, id khong ton tai thi khong bi cache).\n    private ProductDTO loadFromDatabase(Long id) {\n        // Kho du lieu demo chi co product id tu 1 den 1_000.\n        if (id == null || id <= 0 || id > 1_000) {\n            return null;\n        }\n        return new ProductDTO(id, \"San pham #\" + id);\n    }\n\n    private ProductDTO saveToDatabase(ProductDTO dto) { return dto; }\n\n    record ProductDTO(Long id, String name) {}\n}\n",
           "compile": false,
           "citations": [
             "day25-src-2",
@@ -111,7 +111,7 @@
         {
           "id": "day25-blk-21",
           "type": "paragraph",
-          "text": "Cách hoạt động bên dưới giải thích hầu hết các lỗi 'cache không chạy': Spring Cache là abstraction dựa trên AOP proxy. `@EnableCaching` khiến bean được bọc bởi một interceptor; interceptor tính key, tra `Cache`, nếu có thì trả luôn và *không* gọi method. Vì cơ chế là proxy, gọi method có `@Cacheable` từ chính bên trong cùng class (`this.method()`) sẽ đi thẳng vào code thật, không qua interceptor, nên cache im lặng không hoạt động — cùng bản chất với `@Transactional` (Day 21) và `@PreAuthorize` (Day 23). Cách chữa là tách sang bean khác hoặc self-inject.",
+          "text": "Cách hoạt động bên dưới giải thích hầu hết các lỗi 'cache không chạy': Spring Cache là abstraction dựa trên AOP proxy. `@EnableCaching` khiến bean được bọc bởi một interceptor; interceptor tính key, tra `Cache`, nếu có thì trả luôn và *không* gọi method. Vì cơ chế là proxy, gọi method có `@Cacheable` từ chính bên trong cùng class (`this.method()`) sẽ đi thẳng vào code thật, không qua interceptor, nên cache im lặng không hoạt động — cùng bản chất với `@Transactional` (Day 21) và `@PreAuthorize` (Day 23). Cách chữa rõ ràng là tách method được cache sang một bean khác rồi gọi qua reference bean đó.",
           "citations": [
             "day25-src-1",
             "day25-src-2"
@@ -120,7 +120,7 @@
         {
           "id": "day25-blk-22",
           "type": "note",
-          "text": "Key của cache mặc định được sinh bởi `SimpleKeyGenerator` từ *tất cả* tham số của method — điều này gây hai vấn đề thực tế: hai method khác nhau trong cùng cache có thể trùng key, và tham số không có `equals/hashCode` hợp lý (hoặc là entity mutable) khiến tra cache trượt liên tục. Vì vậy hãy khai báo key tường minh bằng SpEL: `@Cacheable(value = \"products\", key = \"#id\")`. Với `Optional` hay `null`, đặt `unless = \"#result == null\"` để không lưu 'không tìm thấy' vào cache — trừ khi bạn *cố ý* cache negative result để chống dò.",
+          "text": "Key của cache mặc định được sinh bởi `SimpleKeyGenerator` từ *tất cả* tham số của method — điều này gây hai vấn đề thực tế: hai method khác nhau trong cùng cache có thể trùng key, và tham số không có `equals/hashCode` hợp lý (hoặc là entity mutable) khiến tra cache trượt liên tục. Vì vậy hãy khai báo key tường minh bằng SpEL: `@Cacheable(value = \"products\", key = \"#id\")`. Khi method trả về `null` (như `findById` phía trên), đặt `unless = \"#result == null\"` để không lưu 'không tìm thấy' vào cache — trừ khi bạn *cố ý* cache negative result để chống dò. Nếu method trả về `Optional<T>` thay vì `T`/`null` trực tiếp, Spring Cache tự unwrap trong SpEL: `#result` luôn trỏ vào object nghiệp vụ bên trong (`T`), không phải bản thân `Optional`, và `Optional` rỗng khiến `#result` là `null`. Vì vậy `unless = \"#result == null\"` VẪN đúng và đủ cho cả hai kiểu trả về — không viết `#result.isEmpty()`, vì tại thời điểm đó `#result` đã là object nghiệp vụ chứ không còn là `Optional` để gọi `isEmpty()`.",
           "citations": [
             "day25-src-2",
             "day25-src-3"
@@ -230,20 +230,47 @@
         {
           "id": "day25-blk-28",
           "type": "paragraph",
-          "text": "Vì sao cần `@Async`: một request HTTP nên trả về ngay khi công việc *bắt buộc* đã xong. Gửi email, ghi audit log, gọi hệ thống bên thứ ba, sinh báo cáo — những việc người dùng không cần chờ. `@Async` chuyển việc sang một thread khác, nên method trả về gần như tức thì. Bản chất kỹ thuật cũng chỉ là proxy AOP: interceptor gửi lời gọi vào một `TaskExecutor`. Từ đó suy ra các giới hạn quen thuộc: cần `@EnableAsync`, không có tác dụng khi gọi nội bộ trong cùng class, và không có tác dụng trên method `private`.",
+          "text": "Vì sao cần `@Async`: một request HTTP nên trả về ngay khi công việc *bắt buộc* đã xong. Ví dụ phù hợp là gửi notification không quyết định kết quả request, tạo bản xem trước hoặc làm ấm cache — những việc caller không cần chờ. `@Async` chuyển việc sang một thread khác, nên method trả về gần như tức thì; nếu công việc bắt buộc không được mất (như audit record phục vụ tuân thủ), chỉ `@Async` là chưa đủ và cần DB/queue bền vững. Bản chất kỹ thuật cũng chỉ là proxy AOP: interceptor gửi lời gọi vào một `TaskExecutor`. Từ đó suy ra các giới hạn quen thuộc: cần `@EnableAsync`, không có tác dụng khi gọi nội bộ trong cùng class, và không có tác dụng trên method `private`.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-34",
+          "type": "code",
+          "language": "text",
+          "code": "import org.springframework.context.annotation.Configuration;\nimport org.springframework.scheduling.annotation.Async;\nimport org.springframework.scheduling.annotation.EnableAsync;\nimport org.springframework.stereotype.Service;\n\n@Configuration\n@EnableAsync\nclass AsyncConfig {\n    // Chi can khai bao MOT LAN trong toan app: bat co che @Async cho moi bean co method @Async.\n}\n\n@Service\nclass ActivityLogService {\n\n    // \"Ban va quen\": request goi method nay se KHONG cho no chay xong roi moi tra ve.\n    // Neu than method nem exception, LUONG GOI khong the nhan loi qua return value; Spring mac dinh\n    // se log loi, con handler tuy chinh o vi du sau cho phep xu ly/log tap trung.\n    @Async\n    public void recordActivity(String actorId, String action) {\n        // Vi du best-effort: ghi mot activity log khong quyet dinh ket qua request.\n        // Ban ghi audit bat buoc khong duoc mat khi app restart phai qua DB/queue ben vung,\n        // khong chi dua vao @Async.\n        System.out.println(\"[activity] \" + actorId + \" -> \" + action);\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cách dùng Spring API (@Async/@EnableAsync là kiến thức Spring Boot 3.x chuẩn, không lấy từ nguồn nào trong resourceIds của Day 25 - xem authoring.limitations); khối code được đánh dấu language=text và không đưa vào bước javac của pipeline vì không có Spring Framework jar trên classpath để biên dịch minh chứng độc lập."
         },
         {
           "id": "day25-blk-29",
           "type": "paragraph",
-          "text": "Kiểu trả về quyết định cách bạn biết kết quả: `void` là 'bắn và quên' — nếu method ném exception thì exception *biến mất* khỏi luồng gọi (phải bắt bằng `AsyncUncaughtExceptionHandler`, nếu không lỗi sẽ âm thầm mất). `CompletableFuture<T>` cho bạn giữ lại kết quả và lỗi, kết hợp nhiều tác vụ song song (`thenCombine`, `allOf`) và đặt timeout (`orTimeout`). Vì vậy quy tắc thực dụng: dùng `void` chỉ cho việc không quan trọng và *phải* có handler ghi log; dùng `CompletableFuture` khi kết quả hoặc lỗi có ý nghĩa.",
+          "text": "Kiểu trả về quyết định cách bạn biết kết quả: với `void`, luồng gọi không nhận được kết quả hay exception; Spring mặc định chỉ ghi exception không bắt được ra log, còn `AsyncUncaughtExceptionHandler` cho phép xử lý/log tập trung theo cách ứng dụng cần. `CompletableFuture<T>` cho bạn giữ lại kết quả và lỗi, kết hợp nhiều tác vụ song song (`thenCombine`, `allOf`) và đặt timeout (`orTimeout`). Vì vậy quy tắc thực dụng: dùng `void` chỉ khi caller không cần kết quả và đã có chiến lược quan sát lỗi; dùng `CompletableFuture` khi kết quả hoặc lỗi có ý nghĩa.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-35",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.Optional;\nimport java.util.concurrent.CompletableFuture;\nimport org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\nclass ProductEnrichmentService {\n\n    private final ProductRepository productRepository;\n\n    ProductEnrichmentService(ProductRepository productRepository) {\n        this.productRepository = productRepository;\n    }\n\n    // CompletableFuture giu duoc CA ket qua va loi - khac voi vi du \"ban va quen\" (tra ve void) o tren.\n    // (Gia dinh @EnableAsync da duoc khai bao mot lan trong app - xem vi du dau tien cua muc nay.)\n    //\n    // SAI (khong lam the nay): truyen thang mot entity JPA dang duoc quan ly boi persistence\n    // context cua THREAD GOI. Worker @Async khong ke thua context do, nen khong duoc coi entity\n    // la managed trong worker; khi transaction caller dong, entity co the thanh detached. Truy cap\n    // lazy hoac thay doi cung mot entity qua hai thread deu khong an toan.\n    //\n    // DUNG: chi truyen id (gia tri bat bien, an toan giua cac thread), roi TAI LAI entity\n    // ben trong chinh thread @Async, trong transaction rieng cua no.\n    @Async\n    @Transactional // transaction moi bat dau trong thread @Async, khong ke thua transaction cua caller\n    public CompletableFuture<String> summarize(Long productId) {\n        ProductEntity product = productRepository.findById(productId)\n                .orElseThrow(() -> new IllegalStateException(\"Khong tim thay product \" + productId));\n        return CompletableFuture.completedFuture(\"Product #\" + product.getId() + \": \" + product.getName());\n    }\n\n    interface ProductRepository {\n        Optional<ProductEntity> findById(Long id);\n    }\n\n    static class ProductEntity {\n        private final Long id;\n        private final String name;\n\n        ProductEntity(Long id, String name) {\n            this.id = id;\n            this.name = name;\n        }\n\n        Long getId() { return id; }\n        String getName() { return name; }\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cách dùng Spring API (CompletableFuture kết hợp @Async/@Transactional là kiến thức Spring Boot 3.x/JDK chuẩn, không lấy từ nguồn nào trong resourceIds của Day 25 - xem authoring.limitations); khối code được đánh dấu language=text và không đưa vào bước javac của pipeline vì không có Spring Framework jar trên classpath để biên dịch minh chứng độc lập."
         },
         {
           "id": "day25-blk-30",
           "type": "note",
-          "text": "Ba điều dễ sai với `@Async` trong Spring Boot 3: (1) executor mặc định — nếu không khai báo `ThreadPoolTaskExecutor` riêng, bạn không kiểm soát được số thread và hàng đợi; hãy định nghĩa bean executor với `corePoolSize`, `maxPoolSize`, `queueCapacity` và một `RejectedExecutionHandler` có ý nghĩa, rồi chỉ định `@Async(\"myExecutor\")`; (2) ngữ cảnh gắn ThreadLocal *không* tự sang thread mới — `SecurityContext` (Day 22), MDC dùng cho correlation id khi log (Day 29), và transaction hiện tại đều không được truyền; (3) `@Async` không nằm trong transaction của caller, nên đừng truyền entity đang được quản lý sang thread khác — hãy truyền id rồi tải lại.",
+          "text": "Ba điều dễ sai với `@Async` trong Spring Boot 3: (1) executor mặc định — Boot có thể auto-configure `applicationTaskExecutor`, nhưng cấu hình mặc định không phản ánh tải và chính sách quá tải riêng của ứng dụng; hãy định nghĩa/tinh chỉnh executor với `corePoolSize`, `maxPoolSize`, `queueCapacity`, rồi chỉ định rõ ở `@Async(\"myExecutor\")` khi có nhiều executor. Khi pool và queue đều đầy, ứng dụng còn phải chủ động chọn fail-fast, back-pressure hay một cơ chế bền vững; policy chi tiết nằm ngoài phạm vi ví dụ sizing này; (2) ngữ cảnh gắn ThreadLocal *không* tự sang thread mới — `SecurityContext` (Day 22), MDC dùng cho correlation id khi log (Day 29), và transaction hiện tại đều không được truyền; (3) `@Async` không nằm trong transaction của caller, nên đừng truyền entity đang được quản lý sang thread khác — hãy truyền id rồi tải lại.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-36",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.concurrent.Executor;\nimport org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.scheduling.annotation.AsyncConfigurer;\nimport org.springframework.scheduling.annotation.EnableAsync;\nimport org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;\n\n// Day la vi du DAY DU hon, THAY THE cho AsyncConfig don gian o vi du dau tien cua muc nay,\n// khi ban can kiem soat executor va khong muon exception cua method @Async void bien mat.\n@Configuration\n@EnableAsync\nclass AsyncExecutorConfig implements AsyncConfigurer {\n\n    // Boot co the auto-configure applicationTaskExecutor; cau hinh rieng khi can gioi han\n    // so thread, hang doi va chinh sach qua tai theo dung nhu cau cua ung dung.\n    @Override\n    public Executor getAsyncExecutor() {\n        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();\n        executor.setCorePoolSize(4);\n        executor.setMaxPoolSize(8);\n        executor.setQueueCapacity(100);\n        executor.setThreadNamePrefix(\"app-async-\");\n        executor.initialize();\n        return executor;\n    }\n\n    // Handler tuy chinh cho method @Async tra ve void: luong goi khong the nhan exception;\n    // Spring mac dinh co log, con handler nay cho phep ghi/bao loi tap trung theo nhu cau.\n    @Override\n    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {\n        return (throwable, method, params) ->\n                System.err.println(\"Loi khong bat duoc trong @Async method \" + method.getName() + \": \" + throwable);\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cách dùng Spring API (ThreadPoolTaskExecutor/AsyncConfigurer/AsyncUncaughtExceptionHandler là kiến thức Spring Boot 3.x chuẩn, không lấy từ nguồn nào trong resourceIds của Day 25 - xem authoring.limitations); khối code được đánh dấu language=text và không đưa vào bước javac của pipeline vì không có Spring Framework jar trên classpath để biên dịch minh chứng độc lập."
         },
         {
           "id": "day25-blk-31",
@@ -260,20 +287,38 @@
         {
           "id": "day25-blk-11",
           "type": "note",
-          "text": "@Scheduled (kích hoạt bằng @EnableScheduling, method phải trả về void và không nhận tham số; fixedDelay tính khoảng cách từ lúc KẾT THÚC lần chạy trước, fixedRate chạy theo chu kỳ cố định không quan tâm lần trước đã xong hay chưa, hoặc dùng biểu thức cron cho lịch phức tạp hơn) cũng không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource tương ứng thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (huỷ đơn hàng chờ quá 30 phút) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
+          "text": "@Scheduled (kích hoạt bằng @EnableScheduling; với method đồng bộ trong phạm vi bài này, method không nhận tham số và nên trả về void; fixedDelay tính khoảng cách từ lúc KẾT THÚC lần chạy trước, fixedRate lập lịch theo khoảng cách giữa thời điểm BẮT ĐẦU các lần chạy, còn biểu thức cron dùng cho lịch phức tạp hơn) cũng không có resource nào trong resourceIds của Day 25 mô tả trực tiếp - resource tương ứng thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp (huỷ đơn hàng chờ quá 30 phút) và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan ở đây trong khối note không yêu cầu trích dẫn.",
           "citations": []
         },
         {
           "id": "day25-blk-32",
           "type": "paragraph",
-          "text": "`@Scheduled` có ba cách diễn đạt thời gian với ngữ nghĩa khác nhau: `fixedRate` đếm từ lúc *bắt đầu* lần trước (nên nếu tác vụ chạy lâu hơn chu kỳ, các lần chạy dồn nhau); `fixedDelay` đếm từ lúc *kết thúc* lần trước (an toàn hơn cho tác vụ có thời gian chạy biến động); `cron` cho mốc thời gian theo lịch (mỗi 0h, mỗi thứ Hai). Với cron, hãy khai báo `zone` một cách tường minh, vì mặc định dùng timezone của JVM và điều đó khác nhau giữa máy dev và container production.",
+          "text": "`@Scheduled` có ba cách diễn đạt thời gian với ngữ nghĩa khác nhau: `fixedRate` nhắm tới nhịp tính từ thời điểm *bắt đầu*; nếu một lần chạy đồng bộ lâu hơn chu kỳ thì lần kế tiếp bắt đầu muộn, có thể bắt đầu ngay sau khi lần trước hoàn tất, nhưng các lần của cùng một trigger tuần hoàn không tự chồng lấn. Tăng scheduler pool cho phép những job khác nhau chạy đồng thời, không tự làm hai lần của chính trigger đó overlap. `fixedDelay` đếm từ lúc *kết thúc* lần trước nên luôn giữ một khoảng nghỉ; `cron` cho mốc thời gian theo lịch (mỗi 0h, mỗi thứ Hai). Với cron, hãy khai báo `zone` một cách tường minh, vì mặc định dùng timezone của JVM và điều đó khác nhau giữa máy dev và container production.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-37",
+          "type": "code",
+          "language": "text",
+          "code": "import org.springframework.context.annotation.Configuration;\nimport org.springframework.scheduling.annotation.EnableScheduling;\nimport org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Component;\n\n@Configuration\n@EnableScheduling\nclass SchedulingConfig {\n    // Bat co che @Scheduled cho toan bo application context.\n}\n\n@Component\nclass RecurringJobs {\n\n    // Cho DU 5 phut ke tu khi LAN CHAY TRUOC KET THUC roi moi bat dau lan tiep theo -\n    // an toan cho tac vu co thoi gian chay bien dong, khong bao gio chong lan.\n    @Scheduled(fixedDelay = 5 * 60 * 1000)\n    public void cleanupExpiredSessions() {\n        // Trong ung dung that: xoa cac session/token da het han khoi store.\n        System.out.println(\"cleanup expired sessions\");\n    }\n\n    // Chay dung 0h00 moi ngay theo cron; KHAI BAO RO zone vi mac dinh dung timezone cua JVM,\n    // thuong khac nhau giua may dev va container production.\n    @Scheduled(cron = \"0 0 0 * * *\", zone = \"Asia/Ho_Chi_Minh\")\n    public void generateDailyReport() {\n        System.out.println(\"generate daily report\");\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cách dùng Spring API (@EnableScheduling/@Scheduled với fixedDelay/cron/zone là kiến thức Spring Boot 3.x chuẩn, không lấy từ nguồn nào trong resourceIds của Day 25 - xem authoring.limitations); khối code được đánh dấu language=text và không đưa vào bước javac của pipeline vì không có Spring Framework jar trên classpath để biên dịch minh chứng độc lập."
         },
         {
           "id": "day25-blk-33",
           "type": "note",
-          "text": "Bẫy lớn nhất của `@Scheduled` trong môi trường thật: mặc định scheduler chỉ có *một* thread, nên một tác vụ chạy lâu sẽ làm trễ mọi tác vụ khác — cấu hình `spring.task.scheduling.pool.size` hoặc một `TaskScheduler` riêng. Bẫy thứ hai còn nghiêm trọng hơn: khi bạn deploy 3 instance, *mỗi* instance đều chạy job, nên email gửi ba lần, báo cáo tính ba lần. Cần một khóa phân tán (ví dụ ShedLock) hoặc tách job ra một tiến trình riêng. Ngoài ra một exception không bắt được trong tác vụ `@Scheduled` sẽ khiến các lần chạy tiếp theo vẫn tiếp tục nhưng lỗi chỉ nằm trong log — hãy luôn bọc `try/catch` và log rõ ràng.",
+          "text": "Bẫy lớn nhất của `@Scheduled` trong môi trường thật: mặc định scheduler chỉ có *một* thread, nên một tác vụ chạy lâu sẽ làm trễ mọi tác vụ khác — cấu hình `spring.task.scheduling.pool.size` hoặc một `TaskScheduler` riêng. Bẫy thứ hai còn nghiêm trọng hơn: khi bạn deploy 3 instance, *mỗi* instance đều chạy job, nên email gửi ba lần, báo cáo tính ba lần. Cần một khóa phân tán (ví dụ ShedLock) hoặc tách job ra một tiến trình riêng. Ngoài ra một exception không bắt được trong tác vụ `@Scheduled` sẽ được ghi log; các lần chạy sau vẫn tiếp tục theo scheduler mặc định. Với job quan trọng, hãy bắt lỗi ở ranh giới job để thêm context nghiệp vụ, cập nhật metric/cảnh báo hoặc áp dụng retry có chủ đích — không chỉ `catch` rồi bỏ qua.",
           "citations": []
+        },
+        {
+          "id": "day25-blk-38",
+          "type": "code",
+          "language": "text",
+          "code": "import org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass InventorySyncJob {\n\n    // spring.task.scheduling.pool.size=4 trong application.properties de scheduler co NHIEU\n    // thread rieng - mac dinh Spring chi dung MOT thread cho TAT CA method @Scheduled, nen\n    // mot job chay lau se lam tre moi job khac (xem bay dau tien trong vi du nay).\n    @Scheduled(fixedRate = 60_000)\n    public void syncInventory() {\n        try {\n            // ... cong viec co the nem exception, vi du goi mot service khac bi loi\n            doSync();\n        } catch (Exception ex) {\n            // Ghi them context cua job (va trong app that: cap nhat metric/canh bao/retry co chu dich);\n            // khong catch rong. Scheduler mac dinh van tiep tuc kich hoat cac lan chay sau.\n            System.err.println(\"Loi khi syncInventory: \" + ex.getMessage());\n        }\n    }\n\n    private void doSync() {\n        // Trong ung dung that: dong bo du lieu ton kho voi nguon ben ngoai.\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cách dùng Spring API (@Scheduled với xử lý exception thủ công là kiến thức Spring Boot 3.x chuẩn, không lấy từ nguồn nào trong resourceIds của Day 25 - xem authoring.limitations); khối code được đánh dấu language=text và không đưa vào bước javac của pipeline vì không có Spring Framework jar trên classpath để biên dịch minh chứng độc lập."
         }
       ]
     }
@@ -285,7 +330,7 @@
     "Gọi method có @Cacheable/@Async từ trong cùng class (this.method()) khiến proxy AOP bị bỏ qua và annotation không có hiệu lực.",
     "Dùng key mặc định cho @Cacheable với tham số phức tạp, dẫn tới trùng key hoặc luôn cache miss vì equals/hashCode không phù hợp.",
     "Cấu hình Redis cache không đặt TTL, để cache phình ra và phụ thuộc vào chính sách trục xuất của Redis.",
-    "Dùng @Async void cho việc quan trọng mà không có AsyncUncaughtExceptionHandler, làm exception mất hoàn toàn.",
+    "Dùng @Async void cho việc quan trọng mà chỉ phụ thuộc vào log mặc định, không có AsyncUncaughtExceptionHandler để xử lý/cảnh báo lỗi tập trung.",
     "Truyền entity JPA đang được quản lý sang thread @Async thay vì truyền id và tải lại trong transaction mới.",
     "Để @Scheduled chạy trên nhiều instance mà không có khóa phân tán, khiến job bị thực thi trùng lặp."
   ],
@@ -328,50 +373,46 @@
       "id": "day25-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viết một method dùng @CacheEvict để xoá toàn bộ entry trong cache 'categories' khi danh mục sản phẩm bị xoá.",
+      "prompt": "Một method @Async trả về void đang ném RuntimeException khi thất bại. Luồng gọi không thể nhận lỗi qua return value, còn nhóm muốn ghi lỗi theo định dạng tập trung thay vì phụ thuộc vào log mặc định của Spring. Viết bean cấu hình cần thiết.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dùng allEntries = true trên @CacheEvict.",
-      "solution": "@CacheEvict(value = \"categories\", allEntries = true)\npublic void evictAllCategories() {\n}",
-      "explanation": "Áp dụng lại mẫu @CacheEvict(allEntries = true) đã học trong bài để làm mới toàn bộ cache liên quan.",
-      "rubric": "Đánh giá đúng: có @CacheEvict với allEntries = true, value trỏ đúng cache name.",
-      "sourceUsage": [
-        "day25-src-3"
-      ]
+      "hint": "Implement AsyncConfigurer và override getAsyncUncaughtExceptionHandler().",
+      "solution": "@Configuration\n@EnableAsync\nclass AsyncExceptionConfig implements AsyncConfigurer {\n    @Override\n    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {\n        return (ex, method, params) -> System.err.println(\"Loi khong bat duoc trong \" + method.getName() + \": \" + ex);\n    }\n}",
+      "explanation": "Method @Async trả về void không có return value để chuyển exception về luồng gọi, vì luồng gọi đã tiếp tục và không có Future để .get()/.join(). Spring mặc định ghi exception không bắt được ra log; implement AsyncConfigurer.getAsyncUncaughtExceptionHandler() cho phép ứng dụng xử lý tập trung, định dạng log và nối vào cơ chế cảnh báo thay vì chỉ phụ thuộc vào hành vi mặc định.",
+      "rubric": "Đánh giá đúng: có khai báo AsyncUncaughtExceptionHandler (qua AsyncConfigurer hoặc cấu hình tương đương) xử lý lỗi cho method @Async void.",
+      "sourceUsage": []
     },
     {
       "id": "day25-prac-3",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Vì sao TTI (time-to-idle) trong Spring Data Redis cần Redis từ phiên bản 6.2.0 trở lên?",
+      "prompt": "Ứng dụng chạy 3 instance sau một load balancer; mỗi instance có cùng method @Scheduled(cron = \"0 0 0 * * *\") để gửi báo cáo hằng ngày. Điều gì xảy ra, và cách khắc phục phổ biến nhất?",
       "choices": [
         {
+          "id": "day25-prac-3-d",
+          "text": "Chỉ instance khởi động đầu tiên mới đăng ký được @Scheduled, các instance sau tự bỏ qua"
+        },
+        {
           "id": "day25-prac-3-b",
-          "text": "Vì Redis chỉ hỗ trợ TTL, không có khái niệm TTI nên phải nâng cấp phiên bản để bổ sung tính năng mới"
+          "text": "Spring tự đồng bộ giữa các instance để chỉ một instance chạy job, không cần cấu hình gì thêm"
         },
         {
           "id": "day25-prac-3-a",
-          "text": "Vì Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle"
+          "text": "Cả 3 instance đều tự chạy job độc lập nên báo cáo bị gửi 3 lần; cần một khoá phân tán (ví dụ ShedLock) để chỉ một instance thắng và thực thi job trong mỗi lần kích hoạt"
         },
         {
           "id": "day25-prac-3-c",
-          "text": "Vì RedisCacheManager.builder chỉ hoạt động từ Redis 6.2.0"
-        },
-        {
-          "id": "day25-prac-3-d",
-          "text": "Vì Spring Boot yêu cầu tối thiểu Redis 6.2.0 cho mọi tính năng cache"
+          "text": "Load balancer sẽ định tuyến lời gọi @Scheduled như một request HTTP nên chỉ một instance nhận được job"
         }
       ],
       "correctChoiceIds": [
         "day25-prac-3-a"
       ],
-      "hint": "Nhớ lại lệnh Redis nào được dùng để vừa đọc vừa reset thời hạn.",
-      "solution": "Spring Data Redis dùng lệnh GETEX (có từ Redis 6.2.0) để reset TTL mỗi lần đọc, tạo hiệu ứng gần giống time-to-idle — vì Redis không có TTI gốc và chính khả năng vừa đọc vừa gia hạn của GETEX là cơ chế Spring Data Redis dùng để mô phỏng nó.",
-      "explanation": "Redis không có TTI như một khái niệm gốc; Spring Data Redis mô phỏng nó bằng cách gọi GETEX để vừa đọc entry vừa reset TTL, và lệnh này chỉ có từ Redis 6.2.0. Nâng cấp không bổ sung một tính năng TTI gốc vào Redis, nên lý do không đơn thuần là Redis chỉ hỗ trợ TTL. Bài vẫn dùng RedisCacheManager.builder để cấu hình cache mà không gắn API builder đó với phiên bản Redis 6.2.0; yêu cầu phiên bản đến từ lệnh GETEX. Spring Boot cũng không yêu cầu Redis 6.2.0 cho mọi tính năng cache, mà mốc này chỉ liên quan đến việc bật hiệu ứng TTI qua GETEX.",
-      "rubric": "Liên hệ đúng lệnh GETEX với yêu cầu phiên bản Redis tối thiểu.",
-      "sourceUsage": [
-        "day25-src-9"
-      ]
+      "hint": "@Scheduled chạy theo scheduler nội bộ của từng JVM, nó không biết gì về các instance khác đang chạy cùng ứng dụng.",
+      "solution": "Cả 3 instance đều tự chạy job độc lập nên báo cáo bị gửi 3 lần; cần một khoá phân tán (ví dụ ShedLock) để chỉ một instance thắng và thực thi job trong mỗi lần kích hoạt - vì @Scheduled chỉ là một scheduler chạy bên trong từng JVM, không có khái niệm 'cụm' hay 'leader election' tích hợp sẵn.",
+      "explanation": "@Scheduled đăng ký một tác vụ định kỳ bên trong chính JVM của instance đó; nó hoàn toàn không biết về sự tồn tại của các instance khác, nên khi 3 instance cùng chạy, cả 3 đều tự kích hoạt job theo đúng lịch cục bộ của mình, dẫn tới báo cáo bị gửi ba lần. Spring không có cơ chế đồng bộ giữa các instance nào được bật sẵn, nên phương án 'không cần cấu hình gì' là sai. Thứ tự khởi động cũng không liên quan tới việc đăng ký @Scheduled - mọi instance đều đăng ký job như nhau khi context khởi động xong. @Scheduled cũng không đi qua tầng HTTP/load balancer, vì nó là một timer nội bộ chứ không phải một request được định tuyến. Giải pháp thực dụng là một khoá phân tán (ví dụ ShedLock) đảm bảo chỉ một instance thắng trong mỗi lần kích hoạt, hoặc tách job ra một tiến trình chạy riêng.",
+      "rubric": "Liên hệ đúng: mỗi instance có scheduler độc lập không biết về nhau, cần khóa phân tán (hoặc tách tiến trình riêng) để tránh thực thi trùng lặp.",
+      "sourceUsage": []
     },
     {
       "id": "day25-prac-4",
@@ -400,7 +441,7 @@
     "Đo thời gian phản hồi trước/sau khi bật cache Redis cho một truy vấn danh mục sản phẩm.",
     "Thêm log ở đầu method có @Cacheable rồi gọi hai lần với cùng tham số để tự chứng minh lần thứ hai không vào thân method; sau đó gọi method đó từ trong cùng class và giải thích vì sao cache không còn hoạt động.",
     "Đặt entryTtl 10 giây cho một cache Redis, quan sát dữ liệu biến mất bằng redis-cli, rồi đổi serializer sang JSON và so sánh khả năng đọc dữ liệu trong Redis.",
-    "Viết một method @Async void ném RuntimeException để thấy exception mất tăm, sau đó cấu hình AsyncUncaughtExceptionHandler và chứng minh lỗi đã được ghi log.",
+    "Viết một method @Async void ném RuntimeException để quan sát log mặc định, sau đó cấu hình AsyncUncaughtExceptionHandler và chứng minh lỗi được ghi theo định dạng tập trung.",
     "So sánh thực nghiệm fixedRate và fixedDelay với một tác vụ ngủ lâu hơn chu kỳ, ghi lại thời điểm bắt đầu từng lần chạy và giải thích khác biệt."
   ],
   "references": [
@@ -536,8 +577,9 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "@Async (kích hoạt qua @EnableAsync, CompletableFuture, tuỳ chỉnh Executor, xử lý exception cho method void): không có resource nào trong resourceIds của Day 25 mô tả chủ đề này - resource dành cho chủ đề này (res-033c4bfa05f5) thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp vào Assignment 9 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn.",
-      "@Scheduled (kích hoạt qua @EnableScheduling, fixedDelay/fixedRate/cron, chạy song song): tương tự, resource dành cho chủ đề này (res-97fce5fda99a) thuộc resourceIds của Day 27, không lặp lại trong resourceIds của Day 25 theo nguyên tắc không mượn citation chéo giữa các bài. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn."
+      "@Async (kích hoạt qua @EnableAsync, CompletableFuture, tuỳ chỉnh Executor, xử lý exception cho method void): không có resource nào trong resourceIds của Day 25 mô tả chủ đề này - resource dành cho chủ đề này (res-033c4bfa05f5) thuộc resourceIds của Day 27, nơi kỹ thuật này được áp dụng trực tiếp vào Assignment 9 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan VÀ các ví dụ code minh hoạ (block type note/paragraph/code, tất cả code đều compile=false) trong bài không yêu cầu trích dẫn, vì đây là cách dùng API chuẩn của Spring Boot 3.x/Spring Framework 6 (@EnableAsync, @Async, @Transactional, CompletableFuture, ThreadPoolTaskExecutor, AsyncConfigurer, AsyncUncaughtExceptionHandler) chứ không phải nội dung độc quyền cần nguồn riêng cho Day 25.",
+      "@Scheduled (kích hoạt qua @EnableScheduling, fixedDelay/fixedRate/cron, scheduler pool cho phép các job khác nhau chạy đồng thời nhưng không tự làm các lần của cùng một periodic trigger đồng bộ chồng lấn): tương tự, resource dành cho chủ đề này (res-97fce5fda99a) thuộc resourceIds của Day 27, không lặp lại trong resourceIds của Day 25 theo nguyên tắc không mượn citation chéo giữa các bài. Trình bày khái niệm tổng quan VÀ các ví dụ code minh hoạ (block type note/paragraph/code, tất cả code đều compile=false) trong bài không yêu cầu trích dẫn, vì đây là cách dùng API chuẩn của Spring Boot 3.x/Spring Framework 6 (@EnableScheduling, @Scheduled, fixedDelay/fixedRate/cron, spring.task.scheduling.pool.size) chứ không phải nội dung độc quyền cần nguồn riêng cho Day 25.",
+      "#result và Optional trong unless SpEL (@Cacheable/@CachePut): nguồn đã đọc của Day 25 (res-e95ba2d69401, muc 5 Conditional Caching) chỉ ghi nhận fact tổng quát về condition/unless, không ghi nhận chi tiết Spring tự unwrap #result cho các kiểu wrapper được hỗ trợ như Optional (#result trỏ vào object nghiệp vụ bên trong, không phải bản thân Optional; Optional rỗng khiến #result là null). Đây là hành vi API chuẩn được tài liệu hoá trong Spring Framework reference doc/Javadoc (@Cacheable/@CachePut, mục Conditional Caching) chứ không phải nội dung độc quyền cần nguồn riêng cho Day 25, nên trình bày không gắn citation mới ở đây."
     ]
   }
 }

@@ -87,6 +87,14 @@
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
+          "id": "day26-blk-33",
+          "type": "note",
+          "text": "So với cách chuẩn hoá đường dẫn ở Day 11 (`normalize()` rồi kiểm tra `startsWith(baseDir)`, hỗ trợ cả thư mục con), kiểm tra `destination.getParent().equals(rootLocation.toAbsolutePath())` ở trên chỉ đúng khi thư mục lưu trữ là *phẳng* - mọi file nằm trực tiếp trong rootLocation, không có thư mục con do người dùng chọn; với cấu trúc đó nó vẫn chặn path traversal đúng như tài liệu gốc. Đây là lựa chọn phù hợp cho bài này; nếu sau này cần hỗ trợ thư mục con, hãy dùng dạng tổng quát hơn `normalize()` + `startsWith(baseDir)` thay vì so sánh trực tiếp với thư mục cha.",
+          "citations": [
+            "day26-src-5"
+          ]
+        },
+        {
           "id": "day26-blk-5",
           "type": "note",
           "text": "Có thể kiểm thử luồng upload mà không cần chạy server thật, bằng MockMvc kết hợp MockMultipartFile để giả lập một file tải lên trong request test.",
@@ -320,7 +328,7 @@
           "id": "day26-blk-14",
           "type": "code",
           "language": "java",
-          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Neu truong chua dau phay, dau nhay kep, hoac xuong dong: bao trong nhay kep\n    // va nhan doi moi dau nhay kep ben trong (theo quy uoc CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\") || value.contains(\"\\n\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
+          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Neu truong chua dau phay, dau nhay kep, hoac xuong dong: bao trong nhay kep\n    // va nhan doi moi dau nhay kep ben trong (theo quy uoc CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\")\n                || value.contains(\"\\n\") || value.contains(\"\\r\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
           "compile": true,
           "citations": [
             "day26-src-14",
@@ -346,16 +354,14 @@
     }
   ],
   "commonMistakes": [
-    "Ghép trực tiếp originalFilename từ client vào đường dẫn lưu file mà không chuẩn hoá/kiểm tra - mở lỗ hổng path traversal.",
+    "Dùng getOriginalFilename() để ghép trực tiếp vào đường dẫn lưu file mà không chuẩn hoá/kiểm tra - tên file có thể chứa \"../\" (path traversal) để ghi ra ngoài thư mục dự kiến.",
     "Dùng block() trên WebClient trong luồng reactive mà không hiểu đây là thao tác chặn (blocking) - chỉ chấp nhận được trong code không-reactive (MVC truyền thống).",
-    "Ghi CSV bằng cách nối chuỗi thủ công mà quên escape dấu phẩy/dấu nháy kép trong dữ liệu, làm hỏng cấu trúc file khi mở bằng Excel.",
-    "Dùng getOriginalFilename() để ghép đường dẫn lưu file, mở đường cho path traversal (../) ghi ra ngoài thư mục dự kiến.",
+    "Ghi CSV bằng cách nối chuỗi thủ công mà quên escape dấu phẩy, dấu nháy kép, hoặc ký tự xuống dòng trong dữ liệu, làm hỏng cấu trúc file (lệch cột) khi mở bằng Excel.",
     "Tin vào content type do client khai báo khi kiểm tra loại file, trong khi giá trị này có thể bị sửa tùy ý.",
     "Nạp toàn bộ file vào byte[] khi tải xuống thay vì streaming, gây OutOfMemoryError với file lớn hoặc nhiều request đồng thời.",
     "Endpoint tải file chỉ kiểm tra 'đã đăng nhập' mà không kiểm tra quyền với chính bản ghi đó (IDOR).",
     "Tạo WebClient mới cho mỗi request và không đặt timeout, làm mất connection pool và để lời gọi treo giữ tài nguyên.",
-    "Retry một thao tác không idempotent (POST tạo đơn) hoặc retry liên tục không backoff, khiến dữ liệu trùng và làm đối tác quá tải.",
-    "Ghi CSV bằng cách nối chuỗi với dấu phẩy, làm hỏng file ngay khi dữ liệu chứa dấu phẩy hoặc xuống dòng."
+    "Retry một thao tác không idempotent (POST tạo đơn) hoặc retry liên tục không backoff, khiến dữ liệu trùng và làm đối tác quá tải."
   ],
   "practices": [
     {

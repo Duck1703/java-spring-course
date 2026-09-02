@@ -34,7 +34,7 @@
     "Đã hoàn thành Day 22 (Authentication with Spring Security + JWT) - bài này xây tiếp authorization trên nền xác thực JWT đã cấu hình, và Day 19-20 (entity/fetch/relationship) để hiểu vấn đề N+1."
   ],
   "outcomes": [
-    "Cấu hình đúng @PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter và biết hạn chế self-invocation.",
+    "Phân biệt role với ownership và đặt kiểm tra authorization ở method mà không bị self-invocation bỏ qua.",
     "Quyết định đúng khi nào cần/không cần bật CSRF dựa trên cơ chế xác thực đang dùng.",
     "Giải thích đúng vì sao FetchType không tự tránh được N+1 và nhận diện N+1 trong code."
   ],
@@ -46,7 +46,7 @@
         {
           "id": "day23-blk-1",
           "type": "note",
-          "text": "Ngày học không có Assignment riêng (lịch chỉ ghi 'Guides/Review') - buổi ôn tập tổng hợp Method Security (@PreAuthorize/@PostAuthorize/@PreFilter/@PostFilter), CORS/CSRF, và vấn đề hiệu năng N+1 - cả ba mảng kiến thức sẽ được áp dụng trực tiếp vào Lab 8 (Auth Service + Performance Optimization) ở Day 24.",
+          "text": "Day 22 đã trả lời *người gọi là ai* bằng Authentication trong SecurityContext; Day 23 đi tiếp sang authorization — *danh tính đó được phép làm gì với tài nguyên cụ thể*. Ngày học không có Assignment riêng (lịch chỉ ghi 'Guides/Review'): bài ôn Method Security, CORS/CSRF và N+1 trước khi áp dụng cả ba vào Lab 8 ở Day 24. Hãy đọc annotation như nơi thực thi một quy tắc quyền đã hiểu rõ, không phải phép màu thay thế việc xác định role, ownership và nguồn dữ liệu đáng tin.",
           "citations": []
         }
       ]
@@ -76,7 +76,7 @@
           "id": "day23-blk-4",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.security.access.prepost.PreFilter;\n\nclass ProductAdminService {\n\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    void deleteProduct(Long productId) {\n        // chi ADMIN moi goi duoc method nay tu ben ngoai bean\n    }\n\n    @PreFilter(\"filterObject.ownerId == authentication.name\")\n    void bulkUpdate(java.util.List<OrderEntity> orders) {\n        // orders bi loc truoc, chi giu phan tu ma\n        // filterObject.ownerId khop voi nguoi dang dang nhap\n    }\n}\n",
+          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.security.access.prepost.PreFilter;\n\nclass ProductAdminService {\n\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    void deleteProduct(Long productId) {\n        // chi ADMIN moi goi duoc method nay tu ben ngoai bean\n    }\n\n    @PreFilter(\"filterObject.ownerIdentity == authentication.name\")\n    void bulkUpdate(java.util.List<OrderEntity> orders) {\n        // Danh sach va ownerIdentity phai do server nap, khong lay owner tu request body.\n        // Filter chi giu phan tu thuoc chuoi dinh danh da xac thuc.\n    }\n}\n",
           "compile": false,
           "citations": [
             "day23-src-2",
@@ -294,13 +294,11 @@
     }
   ],
   "commonMistakes": [
-    "Giả định @PreAuthorize luôn được kiểm tra kể cả khi method tự gọi method khác trong cùng class (self-invocation bỏ qua AOP proxy).",
-    "Tắt CSRF cho toàn bộ ứng dụng chỉ vì API chính dùng JWT, trong khi vẫn còn phần dùng session/cookie.",
+    "Đặt @PreAuthorize trên method private/final, hoặc gọi method được bảo vệ từ trong cùng class (this.method(), self-invocation) rồi giả định nó vẫn được kiểm tra - cả hai đều khiến proxy AOP bị bỏ qua nên kiểm tra quyền không chạy.",
+    "Tắt CSRF cho toàn bộ ứng dụng (thường chỉ để hết lỗi 403 khi test) chỉ vì API chính dùng JWT, trong khi vẫn còn phần dùng session/cookie thực sự cần CSRF.",
     "Cho rằng đổi FetchType từ EAGER sang LAZY là đã giải quyết xong N+1, mà không kiểm tra cách field lazy được truy cập trong vòng lặp.",
-    "Đặt @PreAuthorize trên method private/final hoặc gọi method được bảo vệ từ trong cùng class (this.method()), khiến proxy AOP bị bỏ qua và kiểm tra quyền không chạy.",
     "Dùng hasRole('ADMIN') trong khi DB lưu authority là 'ADMIN' (không có tiền tố ROLE_), làm kiểm tra luôn thất bại.",
     "Đặt @PostAuthorize trên method có tác dụng phụ: dữ liệu đã bị thay đổi trước khi quyền bị từ chối.",
-    "Tắt CSRF một cách vô thức chỉ để hết lỗi, dù ứng dụng vẫn xác thực bằng cookie/session.",
     "Kết luận không có N+1 vì test trên dữ liệu nhỏ ở máy dev, trong khi số round-trip chỉ bộc lộ dưới dữ liệu thật.",
     "JOIN FETCH nhiều collection cùng lúc hoặc kết hợp JOIN FETCH với phân trang, gây phồng dòng và phân trang trong bộ nhớ."
   ],
@@ -343,13 +341,13 @@
       "id": "day23-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viết một method deleteOrder(Long orderId) chỉ cho phép role ADMIN gọi, dùng @PreAuthorize.",
+      "prompt": "Viết method chỉ đọc getTransaction(Long transactionId). Vì danh tính chủ sở hữu chỉ biết sau khi nạp Transaction, dùng @PostAuthorize để chỉ cho phép kết quả có ownerIdentity khớp authentication.name hoặc người gọi có vai trò ADMIN. Trong bài tập, ownerIdentity và authentication.name đều là chuỗi định danh cùng quy ước.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dùng biểu thức SpEL hasRole('ADMIN') trong @PreAuthorize.",
-      "solution": "@PreAuthorize(\"hasRole('ADMIN')\")\nvoid deleteOrder(Long orderId) {\n    // chi ADMIN moi goi duoc\n}",
-      "explanation": "Áp dụng lại mẫu @PreAuthorize(\"hasRole(...)\") đã học trong bài vào một method mới.",
-      "rubric": "Đánh giá đúng: có @PreAuthorize với biểu thức hasRole('ADMIN') trên method.",
+      "hint": "Dùng returnObject.ownerIdentity trong @PostAuthorize, so với authentication.name rồi nối với hasRole('ADMIN') bằng or.",
+      "solution": "@PostAuthorize(\"returnObject.ownerIdentity == authentication.name or hasRole('ADMIN')\")\nTransaction getTransaction(Long transactionId) {\n    return transactionRepository.findById(transactionId)\n            .orElseThrow();\n}",
+      "explanation": "Khác với ví dụ role-only, biểu thức này quyết định quyền từ chính Transaction do server nạp, không tin một ownerIdentity do client gửi lên. @PostAuthorize chạy sau method nên chỉ phù hợp ở đây vì getTransaction là thao tác đọc không có side effect; không dùng mẫu này cho method ghi. Trong code production, repository/service vẫn nên scope query theo danh tính đã xác thực để ownership được áp dụng ngay lúc truy vấn; annotation là lớp phòng vệ bổ sung. Với @WithMockUser, authentication.name là username đã cấu hình; trong luồng JWT, ứng dụng phải ánh xạ Authentication.name nhất quán với chuỗi ownerIdentity được lưu.",
+      "rubric": "Đánh giá đúng: có @PostAuthorize kết hợp returnObject.ownerIdentity == authentication.name với hasRole('ADMIN') bằng or; method chỉ đọc và không nhận ownerIdentity từ caller.",
       "sourceUsage": [
         "day23-src-2"
       ]
@@ -412,7 +410,7 @@
     "Bật show-sql, gọi một endpoint trả danh sách kèm quan hệ lazy và đếm số câu SQL; sau đó sửa bằng @EntityGraph rồi đếm lại để chứng minh mức giảm.",
     "Viết một test assert số query thực thi cho một use case, rồi cố tình bỏ JOIN FETCH để xác nhận test bắt được N+1.",
     "Thử gọi API từ một trang HTML ở origin khác để gặp lỗi CORS thật, xem preflight OPTIONS trong DevTools, rồi cấu hình CorsConfigurationSource cho đúng origin.",
-    "Bảo vệ một method bằng @PreAuthorize(\"#userId == authentication.name or hasRole('ADMIN')\") và viết test với @WithMockUser cho ba trường hợp: chủ sở hữu, người khác, và admin."
+    "Bảo vệ method đọc bằng @PostAuthorize(\"returnObject.ownerIdentity == authentication.name or hasRole('ADMIN')\") và viết test với @WithMockUser cho ba trường hợp: chủ sở hữu, người khác, và admin; sau đó đối chiếu với query đã scope theo người dùng hiện tại."
   ],
   "references": [
     {
@@ -596,7 +594,8 @@
     "reviewStatus": "reviewed",
     "limitations": [
       "Cấu hình CORS (CorsConfigurationSource, allowedOrigins/allowedMethods/allowedHeaders): không có resource nào trong resourceIds của Day 23 mô tả trực tiếp - trình bày bằng kiến thức chuẩn của Spring Security trong khối note không yêu cầu trích dẫn.",
-      "Cách khắc phục N+1 cụ thể (JOIN FETCH, @EntityGraph, batch fetching): các resource của Day 23 (res-ce09de5e928a) chỉ mô tả định nghĩa và nguyên nhân N+1, chưa mô tả cách khắc phục - cách khắc phục cụ thể được để lại cho Day 24, nơi có resource res-28c8c8bc71df (batch fetching) trong resourceIds phù hợp hơn để trích dẫn."
+      "Cách khắc phục N+1 cụ thể (JOIN FETCH, @EntityGraph, batch fetching): các resource của Day 23 (res-ce09de5e928a) chỉ mô tả định nghĩa và nguyên nhân N+1, chưa mô tả cách khắc phục - cách khắc phục cụ thể được để lại cho Day 24, nơi có resource res-28c8c8bc71df (batch fetching) trong resourceIds phù hợp hơn để trích dẫn.",
+      "Ý nghĩa cụ thể của Authentication.name trong một cấu hình JWT tuỳ biến không được các resource Day 23 xác định; practice ownership dùng tên trung tính ownerIdentity, coi hai phía là cùng một chuỗi định danh, và yêu cầu ứng dụng ánh xạ nhất quán thay vì mặc định đồng nhất JWT subject với username."
     ]
   }
 }

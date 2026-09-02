@@ -75,7 +75,7 @@
         {
           "id": "day07-blk-20",
           "type": "paragraph",
-          "text": "Bản chất của interface: nó là một *kiểu* chỉ mô tả hành vi mà không mô tả trạng thái. Vì không có state, nhiều interface có thể được trộn vào một class mà không xung đột dữ liệu — lý do Java cho phép implements nhiều interface nhưng chỉ extends một class. Mọi method khai báo trong interface mặc định là public abstract, mọi field mặc định là public static final; bạn không cần (và không nên) viết lại các modifier đó.",
+          "text": "Bản chất của interface: nó là một *kiểu* mô tả hành vi chung chứ không mang trạng thái riêng theo từng instance. Vì không có instance state, nhiều interface có thể được trộn vào một class mà không xung đột dữ liệu — lý do Java cho phép implements nhiều interface nhưng chỉ extends một class. Method không có thân trong interface mặc định là `public abstract`, còn field mặc định là `public static final`; bạn không cần viết lại các modifier đó.",
           "citations": [
             "day07-src-1"
           ]
@@ -87,6 +87,12 @@
           "citations": [
             "day07-src-1"
           ]
+        },
+        {
+          "id": "day07-blk-34",
+          "type": "note",
+          "text": "Ví dụ dưới đây minh họa default method và static method cùng lúc, nên dùng cú pháp generic `<T>` (học kỹ ở Day 8) và lambda expression `value -> ...` (học kỹ ở Day 10) — hai cú pháp chưa học tới ở Unit 3 này. Đừng lo nếu chưa quen; đọc lướt phần khai báo generic, tập trung vào ý chính: `and()` là default method thêm hành vi mới, `notBlank()` là static method tiện ích, và cả hai không phá vỡ bất kỳ class nào đã implement Validator.",
+          "citations": []
         },
         {
           "id": "day07-blk-22",
@@ -146,7 +152,7 @@
             [
               "Field/constructor",
               "Có thể có field non-static, non-final và constructor riêng",
-              "Trước Java 8 chỉ có hằng số static final, không có constructor"
+              "Chỉ có hằng số public static final; không có constructor"
             ]
           ],
           "citations": [
@@ -168,7 +174,7 @@
         {
           "id": "day07-blk-6",
           "type": "paragraph",
-          "text": "Java có bốn loại lớp lồng nhau (nested class): static nested class (khai báo với từ khóa static bên trong lớp ngoài, không giữ tham chiếu tới instance của lớp ngoài), inner class (không static, mỗi instance gắn với một instance cụ thể của lớp ngoài và có thể truy cập trực tiếp field/method của lớp ngoài), local class (khai báo bên trong thân một phương thức, chỉ dùng được trong phạm vi phương thức đó), và anonymous class (lớp không tên, khai báo và khởi tạo cùng lúc, thường dùng để cài đặt nhanh một interface hoặc kế thừa một lớp để tạo đối tượng dùng một lần). Ví dụ: `class Outer { class Inner { ... } static class StaticHelper { ... } Runnable r = new Runnable() { public void run() { ... } }; }` thể hiện lần lượt inner class, static nested class và anonymous class bên trong một lớp Outer.",
+          "text": "Java có bốn loại lớp lồng nhau (nested class), phân biệt bởi phạm vi và việc có giữ tham chiếu tới lớp ngoài hay không: static nested class (khai báo với static, không giữ tham chiếu tới instance lớp ngoài), inner class (không static, gắn với một instance lớp ngoài cụ thể và truy cập trực tiếp field/method của nó), local class (khai báo trong thân một method, chỉ dùng được trong phạm vi method đó) và anonymous class (lớp không tên, khai báo và khởi tạo cùng lúc cho một lần dùng duy nhất). Trong backend code, hai lựa chọn thường gặp là static nested class cho một kiểu chỉ có ý nghĩa cạnh lớp ngoài mà không cần đọc dữ liệu instance của nó (ví dụ một `Builder` tĩnh đi kèm entity, hoặc kiểu kết quả riêng của một Repository implementation), và inner class khi kiểu lồng thực sự cần đọc trạng thái runtime của lớp ngoài. Local class và anonymous class vẫn hữu ích cho helper phạm vi rất hẹp; riêng trường hợp cài đặt nhanh một interface một-method dùng một lần thì code hiện đại thường dùng lambda (Day 10).",
           "citations": []
         },
         {
@@ -207,7 +213,7 @@
         {
           "id": "day07-blk-9",
           "type": "paragraph",
-          "text": "Enum trong Java là một kiểu dữ liệu đặc biệt dùng để biểu diễn một tập giá trị cố định, hữu hạn (ví dụ: các ngày trong tuần, các trạng thái đơn hàng). Ngoài các hằng số đơn giản, enum có thể có constructor riêng (luôn private hoặc package-private), field, và method — mỗi hằng số enum thực chất là một instance duy nhất của chính kiểu enum đó. Enum cũng dùng được trực tiếp trong switch (cả dạng classic và dạng arrow đã học ở Day 2). Ví dụ: `enum OrderStatus { NEW(false), PROCESSING(false), SHIPPED(true), CANCELLED(true); private final boolean terminal; OrderStatus(boolean terminal) { this.terminal = terminal; } boolean isTerminal() { return terminal; } }` kết hợp với `switch (status) { case NEW -> ...; case SHIPPED, CANCELLED -> ...; }` cho thấy enum có constructor/field/method riêng và dùng trực tiếp trong switch expression.",
+          "text": "Enum trong Java là một kiểu dữ liệu đặc biệt dùng để biểu diễn một tập giá trị cố định, hữu hạn — trong một backend codebase, đây là công cụ đúng cho các domain set đóng như trạng thái đơn hàng, loại tài khoản hay loại giao dịch: thay vì lưu bằng chuỗi tự do ('PENDING', 'PAID' — dễ gõ sai chính tả, compiler không kiểm tra được), khai báo enum khiến mọi giá trị sai tên bị compiler từ chối ngay lúc biên dịch. Ngoài các hằng số đơn giản, enum có thể có constructor riêng (không được `public`/`protected`; có thể khai báo `private` hoặc bỏ modifier nhưng vẫn là private ngầm định), field, và method — mỗi hằng số enum thực chất là một instance duy nhất của chính kiểu enum đó, cho phép gắn hành vi khác nhau cho từng giá trị thay vì rải if/switch theo tên khắp code. Enum cũng dùng được trực tiếp trong switch (cả dạng classic và dạng arrow đã học ở Day 2).",
           "citations": []
         },
         {
@@ -272,10 +278,9 @@
   ],
   "commonMistakes": [
     "Dùng interface chỉ để khai báo hằng số static final (anti-pattern 'constant interface') thay vì dùng một lớp hằng số thông thường.",
-    "Quên rằng inner class (không static) luôn giữ tham chiếu ngầm tới instance của lớp ngoài, dễ gây rò rỉ bộ nhớ nếu giữ inner class sống lâu hơn lớp ngoài cần thiết.",
-    "Khai báo enum constructor là public (enum constructor luôn phải là private hoặc package-private, không thể là public/protected).",
+    "Dùng inner class không static (thay vì static nested class) cho những kiểu không thực sự cần truy cập trạng thái lớp ngoài: nó luôn giữ tham chiếu ngầm tới instance lớp ngoài, khiến object đó bị giữ sống lâu hơn cần thiết — dễ rò rỉ bộ nhớ nếu inner class được lưu trong một collection hoặc callback tồn tại lâu.",
+    "Khai báo enum constructor là `public` hoặc `protected`; enum constructor không được dùng hai mức truy cập này và nếu bỏ modifier thì vẫn là `private` ngầm định.",
     "Lưu enum xuống database theo ordinal() (hoặc để @Enumerated mặc định là ORDINAL), khiến dữ liệu cũ sai nghĩa ngay khi chèn thêm một hằng số vào giữa danh sách.",
-    "Dùng inner class không static cho những kiểu không cần truy cập trạng thái lớp ngoài, khiến object lớp ngoài bị giữ tham chiếu lâu hơn cần thiết.",
     "Implement hai interface có default method trùng chữ ký rồi không override tường minh, dẫn tới lỗi biên dịch do xung đột không thể tự phân giải."
   ],
   "practices": [
@@ -307,7 +312,7 @@
       ],
       "hint": "Xem lại bảng so sánh Abstract class vs Interface.",
       "solution": "Một lớp chỉ extends được một abstract class (đơn kế thừa), nhưng implements được nhiều interface cùng lúc — đây là điểm khác biệt kế thừa cơ bản nhất giữa hai cơ chế, và là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java.",
-      "explanation": "extends là đơn kế thừa (một abstract class), implements là đa năng (nhiều interface cùng lúc) — đây là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java. Interface vẫn có thể có method (mặc định là abstract, và từ Java 8 có thêm default/static method), nên 'interface không thể có method' là sai. Constructor riêng là đặc quyền của abstract class; trước Java 8 interface chỉ có hằng số static final và không có constructor, nên khẳng định ngược lại là sai. Và cả hai cơ chế đều KHÔNG cho phép đa kế thừa không giới hạn — abstract class vẫn giới hạn đơn kế thừa qua extends; chỉ interface mới hỗ trợ nhiều implement cùng lúc.",
+      "explanation": "extends là đơn kế thừa (một abstract class), implements là đa năng (nhiều interface cùng lúc) — đây là lý do interface được dùng để mô phỏng đa kế thừa hành vi trong Java. Interface vẫn có thể khai báo method (method không có thân mặc định là abstract; từ Java 8 có thêm default/static method), nên 'interface không thể có method' là sai. Abstract class có thể có constructor, còn interface không có constructor và field của interface là hằng số `public static final`, nên khẳng định ngược lại cũng sai. Và cả hai cơ chế đều KHÔNG cho phép đa kế thừa không giới hạn — abstract class vẫn giới hạn đơn kế thừa qua extends; chỉ interface mới hỗ trợ nhiều implement cùng lúc.",
       "rubric": "Chọn đúng đáp án về đơn kế thừa vs đa implement.",
       "sourceUsage": [
         "day07-src-1"

@@ -107,7 +107,7 @@
           "id": "day14-blk-5",
           "type": "code",
           "language": "java",
-          "code": "interface PricingPolicy {\n    double priceFor(int quantity);\n}\n\nclass DiscountPricingPolicy implements PricingPolicy {\n    private static final double UNIT_PRICE = 10.0;\n\n    @Override\n    public double priceFor(int quantity) {\n        double total = quantity * UNIT_PRICE;\n        return quantity >= 10 ? total * 0.9 : total;\n    }\n}\n\nimport org.springframework.stereotype.Service;\n\n@Service\nclass OrderService {\n\n    private final PricingPolicy pricingPolicy;\n\n    // Constructor injection: Spring resolve theo type trước; nếu có nhiều\n    // bean cùng type thì theo tên tham số; cuối cùng theo index để phân biệt.\n    OrderService(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n",
+          "code": "import org.springframework.stereotype.Service;\n\ninterface PricingPolicy {\n    double priceFor(int quantity);\n}\n\n@Service\nclass DiscountPricingPolicy implements PricingPolicy {\n    private static final double UNIT_PRICE = 10.0;\n\n    @Override\n    public double priceFor(int quantity) {\n        double total = quantity * UNIT_PRICE;\n        return quantity >= 10 ? total * 0.9 : total;\n    }\n}\n\n@Service\nclass OrderService {\n\n    private final PricingPolicy pricingPolicy;\n\n    // Constructor injection: Spring resolve theo type trước; nếu có nhiều\n    // bean cùng type thì theo tên tham số; cuối cùng theo index để phân biệt.\n    OrderService(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day14-src-2"
@@ -143,7 +143,7 @@
         {
           "id": "day14-blk-22",
           "type": "paragraph",
-          "text": "Vì sao constructor injection là mặc định được khuyến nghị: object được tạo ra trong trạng thái đã hoàn chỉnh (không tồn tại giai đoạn 'đã tạo nhưng chưa có dependency'), field khai báo được `final` nên bất biến và an toàn khi nhiều thread cùng dùng bean singleton, danh sách tham số constructor phơi bày ngay khi một class phụ thuộc quá nhiều thứ (tín hiệu cần tách trách nhiệm), và trong unit test bạn chỉ cần `new OrderService(mockRepo)` mà không cần khởi động Spring context. Từ Spring 4.3, nếu class chỉ có một constructor thì `@Autowired` là không cần thiết.",
+          "text": "Vì sao constructor injection là mặc định được khuyến nghị: object được tạo ra trong trạng thái đã hoàn chỉnh (không tồn tại giai đoạn 'đã tạo nhưng chưa có dependency'), reference tới dependency có thể khai báo `final` để không bị gán lại sau constructor, danh sách tham số constructor phơi bày ngay khi một class phụ thuộc quá nhiều thứ (tín hiệu cần tách trách nhiệm), và trong unit test bạn chỉ cần `new OrderService(mockRepo)` mà không cần khởi động Spring context. `final` chỉ cố định reference; nó không tự làm object dependency bất biến hoặc thread-safe, nên bean singleton vẫn phải tránh state mutable dùng chung hoặc tự bảo vệ state đó. Từ Spring 4.3, nếu class chỉ có một constructor thì `@Autowired` là không cần thiết.",
           "citations": [
             "day14-src-2",
             "day14-src-4"
@@ -153,7 +153,7 @@
           "id": "day14-blk-23",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Service;\n\ninterface NotificationSender { void send(String to, String body); }\n\n@Service(\"emailSender\")\nclass EmailSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service(\"smsSender\")\nclass SmsSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service\nclass OrderNotifier {\n    private final NotificationSender sender;   // final -> bat bien, thread-safe\n\n    // mot constructor duy nhat: khong can @Autowired tu Spring 4.3\n    // nhieu bean cung type -> phai chi dinh bang @Qualifier\n    OrderNotifier(@Qualifier(\"emailSender\") NotificationSender sender) {\n        this.sender = sender;\n    }\n\n    void notifyPaid(String customer) {\n        sender.send(customer, \"Order paid\");\n    }\n}\n",
+          "code": "import org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Service;\n\ninterface NotificationSender { void send(String to, String body); }\n\n@Service(\"emailSender\")\nclass EmailSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service(\"smsSender\")\nclass SmsSender implements NotificationSender {\n    @Override public void send(String to, String body) { }\n}\n\n@Service\nclass OrderNotifier {\n    private final NotificationSender sender;   // reference khong bi gan lai; dependency van phai thread-safe\n\n    // mot constructor duy nhat: khong can @Autowired tu Spring 4.3\n    // nhieu bean cung type -> phai chi dinh bang @Qualifier\n    OrderNotifier(@Qualifier(\"emailSender\") NotificationSender sender) {\n        this.sender = sender;\n    }\n\n    void notifyPaid(String customer) {\n        sender.send(customer, \"Order paid\");\n    }\n}\n",
           "compile": false,
           "citations": [
             "day14-src-2",
@@ -163,12 +163,9 @@
         },
         {
           "id": "day14-blk-24",
-          "type": "warning",
-          "text": "Ba lỗi resolve hay gặp và cách đọc thông báo: (1) `NoSuchBeanDefinitionException` — không có bean nào khớp type, thường vì class thiếu annotation stereotype hoặc nằm ngoài package được quét (component scan chỉ đi từ package của class `@SpringBootApplication` xuống); (2) `NoUniqueBeanDefinitionException` — có nhiều bean cùng type, giải quyết bằng `@Qualifier` tại điểm inject hoặc `@Primary` tại một bean để chọn mặc định; (3) circular dependency giữa hai constructor — Spring 3.x/Boot 3 báo lỗi khởi động chứ không tự tháo gỡ, và cách sửa đúng là tách phần logic dùng chung ra một bean thứ ba, không phải dùng `@Lazy` để che vấn đề thiết kế.",
-          "citations": [
-            "day14-src-2",
-            "day14-src-3"
-          ]
+          "type": "note",
+          "text": "Khi resolve constructor dependency theo type, hai tình huống cốt lõi là: không có bean nào khớp thì container không thể điền tham số; có nhiều bean cùng type thì điểm inject phải chỉ rõ lựa chọn bằng `@Qualifier`, hoặc một bean được đặt làm mặc định bằng `@Primary`. Hai nguyên nhân vận hành thường gặp là component chưa được đăng ký hoặc nằm ngoài package scan, và nhiều implementation cùng được đăng ký mà chưa có quy tắc chọn. Một lỗi khởi động khác là circular dependency giữa hai constructor — xem walkthrough không trích dẫn ở mục sau để hiểu vì sao phá vòng thiết kế tốt hơn việc mặc định thêm `@Lazy`.",
+          "citations": []
         },
         {
           "id": "day14-blk-25",
@@ -222,7 +219,7 @@
           "id": "day14-blk-27",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.boot.context.properties.ConfigurationProperties;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;\n\n// gom property co lien quan vao mot POJO co kieu, validate duoc\n@ConfigurationProperties(prefix = \"payment\")\nrecord PaymentProperties(String apiUrl, int timeoutMs) {}\n\nclass PaymentClient {\n    private final PaymentProperties props;\n    PaymentClient(PaymentProperties props) { this.props = props; }\n    String endpoint() { return props.apiUrl(); }\n}\n\n@Configuration\nclass PaymentConfig {\n\n    // tham so cua @Bean duoc container resolve giong tham so constructor\n    @Bean\n    @ConditionalOnMissingBean          // lui lai neu ung dung da tu dinh nghia bean nay\n    PaymentClient paymentClient(PaymentProperties props) {\n        return new PaymentClient(props);\n    }\n}\n",
+          "code": "import org.springframework.boot.context.properties.ConfigurationProperties;\nimport org.springframework.boot.context.properties.EnableConfigurationProperties;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;\n\n// gom property co lien quan vao mot POJO co kieu, validate duoc\n@ConfigurationProperties(prefix = \"payment\")\nrecord PaymentProperties(String apiUrl, int timeoutMs) {}\n\nclass PaymentClient {\n    private final PaymentProperties props;\n    PaymentClient(PaymentProperties props) { this.props = props; }\n    String endpoint() { return props.apiUrl(); }\n}\n\n@Configuration\n@EnableConfigurationProperties(PaymentProperties.class)\nclass PaymentConfig {\n\n    // tham so cua @Bean duoc container resolve giong tham so constructor\n    @Bean\n    @ConditionalOnMissingBean          // lui lai neu ung dung da tu dinh nghia bean nay\n    PaymentClient paymentClient(PaymentProperties props) {\n        return new PaymentClient(props);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day14-src-5",
@@ -252,31 +249,30 @@
     },
     {
       "id": "day14-sec-scope-recap",
-      "title": "DI và Bean Scope (ôn lại)",
+      "title": "Bean Scope (tham chiếu Day 13) và Circular Dependency",
       "blocks": [
         {
           "id": "day14-blk-10",
           "type": "note",
-          "text": "DI và bean scope liên quan chặt chẽ: khi một dependency có scope ngắn hơn (ví dụ request-scoped) cần được tiêm vào một bean scope dài hơn (singleton, là trường hợp phổ biến nhất khi dùng constructor injection), phải dùng scoped proxy — Spring tạo một proxy giữ cùng interface công khai nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method, thay vì giữ mãi instance được tiêm lúc khởi tạo. Chi tiết về các scope đã học ở Day 13.",
+          "text": "Day 13 đã dùng scoped proxy để xử lý một tình huống quan trọng: singleton giữ proxy, còn proxy lấy đúng request-scoped object tại thời điểm method được gọi, thay vì singleton giữ cố định một instance scope ngắn. Không lặp lại danh sách sáu scope ở đây; phần còn lại của mục này đi tiếp vào một giới hạn khác của constructor injection mà Day 13 chưa chạm tới: circular dependency.",
           "citations": [
             "day14-src-9"
           ]
         },
         {
           "id": "day14-blk-30",
-          "type": "important",
-          "text": "Hệ quả thực tế quan trọng nhất của scope singleton: một bean được tạo *một lần* và chia sẻ cho mọi request đang chạy song song trên nhiều thread. Vì vậy bean không được giữ state có thể thay đổi — chỉ dependency `final` được inject là an toàn. Một biến đếm hay một `List` tích lũy trong `@Service` sẽ tạo ra dữ liệu lẫn giữa các người dùng và race condition (xem Day 11). Nếu thật cần trạng thái theo từng request, hãy truyền nó qua tham số method hoặc dùng bean có scope `request`.",
-          "citations": [
-            "day14-src-9"
-          ]
+          "type": "note",
+          "text": "Circular dependency qua constructor không phải lỗi runtime bí ẩn — nó lộ ra đúng vì container đang làm đúng việc của nó. Nếu A cần B ngay trong constructor và B cũng cần A ngay trong constructor, container rơi vào vòng không lối ra: không thể hoàn tất A vì đang đợi B, cũng không thể hoàn tất B vì đang đợi A, nên ứng dụng báo lỗi lúc khởi động. `@Lazy` trên một phía có thể tạo proxy trì hoãn việc lấy bean thật và nhờ đó cho ứng dụng khởi động, nhưng hai class vẫn phụ thuộc vòng tròn; nó không làm thiết kế bớt kết dính và không nên là phản xạ đầu tiên. Hãy đọc vòng phụ thuộc như một tín hiệu thiết kế: nếu cả hai service thực sự dùng chung một quy tắc nghiệp vụ, tách quy tắc đó ra bean thứ ba để hai chiều A ↔ B trở thành hai dependency một chiều.",
+          "citations": []
         },
         {
           "id": "day14-blk-31",
-          "type": "note",
-          "text": "Edge case scope: tiêm một bean scope ngắn (request/prototype) vào bean singleton thì instance được resolve *một lần* lúc khởi tạo và bị 'đóng băng' — không phải mỗi lần gọi một instance mới như bạn mong đợi. Cách xử lý là dùng proxy theo scope (`proxyMode`) hoặc inject `ObjectProvider<T>`/`Provider<T>` rồi gọi `get()` tại thời điểm cần. Đây cũng là lý do prototype bean không được container gọi phương thức destroy: container không theo dõi vòng đời của chúng sau khi trao cho bạn.",
-          "citations": [
-            "day14-src-9"
-          ]
+          "type": "code",
+          "language": "text",
+          "code": "import org.springframework.stereotype.Service;\n\n// Truoc: hai constructor tao mot vong phu thuoc\n@Service\nclass OrderServiceBefore {\n    private final InvoiceServiceBefore invoiceService;\n\n    OrderServiceBefore(InvoiceServiceBefore invoiceService) {\n        this.invoiceService = invoiceService;\n    }\n}\n\n@Service\nclass InvoiceServiceBefore {\n    private final OrderServiceBefore orderService;\n\n    InvoiceServiceBefore(OrderServiceBefore orderService) {\n        this.orderService = orderService;\n    }\n}\n// Khoi dong that bai: can InvoiceServiceBefore de tao OrderServiceBefore,\n// nhung lai can OrderServiceBefore de tao InvoiceServiceBefore.\n\n// Sau: tach quy tac dung chung ra mot dependency thu ba\n@Service\nclass OrderInvoicePolicy {\n    boolean canIssueInvoice(String orderId) {\n        return true;\n    }\n}\n\n@Service\nclass OrderServiceAfter {\n    private final OrderInvoicePolicy policy;\n\n    OrderServiceAfter(OrderInvoicePolicy policy) {\n        this.policy = policy;\n    }\n}\n\n@Service\nclass InvoiceServiceAfter {\n    private final OrderInvoicePolicy policy;\n\n    InvoiceServiceAfter(OrderInvoicePolicy policy) {\n        this.policy = policy;\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cấu trúc Spring cho circular dependency và cách phá vòng; Day 14 không có nguồn trực tiếp cho cơ chế này (xem authoring.limitations), nên khối dùng language=text và không được đưa vào javac khi classpath pipeline không có Spring Framework jar."
         }
       ]
     },
@@ -310,10 +306,9 @@
     }
   ],
   "commonMistakes": [
-    "Lạm dụng field injection cho mọi dependency, khiến lớp khó test và gánh quá nhiều trách nhiệm.",
+    "Lạm dụng field injection (@Autowired trên field) cho mọi dependency: reference không thể final, dependency bị che khuất, lớp khó unit test độc lập và dễ âm thầm gánh quá nhiều trách nhiệm.",
     "Tưởng nhầm auto-configuration và @Bean tự viết xung đột, thay vì hiểu đúng cơ chế back-away.",
     "Không biết dùng --debug để chẩn đoán vì sao một auto-configuration không được áp dụng như mong đợi.",
-    "Dùng field injection (@Autowired trên field) khiến field không thể final, che khuất số lượng dependency và buộc test phải khởi động cả Spring context.",
     "Tự new một dependency bên trong bean (new OrderRepository()) làm object đó nằm ngoài container, mất transaction, proxy và cấu hình.",
     "Đặt class bean ngoài package được component scan rồi bối rối vì NoSuchBeanDefinitionException dù đã dán @Service.",
     "Giữ state có thể thay đổi trong bean singleton, gây lẫn dữ liệu giữa các request đồng thời.",
@@ -358,13 +353,13 @@
       "id": "day14-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Chuyển đổi OrderService trong bài từ constructor injection sang setter injection cho dependency PricingPolicy.",
+      "prompt": "PricingPolicy là dependency bắt buộc của OrderService nên constructor injection mới là lựa chọn đúng trong thực tế. Để thấy rõ cái giá phải trả khi không dùng constructor injection cho một dependency bắt buộc, hãy chuyển đổi OrderService từ constructor injection sang setter injection cho dependency PricingPolicy, rồi liệt kê ít nhất một điều bị mất so với bản gốc.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Bỏ constructor tham số, thêm setter có @Autowired.",
-      "solution": "class OrderService {\n    private PricingPolicy pricingPolicy;\n\n    @Autowired\n    void setPricingPolicy(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}",
-      "explanation": "Áp dụng đúng mô hình setter injection: constructor không tham số, setter có @Autowired để container gọi sau khi khởi tạo.",
-      "rubric": "Đánh giá đúng: field không còn final, có setter với @Autowired, không còn constructor nhận PricingPolicy.",
+      "hint": "Bỏ constructor tham số, thêm setter có @Autowired; so sánh field pricingPolicy trước/sau khi bỏ final.",
+      "solution": "class OrderService {\n    private PricingPolicy pricingPolicy;\n\n    @Autowired\n    void setPricingPolicy(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n// Bi mat so voi ban constructor injection goc:\n// 1) field khong con duoc khai bao final\n// 2) co mot khoang khac object da duoc tao nhung pricingPolicy con null,\n//    truoc khi container goi setter",
+      "explanation": "Áp dụng đúng mô hình setter injection: constructor không tham số, setter có @Autowired để container gọi sau khi khởi tạo. So với bản constructor injection gốc, bài tập này lộ rõ cái giá phải trả: field không còn được final, và tồn tại một khoảng thời gian object đã được tạo nhưng pricingPolicy chưa được gán — đúng như bảng so sánh 3 kiểu DI đã cảnh báo. Setter injection vẫn có chỗ dùng hợp lý: khi dependency thực sự tùy chọn hoặc cần thay đổi lại sau khi khởi tạo, không phải trường hợp bắt buộc như PricingPolicy ở đây.",
+      "rubric": "Đánh giá đúng: field không còn final, có setter với @Autowired, không còn constructor nhận PricingPolicy, và học viên nêu được ít nhất một tradeoff bị mất (mất tính bất biến final, hoặc có giai đoạn object chưa đủ dependency) thay vì chỉ chuyển đổi máy móc.",
       "sourceUsage": [
         "day14-src-3"
       ]
@@ -532,7 +527,8 @@
     "limitations": [
       "@ConfigurationProperties: không có resource nào trong resourceIds của riêng Day 14 mô tả chủ đề này — resource liên quan (res-7bf1b25b2e6b) chỉ thuộc resourceIds của Day 15, sẽ được trích dẫn đầy đủ ở đó.",
       "Profiles (kích hoạt cấu hình theo môi trường): tương tự, resource liên quan (res-aee8bfb64b8c) chỉ thuộc resourceIds của Day 15 — trình bày ở Day 14 bằng note không trích dẫn, giới thiệu sẽ học chi tiết ở Day 15.",
-      "Auto-configuration không nằm trong outline chính thức của Day 14 ('DI Types/@Autowired resolution/@Configuration & @Bean/@ConfigurationProperties/Profiles') nhưng là resource duy nhất trong resourceIds của Day 14 liên quan trực tiếp đến @Configuration/@Bean — đã dùng để làm rõ quan hệ @Bean tự viết với auto-configuration thay vì bỏ trống."
+      "Auto-configuration không nằm trong outline chính thức của Day 14 ('DI Types/@Autowired resolution/@Configuration & @Bean/@ConfigurationProperties/Profiles') nhưng là resource duy nhất trong resourceIds của Day 14 liên quan trực tiếp đến @Configuration/@Bean — đã dùng để làm rõ quan hệ @Bean tự viết với auto-configuration thay vì bỏ trống.",
+      "Circular dependency qua constructor và việc @Lazy có thể trì hoãn một phía bằng proxy: không có resource nào trong resourceIds của Day 14 mô tả trực tiếp; phần walkthrough và code minh hoạ được trình bày bằng kiến thức chuẩn của Spring Framework 6, không gắn citation vượt quá nội dung nguồn DI hiện có."
     ]
   }
 }

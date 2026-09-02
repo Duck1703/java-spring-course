@@ -69,8 +69,17 @@
         {
           "id": "day13-blk-3",
           "type": "note",
-          "text": "Kiến trúc chi tiết của Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) không có resource nào trong resourceIds của riêng Day 13 mô tả trực tiếp — resource duy nhất liên quan (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không phải bài viết sâu về kiến trúc (xem authoring.limitations). Nội dung dưới đây trình bày ở mức giới thiệu bằng kiến thức chuẩn của Spring Boot: ứng dụng Spring Boot đóng gói một embedded server (Tomcat mặc định), tự động cấu hình bean dựa trên classpath (auto-configuration — sẽ học chi tiết ở Day 14), và cung cấp các starter dependency (spring-boot-starter-web, ...) để gom nhóm các thư viện liên quan.",
+          "text": "Kiến trúc chi tiết của Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) không có resource nào trong resourceIds của riêng Day 13 mô tả trực tiếp — resource duy nhất liên quan (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không phải bài viết sâu về kiến trúc (xem authoring.limitations). Nội dung dưới đây trình bày ở mức giới thiệu bằng kiến thức chuẩn của Spring Boot: ứng dụng Spring Boot đóng gói một embedded server (Tomcat mặc định), tự động cấu hình bean dựa trên classpath (auto-configuration — sẽ học chi tiết ở Day 14), và cung cấp các starter dependency (spring-boot-starter-web, ...) để gom nhóm các thư viện liên quan. Ví dụ dưới đây là log console minh họa đã chuẩn hoá cho một ứng dụng chỉ thêm dependency spring-boot-starter-web — không viết dòng code cấu hình server nào, nhưng embedded Tomcat vẫn tự khởi động và context vẫn tự dựng xong, minh hoạ trực tiếp cho auto-configuration và embedded server nói ở trên.",
           "citations": []
+        },
+        {
+          "id": "day13-blk-37",
+          "type": "code",
+          "language": "text",
+          "code": "  .   ____          _            __ _ _\n :: Spring Boot ::                (v3.2.x)\n\n2026-01-01T10:00:00  INFO 1 --- [           main] c.example.DemoApplication  : Starting DemoApplication using Java 17\n2026-01-01T10:00:00  INFO 1 --- [           main] c.example.DemoApplication  : No active profile set, falling back to 1 default profile: \"default\"\n2026-01-01T10:00:00  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer : Tomcat initialized with port(s): 8080 (http)\n2026-01-01T10:00:00  INFO 1 --- [           main] o.apache.catalina.core.StandardService  : Starting service [Tomcat]\n2026-01-01T10:00:01  INFO 1 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 612 ms\n2026-01-01T10:00:01  INFO 1 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer : Tomcat started on port(s): 8080 (http) with context path ''\n2026-01-01T10:00:01  INFO 1 --- [           main] c.example.DemoApplication  : Started DemoApplication in 1.203 seconds (process running for 1.428)",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Đây là log console minh họa (chuẩn hoá từ output thật của Spring Boot khi khởi động), không phải mã nguồn Java để biên dịch."
         },
         {
           "id": "day13-blk-4",
@@ -203,7 +212,7 @@
         {
           "id": "day13-blk-11",
           "type": "note",
-          "text": "Khi tiêm một bean scope ngắn hơn (như request-scoped) vào bean scope dài hơn (singleton), cần dùng scoped proxy để Spring tạo một proxy: proxy giữ cùng interface công khai nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method, tránh việc singleton chỉ giữ mãi một instance được tiêm lúc khởi tạo.",
+          "text": "Khi một singleton phụ thuộc vào bean request-scoped, hai vòng đời không khớp nhau: singleton tồn tại qua nhiều request, còn target phải đổi theo request hiện tại. Scoped proxy giải quyết bằng cách tiêm một proxy ổn định vào singleton; mỗi lần method được gọi, proxy mới lấy target thật từ request scope đang hoạt động. Vì vậy singleton không giữ một concrete request object từ lúc khởi tạo.",
           "citations": [
             "day13-src-8"
           ]
@@ -211,7 +220,7 @@
         {
           "id": "day13-blk-32",
           "type": "warning",
-          "text": "Hệ quả quan trọng nhất của scope singleton: *một* instance phục vụ *mọi* request đồng thời. Vì vậy bean singleton phải không có trạng thái thay đổi được (stateless). Đặt một field mutable trong `@Service` để 'giữ tạm dữ liệu của request' là bug nghiêm trọng nhưng khó phát hiện: khi test một mình thì đúng, khi có tải thì hai người dùng ghi đè dữ liệu của nhau. Nơi giữ dữ liệu theo request phải là biến cục bộ trong method (mỗi lời gọi có stack riêng) hoặc tham số truyền vào. Field `final` chứa phụ thuộc thì hoàn toàn an toàn vì chỉ đọc.",
+          "text": "Hệ quả quan trọng nhất của scope singleton: *một* instance phục vụ *mọi* request đồng thời. Vì vậy bean singleton không được giữ trạng thái mutable theo từng request; nếu thật sự có shared mutable state thì code phải bảo vệ nó trước truy cập đồng thời. Đặt một field mutable trong `@Service` để 'giữ tạm dữ liệu của request' là bug nghiêm trọng nhưng khó phát hiện: khi test một mình thì đúng, khi có tải thì hai người dùng ghi đè dữ liệu của nhau. Nơi giữ dữ liệu theo request phải là biến cục bộ trong method (mỗi lời gọi có stack riêng) hoặc tham số truyền vào. `final` chỉ ngăn gán lại reference tới dependency; nó không tự làm object dependency bất biến hoặc thread-safe.",
           "citations": [
             "day13-src-4",
             "day13-src-5"
@@ -220,10 +229,10 @@
         {
           "id": "day13-blk-33",
           "type": "note",
-          "text": "Điểm dễ nhầm khi trộn scope: nếu tiêm một bean scope ngắn (`request`, `prototype`) vào một singleton theo cách thông thường, phụ thuộc đó được giải quyết *một lần* lúc khởi tạo singleton — nên bạn vô tình dùng mãi cùng một instance. Cách xử lý đúng là dùng scoped proxy (`@Scope(value = \"request\", proxyMode = ScopedProxyMode.TARGET_CLASS)`) để mỗi lời gọi được chuyển tới instance đúng của scope hiện tại, hoặc tiêm `ObjectProvider` và lấy instance khi cần. Thực tế: hãy dùng singleton cho gần như mọi thứ, và chỉ dùng scope khác khi có lý do rõ ràng — trạng thái theo request thường nên truyền tường minh qua tham số thay vì ẩn trong bean.",
+          "text": "Điểm dễ nhầm khi trộn scope là coi mọi scope ngắn giống nhau. Với `request`/`session`, singleton cần scoped proxy để một reference ổn định có thể tìm đúng target của request/session hiện tại khi method được gọi. Với `prototype`, inject trực tiếp vào singleton chỉ tạo prototype một lần khi singleton được dựng; nếu thật sự cần instance mới cho mỗi lần dùng, hãy inject `ObjectProvider<PrototypeBean>` rồi gọi `getObject()` tại thời điểm cần. Thực tế: hãy dùng scope khác singleton khi có lý do rõ ràng; trạng thái theo request thường nên truyền tường minh qua tham số thay vì ẩn trong bean.",
           "citations": [
-            "day13-src-4",
-            "day13-src-6"
+            "day13-src-6",
+            "day13-src-8"
           ]
         }
       ]
@@ -241,20 +250,14 @@
         {
           "id": "day13-blk-34",
           "type": "paragraph",
-          "text": "Trình tự vòng đời bean, hiểu theo đúng thứ tự nhân quả: container tạo instance (gọi constructor, tiêm các phụ thuộc bắt buộc) → tiêm các phụ thuộc còn lại qua setter/field → chạy các bộ hậu xử lý và callback khởi tạo (`@PostConstruct`, `afterPropertiesSet`) → bean sẵn sàng phục vụ → khi context đóng thì chạy callback hủy (`@PreDestroy`). Suy ra một quy tắc thực dụng: trong constructor *không* nên làm việc nặng hay phụ thuộc vào bean khác đã khởi tạo xong, vì lúc đó hệ thống chưa hoàn chỉnh; các việc như nạp cache ban đầu hay kiểm tra kết nối thuộc về `@PostConstruct` hoặc `ApplicationRunner`. Lưu ý cho Spring Boot 3: các annotation này thuộc `jakarta.annotation`, không còn là `javax.annotation`.",
-          "citations": [
-            "day13-src-7",
-            "day13-src-8"
-          ]
+          "text": "Trình tự vòng đời bean, hiểu theo đúng thứ tự nhân quả: container tạo instance (gọi constructor, tiêm các phụ thuộc bắt buộc) → tiêm các phụ thuộc còn lại qua setter/field → chạy các bộ hậu xử lý và callback khởi tạo (`@PostConstruct`, `afterPropertiesSet`) → bean sẵn sàng phục vụ → khi scope/container kết thúc và container quản lý destruction của scope đó thì chạy callback hủy (`@PreDestroy`). Suy ra một quy tắc thực dụng: trong constructor *không* nên làm việc nặng hay phụ thuộc vào toàn bộ application context đã sẵn sàng, vì lúc đó hệ thống chưa hoàn chỉnh; các việc như nạp cache ban đầu hay kiểm tra kết nối thuộc về `@PostConstruct` hoặc `ApplicationRunner`. Lưu ý cho Spring Boot 3: các annotation này thuộc `jakarta.annotation`, không còn là `javax.annotation`.",
+          "citations": []
         },
         {
           "id": "day13-blk-35",
           "type": "note",
-          "text": "Hai điều cần biết về phần hủy: callback `@PreDestroy` chỉ chạy cho bean singleton do container quản lý và chỉ khi context được đóng một cách bình thường — bean scope prototype thì Spring *không* gọi callback hủy, nên tài nguyên của chúng phải do bạn tự đóng. Vì vậy với tài nguyên cần giải phóng chắc chắn (file, socket, executor), hãy dùng try-with-resources trong phạm vi sử dụng thay vì dựa vào vòng đời container. Với các bean bao bọc tài nguyên dài hạn, `@PreDestroy` là chỗ đúng để dừng chúng gọn gàng khi ứng dụng shutdown.",
-          "citations": [
-            "day13-src-8",
-            "day13-src-9"
-          ]
+          "text": "Hai điều cần biết về phần hủy: với singleton, container gọi `@PreDestroy` khi context đóng bình thường; với bean ở scope khác mà container quản lý destruction, callback chạy khi scope đó kết thúc. Riêng prototype, Spring ngừng theo dõi sau khi tạo và *không* tự gọi callback hủy, nên client phải tự dọn tài nguyên. Vì vậy tài nguyên ngắn hạn (file, socket) nên dùng try-with-resources ngay trong phạm vi sử dụng; với bean singleton bao bọc tài nguyên dài hạn, `@PreDestroy` là chỗ đúng để dừng nó gọn gàng khi ứng dụng shutdown.",
+          "citations": []
         }
       ]
     },
@@ -281,13 +284,11 @@
     }
   ],
   "commonMistakes": [
-    "Tiêm trực tiếp một request/session-scoped bean vào singleton bean mà không dùng scoped proxy.",
+    "Trộn mọi scope ngắn theo cùng một cách: request/session cần scoped proxy để resolve target của scope hiện tại, còn prototype cần ObjectProvider nếu singleton phải lấy instance mới cho mỗi lần dùng.",
     "Nhầm lẫn singleton của Spring (per-container/per-bean) với singleton pattern GoF (một instance cho cả ứng dụng).",
-    "Kỳ vọng container tự gọi destruction callback cho bean scope prototype giống như singleton.",
+    "Kỳ vọng container tự gọi destruction callback (@PreDestroy) cho bean scope prototype giống như singleton, dẫn tới rò rỉ tài nguyên — container không quản lý toàn bộ vòng đời của bean prototype sau khi tạo, nên việc dọn dẹp phải do client code tự làm.",
     "Giữ trạng thái theo request trong field của bean singleton, gây trộn dữ liệu giữa các người dùng khi có tải.",
-    "Tiêm bean scope request/prototype vào singleton mà không dùng scoped proxy hay ObjectProvider, nên chỉ nhận đúng một instance mãi mãi.",
     "Làm việc nặng hoặc phụ thuộc bean khác trong constructor thay vì trong @PostConstruct hay ApplicationRunner.",
-    "Trông đợi @PreDestroy chạy cho bean prototype, dẫn tới rò rỉ tài nguyên.",
     "Đặt component ngoài cây package của lớp @SpringBootApplication rồi không hiểu vì sao bean không được tạo.",
     "Dùng javax.annotation.PostConstruct trong Spring Boot 3 thay vì jakarta.annotation.PostConstruct."
   ],
@@ -348,10 +349,10 @@
       "prompt": "Vì sao không nên tiêm trực tiếp một request-scoped bean vào một singleton bean mà không dùng scoped proxy?",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nghĩ về thời điểm container tạo và tiêm singleton bean — chỉ một lần duy nhất.",
-      "solution": "Vì singleton bean chỉ được container tạo và tiêm dependency đúng một lần lúc khởi động; nếu tiêm trực tiếp instance request-scoped hiện tại vào lúc đó, singleton sẽ giữ mãi instance của request đầu tiên thay vì lấy instance đúng cho từng request sau này. Scoped proxy giải quyết vấn đề này bằng cách tiêm một proxy giữ nguyên interface nhưng lấy đối tượng thật từ scope tương ứng tại thời điểm gọi method.",
-      "explanation": "Giải thích vòng đời khởi tạo singleton chỉ diễn ra một lần.",
-      "rubric": "Đánh giá học viên nói đúng lý do liên quan tới thời điểm khởi tạo/tiêm của singleton bean.",
+      "hint": "So sánh vòng đời singleton (qua nhiều request) với target request-scoped (mỗi request một instance).",
+      "solution": "Singleton tồn tại qua nhiều request, còn target request-scoped phải thay đổi theo request đang hoạt động, nên singleton không thể giữ một concrete request object làm dependency ổn định. Scoped proxy là reference ổn định được tiêm vào singleton; tại mỗi lời gọi method, proxy resolve target thật của request hiện tại.",
+      "explanation": "Scoped proxy nối hai vòng đời khác nhau: reference trong singleton ổn định, còn target phía sau thay đổi theo request.",
+      "rubric": "Đánh giá học viên nêu đúng sự không khớp vòng đời và vai trò resolve target hiện tại của scoped proxy.",
       "sourceUsage": [
         "day13-src-8"
       ]
@@ -364,8 +365,8 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Xem lại phần Bean Lifecycle và phần Prototype scope trong bài.",
-      "solution": "Nên dùng @PreDestroy (hoặc implement DisposableBean) và khai báo bean ở scope singleton (mặc định); container chỉ tự gọi destruction callback với bean singleton. Nếu dùng scope prototype, container tạo instance mới cho mỗi lần request nhưng không quản lý toàn bộ vòng đời — destruction callback sẽ không được container tự gọi, client code phải tự dọn dẹp tài nguyên.",
-      "explanation": "Liên kết callback hủy với scope đã học: chỉ singleton được container tự gọi callback hủy.",
+      "solution": "Nên dùng @PreDestroy (hoặc implement DisposableBean) và khai báo bean bao bọc tài nguyên dài hạn này ở scope singleton (mặc định), để container gọi callback khi context đóng bình thường. Không nên dùng prototype cho trường hợp này: container tạo instance mới mỗi lần được yêu cầu nhưng ngừng theo dõi sau khi trao instance cho client, nên không tự gọi destruction callback; client sẽ phải tự dọn tài nguyên.",
+      "explanation": "Liên kết callback hủy với vòng đời mà container quản lý: singleton phù hợp với tài nguyên sống cùng application context, còn prototype phải do client tự dọn.",
       "rubric": "Đánh giá học viên kết nối đúng kiến thức bean lifecycle với kiến thức prototype scope đã học trong cùng bài.",
       "sourceUsage": [
         "day13-src-6"
@@ -509,7 +510,8 @@
     "limitations": [
       "Spring Boot Architecture (kiến trúc tổng quan): resource duy nhất liên quan trong resourceIds của Day 13 (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không mô tả kiến trúc cụ thể — trình bày ở mức giới thiệu bằng kiến thức chuẩn, không gắn citation cho các khẳng định kỹ thuật cụ thể.",
       "Bean lifecycle (thứ tự callback khởi tạo/hủy): không có resource nào trong resourceIds của Day 13 mô tả chủ đề này — trình bày bằng kiến thức chuẩn của Spring trong khối note không yêu cầu trích dẫn.",
-      "Stereotype annotations (@Component/@Service/@Repository/@Controller): không có resource nào trong resourceIds của Day 13 mô tả chủ đề này — trình bày bằng kiến thức chuẩn của Spring trong khối note không yêu cầu trích dẫn."
+      "Stereotype annotations (@Component/@Service/@Repository/@Controller): không có resource nào trong resourceIds của Day 13 mô tả chủ đề này — trình bày bằng kiến thức chuẩn của Spring trong khối note không yêu cầu trích dẫn.",
+      "ObjectProvider để lấy prototype theo nhu cầu và việc final reference không tự làm dependency thread-safe: các source Day 13 không mô tả trực tiếp hai chi tiết này; bài chỉ dùng chúng để làm rõ mental model scope/singleton, không gắn citation riêng vượt quá nội dung nguồn."
     ]
   }
 }

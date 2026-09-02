@@ -126,7 +126,7 @@
         {
           "id": "day27-blk-7",
           "type": "paragraph",
-          "text": "Job định kỳ quét các đơn hàng ở trạng thái PENDING quá 30 phút và tự động huỷ; dùng fixedDelay (tính từ lúc lần chạy trước KẾT THÚC) vì job này chỉ cần chạy định kỳ đều đặn, không bắt buộc đúng giờ tuyệt đối và không nên chồng lấp giữa các lần chạy.",
+          "text": "Job định kỳ quét các đơn hàng ở trạng thái PENDING quá 30 phút và tự động huỷ; dùng fixedDelay (tính từ lúc lần chạy trước KẾT THÚC) vì job này chỉ cần chạy định kỳ đều đặn, không bắt buộc đúng giờ tuyệt đối, và luôn có một khoảng nghỉ cố định sau khi lần trước xong trước khi lần sau bắt đầu — phù hợp một job dọn dẹp không cần bám sát nhịp cố định nếu một lần xử lý bất ngờ kéo dài.",
           "citations": [
             "day27-src-6",
             "day27-src-7"
@@ -143,6 +143,12 @@
             "day27-src-7"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day27-blk-28",
+          "type": "note",
+          "text": "'Không chồng lấp' ở trên chỉ đúng cho hai lần chạy LIÊN TIẾP của CÙNG MỘT method @Scheduled trên MỘT scheduler mặc định - không phải một quy tắc chung là 'công việc định kỳ không bao giờ chồng lấp'. Chồng lấp thật sự vẫn xảy ra khi: (1) hai @Scheduled KHÁC NHAU chạy cùng lúc trên cùng scheduler pool (pool nhiều thread cho phép các job khác nhau chạy song song với nhau); (2) có nhiều bean/instance của cùng một job (ví dụ cấu hình sai làm job bị đăng ký hai lần); hoặc (3) ứng dụng chạy trên nhiều instance JVM (scale ngang) mà không có cơ chế điều phối (distributed lock, tách thành job process riêng) - mỗi instance có scheduler riêng nên tất cả instance đều tự chạy job.",
+          "citations": []
         }
       ]
     },
@@ -269,9 +275,9 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Nghĩ về việc job này có cần chạy đúng giờ tuyệt đối, và điều gì xảy ra nếu một lần chạy mất nhiều thời gian hơn chu kỳ.",
-      "solution": "fixedDelay tính khoảng cách kể từ lúc lần chạy TRƯỚC kết thúc, nên đảm bảo không có hai lần chạy chồng lấp nhau - phù hợp với job quét/dọn dẹp định kỳ không cần đúng giờ tuyệt đối. fixedRate có thể khởi động lần chạy mới trong khi lần trước chưa xong nếu xử lý mất nhiều thời gian hơn chu kỳ, gây chồng lấp không mong muốn.",
-      "explanation": "Liên hệ đúng đặc điểm không chồng lấp của fixedDelay với bản chất job dọn dẹp định kỳ.",
-      "rubric": "Đánh giá học viên nêu đúng: fixedDelay tránh chồng lấp giữa các lần chạy, phù hợp job dọn dẹp không cần đúng giờ tuyệt đối.",
+      "solution": "fixedDelay tính khoảng cách kể từ lúc lần chạy TRƯỚC kết thúc đến lúc lần chạy SAU bắt đầu, nên luôn có một khoảng nghỉ cố định giữa hai lần chạy. fixedRate nhắm một nhịp cố định tính từ lúc BẮT ĐẦU mỗi lần chạy, không quan tâm lần trước đã xong hay chưa - nhưng mặc định, hai lần chạy của CÙNG một job định kỳ (dù fixedDelay hay fixedRate) không bao giờ chạy đồng thời; nếu một lần xử lý mất lâu hơn chu kỳ, fixedRate chỉ khởi động lần kế tiếp NGAY SAU khi lần trước vừa xong (sát nhau, không có khoảng nghỉ) chứ không chạy song song với nó. Vì vậy job huỷ đơn hàng chọn fixedDelay không phải để 'tránh chồng lấp' - fixedRate mặc định cũng không chồng lấp các lần của chính nó - mà vì fixedDelay đảm bảo luôn có khoảng nghỉ sau mỗi lần chạy, phù hợp job dọn dẹp không cần bám sát nhịp cố định.",
+      "explanation": "Liên hệ đúng: cả fixedDelay và fixedRate đều không cho hai lần chạy của CÙNG một job chồng lấp nhau theo mặc định; khác biệt thật sự nằm ở việc fixedDelay đảm bảo khoảng nghỉ cố định sau khi lần trước kết thúc, còn fixedRate nhắm nhịp bắt đầu cố định nên có thể chạy sát ngay lần kế tiếp nếu lần trước chạy lâu.",
+      "rubric": "Đánh giá học viên nêu đúng: fixedDelay đảm bảo khoảng nghỉ cố định giữa hai lần chạy (tính từ lúc kết thúc), phù hợp job dọn dẹp không cần đúng giờ tuyệt đối - không phải vì fixedRate 'chồng lấp', vì mặc định các lần chạy của cùng một job không bao giờ chạy đồng thời dù dùng fixedDelay hay fixedRate.",
       "sourceUsage": [
         "day27-src-7"
       ]
@@ -455,7 +461,8 @@
     "reviewStatus": "reviewed",
     "limitations": [
       "Tạo thumbnail từ ảnh sản phẩm sau khi upload: đây là khoảng trống kiến thức thật sự - không có resource nào trong toàn bộ course-catalog (không riêng Day 27) mô tả xử lý ảnh trong Java (ImageIO/BufferedImage hoặc thư viện như Thumbnailator). Trình bày dưới dạng ghi chú không trích dẫn.",
-      "Xuất đơn hàng ra CSV: resource về CSV (res-ea68bcb99823) thuộc resourceIds của Day 26, không lặp lại trong resourceIds của Day 27 theo nguyên tắc không mượn citation chéo giữa các bài - trình bày dưới dạng ghi chú không trích dẫn, tham chiếu lại mẫu đã học ở Day 26 (đã có trích dẫn đầy đủ tại đó)."
+      "Xuất đơn hàng ra CSV: resource về CSV (res-ea68bcb99823) thuộc resourceIds của Day 26, không lặp lại trong resourceIds của Day 27 theo nguyên tắc không mượn citation chéo giữa các bài - trình bày dưới dạng ghi chú không trích dẫn, tham chiếu lại mẫu đã học ở Day 26 (đã có trích dẫn đầy đủ tại đó).",
+      "Phạm vi 'không chồng lấp' của fixedDelay/fixedRate (day27-blk-28): nguồn đã đọc của Day 27 (res-97fce5fda99a, muc 3-5) chỉ ghi nhận fact rằng mặc định các task không chạy song song, không ghi nhận chi tiết phân biệt chồng lấp giữa CÙNG một job (không xảy ra) với chồng lấp giữa CÁC job/bean/instance khác nhau (vẫn xảy ra). Đây là hành vi chuẩn của java.util.concurrent.ScheduledExecutorService (scheduleAtFixedRate/scheduleWithFixedDelay không cho các lần chạy của cùng một task chồng lấp nhau) và của scheduler pool nhiều thread trong Spring - không phải nội dung độc quyền cần nguồn riêng cho Day 27, nên trình bày không gắn citation mới ở đây."
     ]
   }
 }
