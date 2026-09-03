@@ -153,7 +153,7 @@
     "objectiveCount": 1,
     "practiceCount": 4,
     "citationCount": 9,
-    "sourceLimitations": 3
+    "sourceLimitations": 4
   },
   {
     "id": "day-14",
@@ -165,7 +165,7 @@
     "objectiveCount": 1,
     "practiceCount": 4,
     "citationCount": 9,
-    "sourceLimitations": 3
+    "sourceLimitations": 4
   },
   {
     "id": "day-15",
@@ -224,7 +224,7 @@
     "durationMinutes": 150.0,
     "objectiveCount": 1,
     "practiceCount": 4,
-    "citationCount": 13,
+    "citationCount": 16,
     "sourceLimitations": 1
   },
   {
@@ -236,8 +236,8 @@
     "durationMinutes": 150.0,
     "objectiveCount": 1,
     "practiceCount": 4,
-    "citationCount": 9,
-    "sourceLimitations": 2
+    "citationCount": 19,
+    "sourceLimitations": 3
   },
   {
     "id": "day-21",
@@ -273,7 +273,7 @@
     "objectiveCount": 1,
     "practiceCount": 4,
     "citationCount": 14,
-    "sourceLimitations": 2
+    "sourceLimitations": 3
   },
   {
     "id": "day-24",
@@ -297,7 +297,7 @@
     "objectiveCount": 1,
     "practiceCount": 4,
     "citationCount": 10,
-    "sourceLimitations": 2
+    "sourceLimitations": 3
   },
   {
     "id": "day-26",
@@ -321,7 +321,7 @@
     "objectiveCount": 1,
     "practiceCount": 4,
     "citationCount": 10,
-    "sourceLimitations": 2
+    "sourceLimitations": 3
   },
   {
     "id": "day-28",
@@ -380,7 +380,7 @@
     "durationMinutes": 150.0,
     "objectiveCount": 1,
     "practiceCount": 4,
-    "citationCount": 5,
+    "citationCount": 12,
     "sourceLimitations": 4
   },
   {

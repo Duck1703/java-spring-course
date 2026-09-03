@@ -46,7 +46,7 @@
         },
         {
           "topic": "@Transient, @Temporal, @Enumerated",
-          "summary": "@Transient đánh dấu field không được lưu xuống DB (ví dụ field tính toán như tuổi); @Temporal dùng cho kiểu ngày giờ kiểu cũ (JPA 3.1 đã hỗ trợ trực tiếp java.time.*); @Enumerated(EnumType.STRING) lưu enum theo tên thay vì theo ordinal mặc định.",
+          "summary": "@Transient đánh dấu field không được lưu xuống DB (ví dụ field tính toán như tuổi); @Temporal dùng cho kiểu ngày giờ kiểu cũ (Jakarta Persistence 3.1 hỗ trợ trực tiếp một tập kiểu java.time gồm LocalDate, LocalTime, LocalDateTime, OffsetTime và OffsetDateTime); @Enumerated(EnumType.STRING) lưu enum theo tên thay vì theo ordinal mặc định.",
           "locator": "2.5. The Transient Annotation / 2.6. The Temporal Annotation / 2.7. The Enumerated Annotation"
         }
       ],

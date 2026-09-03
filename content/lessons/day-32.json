@@ -17,7 +17,13 @@
       "res-553bbd92e5d0",
       "res-afbebe6cf212",
       "res-b307e54a2685",
-      "res-af7171222f9a"
+      "res-af7171222f9a",
+      "res-cffd5452eff0",
+      "res-03607eec7dc9",
+      "res-f0e4e317a0cc",
+      "res-cb4ce5048048",
+      "res-4b719885d4a9",
+      "res-7b6cf1b4d88f"
     ]
   },
   "unitId": "unit-11",
@@ -34,6 +40,8 @@
   ],
   "outcomes": [
     "Vẽ được ERD sơ bộ cho hệ thống thương mại điện tử với 7 entity chính.",
+    "Lý giải được từng quan hệ trong ERD bằng PK/FK/cardinality/ownership cụ thể (bảng nào giữ FK, entity nào cần bảng độc lập vì mang thêm dữ liệu riêng như CartItem/OrderItem).",
+    "Suy luận được ứng viên index và hình dạng truy vấn (WHERE/JOIN) cho các use case cụ thể của dự án, và chọn chiến lược concurrency (optimistic/pessimistic locking) phù hợp cho điểm tranh chấp ghi cao nhất.",
     "Cài đặt được BaseEntity implements Persistable để kiểm soát logic persist/merge.",
     "Viết được một GlobalExceptionHandler dùng chung trả về ProblemDetail cho toàn bộ API.",
     "Thống nhất được quy ước git workflow (branch/commit/PR) cho làm việc nhóm."
@@ -66,6 +74,57 @@
           "type": "template",
           "text": "User        (id, email, passwordHash, role)\nCategory    (id, name, slug)\nProduct     (id, name, price, stock, categoryId -> Category)\nCart        (id, userId -> User)\nCartItem    (id, cartId -> Cart, productId -> Product, quantity)\nOrder       (id, userId -> User, status, total, createdAt)\nOrderItem   (id, orderId -> Order, productId -> Product, quantity, price)\n",
           "citations": []
+        },
+        {
+          "id": "day32-blk-13",
+          "type": "paragraph",
+          "text": "Mỗi entity trong ERD trên cần một khóa chính (PRIMARY KEY) - cột id - làm định danh duy nhất cho từng dòng: giá trị này bắt buộc vừa duy nhất (unique) vừa không được null, và một bảng chỉ có tối đa một PK. Khi tạo PRIMARY KEY, PostgreSQL tự động tạo kèm một chỉ mục B-tree duy nhất trên cột đó - đây là lý do tra cứu theo id (ví dụ findById) luôn nhanh mà không cần tự đánh index thêm.",
+          "citations": [
+            "day32-src-6"
+          ]
+        },
+        {
+          "id": "day32-blk-14",
+          "type": "paragraph",
+          "text": "Mỗi mũi tên '->' trong template trên là một FOREIGN KEY: cột giữ mũi tên nằm ở phía 'nhiều' (many) và phải khớp với PRIMARY KEY của bảng ở phía 'một' (one) mà nó tham chiếu - ví dụ Product.categoryId phải khớp một Category.id đang tồn tại, PostgreSQL sẽ từ chối insert nếu không. Cardinality suy ra trực tiếp từ hướng mũi tên: một Category có N Product (1-N), một User có N Cart và N Order (1-N), một Cart có N CartItem và một Order có N OrderItem (1-N). Riêng CartItem và OrderItem không phải bảng phụ thuần túy: chúng vừa tham chiếu Cart/Order VÀ Product (về bản chất hiện thực một quan hệ many-to-many giữa Cart/Order và Product), vừa mang thêm dữ liệu riêng của chính quan hệ đó (quantity, và price tại thời điểm đặt hàng cho OrderItem) - đây là lý do chúng bắt buộc phải là một bảng/entity độc lập với PK riêng, không thể thay bằng @ManyToMany + @JoinTable đơn thuần (vốn chỉ chứa đúng hai cột khóa ngoại, không có chỗ cho quantity/price).",
+          "citations": [
+            "day32-src-7"
+          ]
+        },
+        {
+          "id": "day32-blk-15",
+          "type": "important",
+          "text": "Thiết kế FK ở tầng database (bảng trên) và thiết kế quan hệ đối tượng ở tầng JPA (Day 19) là hai quyết định tách biệt, dù liên quan chặt: FK chỉ nói 'giá trị này phải tồn tại ở bảng kia', còn việc Cart có nên giữ List<CartItem> (bidirectional, mappedBy) hay CartItem chỉ giữ @ManyToOne Cart (unidirectional) là quyết định riêng ở tầng object. Một quyết định FK còn thiếu trong template và cần chốt trước Sprint 1: chọn ON DELETE cho từng quan hệ - ví dụ xóa một Category có Product đang tham chiếu nên RESTRICT (chặn xóa) hay SET NULL (Product mất category); xóa một Cart nên CASCADE để tự xóa CartItem liên quan. Đây là quyết định nghiệp vụ, không có câu trả lời đúng chung cho mọi FK.",
+          "citations": [
+            "day32-src-7"
+          ]
+        },
+        {
+          "id": "day32-blk-16",
+          "type": "paragraph",
+          "text": "Chọn cột nào cần đánh index nên đi theo thứ tự: use case cần trả lời câu hỏi gì -> dữ liệu và bảng nào liên quan -> câu truy vấn thực tế có hình dạng WHERE/JOIN nào -> cột nào trong hình dạng đó là ứng viên index -> đo đạc thật (EXPLAIN, số dòng thực tế) trước khi kết luận. PRIMARY KEY đã tự có index; nhưng các cột FK dùng để lọc/join (categoryId trên Product, userId trên Cart và Order, productId trên CartItem/OrderItem) không tự động có gì đảm bảo được đánh index - đây là những ứng viên hợp lý cho CREATE INDEX vì chúng gần như chắc chắn xuất hiện trong WHERE hoặc JOIN của các truy vấn liệt kê theo category/theo user. Nhưng 'ứng viên hợp lý' không có nghĩa là đánh index ngay từ đầu cho mọi cột FK - hãy đợi có truy vấn thật và dữ liệu đủ lớn để đo, vì mỗi index thêm vào đều có chi phí ghi/bảo trì.",
+          "citations": [
+            "day32-src-10",
+            "day32-src-7"
+          ]
+        },
+        {
+          "id": "day32-blk-17",
+          "type": "paragraph",
+          "text": "Hai use case cụ thể minh họa cách hình dạng truy vấn quyết định index: 'xem sản phẩm theo category' cần SELECT ... FROM products WHERE category_id = ? - một WHERE đơn giản, ứng viên index là products.category_id. 'Xem một đơn hàng kèm từng item và tên sản phẩm' cần JOIN ba bảng orders/order_items/products - ứng viên index nằm ở các cột FK dùng làm điều kiện JOIN (order_items.order_id, order_items.product_id). Việc này lặp lại đúng chuỗi suy luận SELECT/WHERE/JOIN đã học ở Day 20, chỉ khác là bây giờ áp dụng cho các bảng cụ thể của dự án thay vì ví dụ chung.",
+          "citations": [
+            "day32-src-8",
+            "day32-src-9"
+          ]
+        },
+        {
+          "id": "day32-blk-18",
+          "type": "paragraph",
+          "text": "Điểm tranh chấp ghi cao nhất trong 7 entity trên là giảm stock của Product khi tạo Order - đúng use case đã dùng làm ví dụ ở Day 20. Áp dụng lại nguyên tắc đã học: bắt đầu với optimistic locking (field @Version trên Product) làm mặc định vì không giữ khóa, chỉ chuyển một phần luồng đặt hàng sang pessimistic locking (@Lock(LockModeType.PESSIMISTIC_WRITE) hoặc SELECT ... FOR UPDATE) nếu đo đạc thực tế cho thấy vài sản phẩm cụ thể bị tranh chấp ghi rất cao (ví dụ trong đợt sale). Mức isolation mặc định Read Committed của PostgreSQL là đủ cho phần lớn luồng đọc/ghi của dự án; chỉ cân nhắc nâng isolation level khi kiểm thử phát hiện một anomaly cụ thể, không nâng 'cho chắc' ngay từ đầu.",
+          "citations": [
+            "day32-src-11",
+            "day32-src-12"
+          ]
         },
         {
           "id": "day32-blk-4",
@@ -160,7 +219,11 @@
   "commonMistakes": [
     "Để Spring Data JPA tự suy đoán entity mới từ id null trong khi dự án dùng id do client sinh sẵn, dẫn tới gọi nhầm merge() thay vì persist().",
     "Viết @ExceptionHandler rải rác trong từng controller thay vì gom vào một @RestControllerAdvice chung, khiến định dạng lỗi không nhất quán giữa các module.",
-    "Không thống nhất quy ước nhánh/commit trước khi vào Sprint, dẫn tới xung đột merge và lịch sử git khó theo dõi."
+    "Không thống nhất quy ước nhánh/commit trước khi vào Sprint, dẫn tới xung đột merge và lịch sử git khó theo dõi.",
+    "Vẽ mũi tên quan hệ trong ERD mà không xác định phía nào giữ FK (many side) và phía nào là PK (one side), dẫn tới thiết kế cột sai chiều.",
+    "Coi CartItem/OrderItem chỉ là bảng nối many-to-many thuần túy mà quên chúng mang thêm dữ liệu riêng (quantity, price) nên bắt buộc phải là một entity/table độc lập, không thể thay bằng @ManyToMany + @JoinTable đơn thuần.",
+    "Đánh index vào mọi cột FK ngay từ đầu 'cho chắc' trước khi có use case/truy vấn thực tế nào cần tới, thay vì đợi đo đạc.",
+    "Chọn pessimistic locking cho toàn bộ luồng đặt hàng ngay từ thiết kế ban đầu thay vì bắt đầu với optimistic locking (mặc định) và chỉ chuyển khi đo được tranh chấp thật sự cao."
   ],
   "practices": [
     {
@@ -263,7 +326,9 @@
   "syllabusAssignments": [],
   "enhancedExercises": [
     "Vẽ ERD đầy đủ (kèm kiểu dữ liệu từng cột) cho 7 entity và kiểm tra lại tính chuẩn hóa (không lặp dữ liệu không cần thiết).",
-    "Viết thêm một ExceptionHandler cho trường hợp lỗi trùng dữ liệu (ví dụ email đã tồn tại khi đăng ký)."
+    "Viết thêm một ExceptionHandler cho trường hợp lỗi trùng dữ liệu (ví dụ email đã tồn tại khi đăng ký).",
+    "Với ERD 7 entity, liệt kê mỗi quan hệ FK kèm cardinality (1-N/N-1) và quyết định ON DELETE phù hợp cho từng cái (CASCADE/RESTRICT/SET NULL), giải thích lý do nghiệp vụ.",
+    "Xác định 2 truy vấn thường gặp nhất của use case 'xem đơn hàng của một user kèm từng item' và 'xem sản phẩm theo category', viết SQL JOIN tương ứng, và liệt kê cột FK nào là ứng viên đánh index."
   ],
   "references": [
     {
@@ -300,6 +365,48 @@
       "type": "external",
       "resourceId": "res-b307e54a2685",
       "citationId": "day32-src-5"
+    },
+    {
+      "id": "day32-ref-7",
+      "type": "external",
+      "resourceId": "res-cffd5452eff0",
+      "citationId": "day32-src-6"
+    },
+    {
+      "id": "day32-ref-8",
+      "type": "external",
+      "resourceId": "res-cffd5452eff0",
+      "citationId": "day32-src-7"
+    },
+    {
+      "id": "day32-ref-9",
+      "type": "external",
+      "resourceId": "res-03607eec7dc9",
+      "citationId": "day32-src-8"
+    },
+    {
+      "id": "day32-ref-10",
+      "type": "external",
+      "resourceId": "res-f0e4e317a0cc",
+      "citationId": "day32-src-9"
+    },
+    {
+      "id": "day32-ref-11",
+      "type": "external",
+      "resourceId": "res-7b6cf1b4d88f",
+      "citationId": "day32-src-10"
+    },
+    {
+      "id": "day32-ref-12",
+      "type": "external",
+      "resourceId": "res-cb4ce5048048",
+      "citationId": "day32-src-11"
+    },
+    {
+      "id": "day32-ref-13",
+      "type": "external",
+      "resourceId": "res-4b719885d4a9",
+      "citationId": "day32-src-12"
     }
   ],
   "sourceUsage": [
@@ -332,6 +439,48 @@
       "resourceId": "res-b307e54a2685",
       "locator": "muc 6.2, vi du MyCustomErrorAttributes, MyErrorController",
       "topic": "Spring Boot ErrorController & properties"
+    },
+    {
+      "id": "day32-src-6",
+      "resourceId": "res-cffd5452eff0",
+      "locator": "5.5.4. Primary Keys",
+      "topic": "Primary key = định danh duy nhất cho mỗi entity trong ERD"
+    },
+    {
+      "id": "day32-src-7",
+      "resourceId": "res-cffd5452eff0",
+      "locator": "5.5.5. Foreign Keys",
+      "topic": "Foreign key, cardinality, và ON DELETE cho các quan hệ trong ERD"
+    },
+    {
+      "id": "day32-src-8",
+      "resourceId": "res-03607eec7dc9",
+      "locator": "7.2.1.1. Joined Tables",
+      "topic": "JOIN cho các truy vấn xuyên bảng trong ERD"
+    },
+    {
+      "id": "day32-src-9",
+      "resourceId": "res-f0e4e317a0cc",
+      "locator": "2.5. Querying a Table",
+      "topic": "Hình dạng câu truy vấn SELECT/WHERE theo use case"
+    },
+    {
+      "id": "day32-src-10",
+      "resourceId": "res-7b6cf1b4d88f",
+      "locator": "11.1. Introduction",
+      "topic": "Ứng viên index theo cột FK/WHERE thường dùng"
+    },
+    {
+      "id": "day32-src-11",
+      "resourceId": "res-cb4ce5048048",
+      "locator": "13.2.1. Read Committed Isolation Level",
+      "topic": "Isolation mặc định PostgreSQL áp dụng cho luồng đặt hàng"
+    },
+    {
+      "id": "day32-src-12",
+      "resourceId": "res-4b719885d4a9",
+      "locator": "13.3.2. Row-Level Locks",
+      "topic": "Khóa dòng cho luồng trừ kho khi đặt hàng"
     }
   ],
   "authoring": {
@@ -340,7 +489,7 @@
     "limitations": [
       "Hướng dẫn Spring Data JPA repository query methods (res-553bbd92e5d0): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
       "Bài viết về ProblemDetail của Baeldung (res-af7171222f9a): trả về HTTP 404 tại thời điểm khảo sát, không có nội dung cache hợp lệ để đọc.",
-      "Thiết kế ERD/chuẩn hóa dữ liệu quan hệ: không có resource nào trong resourceIds của Day 32 mô tả lý thuyết chuẩn hóa CSDL - ERD được trình bày như một khối template (thiết kế nghiệp vụ áp dụng) không yêu cầu trích dẫn, dựa trên facts về persist/merge (res-afbebe6cf212) để giải thích hành vi lưu entity.",
+      "Thiết kế ERD/chuẩn hóa dữ liệu quan hệ: không có resource nào trong resourceIds của Day 32 mô tả lý thuyết chuẩn hóa CSDL (1NF/2NF/3NF) - phần PK/FK/cardinality/ownership của ERD nay được lý giải trực tiếp bằng nguồn PostgreSQL chính thức (res-cffd5452eff0), còn bản thân khối template ERD và việc chuẩn hóa sâu hơn vẫn là thiết kế nghiệp vụ áp dụng, không yêu cầu trích dẫn riêng.",
       "Quy ước git workflow (branch/commit/PR/standup): không có resource nào trong resourceIds của Day 32 mô tả quy trình làm việc nhóm - trình bày như một khối template dựa trên quy ước thực hành phổ biến, không yêu cầu trích dẫn."
     ]
   }

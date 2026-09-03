@@ -23,7 +23,9 @@
       "res-01d4c9bc1c9c",
       "res-d20f2a5470d7",
       "res-cf695e39df80",
-      "res-749fa81acd48"
+      "res-749fa81acd48",
+      "res-a019e1f110d5",
+      "res-cffd5452eff0"
     ]
   },
   "unitId": "unit-07",
@@ -39,6 +41,7 @@
     "Đã hoàn thành Unit 5-6 (Spring Boot, Dependency Injection, Spring MVC: Controller/Request-Response, Validation & Exception Handling) - các controller ở Day 16/18 đã dùng Repository ở mức cơ bản (findById/save) nhưng chưa học entity mapping hay quan hệ JPA; bài này bắt đầu Unit 7 để lấp đúng khoảng đó. Lưu ý: @Query và các kỹ thuật Repository nâng cao (paging, @Transactional, auditing) chưa được học ở đây - sẽ học ở Day 20."
   ],
   "outcomes": [
+    "Phân biệt đúng object model (Java) và relational model (database): table/row/column ↔ entity/instance/field, primary key ↔ định danh duy nhất, foreign key ↔ ràng buộc tham chiếu ở tầng dữ liệu chứ không phải object reference trong bộ nhớ.",
     "Ánh xạ đúng entity JPA bằng @Entity/@Id/@GeneratedValue/@Table/@Column.",
     "Thiết kế đúng quan hệ một chiều, hai chiều, và @ManyToMany với @JoinTable.",
     "Chọn đúng CascadeType và biết khi nào an toàn dùng orphanRemoval.",
@@ -64,6 +67,93 @@
       ]
     },
     {
+      "id": "day19-sec-relational",
+      "title": "Nền tảng quan hệ: table, row, column, khóa chính, khóa ngoại",
+      "blocks": [
+        {
+          "id": "day19-blk-40",
+          "type": "paragraph",
+          "text": "Trước khi ánh xạ bằng @Entity, cần một nền tảng ở tầng dữ liệu: PostgreSQL (và RDBMS nói chung) định nghĩa một table là một tập hợp có tên gồm nhiều row (dòng); mọi row trong cùng một table chia sẻ chung một tập column (cột) đã được đặt tên, mỗi column có một kiểu dữ liệu cụ thể. Các column có thứ tự cố định trong mỗi row, nhưng bản thân SQL không đảm bảo thứ tự của các row bên trong table theo bất kỳ cách nào. Đây là mô hình quan hệ (relational model) mà JPA sẽ ánh xạ vào: table ↔ class được đánh dấu @Entity, row ↔ một instance entity cụ thể, column ↔ một field được đánh dấu @Column.",
+          "citations": [
+            "day19-src-14"
+          ]
+        },
+        {
+          "id": "day19-blk-41",
+          "type": "paragraph",
+          "text": "Primary key (khóa chính) là ràng buộc chỉ định một cột (hoặc nhóm cột) dùng làm định danh duy nhất cho các row trong table: giá trị đó vừa phải unique vừa không được null, và một table chỉ có tối đa một primary key. Đây chính là điều @Id ánh xạ tới - id sinh bởi @GeneratedValue không phải một quy ước tùy ý của JPA, mà là cách Java biểu diễn primary key mà database vốn đã yêu cầu ở tầng dữ liệu; việc thêm primary key cũng tự động tạo một chỉ mục (index) B-tree duy nhất trên (các) cột đó.",
+          "citations": [
+            "day19-src-15"
+          ]
+        },
+        {
+          "id": "day19-blk-42",
+          "type": "paragraph",
+          "text": "Foreign key (khóa ngoại) là ràng buộc quy định giá trị trong một cột của table này phải khớp với giá trị ở một row nào đó của table được tham chiếu, qua đó duy trì tính toàn vẹn tham chiếu (referential integrity) giữa hai table có liên quan; ví dụ cột category_id kiểu integer REFERENCES categories sẽ khiến database từ chối chèn một row products có category_id không tồn tại trong categories. Đây là điều @ManyToOne + @JoinColumn ánh xạ tới ở phần sau: khóa ngoại luôn nằm ở phía 'nhiều' (Product), không nằm ở phía 'một' (Category) - một chi tiết vật lý dễ nhầm nếu chỉ nhìn từ phía object.",
+          "citations": [
+            "day19-src-16"
+          ]
+        },
+        {
+          "id": "day19-blk-43",
+          "type": "code",
+          "language": "sql",
+          "code": "CREATE TABLE categories (\n    id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    name VARCHAR(150) NOT NULL\n);\n\nCREATE TABLE products (\n    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,\n    name        VARCHAR(150) NOT NULL,\n    category_id BIGINT REFERENCES categories (id)\n);\n",
+          "compile": false,
+          "citations": [
+            "day19-src-15",
+            "day19-src-16"
+          ],
+          "partialReason": "Ví dụ DDL minh họa PRIMARY KEY/FOREIGN KEY ở tầng quan hệ, làm nền cho entity Product/Category ánh xạ ở phần sau; không phải Java nên javac không áp dụng, và không được thực thi trên database thật trong pipeline này."
+        },
+        {
+          "id": "day19-blk-44",
+          "type": "table",
+          "columns": [
+            "Object model (Java)",
+            "Relational model (Database)"
+          ],
+          "rows": [
+            [
+              "Class được đánh dấu @Entity",
+              "Table"
+            ],
+            [
+              "Một instance entity",
+              "Một row"
+            ],
+            [
+              "Field được đánh dấu @Column",
+              "Column"
+            ],
+            [
+              "Object identity (field @Id)",
+              "Primary key"
+            ],
+            [
+              "Tham chiếu object (product.getCategory())",
+              "Foreign key (category_id lưu trong row)"
+            ]
+          ],
+          "citations": [
+            "day19-src-14",
+            "day19-src-15",
+            "day19-src-16",
+            "day19-src-1"
+          ]
+        },
+        {
+          "id": "day19-blk-45",
+          "type": "important",
+          "text": "Quan hệ ở object model và quan hệ ở relational model là HAI mô hình khác nhau, không phải một: trong Java, product.getCategory() là một tham chiếu object (con trỏ trong bộ nhớ, do JVM quản lý); trong database, category_id là một giá trị khóa ngoại được lưu trực tiếp trong row, được kiểm tra ràng buộc referential integrity. JPA/Hibernate (ORM) là lớp dịch đứng giữa hai mô hình này: nó không tạo ra khái niệm 'quan hệ' - quan hệ giữa các bảng luôn tồn tại ở tầng dữ liệu trước, JPA chỉ ánh xạ annotation Java sang đúng cột khóa ngoại đó. Vì vậy sửa một object reference trong bộ nhớ (ví dụ set category = null nhưng không lưu) không tự động đổi gì ở database ngay lập tức, và ngược lại một ràng buộc FK ở database sẽ không hiện ra như một lỗi Java cho tới khi flush/commit.",
+          "citations": [
+            "day19-src-16",
+            "day19-src-5"
+          ]
+        }
+      ]
+    },
+    {
       "id": "day19-sec-entity",
       "title": "Entity Mapping: @Entity, @Id, @Table, @Column",
       "blocks": [
@@ -79,7 +169,7 @@
         {
           "id": "day19-blk-4",
           "type": "paragraph",
-          "text": "@Table cho phép chỉ định tên bảng thực tế trong database khi tên này khác tên class (mặc định nếu không khai báo, provider dùng tên entity làm tên bảng); @Column tuỳ chỉnh ánh xạ một field tới cột cụ thể - tên cột, độ dài, nullable, và các ràng buộc khác. @Transient đánh dấu một field không được persist xuống database (ví dụ giá trị cache tính toán tạm thời); @Temporal chỉ định độ chính xác lưu trữ (DATE/TIME/TIMESTAMP) cho các field kiểu java.util.Date/Calendar; @Enumerated chọn cách lưu enum xuống database - ORDINAL (lưu số thứ tự, dễ vỡ khi thêm/sắp xếp lại hằng số enum) hoặc STRING (lưu tên hằng số, an toàn hơn khi tiến hoá schema).",
+          "text": "@Table cho phép chỉ định tên bảng thực tế trong database khi tên này khác tên class (mặc định nếu không khai báo, provider dùng tên entity làm tên bảng); @Column tuỳ chỉnh ánh xạ một field tới cột cụ thể - tên cột, độ dài, nullable, và các ràng buộc khác. @Transient đánh dấu một field không được persist xuống database (ví dụ giá trị cache tính toán tạm thời); @Temporal chỉ định độ chính xác lưu trữ (DATE/TIME/TIMESTAMP) cho các field kiểu java.util.Date/Calendar - đây là kiểu ngày giờ cũ, vì Jakarta Persistence 3.1 đã hỗ trợ trực tiếp một tập kiểu java.time gồm LocalDate, LocalTime, LocalDateTime, OffsetTime và OffsetDateTime, nên với code mới nên ưu tiên các kiểu này và bỏ hẳn @Temporal - riêng java.time.Instant thì mãi tới Jakarta Persistence 3.2 mới được chuẩn hoá, nên nếu dự án còn ở JPA 3.1 hãy dùng OffsetDateTime cho field thời điểm (timestamp) thay vì Instant; @Enumerated chọn cách lưu enum xuống database - ORDINAL (lưu số thứ tự, dễ vỡ khi thêm/sắp xếp lại hằng số enum) hoặc STRING (lưu tên hằng số, an toàn hơn khi tiến hoá schema).",
           "citations": [
             "day19-src-3",
             "day19-src-4"
@@ -89,7 +179,7 @@
           "id": "day19-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.persistence.*;\n\n@Entity\n@Table(name = \"products\")\npublic class Product {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @Column(name = \"name\", nullable = false, length = 150)\n    private String name;\n\n    @Column(name = \"unit_price\", nullable = false)\n    private java.math.BigDecimal unitPrice;\n\n    @Temporal(TemporalType.TIMESTAMP)\n    @Column(name = \"created_at\")\n    private java.util.Date createdAt;\n\n    @Enumerated(EnumType.STRING)\n    @Column(name = \"status\", nullable = false)\n    private ProductStatus status;\n\n    @Transient\n    private java.math.BigDecimal discountedPriceCache;\n\n    protected Product() {\n    }\n}\n",
+          "code": "import jakarta.persistence.*;\nimport java.time.OffsetDateTime;\n\n@Entity\n@Table(name = \"products\")\npublic class Product {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @Column(name = \"name\", nullable = false, length = 150)\n    private String name;\n\n    @Column(name = \"unit_price\", nullable = false)\n    private java.math.BigDecimal unitPrice;\n\n    // java.time.OffsetDateTime, KHÔNG @Temporal: JPA 3.1 chuẩn hoá trực tiếp OffsetDateTime.\n    // @Temporal chỉ cần thiết cho kiểu cũ java.util.Date/Calendar; java.time.Instant thì phải\n    // JPA 3.2 trở lên mới được chuẩn hoá, nên chưa dùng ở đây.\n    @Column(name = \"created_at\")\n    private OffsetDateTime createdAt;\n\n    @Enumerated(EnumType.STRING)\n    @Column(name = \"status\", nullable = false)\n    private ProductStatus status;\n\n    @Transient\n    private java.math.BigDecimal discountedPriceCache;\n\n    protected Product() {\n    }\n}\n",
           "compile": false,
           "citations": [
             "day19-src-1",
@@ -306,41 +396,45 @@
     "Để @ManyToOne ở mặc định EAGER, thêm join vào mọi truy vấn dù không cần dữ liệu liên quan.",
     "Chạm vào quan hệ lazy sau khi transaction đã đóng và nhận LazyInitializationException, rồi 'chữa' bằng cách bật open-in-view.",
     "Không đếm số câu SQL trong test nên không phát hiện N+1 cho tới khi lên production.",
-    "Dùng javax.persistence.* trong Spring Boot 3, hoặc dùng record/class final làm entity."
+    "Dùng javax.persistence.* trong Spring Boot 3, hoặc dùng record/class final làm entity.",
+    "Coi @Entity là 'một database object': quên rằng table/row/column ở tầng dữ liệu tồn tại độc lập với class/instance/field ở tầng Java, và JPA chỉ là lớp ánh xạ giữa hai mô hình.",
+    "Dùng @Temporal + java.util.Date cho field ngày giờ mới thay vì tập kiểu java.time mà JPA 3.1 đã hỗ trợ trực tiếp (LocalDate/LocalTime/LocalDateTime/OffsetTime/OffsetDateTime), không cần @Temporal - và nhầm rằng java.time.Instant cũng nằm trong nhóm được JPA 3.1 chuẩn hoá, trong khi Instant phải tới Jakarta Persistence 3.2 mới được hỗ trợ trực tiếp.",
+    "Tưởng sửa object reference trong bộ nhớ (ví dụ set quan hệ = null) lập tức đổi dữ liệu ở database, trong khi thực chất chỉ đồng bộ khi persistence context flush/commit."
   ],
   "practices": [
     {
       "id": "day19-prac-1",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Trong quan hệ @OneToMany/@ManyToOne hai chiều, thuộc tính mappedBy được khai báo ở đâu và có ý nghĩa gì?",
+      "prompt": "Cột category_id ở bảng products là một FOREIGN KEY NOT NULL trỏ tới categories. Trong Java, bạn gọi product.setCategory(null) trên một entity đang managed nhưng CHƯA flush/commit. Điều gì đúng ngay tại thời điểm đó?",
       "choices": [
         {
           "id": "day19-prac-1-b",
-          "text": "Khai báo ở phía @ManyToOne, trỏ tên cột khoá ngoại trong database"
+          "text": "Database ngay lập tức từ chối vì vi phạm ràng buộc NOT NULL của foreign key"
         },
         {
           "id": "day19-prac-1-c",
-          "text": "mappedBy chỉ dùng cho @ManyToMany, không dùng cho @OneToMany"
+          "text": "Set field quan hệ về null trong Java không có tác dụng gì cả, ở cả hai phía"
         },
         {
           "id": "day19-prac-1-a",
-          "text": "Khai báo ở phía @OneToMany (phía nghịch đảo), trỏ tên field ở phía sở hữu (@ManyToOne) chịu trách nhiệm ánh xạ khoá ngoại"
+          "text": "Object trong bộ nhớ đã đổi (category là null), nhưng row category_id trong database vẫn giữ giá trị cũ - hai mô hình tạm thời không khớp nhau cho tới khi flush/commit"
         },
         {
           "id": "day19-prac-1-d",
-          "text": "mappedBy thay thế hoàn toàn cho @JoinColumn ở cả hai phía"
+          "text": "JPA tự động rollback transaction ngay khi phát hiện vi phạm ràng buộc, trước cả khi flush"
         }
       ],
       "correctChoiceIds": [
         "day19-prac-1-a"
       ],
-      "hint": "Xem lại phần so sánh quan hệ một chiều và hai chiều trong bài.",
-      "solution": "Khai báo mappedBy ở phía @OneToMany (phía nghịch đảo), trỏ tới tên field @ManyToOne ở phía sở hữu chịu trách nhiệm ánh xạ khoá ngoại; điều này giúp JPA nhận ra hai field là hai phía của cùng một quan hệ và tránh tạo bảng join trung gian không cần thiết.",
-      "explanation": "mappedBy thuộc phía nghịch đảo, thường là @OneToMany, và nhận tên field Java ở phía sở hữu @ManyToOne; nó không được khai báo ở @ManyToOne và không nhận tên cột database. mappedBy cũng dùng được cho @OneToMany chứ không chỉ @ManyToMany. Nó không thay thế @JoinColumn ở cả hai phía: phía sở hữu vẫn dùng @JoinColumn để ánh xạ khoá ngoại thực tế, còn phía nghịch đảo dùng mappedBy để trỏ về field sở hữu.",
-      "rubric": "Chọn đúng phía khai báo mappedBy và vai trò 'chỉ tên field phía sở hữu' thay vì nhầm với tên cột database.",
+      "hint": "Object reference (Java) và foreign key (database) là hai mô hình khác nhau, chỉ được ORM đồng bộ tại thời điểm flush/commit.",
+      "solution": "Ngay tại thời điểm gọi setCategory(null), chỉ object trong bộ nhớ thay đổi; database chưa biết gì về thay đổi này cho tới khi Hibernate flush (thường vào lúc transaction commit). Nếu khi flush cột category_id ở database là NOT NULL, câu UPDATE sinh ra lúc đó mới bị database từ chối - không phải ngay lúc gọi setter.",
+      "explanation": "Đây chính là hệ quả của việc object model và relational model là hai mô hình tách biệt: JPA không kiểm tra ràng buộc FK ngay khi bạn đổi field trong bộ nhớ, ràng buộc đó chỉ được database kiểm tra khi câu SQL thực sự được gửi đi lúc flush. Set null trên field quan hệ vẫn có tác dụng ở phía object (đó là bước đầu tiên bắt buộc), chỉ là chưa lan xuống database ngay. Không có cơ chế 'rollback trước khi flush' vì trước flush database chưa hề nhận được câu lệnh nào để kiểm tra.",
+      "rubric": "Chọn đúng: thay đổi object xảy ra ngay, thay đổi database bị trì hoãn tới flush/commit; loại được các phương án gộp hai mô hình làm một hoặc bịa ra hành vi rollback sớm.",
       "sourceUsage": [
-        "day19-src-6"
+        "day19-src-16",
+        "day19-src-1"
       ]
     },
     {
@@ -423,7 +517,8 @@
     "Bật show-sql, nạp danh sách entity rồi đọc một quan hệ lazy trong vòng lặp và đếm số câu SQL; sửa lại bằng JOIN FETCH và so sánh.",
     "Xóa một phần tử khỏi collection con với orphanRemoval = true và không có nó, quan sát khác biệt trong SQL sinh ra.",
     "Sửa một field của entity đã nạp trong method @Transactional mà không gọi save, kiểm tra database để hiểu dirty checking; sau đó thử lại ngoài transaction.",
-    "Chuyển một @ManyToMany có dữ liệu bổ sung thành entity trung gian với hai @ManyToOne và giải thích vì sao thiết kế này linh hoạt hơn."
+    "Chuyển một @ManyToMany có dữ liệu bổ sung thành entity trung gian với hai @ManyToOne và giải thích vì sao thiết kế này linh hoạt hơn.",
+    "Viết DDL (CREATE TABLE ... PRIMARY KEY ... REFERENCES ...) cho một entity mới (ví dụ Order tham chiếu Product), sau đó ánh xạ ngược lại bằng @Entity/@Id/@ManyToOne + @JoinColumn và đối chiếu từng phần DDL với từng annotation."
   ],
   "references": [
     {
@@ -508,6 +603,24 @@
       "type": "external",
       "resourceId": "res-d20f2a5470d7",
       "citationId": "day19-src-8"
+    },
+    {
+      "id": "day19-ref-15",
+      "type": "external",
+      "resourceId": "res-a019e1f110d5",
+      "citationId": "day19-src-14"
+    },
+    {
+      "id": "day19-ref-16",
+      "type": "external",
+      "resourceId": "res-cffd5452eff0",
+      "citationId": "day19-src-15"
+    },
+    {
+      "id": "day19-ref-17",
+      "type": "external",
+      "resourceId": "res-cffd5452eff0",
+      "citationId": "day19-src-16"
     }
   ],
   "sourceUsage": [
@@ -588,6 +701,24 @@
       "resourceId": "res-749fa81acd48",
       "locator": "8. Lazy Loading in Hibernate",
       "topic": "Cơ chế proxy của lazy loading"
+    },
+    {
+      "id": "day19-src-14",
+      "resourceId": "res-a019e1f110d5",
+      "locator": "2.2. Concepts",
+      "topic": "Table là named collection of rows"
+    },
+    {
+      "id": "day19-src-15",
+      "resourceId": "res-cffd5452eff0",
+      "locator": "5.5.4. Primary Keys",
+      "topic": "Primary key = định danh duy nhất cho dòng"
+    },
+    {
+      "id": "day19-src-16",
+      "resourceId": "res-cffd5452eff0",
+      "locator": "5.5.5. Foreign Keys",
+      "topic": "Foreign key duy trì tính toàn vẹn tham chiếu"
     }
   ],
   "authoring": {

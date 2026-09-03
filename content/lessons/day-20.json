@@ -18,7 +18,13 @@
       "res-cf695e39df80",
       "res-749fa81acd48",
       "res-2e4a3dd62ec7",
-      "res-82b36b19c96f"
+      "res-82b36b19c96f",
+      "res-03607eec7dc9",
+      "res-f0e4e317a0cc",
+      "res-92ca41586e78",
+      "res-cb4ce5048048",
+      "res-4b719885d4a9",
+      "res-7b6cf1b4d88f"
     ]
   },
   "unitId": "unit-07",
@@ -34,6 +40,9 @@
     "Đã hoàn thành Day 19 (Entity Design & Relationships) - bài này dùng lại các entity/quan hệ đã thiết kế để minh hoạ truy vấn, giao dịch, và auditing."
   ],
   "outcomes": [
+    "Dịch được các thao tác repository (findBy..., @Query, JOIN FETCH) xuống đúng câu SELECT/WHERE/JOIN mà database thực sự thực thi, và biết khi nào cần index để tránh sequential scan.",
+    "Giải thích được transaction tồn tại độc lập ở tầng database (BEGIN/COMMIT/ROLLBACK, atomicity) trước khi @Transactional tự động hoá nó, và phân biệt hành vi isolation/locking đặc thù của PostgreSQL với chuẩn SQL nói chung.",
+    "Chọn đúng giữa optimistic locking (@Version) và pessimistic locking (@Lock/SELECT ... FOR UPDATE) theo mức độ tranh chấp dữ liệu thực tế, và nhận diện rủi ro deadlock khi giữ khóa quá lâu.",
     "Viết đúng repository dùng PagingAndSortingRepository và chọn Page<T> hoặc Slice<T> phù hợp ngữ cảnh.",
     "Giải thích đúng vai trò của @Transactional và quy tắc rollback mặc định của Spring.",
     "So sánh được ba cách auditing (callback JPA, Spring Data auditing, Envers) và biết khi nào dùng cách nào."
@@ -48,6 +57,75 @@
           "type": "note",
           "text": "Ngày học không có Assignment riêng (lịch chỉ ghi 'Guides/Review') - đây là buổi ôn tập có trainer đồng hành, tổng hợp lại các mẫu truy vấn/giao dịch/auditing sẽ dùng trực tiếp trong Assignment 7 (E-Commerce Data Layer) ở Day 21: repository nâng cao với phân trang/sắp xếp, quản lý giao dịch với @Transactional, và các chiến lược ghi lại lịch sử thay đổi dữ liệu (auditing).",
           "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day20-sec-sql",
+      "title": "Nền tảng SQL: SELECT/WHERE, JOIN, và index",
+      "blocks": [
+        {
+          "id": "day20-blk-40",
+          "type": "paragraph",
+          "text": "Trước khi bàn cách Spring Data JPA sinh câu truy vấn, cần nắm mental model SQL mà nó dịch xuống. Một câu SELECT chia thành ba phần: select list (liệt kê cột cần lấy, dấu * là viết tắt cho 'tất cả cột'), FROM (bảng nguồn dữ liệu), và WHERE - một biểu thức boolean tuỳ chọn để lọc dòng: chỉ dòng nào khiến biểu thức đó true mới được giữ lại trong kết quả. Nếu không có ORDER BY, thứ tự các dòng trả về không được đảm bảo - đây là lý do phải luôn sort theo một khóa xác định khi phân trang (đã nêu ở day20-blk-31).",
+          "citations": [
+            "day20-src-10"
+          ]
+        },
+        {
+          "id": "day20-blk-41",
+          "type": "code",
+          "language": "sql",
+          "code": "SELECT id, name, unit_price\nFROM products\nWHERE category_id = 3\nORDER BY unit_price DESC;\n",
+          "compile": false,
+          "citations": [
+            "day20-src-10"
+          ],
+          "partialReason": "Ví dụ SQL thuần minh họa mental model SELECT/FROM/WHERE; không phải Java nên javac không áp dụng, và không được thực thi trên database thật trong pipeline này."
+        },
+        {
+          "id": "day20-blk-42",
+          "type": "paragraph",
+          "text": "JOIN kết hợp dòng từ hai bảng theo một điều kiện khớp. INNER JOIN (loại join mặc định khi không ghi rõ từ khóa) chỉ giữ lại các cặp dòng thỏa điều kiện - một product không có category hợp lệ sẽ biến mất khỏi kết quả. LEFT OUTER JOIN thực hiện inner join trước, sau đó với mỗi dòng bên trái (T1) không khớp dòng nào bên phải (T2), vẫn thêm một dòng kết quả với các cột T2 là null - nhờ vậy kết quả luôn có ít nhất một dòng cho mỗi dòng T1. Khác biệt hay bị bỏ sót: dùng INNER JOIN khi liệt kê product theo category sẽ âm thầm loại bỏ mọi product chưa gán category, trong khi LEFT JOIN vẫn giữ lại chúng với category là null.",
+          "citations": [
+            "day20-src-11"
+          ]
+        },
+        {
+          "id": "day20-blk-43",
+          "type": "code",
+          "language": "sql",
+          "code": "-- INNER JOIN: chỉ product có category hợp lệ\nSELECT p.name, c.name AS category_name\nFROM products p\nINNER JOIN categories c ON p.category_id = c.id;\n\n-- LEFT JOIN: giữ cả product chưa gán category (category_name = NULL)\nSELECT p.name, c.name AS category_name\nFROM products p\nLEFT JOIN categories c ON p.category_id = c.id;\n",
+          "compile": false,
+          "citations": [
+            "day20-src-11"
+          ],
+          "partialReason": "Ví dụ SQL thuần minh họa INNER JOIN so với LEFT JOIN; không phải Java nên javac không áp dụng, và không được thực thi trên database thật trong pipeline này."
+        },
+        {
+          "id": "day20-blk-44",
+          "type": "note",
+          "text": "RIGHT OUTER JOIN là LEFT JOIN đảo chiều (giữ toàn bộ dòng bên phải); FULL OUTER JOIN kết hợp cả hai chiều, giữ lại dòng không khớp ở cả hai bảng. Hai loại này hiếm gặp trong truy vấn ứng dụng thông thường (LEFT JOIN gần như luôn đủ dùng) nên bài chỉ dừng ở mức nhận biết, không đi sâu.",
+          "citations": [
+            "day20-src-11"
+          ]
+        },
+        {
+          "id": "day20-blk-45",
+          "type": "important",
+          "text": "Nếu không có index, để tìm dòng khớp WHERE category_id = 3, database buộc phải quét toàn bộ bảng (sequential scan) từng dòng một - chấp nhận được với vài trăm dòng nhưng chậm dần khi bảng lớn lên. CREATE INDEX idx_products_category ON products (category_id) tạo một chỉ mục để database tra cứu trực tiếp thay vì quét toàn bảng, tương tự mục lục cuối sách. Nhưng index KHÔNG miễn phí: mỗi lần bảng thay đổi (INSERT/UPDATE/DELETE), database phải cập nhật lại index theo, nên đánh index vào mọi cột không phải lúc nào cũng có lợi - chỉ nên đánh index vào cột thường xuất hiện trong WHERE/JOIN mà thực sự cần tăng tốc, không phải mọi cột 'cho chắc'.",
+          "citations": [
+            "day20-src-12"
+          ]
+        },
+        {
+          "id": "day20-blk-46",
+          "type": "paragraph",
+          "text": "Mọi thứ Spring Data JPA làm đều dịch xuống đúng các khối SELECT/FROM/WHERE và JOIN vừa nêu - database không hề 'hiểu' findByCategoryId, nó chỉ nhận được một câu SELECT ... WHERE category_id = ? do Spring Data sinh ra từ tên method. @Query cho phép viết JPQL gần với SQL hơn khi tên method không đủ diễn đạt; JOIN FETCH bên trong @Query là cách yêu cầu Hibernate dịch sang đúng một câu SQL có JOIN thay vì phát thêm truy vấn N+1 riêng cho từng quan hệ lazy (Day 19). Hiểu lớp dịch này giải thích vì sao đọc SQL sinh ra (show-sql) là cách gỡ lỗi hiệu năng đáng tin cậy nhất: mọi annotation JPA cuối cùng đều quy về một câu SQL thật thực thi trên database.",
+          "citations": [
+            "day20-src-10",
+            "day20-src-11"
+          ]
         }
       ]
     },
@@ -89,11 +167,17 @@
         {
           "id": "day20-blk-30",
           "type": "paragraph",
-          "text": "Spring Data JPA hoạt động theo nguyên tắc: bạn *khai báo* interface repository, còn phần cài đặt do framework sinh ra lúc chạy. Có ba cách diễn đạt truy vấn và mỗi cách có chỗ dùng riêng. Derived query (`findByStatusAndCreatedAtAfter`) là ngắn nhất và được kiểm tra ngay khi khởi động — nếu tên method sai chính tả hoặc không khớp field, ứng dụng không lên; nhưng tên sẽ dài không đọc nổi khi có nhiều điều kiện. `@Query` với JPQL phù hợp cho truy vấn phức tạp và vẫn làm việc trên entity nên không phụ thuộc phương ngữ SQL. Specification/Criteria API dùng khi các điều kiện *thay đổi theo dữ liệu người dùng* (bộ lọc tùy chọn) — chỗ mà nếu nối chuỗi SQL bằng tay bạn sẽ mở cửa cho SQL injection. Quy tắc chọn: dùng cách đơn giản nhất đủ diễn đạt ý định, và đừng ghép nhiều điều kiện tùy chọn bằng cách nối chuỗi.",
+          "text": "Spring Data JPA hoạt động theo nguyên tắc: bạn *khai báo* interface repository, còn phần cài đặt do framework sinh ra lúc chạy - dịch xuống đúng những câu SELECT/WHERE/JOIN vừa nêu ở phần trước. Derived query (`findByStatusAndCreatedAtAfter`) là ngắn nhất và được kiểm tra ngay khi khởi động — nếu tên method sai chính tả hoặc không khớp field, ứng dụng không lên; nhưng tên sẽ dài không đọc nổi khi có nhiều điều kiện. `@Query` với JPQL phù hợp cho truy vấn phức tạp và vẫn làm việc trên entity nên không phụ thuộc phương ngữ SQL.",
           "citations": [
             "day20-src-1",
             "day20-src-2"
           ]
+        },
+        {
+          "id": "day20-blk-47",
+          "type": "paragraph",
+          "text": "Một lựa chọn thứ ba đáng biết dù bài không đi sâu: Specification/Criteria API, dùng khi điều kiện lọc *thay đổi theo dữ liệu người dùng nhập* (bộ lọc tuỳ chọn nhiều trường) - chỗ mà nối chuỗi SQL bằng tay sẽ mở cửa cho SQL injection. Quy tắc chọn giữa ba cách: dùng cách đơn giản nhất đủ diễn đạt ý định - derived query cho điều kiện cố định và ít, @Query khi cần JPQL phức tạp hoặc JOIN FETCH tường minh, Specification chỉ khi số điều kiện lọc thực sự động.",
+          "citations": []
         },
         {
           "id": "day20-blk-31",
@@ -108,21 +192,40 @@
     },
     {
       "id": "day20-sec-transaction",
-      "title": "Quản lý giao dịch với @Transactional",
+      "title": "Giao dịch: từ BEGIN/COMMIT/ROLLBACK tới @Transactional",
       "blocks": [
+        {
+          "id": "day20-blk-48",
+          "type": "paragraph",
+          "text": "Trước khi nói tới @Transactional, cần thấy transaction tồn tại ở tầng database trước, độc lập với Java. Một transaction gộp nhiều câu lệnh SQL thành một thao tác tất-cả-hoặc-không-gì (all-or-nothing): mở bằng BEGIN, kết thúc bằng COMMIT nếu muốn giữ mọi thay đổi, hoặc ROLLBACK nếu muốn hủy toàn bộ - kể cả những câu đã chạy thành công trước đó trong cùng transaction. Nếu không tự phát BEGIN, mỗi câu lệnh đơn lẻ vẫn chạy trong một transaction ngầm định riêng của chính nó.",
+          "citations": [
+            "day20-src-13"
+          ]
+        },
+        {
+          "id": "day20-blk-49",
+          "type": "code",
+          "language": "sql",
+          "code": "BEGIN;\n\nUPDATE products SET stock = stock - 1 WHERE id = 42 AND stock > 0;\n-- 0 dòng bị ảnh hưởng nếu đã hết hàng: SQL không tự báo lỗi, phải tự kiểm tra rowcount\n\nINSERT INTO orders (product_id, quantity) VALUES (42, 1);\n\n-- Nếu bước INSERT lỗi (vi phạm ràng buộc), hủy toàn bộ, kể cả UPDATE đã chạy thành công:\nROLLBACK;\n-- Chỉ khi cả hai bước đều ổn mới: COMMIT;\n",
+          "compile": false,
+          "citations": [
+            "day20-src-13"
+          ],
+          "partialReason": "Ví dụ SQL thuần minh họa ranh giới transaction và một kịch bản lỗi thực tế (trừ kho rồi tạo đơn hàng); không phải Java nên javac không áp dụng, và không được thực thi trên database thật trong pipeline này."
+        },
+        {
+          "id": "day20-blk-50",
+          "type": "important",
+          "text": "Atomicity nghĩa là không có trạng thái 'nửa vời' được phép tồn tại lâu dài: nếu chỉ COMMIT được bước UPDATE trừ kho mà bước INSERT đơn hàng thất bại và toàn bộ transaction ROLLBACK, thì kho hàng KHÔNG bị trừ - transaction đảm bảo hoặc cả hai câu lệnh đều có hiệu lực, hoặc không câu nào có hiệu lực. Đây chính là vấn đề mà @Transactional tồn tại để giải quyết ở phía Java: không phải phát minh ra khái niệm giao dịch, mà tự động phát ra đúng BEGIN/COMMIT/ROLLBACK quanh method nghiệp vụ thay vì bắt bạn viết tay.",
+          "citations": [
+            "day20-src-13"
+          ]
+        },
         {
           "id": "day20-blk-5",
           "type": "note",
-          "text": "Chủ đề @Transactional (ranh giới giao dịch, propagation, isolation, quy tắc rollback) không có resource nào trong resourceIds của Day 20 mô tả trực tiếp (xem authoring.limitations). Kiến thức chuẩn của Spring: @Transactional đặt trên method (hoặc class) của tầng service để Spring tự mở giao dịch trước khi method chạy và commit/rollback sau khi method kết thúc; mặc định Spring rollback khi gặp RuntimeException hoặc Error (không tự rollback với checked exception trừ khi khai báo rollbackFor tường minh). Propagation mặc định là REQUIRED (tham gia giao dịch hiện có nếu có, hoặc tạo mới nếu chưa có); các giá trị khác như REQUIRES_NEW (luôn tạo giao dịch mới, tạm dừng giao dịch hiện tại) phù hợp khi cần một thao tác ghi log độc lập, không bị rollback theo giao dịch cha.",
+          "text": "Chủ đề chi tiết của @Transactional (ranh giới giao dịch, propagation, quy tắc rollback) không có resource nào trong resourceIds của Day 20 mô tả trực tiếp (xem authoring.limitations). Kiến thức chuẩn của Spring: @Transactional đặt trên method (hoặc class) của tầng service để Spring tự mở giao dịch trước khi method chạy và commit/rollback sau khi method kết thúc; mặc định Spring rollback khi gặp RuntimeException hoặc Error (không tự rollback với checked exception trừ khi khai báo rollbackFor tường minh). Propagation mặc định là REQUIRED (tham gia giao dịch hiện có nếu có, hoặc tạo mới nếu chưa có); các giá trị khác như REQUIRES_NEW (luôn tạo giao dịch mới, tạm dừng giao dịch hiện tại) phù hợp khi cần một thao tác ghi log độc lập, không bị rollback theo giao dịch cha.",
           "citations": []
-        },
-        {
-          "id": "day20-blk-6",
-          "type": "important",
-          "text": "CascadeType.LOCK là một giá trị mở rộng riêng của Hibernate (không thuộc chuẩn Jakarta Persistence), dùng để lan truyền thao tác lock (khoá bi quan) sang entity con trong cùng một persistence context. Vì đây là API riêng của Hibernate, dùng nó sẽ làm giảm khả năng chuyển đổi provider JPA khác nếu cần trong tương lai - nên cân nhắc dùng khoá tường minh qua EntityManager.lock() thay vì gắn cứng CascadeType.LOCK vào định nghĩa quan hệ khi không thực sự cần lan truyền tự động.",
-          "citations": [
-            "day20-src-8"
-          ]
         },
         {
           "id": "day20-blk-32",
@@ -140,6 +243,80 @@
           "citations": [
             "day20-src-5",
             "day20-src-6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "day20-sec-concurrency",
+      "title": "Isolation và Locking",
+      "blocks": [
+        {
+          "id": "day20-blk-51",
+          "type": "paragraph",
+          "text": "Transaction giải quyết atomicity (tất-cả-hoặc-không-gì), nhưng còn một vấn đề khác: nhiều transaction chạy đồng thời có thể nhìn thấy dữ liệu đang dở dang của nhau. Chuẩn SQL định nghĩa bốn mức isolation để kiểm soát việc này - Read Uncommitted, Read Committed, Repeatable Read, Serializable - mức càng nghiêm ngặt càng cô lập transaction khỏi ảnh hưởng lẫn nhau, đổi lại càng dễ phải chờ nhau hoặc bị từ chối hơn.",
+          "citations": [
+            "day20-src-14"
+          ]
+        },
+        {
+          "id": "day20-blk-52",
+          "type": "important",
+          "text": "Đặc thù riêng của PostgreSQL (không phải yêu cầu bắt buộc của chuẩn SQL hay của mọi RDBMS khác): PostgreSQL cho phép khai báo cả bốn mức nhưng nội bộ chỉ hiện thực ba mức khác nhau - Read Uncommitted hoạt động giống hệt Read Committed. Read Committed là mức MẶC ĐỊNH CỦA POSTGRESQL: mỗi câu lệnh riêng lẻ trong transaction chỉ thấy dữ liệu đã commit tính tới thời điểm câu lệnh đó bắt đầu chạy. Đừng khái quát 'mặc định của PostgreSQL' thành 'mặc định của SQL nói chung' - đây là hành vi cụ thể của PostgreSQL, các RDBMS khác có thể chọn mức mặc định khác.",
+          "citations": [
+            "day20-src-15"
+          ]
+        },
+        {
+          "id": "day20-blk-53",
+          "type": "note",
+          "text": "Repeatable Read (PostgreSQL): mọi câu truy vấn trong cùng transaction nhìn thấy cùng một snapshot chụp tại thời điểm câu lệnh đầu tiên bắt đầu, nên các SELECT liên tiếp luôn nhất quán với nhau. Serializable (PostgreSQL): mô phỏng việc thực thi tuần tự cho mọi transaction đã commit - nếu phát hiện một tổ hợp thực thi đồng thời không tương thích với bất kỳ thứ tự tuần tự nào, PostgreSQL cho một transaction commit và rollback (các) transaction còn lại với lỗi serialization failure; ứng dụng cần chuẩn bị sẵn logic thử lại (retry) khi dùng mức này thay vì coi nó là 'mức an toàn nhất nên luôn bật'.",
+          "citations": [
+            "day20-src-16",
+            "day20-src-17"
+          ]
+        },
+        {
+          "id": "day20-blk-54",
+          "type": "paragraph",
+          "text": "Isolation level kiểm soát những gì một transaction *nhìn thấy*, nhưng không tự động ngăn hai transaction *cùng sửa* một dòng - đó là việc của locking. Ý tưởng chung: một transaction giữ khóa trên dữ liệu nó đang thao tác để transaction khác phải chờ hoặc bị từ chối, thay vì ghi đè chồng chéo lên nhau. PostgreSQL tự động giữ khóa phù hợp cho hầu hết thao tác - một SELECT thường chỉ giữ khóa yếu nhất (ACCESS SHARE), trong khi UPDATE/DELETE/INSERT giữ khóa ROW EXCLUSIVE trên bảng đích; bạn hiếm khi phải khai báo khóa tường minh.",
+          "citations": [
+            "day20-src-18"
+          ]
+        },
+        {
+          "id": "day20-blk-55",
+          "type": "paragraph",
+          "text": "JPA cho hai chiến lược đối phó với việc cùng sửa dữ liệu, tương ứng hai triết lý khác nhau - không có câu trả lời đúng duy nhất, chọn theo mức độ tranh chấp thực tế. Optimistic locking (field @Version) không giữ khóa gì ở database: nó cá cược rằng xung đột hiếm xảy ra, và chỉ phát hiện + báo lỗi (OptimisticLockException) khi xung đột thực sự xảy ra lúc ghi - đây nên là lựa chọn mặc định vì không chặn ai cả. Pessimistic locking giữ khóa thật ở database ngay khi đọc - tương ứng SELECT ... FOR UPDATE của PostgreSQL: khóa các dòng đã đọc như thể sắp bị cập nhật, ngăn transaction khác khóa/sửa/xóa chúng cho tới khi transaction hiện tại kết thúc. Trong Spring Data, @Lock(LockModeType.PESSIMISTIC_WRITE) trên một method repository chính là cách phát ra SELECT ... FOR UPDATE đó - chỉ nên dùng khi tranh chấp thật sự cao, không phải mặc định 'an toàn hơn' cho mọi thao tác ghi.",
+          "citations": [
+            "day20-src-19"
+          ]
+        },
+        {
+          "id": "day20-blk-56",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.LockModeType;\nimport org.springframework.data.jpa.repository.Lock;\nimport org.springframework.data.jpa.repository.Query;\nimport java.util.Optional;\n\ninterface ProductRepository extends CrudRepository<Product, Long> {\n\n    @Lock(LockModeType.PESSIMISTIC_WRITE)\n    @Query(\"select p from Product p where p.id = :id\")\n    Optional<Product> findByIdForUpdate(Long id);\n}\n\n@Entity\nclass Product {\n\n    @Id\n    private Long id;\n\n    // Optimistic locking: Hibernate đưa version vào WHERE lúc UPDATE,\n    // ném OptimisticLockException nếu không dòng nào khớp.\n    @Version\n    private Long version;\n\n    private Integer stock;\n}\n",
+          "compile": false,
+          "citations": [
+            "day20-src-19"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day20-blk-57",
+          "type": "warning",
+          "text": "Khóa tường minh (pessimistic) mang theo rủi ro deadlock: hai transaction mỗi bên giữ một khóa mà bên kia đang cần, khiến cả hai chờ nhau vô thời hạn. PostgreSQL tự phát hiện tình huống này và giải quyết bằng cách hủy (abort) một trong các transaction liên quan - ứng dụng nhận về lỗi và cần retry, không phải một treo (hang) vô hạn. Đây là lý do pessimistic locking chỉ nên dùng cho tranh chấp thật sự cao và trong transaction ngắn: giữ khóa càng lâu, xác suất deadlock/chờ đợi càng tăng.",
+          "citations": [
+            "day20-src-20"
+          ]
+        },
+        {
+          "id": "day20-blk-6",
+          "type": "important",
+          "text": "Một cái bẫy đặt tên: CascadeType.LOCK (mở rộng riêng của Hibernate, không thuộc chuẩn Jakarta Persistence) KHÔNG liên quan tới optimistic/pessimistic locking vừa nói ở trên, dù tên gọi dễ khiến nhầm - nó chỉ dùng để lan truyền thao tác re-attach (gắn lại) một entity cha/con đã bị detach vào persistence context. Vì đây là API riêng của Hibernate, dùng nó sẽ làm giảm khả năng chuyển đổi provider JPA khác nếu cần trong tương lai - nên cân nhắc dùng EntityManager.lock() tường minh thay vì gắn cứng CascadeType.LOCK vào định nghĩa quan hệ khi không thực sự cần lan truyền tự động.",
+          "citations": [
+            "day20-src-8"
           ]
         }
       ]
@@ -188,10 +365,9 @@
         {
           "id": "day20-blk-35",
           "type": "warning",
-          "text": "Hai vấn đề đồng thời mà bất kỳ ứng dụng có nhiều người dùng cũng gặp. Thứ nhất là mất cập nhật (lost update): hai người cùng đọc một bản ghi, cùng sửa, người ghi sau xóa sạch thay đổi của người trước mà không ai biết. Cách chữa gọn nhất trong JPA là optimistic locking — thêm một field `@Version`; Hibernate đưa số phiên bản vào điều kiện `WHERE` khi cập nhật, và nếu không có dòng nào khớp thì ném `OptimisticLockException` để bạn xử lý (thường là báo người dùng tải lại). Đây là lựa chọn mặc định nên dùng vì không giữ khóa. Pessimistic locking (`SELECT ... FOR UPDATE`) chỉ dành cho tranh chấp thật sự cao và phải trong transaction ngắn, vì nó chặn người khác và có nguy cơ deadlock. Thứ hai, cập nhật kiểu 'đọc rồi ghi' cho các phép cộng dồn (số lượng tồn kho) nên chuyển thành cập nhật nguyên tử ở database khi có thể.",
+          "text": "Mất cập nhật (lost update) đã được xử lý ở phần Isolation và Locking phía trên bằng `@Version` (optimistic) hoặc `@Lock` (pessimistic) - hai cơ chế đó áp dụng y hệt cho các entity có auditing: field `@Version` và `@LastModifiedDate` hoàn toàn độc lập nhau, có thể cùng khai báo trên một entity mà không xung đột. Một chi tiết dễ bỏ sót riêng ở đây: cập nhật kiểu 'đọc rồi cộng dồn' (ví dụ trừ tồn kho) nên chuyển thành một câu UPDATE nguyên tử ở database khi có thể (`UPDATE products SET stock = stock - 1 WHERE id = ? AND stock > 0`) thay vì đọc giá trị về Java rồi tính toán rồi ghi lại - cách này tránh hẳn race condition mà không cần thêm bất kỳ cơ chế locking nào.",
           "citations": [
-            "day20-src-8",
-            "day20-src-9"
+            "day20-src-19"
           ]
         }
       ]
@@ -208,7 +384,13 @@
     "Nhận Pageable trực tiếp từ client mà không giới hạn kích thước trang.",
     "Gọi API bên ngoài hoặc xử lý file trong khi transaction đang mở, giữ kết nối và khóa database quá lâu.",
     "Không dùng @Version nên để xảy ra lost update giữa hai người dùng sửa cùng bản ghi.",
-    "Trông đợi auditing hoặc callback JPA hoạt động với truy vấn cập nhật hàng loạt bằng JPQL/native SQL."
+    "Trông đợi auditing hoặc callback JPA hoạt động với truy vấn cập nhật hàng loạt bằng JPQL/native SQL.",
+    "Đọc findByCategoryId/@Query như một 'ngôn ngữ riêng' của Spring Data thay vì nhận ra nó luôn dịch xuống một câu SQL SELECT/WHERE/JOIN thật.",
+    "Dùng INNER JOIN khi liệt kê dữ liệu 'kể cả khi chưa có liên kết' (ví dụ product chưa gán category), âm thầm làm mất các dòng không khớp lẽ ra cần LEFT JOIN.",
+    "Đánh index vào mọi cột 'cho chắc' mà quên rằng mỗi index đều có chi phí ghi/bảo trì.",
+    "Coi 'Read Committed là mặc định' như một sự thật chung của mọi SQL database, thay vì hành vi cụ thể của PostgreSQL.",
+    "Dùng pessimistic locking (SELECT ... FOR UPDATE / @Lock) làm lựa chọn mặc định 'cho an toàn' thay vì chỉ dùng khi tranh chấp thật sự cao, gây nghẽn và tăng rủi ro deadlock.",
+    "Nhầm CascadeType.LOCK của Hibernate với optimistic/pessimistic locking vì tên gọi giống nhau."
   ],
   "practices": [
     {
@@ -264,32 +446,52 @@
     {
       "id": "day20-prac-3",
       "type": "concept",
-      "interaction": "self-check",
-      "prompt": "So sánh dùng callback @PrePersist/@PreUpdate thuần JPA với dùng Spring Data JPA auditing (@CreatedDate/@LastModifiedDate) để tự động set thời gian tạo/sửa - khi nào nên chọn cách nào?",
-      "choices": [],
-      "correctChoiceIds": [],
-      "hint": "Nghĩ về việc có cần tích hợp với Spring Security (ghi người thực hiện) hay không, và mức độ phụ thuộc Spring Data.",
-      "solution": "Callback @PrePersist/@PreUpdate là chuẩn JPA thuần, không phụ thuộc Spring Data - phù hợp khi muốn giữ entity độc lập với framework. Spring Data JPA auditing (@CreatedDate/@LastModifiedDate cùng AuditingEntityListener) tiện lợi hơn khi đã dùng Spring Data, và dễ mở rộng thêm @CreatedBy/@LastModifiedBy để ghi người thực hiện khi tích hợp Spring Security - đổi lại entity phụ thuộc vào Spring Data.",
-      "explanation": "So sánh mức độ phụ thuộc framework và khả năng ghi lại tác giả thay đổi.",
-      "rubric": "Đánh giá học viên nêu đúng sự đánh đổi giữa tính độc lập framework và tiện ích tích hợp Spring Security.",
+      "interaction": "multiple-choice",
+      "prompt": "Một service đọc số dư tài khoản, cộng thêm tiền, rồi ghi lại - tất cả trong một transaction chạy ở mức isolation mặc định của PostgreSQL (không khai báo gì thêm). Phát biểu nào đúng về mức isolation này?",
+      "choices": [
+        {
+          "id": "day20-prac-3-a",
+          "text": "Đây là Serializable, mức nghiêm ngặt nhất, vì PostgreSQL luôn ưu tiên an toàn dữ liệu làm mặc định."
+        },
+        {
+          "id": "day20-prac-3-b",
+          "text": "Đây là Read Committed - mỗi câu lệnh trong transaction chỉ thấy dữ liệu đã commit tính tới thời điểm câu lệnh đó bắt đầu; đây là mặc định riêng của PostgreSQL, không phải quy tắc chung cho mọi RDBMS."
+        },
+        {
+          "id": "day20-prac-3-c",
+          "text": "Đây là Read Uncommitted, vì PostgreSQL không hỗ trợ các mức isolation nghiêm ngặt hơn."
+        },
+        {
+          "id": "day20-prac-3-d",
+          "text": "Không xác định được vì SQL không có khái niệm mức isolation mặc định."
+        }
+      ],
+      "correctChoiceIds": [
+        "day20-prac-3-b"
+      ],
+      "hint": "Bài đã đánh dấu rõ đây là hành vi 'đặc thù riêng của PostgreSQL' - không phải chuẩn SQL nói chung.",
+      "solution": "Read Committed là mức isolation mặc định của PostgreSQL: mỗi câu lệnh riêng lẻ trong transaction chỉ thấy dữ liệu đã commit trước khi câu lệnh đó bắt đầu chạy. Đây là hành vi cụ thể của PostgreSQL - các RDBMS khác có thể chọn mặc định khác, nên không nên khái quát thành quy tắc chung cho mọi SQL database.",
+      "explanation": "PostgreSQL không mặc định Serializable (mức đó tồn tại nhưng tốn chi phí retry, chỉ nên bật khi cần); Read Uncommitted trong PostgreSQL thực ra hoạt động giống hệt Read Committed chứ không phải là mặc định; và PostgreSQL vẫn có một mặc định rõ ràng dù không khai báo isolation level tường minh.",
+      "rubric": "Đánh giá học viên nêu đúng Read Committed là mặc định VÀ gọi đúng đây là đặc thù PostgreSQL, không khái quát hoá thành chuẩn SQL chung.",
       "sourceUsage": [
-        "day20-src-5",
-        "day20-src-6"
+        "day20-src-15",
+        "day20-src-14"
       ]
     },
     {
       "id": "day20-prac-4",
       "type": "concept",
       "interaction": "self-check",
-      "prompt": "Vì sao Hibernate Envers phù hợp hơn callback @PrePersist/@PreUpdate khi cần xem lại toàn bộ lịch sử thay đổi (không chỉ lần sửa gần nhất) của một entity?",
+      "prompt": "Một bảng inventory có tranh chấp ghi rất cao: hàng trăm request cùng lúc cố trừ tồn kho của cùng vài sản phẩm 'hot' trong đợt sale. Nên chọn optimistic locking (@Version) hay pessimistic locking (@Lock/SELECT ... FOR UPDATE) cho thao tác trừ kho này? Giải thích đánh đổi.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nghĩ về việc callback chỉ ghi đè field trên chính bản ghi hiện tại, không lưu bản sao từng phiên bản.",
-      "solution": "Callback @PrePersist/@PreUpdate chỉ set giá trị lên chính bản ghi hiện tại (mỗi lần update sẽ ghi đè giá trị cũ) nên không giữ được lịch sử các phiên bản trước. Hibernate Envers tạo một bản ghi 'revision' riêng trong bảng audit (_AUD) cho mỗi lần insert/update/delete, cho phép truy vấn lại trạng thái entity tại bất kỳ revision nào trong quá khứ.",
-      "explanation": "So sánh 'ghi đè tại chỗ' của callback với 'lưu từng revision riêng' của Envers.",
-      "rubric": "Đánh giá học viên nêu đúng cơ chế bảng _AUD lưu từng revision thay vì chỉ ghi đè.",
+      "hint": "Optimistic locking chỉ phát hiện xung đột SAU khi đã thử ghi - với tranh chấp cực cao trên rất ít dòng, tỷ lệ retry/thất bại sẽ rất lớn.",
+      "solution": "Với tranh chấp cao trên cùng một vài dòng, pessimistic locking (SELECT ... FOR UPDATE, tức @Lock(LockModeType.PESSIMISTIC_WRITE) trong Spring Data) thường hợp lý hơn: nó khóa dòng ngay khi đọc nên các request khác phải chờ tuần tự, thay vì tất cả cùng đọc - cùng thử ghi - cùng thất bại như optimistic locking sẽ gây ra trong tình huống này (rất nhiều OptimisticLockException phải retry, có thể dồn ứ y hệt nhau). Đánh đổi: pessimistic locking làm giảm thông lượng (throughput) vì request phải xếp hàng, và transaction giữ khóa phải thật ngắn để giảm rủi ro deadlock/timeout - nhưng trong tình huống tranh chấp cực cao trên rất ít dòng dữ liệu, đây là lựa chọn thực dụng hơn so với để optimistic locking retry liên tục.",
+      "explanation": "Bài đã nêu optimistic locking nên là lựa chọn mặc định vì không chặn ai, nhưng cũng nêu rõ pessimistic locking phù hợp khi 'tranh chấp thật sự cao' - đây chính là kịch bản đó.",
+      "rubric": "Đánh giá học viên chọn pessimistic locking VÀ giải thích đúng lý do (tranh chấp cao trên ít dòng khiến optimistic retry liên tục), đồng thời nêu được đánh đổi (giảm throughput, cần transaction ngắn, rủi ro deadlock).",
       "sourceUsage": [
-        "day20-src-7"
+        "day20-src-19",
+        "day20-src-20"
       ]
     }
   ],
@@ -302,7 +504,9 @@
     "So sánh số câu SQL sinh ra khi trả về Page và khi trả về Slice cho cùng một truy vấn phân trang.",
     "Phân trang không có ORDER BY trên tập dữ liệu vài trăm dòng, so sánh phần tử giữa các trang qua nhiều lần chạy để thấy thứ tự không xác định.",
     "Thêm field @Version vào một entity, mô phỏng hai luồng cùng cập nhật và xử lý OptimisticLockException.",
-    "Bật Spring Data auditing với AuditorAware lấy người dùng từ security context, sau đó thử cập nhật bằng @Modifying query và giải thích vì sao trường audit không đổi."
+    "Bật Spring Data auditing với AuditorAware lấy người dùng từ security context, sau đó thử cập nhật bằng @Modifying query và giải thích vì sao trường audit không đổi.",
+    "Viết cùng một truy vấn liệt kê product kèm category bằng cả INNER JOIN và LEFT JOIN, so sánh kết quả khi có product chưa gán category.",
+    "Dùng EXPLAIN trên một truy vấn WHERE theo cột chưa có index, quan sát Seq Scan, sau đó CREATE INDEX và chạy lại EXPLAIN để thấy chuyển sang Index Scan."
   ],
   "references": [
     {
@@ -359,10 +563,70 @@
       "citationId": "day20-src-8"
     },
     {
-      "id": "day20-ref-10",
+      "id": "day20-ref-11",
       "type": "external",
-      "resourceId": "res-749fa81acd48",
-      "citationId": "day20-src-9"
+      "resourceId": "res-f0e4e317a0cc",
+      "citationId": "day20-src-10"
+    },
+    {
+      "id": "day20-ref-12",
+      "type": "external",
+      "resourceId": "res-03607eec7dc9",
+      "citationId": "day20-src-11"
+    },
+    {
+      "id": "day20-ref-13",
+      "type": "external",
+      "resourceId": "res-7b6cf1b4d88f",
+      "citationId": "day20-src-12"
+    },
+    {
+      "id": "day20-ref-14",
+      "type": "external",
+      "resourceId": "res-92ca41586e78",
+      "citationId": "day20-src-13"
+    },
+    {
+      "id": "day20-ref-15",
+      "type": "external",
+      "resourceId": "res-cb4ce5048048",
+      "citationId": "day20-src-14"
+    },
+    {
+      "id": "day20-ref-16",
+      "type": "external",
+      "resourceId": "res-cb4ce5048048",
+      "citationId": "day20-src-15"
+    },
+    {
+      "id": "day20-ref-17",
+      "type": "external",
+      "resourceId": "res-cb4ce5048048",
+      "citationId": "day20-src-16"
+    },
+    {
+      "id": "day20-ref-18",
+      "type": "external",
+      "resourceId": "res-cb4ce5048048",
+      "citationId": "day20-src-17"
+    },
+    {
+      "id": "day20-ref-19",
+      "type": "external",
+      "resourceId": "res-4b719885d4a9",
+      "citationId": "day20-src-18"
+    },
+    {
+      "id": "day20-ref-20",
+      "type": "external",
+      "resourceId": "res-4b719885d4a9",
+      "citationId": "day20-src-19"
+    },
+    {
+      "id": "day20-ref-21",
+      "type": "external",
+      "resourceId": "res-4b719885d4a9",
+      "citationId": "day20-src-20"
     }
   ],
   "sourceUsage": [
@@ -415,18 +679,79 @@
       "topic": "CascadeType.LOCK (mở rộng riêng của Hibernate)"
     },
     {
-      "id": "day20-src-9",
-      "resourceId": "res-749fa81acd48",
-      "locator": "6. Advantages and Disadvantages",
-      "topic": "Cân nhắc fetch khi thiết kế projection/query"
+      "id": "day20-src-10",
+      "resourceId": "res-f0e4e317a0cc",
+      "locator": "2.5. Querying a Table",
+      "topic": "SELECT/FROM/WHERE cơ bản"
+    },
+    {
+      "id": "day20-src-11",
+      "resourceId": "res-03607eec7dc9",
+      "locator": "7.2.1.1. Joined Tables",
+      "topic": "INNER JOIN và LEFT OUTER JOIN"
+    },
+    {
+      "id": "day20-src-12",
+      "resourceId": "res-7b6cf1b4d88f",
+      "locator": "11.1. Introduction",
+      "topic": "Index cơ bản và chi phí bảo trì"
+    },
+    {
+      "id": "day20-src-13",
+      "resourceId": "res-92ca41586e78",
+      "locator": "3.4. Transactions",
+      "topic": "BEGIN/COMMIT/ROLLBACK và atomicity"
+    },
+    {
+      "id": "day20-src-14",
+      "resourceId": "res-cb4ce5048048",
+      "locator": "13.2. Transaction Isolation",
+      "topic": "Bốn mức isolation theo chuẩn SQL"
+    },
+    {
+      "id": "day20-src-15",
+      "resourceId": "res-cb4ce5048048",
+      "locator": "13.2.1. Read Committed Isolation Level",
+      "topic": "Read Committed là mặc định của PostgreSQL"
+    },
+    {
+      "id": "day20-src-16",
+      "resourceId": "res-cb4ce5048048",
+      "locator": "13.2.2. Repeatable Read Isolation Level",
+      "topic": "Repeatable Read - snapshot cố định"
+    },
+    {
+      "id": "day20-src-17",
+      "resourceId": "res-cb4ce5048048",
+      "locator": "13.2.3. Serializable Isolation Level",
+      "topic": "Serializable - serialization failure"
+    },
+    {
+      "id": "day20-src-18",
+      "resourceId": "res-4b719885d4a9",
+      "locator": "13.3.1. Table-Level Locks",
+      "topic": "Khóa tự động ACCESS SHARE / ROW EXCLUSIVE"
+    },
+    {
+      "id": "day20-src-19",
+      "resourceId": "res-4b719885d4a9",
+      "locator": "13.3.2. Row-Level Locks",
+      "topic": "SELECT ... FOR UPDATE khóa dòng"
+    },
+    {
+      "id": "day20-src-20",
+      "resourceId": "res-4b719885d4a9",
+      "locator": "13.3.4. Deadlocks",
+      "topic": "Deadlock được PostgreSQL tự phát hiện"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "@Transactional (ranh giới giao dịch, propagation, isolation, quy tắc rollback): không có resource nào trong resourceIds của Day 20 mô tả chủ đề này - trình bày bằng kiến thức chuẩn của Spring Framework trong khối note không yêu cầu trích dẫn.",
-      "Interface-based projection (DTO projection qua interface repository): không có resource nào trong resourceIds của Day 20 mô tả riêng chủ đề này - chỉ đưa vào enhancedExercises như bài tập mở rộng dựa trên kiến thức chuẩn của Spring Data, không gắn citation cho một khối nội dung riêng."
+      "@Transactional (ranh giới giao dịch, propagation, quy tắc rollback cụ thể của Spring): không có resource nào trong resourceIds của Day 20 mô tả chủ đề này - trình bày bằng kiến thức chuẩn của Spring Framework trong khối note không yêu cầu trích dẫn. (Khái niệm isolation/locking ở tầng database thì đã có nguồn PostgreSQL chính thức - xem day20-src-14 tới day20-src-20.)",
+      "Interface-based projection (DTO projection qua interface repository): không có resource nào trong resourceIds của Day 20 mô tả riêng chủ đề này - chỉ đưa vào enhancedExercises như bài tập mở rộng dựa trên kiến thức chuẩn của Spring Data, không gắn citation cho một khối nội dung riêng.",
+      "@Version (field optimistic locking của JPA/Hibernate) và cú pháp cụ thể của annotation này: không có resource nào trong resourceIds của Day 20 mô tả riêng - đây là kiến thức chuẩn JPA/Hibernate đã giới thiệu ở Day 19, chỉ được liên kết (bridge) sang khái niệm locking ở tầng database (nguồn PostgreSQL) tại Day 20."
     ]
   }
 }
