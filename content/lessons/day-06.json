@@ -115,10 +115,16 @@
       "title": "Cài đặt tham khảo",
       "blocks": [
         {
+          "id": "day06-blk-11",
+          "type": "note",
+          "text": "Khung sườn dưới đây dùng vòng lặp for cơ bản (kiến thức Day 4/5) để PayrollService.runPayroll() duyệt qua danh sách Employee, KHÔNG dùng Stream API/lambda (.stream().map(...).toList()) — cú pháp Stream ngắn gọn hơn cho đúng việc này sẽ được học chính thức ở Day 10. Nếu bạn đã tự học Stream trước, có thể dùng cách đó, nhưng đề bài Assignment 2 chỉ yêu cầu kiến thức tới hết Day 5.",
+          "citations": []
+        },
+        {
           "id": "day06-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import java.util.List;\n\nabstract class Employee {\n    protected final String id;\n    protected final String name;\n    protected final double baseSalary;\n\n    protected Employee(String id, String name, double baseSalary) {\n        this.id = id;\n        this.name = name;\n        this.baseSalary = baseSalary;\n    }\n\n    public abstract double calculateSalary();\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}\n\nclass Developer extends Employee {\n    private final double overtimeHours;\n    private final double bonusRate;\n\n    public Developer(String id, String name, double baseSalary,\n                      double overtimeHours, double bonusRate) {\n        super(id, name, baseSalary);\n        this.overtimeHours = overtimeHours;\n        this.bonusRate = bonusRate;\n    }\n\n    @Override\n    public double calculateSalary() {\n        return baseSalary + (overtimeHours * bonusRate);\n    }\n}\n\nclass Manager extends Employee {\n    private final int teamSize;\n    private final double kpiMultiplier;\n\n    public Manager(String id, String name, double baseSalary,\n                    int teamSize, double kpiMultiplier) {\n        super(id, name, baseSalary);\n        this.teamSize = teamSize;\n        this.kpiMultiplier = kpiMultiplier;\n    }\n\n    @Override\n    public double calculateSalary() {\n        return (baseSalary + teamSize * 200.0) * kpiMultiplier;\n    }\n}\n\nrecord EmployeeDTO(String id, String name, double totalSalary) {\n}\n\nclass PayrollService {\n    public List<EmployeeDTO> runPayroll(List<Employee> employees) {\n        return employees.stream()\n                .map(e -> new EmployeeDTO(e.getId(), e.getName(), e.calculateSalary()))\n                .toList();\n    }\n}\n",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\nabstract class Employee {\n    protected final String id;\n    protected final String name;\n    protected final double baseSalary;\n\n    protected Employee(String id, String name, double baseSalary) {\n        this.id = id;\n        this.name = name;\n        this.baseSalary = baseSalary;\n    }\n\n    public abstract double calculateSalary();\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}\n\nclass Developer extends Employee {\n    private final double overtimeHours;\n    private final double bonusRate;\n\n    public Developer(String id, String name, double baseSalary,\n                      double overtimeHours, double bonusRate) {\n        super(id, name, baseSalary);\n        this.overtimeHours = overtimeHours;\n        this.bonusRate = bonusRate;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: luong Developer = baseSalary + (overtimeHours * bonusRate).\n        return 0;\n    }\n}\n\nclass Manager extends Employee {\n    private final int teamSize;\n    private final double kpiMultiplier;\n\n    public Manager(String id, String name, double baseSalary,\n                    int teamSize, double kpiMultiplier) {\n        super(id, name, baseSalary);\n        this.teamSize = teamSize;\n        this.kpiMultiplier = kpiMultiplier;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: luong Manager = (baseSalary + teamSize * 200.0) * kpiMultiplier.\n        return 0;\n    }\n}\n\nrecord EmployeeDTO(String id, String name, double totalSalary) {\n}\n\nclass PayrollService {\n    public List<EmployeeDTO> runPayroll(List<Employee> employees) {\n        List<EmployeeDTO> result = new ArrayList<>();\n        for (Employee employee : employees) {\n            // TODO: tao moi mot EmployeeDTO tu employee.getId()/getName()/calculateSalary()\n            // roi them vao result.\n        }\n        return result;\n    }\n}\n",
           "compile": true,
           "citations": [
             "day06-src-7",
@@ -152,7 +158,7 @@
               "TC2",
               "Manager",
               "baseSalary=20,000,000; teamSize=5; kpiMultiplier=1.1",
-              "22,000,000"
+              "22,001,100 — tức (20,000,000 + 5*200.0) * 1.1"
             ],
             [
               "TC3",
@@ -190,8 +196,8 @@
       "prompt": "Cài đặt đầy đủ Employee (abstract), Developer, Manager, PayrollService và EmployeeDTO (record) theo đúng đề bài, kèm ít nhất 3 unit test xác nhận calculateSalary() đúng cho từng loại nhân viên.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Bắt đầu từ Employee abstract với đúng 3 field yêu cầu (id, name, baseSalary) và abstract method calculateSalary(); dùng cài đặt tham khảo trong bài làm khung sườn, sau đó tự viết test.",
-      "solution": "Xem mục 'Cài đặt tham khảo' ở trên; công thức lương trong lời giải mẫu chỉ là ví dụ minh họa, có thể điều chỉnh miễn giữ đúng cấu trúc class/kế thừa/abstract method theo đề bài.",
+      "hint": "Bắt đầu từ khung sườn trong mục 'Cài đặt tham khảo' (đã có sẵn field/constructor/kế thừa) — chỉ cần điền vào các chỗ TODO trong calculateSalary() của Developer/Manager và trong PayrollService.runPayroll().",
+      "solution": "Không có công thức lương đầy đủ ở đây — calculateSalary() của Developer/Manager và phần tạo EmployeeDTO trong PayrollService.runPayroll() cố tình để trống dưới dạng TODO trong day06-blk-8 để bạn tự cài đặt theo đúng công thức mô tả trong TODO, rồi tự kiểm tra lại bằng bảng test case gợi ý (day06-blk-9).",
       "explanation": "Không có lời giải cố định — đánh giá theo mức độ đúng cấu trúc OOP.",
       "rubric": "Đạt yêu cầu khi: Employee là abstract với abstract method đúng chữ ký; Developer/Manager override đầy đủ và kế thừa đúng field chung; EmployeeDTO là record; PayrollService dùng polymorphism (không if-else theo loại lớp); có test cho từng subclass và cho PayrollService.",
       "sourceUsage": []
@@ -239,7 +245,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Tạo danh sách List<Employee> gồm cả hai loại, gọi runPayroll(), rồi so sánh từng EmployeeDTO.totalSalary() với giá trị tính tay.",
-      "solution": "@Test\nvoid runPayroll_mixedEmployees_returnsCorrectTotals() {\n    Employee dev = new Developer(\"E1\", \"An\", 10_000_000, 10, 50_000);\n    Employee mgr = new Manager(\"E2\", \"Binh\", 20_000_000, 5, 1.1);\n    PayrollService service = new PayrollService();\n\n    List<EmployeeDTO> result = service.runPayroll(List.of(dev, mgr));\n\n    assertEquals(2, result.size());\n    assertEquals(10_500_000.0, result.get(0).totalSalary());\n    assertEquals(22_000_000.0, result.get(1).totalSalary());\n}",
+      "solution": "@Test\nvoid runPayroll_mixedEmployees_returnsCorrectTotals() {\n    Employee dev = new Developer(\"E1\", \"An\", 10_000_000, 10, 50_000);\n    Employee mgr = new Manager(\"E2\", \"Binh\", 20_000_000, 5, 1.1);\n    PayrollService service = new PayrollService();\n\n    List<EmployeeDTO> result = service.runPayroll(List.of(dev, mgr));\n\n    assertEquals(2, result.size());\n    assertEquals(10_500_000.0, result.get(0).totalSalary());\n    assertEquals(22_001_100.0, result.get(1).totalSalary());\n}",
       "explanation": "Lời giải mẫu tạo danh sách trộn hai loại Employee, gọi runPayroll() một lần, và assert đúng totalSalary cho từng phần tử — thể hiện đúng việc test polymorphism thay vì test từng subclass riêng lẻ.",
       "rubric": "Đạt yêu cầu nếu test tạo được danh sách trộn ≥2 loại Employee, gọi đúng API PayrollService, và assert giá trị totalSalary khớp công thức đã cài đặt.",
       "sourceUsage": [

@@ -81,7 +81,7 @@
           "id": "day12-blk-4",
           "type": "code",
           "language": "java",
-          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass SalesCsvReader {\n    record SalesRow(String category, double revenue, boolean valid) {}\n\n    List<SalesRow> readValidRows(Path csvFile) throws IOException {\n        try (var lines = Files.lines(csvFile)) {\n            return lines.skip(1)\n                    .map(SalesCsvReader::parseLine)\n                    .filter(SalesRow::valid)\n                    .collect(Collectors.toList());\n        }\n    }\n\n    private static SalesRow parseLine(String line) {\n        String[] cols = line.split(\",\", -1);\n        if (cols.length < 2) {\n            return new SalesRow(\"\", 0, false);\n        }\n        try {\n            double revenue = Double.parseDouble(cols[1].trim());\n            return new SalesRow(cols[0].trim(), revenue, revenue >= 0);\n        } catch (NumberFormatException e) {\n            return new SalesRow(cols[0].trim(), 0, false);\n        }\n    }\n}\n",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass SalesCsvReader {\n    record SalesRow(String category, long revenue, boolean valid) {}\n\n    List<SalesRow> readValidRows(Path csvFile) throws IOException {\n        try (var lines = Files.lines(csvFile)) {\n            return lines.skip(1)\n                    .map(SalesCsvReader::parseLine)\n                    .filter(SalesRow::valid)\n                    .collect(Collectors.toList());\n        }\n    }\n\n    static SalesRow parseLine(String line) {\n        String[] cols = line.split(\",\", -1);\n        if (cols.length < 2) {\n            return new SalesRow(\"\", 0, false);\n        }\n        try {\n            long revenue = Long.parseLong(cols[1].trim());\n            return new SalesRow(cols[0].trim(), revenue, revenue >= 0);\n        } catch (NumberFormatException e) {\n            return new SalesRow(cols[0].trim(), 0, false);\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day12-src-1",
@@ -89,10 +89,16 @@
           ]
         },
         {
+          "id": "day12-blk-14",
+          "type": "note",
+          "text": "readValidRows() ở trên phù hợp khi bạn thật sự cần giữ lại toàn bộ danh sách SalesRow hợp lệ trong bộ nhớ (ví dụ để export riêng các dòng invalid, xem enhancedExercise bên dưới). Nhưng nếu mục tiêu duy nhất là tổng hợp theo category (mục tiếp theo), gọi readValidRows() rồi mới nhóm sẽ giữ toàn bộ 500K dòng hợp lệ trong một List cùng lúc — đúng kiểu vấn đề mà commonMistake #1 cảnh báo, chỉ khác đối tượng đã parse (SalesRow) thay vì String thô. Cách tiết kiệm bộ nhớ hơn: truyền thẳng stream `Files.lines(csvFile).skip(1).map(SalesCsvReader::parseLine).filter(SalesRow::valid)` (đang mở trong try-with-resources) vào SalesAggregator.aggregateByCategory(Stream<SalesRow>) ở day12-blk-15, không tạo List trung gian.",
+          "citations": []
+        },
+        {
           "id": "day12-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.Map;\n\nclass TopCategoryReportExporter {\n    void exportToJson(Path target, List<Map.Entry<String, Double>> topCategories) throws IOException {\n        StringBuilder json = new StringBuilder(\"[\\n\");\n        for (int i = 0; i < topCategories.size(); i++) {\n            var entry = topCategories.get(i);\n            json.append(\"  {\\\"category\\\": \\\"\").append(entry.getKey())\n                    .append(\"\\\", \\\"revenue\\\": \").append(entry.getValue()).append(\"}\");\n            json.append(i < topCategories.size() - 1 ? \",\\n\" : \"\\n\");\n        }\n        json.append(\"]\\n\");\n        Files.writeString(target, json.toString());\n    }\n}\n",
+          "code": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\nimport java.util.Map;\n\nclass TopCategoryReportExporter {\n    void exportToJson(Path target, List<Map.Entry<String, Long>> topCategories) throws IOException {\n        StringBuilder json = new StringBuilder(\"[\\n\");\n        for (int i = 0; i < topCategories.size(); i++) {\n            var entry = topCategories.get(i);\n            json.append(\"  {\\\"category\\\": \\\"\").append(escapeJson(entry.getKey()))\n                    .append(\"\\\", \\\"revenue\\\": \").append(entry.getValue()).append(\"}\");\n            json.append(i < topCategories.size() - 1 ? \",\\n\" : \"\\n\");\n        }\n        json.append(\"]\\n\");\n        Files.writeString(target, json.toString(), StandardCharsets.UTF_8);\n    }\n\n    private static String escapeJson(String raw) {\n        return raw.replace(\"\\\\\", \"\\\\\\\\\").replace(\"\\\"\", \"\\\\\\\"\");\n    }\n}\n",
           "compile": true,
           "citations": [
             "day12-src-3",
@@ -102,7 +108,7 @@
         {
           "id": "day12-blk-6",
           "type": "note",
-          "text": "Files.writeString() (từ Java 11) cũng là một phương thức tĩnh của Files thao tác trên Path, tương tự nhóm Files.createFile()/delete() đã nêu trong bài học File I/O — ở đây dùng để ghi trực tiếp nội dung JSON đã dựng sẵn thành String ra file báo cáo.",
+          "text": "Files.writeString() (từ Java 11) cũng là một phương thức tĩnh của Files thao tác trên Path, tương tự nhóm Files.createFile()/delete() đã nêu trong bài học File I/O — ở đây dùng để ghi trực tiếp nội dung JSON đã dựng sẵn thành String ra file báo cáo. Vì báo cáo chứa tên category tiếng Việt có dấu, phải truyền tường minh StandardCharsets.UTF_8 (đã học ở Day 11) thay vì để mặc định — nếu không, file xuất ra có thể hiển thị sai ký tự trên môi trường có charset mặc định khác UTF-8 (đặc biệt trên Windows). Đây là JSON dựng thủ công bằng StringBuilder như một bước đệm; trong dự án Spring Boot thật (từ Day 16 trở đi), nên dùng ObjectMapper (Jackson) thay vì tự dựng chuỗi JSON để tránh phải tự escape và dễ bảo trì hơn.",
           "citations": [
             "day12-src-1",
             "day12-src-4"
@@ -123,8 +129,17 @@
         {
           "id": "day12-blk-8",
           "type": "paragraph",
-          "text": "Pipeline gợi ý gồm bốn bước nối tiếp trên stream các SalesRow đã đọc được: (1) lọc bỏ dòng không hợp lệ bằng `.filter(SalesRow::valid)` (đã thực hiện ngay trong lúc đọc CSV); (2) nhóm theo category bằng `.collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)))` để vừa nhóm vừa cộng dồn revenue trong cùng một bước, trả về Map<String, Double>; (3) chuyển Map thành danh sách entry và sắp xếp giảm dần theo revenue bằng `.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())`; (4) lấy 10 phần tử đầu bằng `.limit(10)` rồi collect thành danh sách để xuất báo cáo.",
+          "text": "Pipeline gồm bốn bước nối tiếp trên các SalesRow đã lọc hợp lệ: (1) lọc bỏ dòng không hợp lệ (đã thực hiện ngay trong lúc đọc CSV, xem parseLine ở day12-blk-4); (2) nhóm theo category và cộng dồn revenue (kiểu long) trong cùng một bước — dùng một Collector 'nhóm theo key' kết hợp một downstream collector 'cộng dồn kiểu long' đã học ở Day 10, trả về Map<String, Long> — viết trong aggregateByCategory() của SalesAggregator (day12-blk-15); (3)+(4) từ Map kết quả, chuyển thành danh sách entry, sắp xếp giảm dần theo revenue và chỉ giữ 10 phần tử đầu — viết trong top10ByRevenue() của cùng lớp. Khung sườn (chữ ký method, chưa cài đặt) ở day12-blk-15; bạn tự hoàn thành hai phần TODO và tự kiểm tra bằng cách tính tay kết quả trên một tập dữ liệu mẫu nhỏ (xem bảng tiêu chí nghiệm thu ở cuối bài, day12-sec-acceptance).",
           "citations": []
+        },
+        {
+          "id": "day12-blk-15",
+          "type": "code",
+          "language": "text",
+          "code": "import java.util.List;\nimport java.util.Map;\nimport java.util.stream.Collectors;\nimport java.util.stream.Stream;\n\nclass SalesAggregator {\n\n    Map<String, Long> aggregateByCategory(Stream<SalesRow> validRows) {\n        // TODO: nhom cac SalesRow theo category va cong don revenue (kieu long)\n        // trong cung mot buoc collect(), ngay tren stream nay (khong tao List trung gian).\n        return null;\n    }\n\n    List<Map.Entry<String, Long>> top10ByRevenue(Map<String, Long> byCategory) {\n        // TODO: sap xep cac entry cua Map giam dan theo revenue,\n        // roi lay dung 10 phan tu dau tien (hoac it hon neu co duoi 10 category).\n        return null;\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Khung sườn minh họa cú pháp Stream/Collectors chuẩn Java 17; Day 12 không có resourceId riêng nào phủ chủ đề Stream API để gắn citation (xem day12-blk-7 và authoring.limitations), nên khối code không đưa vào bước javac của pipeline."
         }
       ]
     },
@@ -143,6 +158,15 @@
           "type": "paragraph",
           "text": "JMH là thư viện chuyên dụng để đo hiệu năng (micro-benchmark) cho Java, tránh các sai lầm phổ biến khi tự đo thời gian bằng System.currentTimeMillis() (như JIT warm-up chưa ổn định, dead code elimination của trình biên dịch xóa mất đoạn code không dùng kết quả). Ý tưởng cơ bản: đánh dấu phương thức cần đo bằng @Benchmark, chạy nhiều vòng 'warm-up' trước khi đo thật sự, và so sánh thời gian trung bình giữa phiên bản stream() (sequential) và parallelStream() (song song) trên cùng một tập dữ liệu 500K dòng.",
           "citations": []
+        },
+        {
+          "id": "day12-blk-16",
+          "type": "code",
+          "language": "text",
+          "code": "// pom.xml can them (Maven):\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-core</artifactId><version>1.37</version></dependency>\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-generator-annprocess</artifactId><version>1.37</version><scope>provided</scope></dependency>\n// Chay: mvn clean package  ->  java -jar target/benchmarks.jar\n\nimport java.util.List;\nimport java.util.Map;\nimport java.util.concurrent.TimeUnit;\nimport org.openjdk.jmh.annotations.*;\n\n@State(Scope.Benchmark)\n@BenchmarkMode(Mode.AverageTime)\n@OutputTimeUnit(TimeUnit.MILLISECONDS)\n@Warmup(iterations = 3)\n@Measurement(iterations = 5)\npublic class AggregationBenchmark {\n\n    List<SalesRow> validRows;\n\n    @Setup\n    public void setup() {\n        // TODO: doc va loc san du lieu mau (vi du 500K dong) vao validRows,\n        // chi thuc hien mot lan truoc khi do (khong tinh vao thoi gian benchmark).\n    }\n\n    @Benchmark\n    public Map<String, Long> sequential() {\n        // TODO: goi phien ban stream() (tuan tu) cua buoc nhom+cong don tren validRows.\n        return null;\n    }\n\n    @Benchmark\n    public Map<String, Long> parallel() {\n        // TODO: goi phien ban parallelStream() (song song) cua cung buoc do tren validRows.\n        return null;\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa cấu trúc và annotation của JMH benchmark; không biên dịch được qua bước kiểm tra tự động của pipeline này vì thư viện JMH (org.openjdk.jmh) không có trên classpath (chỉ có JDK chuẩn) — xem authoring.limitations."
         },
         {
           "id": "day12-blk-11",
@@ -169,12 +193,34 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day12-sec-acceptance",
+      "title": "Tiêu chí nghiệm thu",
+      "blocks": [
+        {
+          "id": "day12-blk-17",
+          "type": "table",
+          "columns": ["Deliverable", "Cách kiểm tra (observable)", "Đạt khi"],
+          "rows": [
+            ["Đọc CSV lazy", "Đọc code: xác nhận không có Files.readAllLines()/readString() ở đâu trong pipeline chính; chạy thử với file mẫu vài nghìn dòng, quan sát bộ nhớ không tăng đột biến so với kích thước file", "Toàn bộ đường đi từ đọc đến tổng hợp chỉ dùng Stream lazy (Files.lines()), không có List<SalesRow> trung gian trước bước nhóm"],
+            ["Stream transform (nhóm + top-10)", "Chạy aggregateByCategory() rồi top10ByRevenue() trên một CSV mẫu nhỏ tự tạo (5-10 dòng, có ít nhất 3 category, kèm vài dòng invalid); tính tay kết quả mong đợi và so sánh", "Map tổng hợp đúng theo category, top-10 đúng thứ tự giảm dần theo revenue, dòng invalid bị loại hoàn toàn"],
+            ["JMH benchmark (hoặc thay thế)", "Nếu có JMH: chạy 'java -jar target/benchmarks.jar', ghi lại thời gian trung bình sequential vs parallel. Nếu không cài JMH: chạy tay nhiều vòng lặp có warm-up (bỏ qua vài lần đo đầu) với System.nanoTime(), ghi lại số liệu thay vì chỉ đo một lần", "Có bảng số liệu thật (không chỉ nhận định chung chung) so sánh sequential vs parallel trên cùng một tập dữ liệu"],
+            ["Thread-safe accumulator", "Nếu pipeline có bất kỳ biến đếm/trạng thái dùng chung nào được cập nhật bên trong lambda của parallelStream(), kiểm tra method cập nhật đó có synchronized hay không; chạy lại nhiều lần và so sánh kết quả với phiên bản sequential", "Kết quả giống hệt phiên bản sequential ở mọi lần chạy, hoặc pipeline không dùng biến chia sẻ thủ công nào (chỉ dùng Collector)"],
+            ["Export JSON", "Mở file report.json bằng một JSON parser bất kỳ (hoặc kiểm tra thủ công cân bằng ngoặc/dấu phẩy); thử với category chứa tiếng Việt có dấu và category chứa dấu ngoặc kép '\"'", "File parse được thành JSON hợp lệ, tên category tiếng Việt hiển thị đúng (không lỗi charset), ký tự '\"'/'\\\\' trong category không làm hỏng cấu trúc JSON"]
+          ],
+          "citations": ["day12-src-1", "day12-src-3", "day12-src-4"]
+        }
+      ]
     }
   ],
   "commonMistakes": [
     "Đọc toàn bộ 500K dòng vào một List<String> bằng Files.readAllLines() rồi mới xử lý, thay vì dùng Files.lines() để xử lý lazy từng dòng.",
     "Tự tạo biến đếm chia sẻ (ví dụ int errorCount) và cập nhật trực tiếp bên trong lambda của parallelStream() mà không đồng bộ — gây race condition ngay cả khi logic chính đã dùng Collectors an toàn.",
-    "So sánh hiệu năng parallel vs sequential bằng một lần đo đơn lẻ với System.currentTimeMillis(), không warm-up JIT trước, dẫn tới kết luận sai lệch về việc parallel có thực sự nhanh hơn hay không."
+    "So sánh hiệu năng parallel vs sequential bằng một lần đo đơn lẻ với System.currentTimeMillis(), không warm-up JIT trước, dẫn tới kết luận sai lệch về việc parallel có thực sự nhanh hơn hay không.",
+    "Gọi readValidRows() để lấy List<SalesRow> đầy đủ rồi mới nhóm theo category, thay vì truyền thẳng stream (chưa collect) vào aggregateByCategory() — vẫn giữ toàn bộ 500K dòng hợp lệ trong bộ nhớ cùng lúc, y hệt vấn đề mà mistake #1 cảnh báo (xem day12-blk-14).",
+    "Bỏ qua charset khi ghi báo cáo chứa tiếng Việt bằng Files.writeString(target, content) — không truyền StandardCharsets.UTF_8 tường minh có thể khiến file xuất ra hiển thị sai ký tự trên môi trường có charset mặc định khác UTF-8 (đặc biệt trên Windows).",
+    "Dùng double để cộng dồn revenue (tiền) thay vì kiểu số nguyên như long — lặp lại đúng lỗi đã cảnh báo từ Day 01 (không dùng double cho tiền) và đã mắc lại ở Day 06; sai số làm tròn của double tích lũy qua 500K dòng có thể cho tổng sai lệch."
   ],
   "practices": [
     {
@@ -215,13 +261,13 @@
       "id": "day12-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viết một method dùng Stream để từ danh sách SalesRow đã lọc hợp lệ, nhóm theo category và cộng dồn revenue, trả về Map<String, Double>.",
+      "prompt": "Hoàn thành hai method còn để trống trong khung sườn SalesAggregator (day12-blk-15): aggregateByCategory(Stream<SalesRow> validRows) — nhóm theo category và cộng dồn revenue (kiểu long); và top10ByRevenue(Map<String, Long> byCategory) — trả về đúng 10 category có revenue cao nhất, sắp xếp giảm dần.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dùng Collectors.groupingBy() kết hợp Collectors.summingDouble() trong cùng một bước collect().",
-      "solution": "Map<String, Double> aggregateByCategory(List<SalesRow> rows) {\n    return rows.stream()\n            .collect(Collectors.groupingBy(SalesRow::category, Collectors.summingDouble(SalesRow::revenue)));\n}",
-      "explanation": "Áp dụng Collectors.groupingBy() kết hợp downstream collector summingDouble() đã học ở Day 10 vào dữ liệu thực tế.",
-      "rubric": "Đánh giá đúng hàm nhóm (category) và hàm tổng hợp (summingDouble trên revenue) được chọn đúng, kết quả là Map<String, Double>.",
+      "hint": "aggregateByCategory: dùng Collectors.groupingBy() kết hợp một downstream collector cộng dồn kiểu long (không phải summingDouble — revenue ở đây là long) trong cùng một bước collect(). top10ByRevenue: chuyển Map thành Stream các Map.Entry, dùng Map.Entry.comparingByValue().reversed() để sắp xếp giảm dần, rồi limit(10).",
+      "solution": "Không có cài đặt đầy đủ ở đây — phần thân của cả hai method cố tình để trống dưới dạng TODO trong khung sườn SalesAggregator (day12-blk-15) để bạn tự hoàn thành. Tự kiểm tra bằng cách tính tay kết quả (tổng theo category, và thứ hạng top-10) trên một tập dữ liệu mẫu nhỏ và so sánh với kết quả trả về (xem bảng tiêu chí nghiệm thu ở cuối bài, day12-sec-acceptance).",
+      "explanation": "aggregateByCategory áp dụng Collectors.groupingBy() kết hợp một downstream collector cộng dồn (summing) đã học ở Day 10, dùng kiểu long thay vì double để tránh sai số làm tròn khi cộng dồn tiền (xem day12-blk-5). top10ByRevenue kết hợp Map.Entry.comparingByValue() với reversed() để sắp xếp giảm dần theo revenue, rồi limit(10) để chỉ giữ 10 phần tử đầu.",
+      "rubric": "Đánh giá đúng: (1) aggregateByCategory nhóm đúng theo category và cộng dồn đúng kiểu long; (2) top10ByRevenue sắp xếp giảm dần (không phải tăng dần) và trả về đúng 10 phần tử (hoặc ít hơn nếu có dưới 10 category); không dùng biến chia sẻ thủ công, không làm thay đổi Map gốc.",
       "sourceUsage": []
     },
     {

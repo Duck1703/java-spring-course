@@ -109,7 +109,7 @@
           "id": "day03-blk-7",
           "type": "code",
           "language": "java",
-          "code": "class StringCalculator {\n\n    public static int calculate(String expression) {\n        if (expression == null || expression.isBlank()) {\n            throw new IllegalArgumentException(\"expression must not be blank\");\n        }\n        String trimmed = expression.replaceAll(\"\\\\s+\", \"\");\n        int total = 0;\n        int currentNumber = 0;\n        int sign = 1;\n\n        for (int i = 0; i < trimmed.length(); i++) {\n            char c = trimmed.charAt(i);\n            if (Character.isDigit(c)) {\n                currentNumber = currentNumber * 10 + (c - '0');\n            } else if (c == '+' || c == '-') {\n                total += sign * currentNumber;\n                currentNumber = 0;\n                sign = (c == '+') ? 1 : -1;\n            } else {\n                throw new IllegalArgumentException(\"unexpected character: \" + c);\n            }\n        }\n        total += sign * currentNumber;\n        return total;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(calculate(\"3+5\"));   // 8\n        System.out.println(calculate(\"10-2+1\")); // 9\n        System.out.println(calculate(\"0-3\"));    // -3\n    }\n}\n",
+          "code": "class StringCalculator {\n\n    public static int calculate(String expression) {\n        if (expression == null || expression.isBlank()) {\n            throw new IllegalArgumentException(\"expression must not be blank\");\n        }\n        String trimmed = expression.replaceAll(\"\\\\s+\", \"\");\n        int total = 0;\n        int currentNumber = 0;\n        int sign = 1;\n\n        for (int i = 0; i < trimmed.length(); i++) {\n            char c = trimmed.charAt(i);\n            if (Character.isDigit(c)) {\n                // TODO: tich luy chu so hien tai vao currentNumber (he co so 10).\n                // KHONG duoc dung String concatenation o day - xem commonMistakes #1.\n            } else if (c == '+' || c == '-') {\n                // TODO: cong sign * currentNumber vao total, reset currentNumber ve 0,\n                // roi cap nhat sign moi theo ky tu vua gap ('+' hay '-').\n            } else {\n                throw new IllegalArgumentException(\"unexpected character: \" + c);\n            }\n        }\n        // TODO: dung quen cong sign * currentNumber mot lan cuoi sau khi vong lap ket\n        // thuc - xem commonMistakes ve loi bo sot so/nhom so cuoi cung.\n        return total;\n    }\n}\n",
           "compile": true,
           "citations": [
             "day03-src-1",
@@ -160,6 +160,11 @@
               "Kết quả âm"
             ],
             [
+              "\"-3+5\"",
+              "2",
+              "Dấu trừ ở đầu biểu thức, chưa có toán tử nào đứng trước"
+            ],
+            [
               "\"3 + 5 - 2\"",
               "6",
               "Có khoảng trắng xen giữa"
@@ -180,7 +185,8 @@
   "commonMistakes": [
     "Dựng số bằng cách nối ký tự vào một biến String trong vòng lặp (number += c) thay vì tích lũy bằng biến int, làm mất đúng ý 'primitive optimization' của đề bài.",
     "Không xử lý dấu trừ ở đầu biểu thức (ví dụ '-3+5'), khiến sign ban đầu luôn mặc định là dương và cho ra kết quả sai.",
-    "Trả về 0 thay vì ném lỗi rõ ràng khi input rỗng hoặc null, khiến lỗi dữ liệu đầu vào bị nuốt âm thầm thay vì được phát hiện sớm."
+    "Trả về 0 thay vì ném lỗi rõ ràng khi input rỗng hoặc null, khiến lỗi dữ liệu đầu vào bị nuốt âm thầm thay vì được phát hiện sớm.",
+    "Quên cộng sign * currentNumber một lần cuối cùng sau khi vòng lặp kết thúc, khiến số hoặc nhóm số cuối cùng của biểu thức (không theo sau bởi +/-) bị bỏ sót khỏi kết quả."
   ],
   "practices": [
     {
@@ -190,9 +196,9 @@
       "prompt": "Hoàn thành lab: implement đầy đủ StringCalculator.calculate(String) áp dụng tính bất biến của String và tối ưu bằng kiểu nguyên thủy, đảm bảo pass toàn bộ các dòng trong bảng acceptance examples ở mục Edge case.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Bắt đầu từ mẫu thiết kế ở phần 'Thiết kế thuật toán phân tích và mẫu code', bổ sung xử lý khoảng trắng và input rỗng/null.",
-      "solution": "Lời giải tham khảo là khối code Java trong block day03-blk-7 (StringCalculator.calculate), đã xử lý số nhiều chữ số, dấu +/-, và ném IllegalArgumentException cho input rỗng/null hoặc ký tự không hợp lệ.",
-      "explanation": "Lời giải cần: (1) không nối String trong vòng lặp để dựng số — dùng biến int tích lũy; (2) xử lý đúng cả 6 dòng trong bảng acceptance examples; (3) ném lỗi rõ ràng cho input rỗng/null thay vì trả về 0.",
+      "hint": "Bắt đầu từ khung sườn ở block day03-blk-7 (đã có sẵn phần validate input, vòng lặp, và các nhánh rẽ) — chỉ cần điền vào 3 chỗ TODO theo đúng mô tả ở mục 'Thiết kế thuật toán phân tích và mẫu code'.",
+      "solution": "Không có lời giải đầy đủ ở đây — phần cốt lõi của thuật toán (tích lũy currentNumber, cộng dồn vào total khi gặp toán tử, và cộng lần cuối sau vòng lặp) cố tình để trống dưới dạng TODO trong day03-blk-7 để bạn tự hoàn thành. Tự kiểm tra bằng cách chạy calculate() với toàn bộ 7 dòng trong bảng acceptance examples (day03-blk-9) và đối chiếu đúng/sai từng dòng.",
+      "explanation": "Lời giải cần: (1) không nối String trong vòng lặp để dựng số — dùng biến int tích lũy; (2) xử lý đúng cả 7 dòng trong bảng acceptance examples; (3) ném lỗi rõ ràng cho input rỗng/null thay vì trả về 0; (4) không quên cộng lần cuối sau khi vòng lặp kết thúc.",
       "rubric": "Đạt yêu cầu nếu code biên dịch, pass toàn bộ acceptance examples, và không dùng String concatenation để tích lũy chữ số trong vòng lặp.",
       "sourceUsage": [
         "day03-src-1",
@@ -206,9 +212,9 @@
       "prompt": "Viết thêm hai test case biên (edge case) ngoài bảng acceptance examples đã cho (ví dụ: biểu thức chỉ toàn số 0, hoặc số rất lớn gần giới hạn int) và nêu expected output cho từng test case.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nghĩ tới những input hợp lệ nhưng bất thường: toàn số 0, số lớn, nhiều dấu +/- liên tiếp không hợp lệ.",
-      "solution": "Ví dụ: calculate(\"0-0+0\") phải trả về 0; calculate(\"999999999\") (gần Integer.MAX_VALUE) phải trả đúng giá trị đó và không tràn số nếu không cộng thêm; calculate(\"1++2\") nên ném IllegalArgumentException vì hai dấu + liên tiếp không hợp lệ theo thiết kế ở trên.",
-      "explanation": "Lời giải mẫu minh họa test case hợp lệ (toàn số 0, số lớn) và ít nhất một test case phải ném lỗi (chuỗi không hợp lệ), cùng expected output rõ ràng cho từng test.",
+      "hint": "Nghĩ tới những input hợp lệ nhưng bất thường: toàn số 0, số lớn gần giới hạn int, dấu trừ ở đầu biểu thức.",
+      "solution": "Ví dụ: calculate(\"0-0+0\") phải trả về 0; calculate(\"999999999\") (gần Integer.MAX_VALUE) phải trả đúng giá trị đó và không tràn số nếu không cộng thêm; calculate(\"-7\") (chuỗi chỉ có một dấu trừ ở đầu, không có toán tử nào đứng trước nó) phải trả về -7 — đây chính là edge case dấu trừ đầu biểu thức đã nêu ở commonMistakes nhưng chưa có dòng riêng trong bảng acceptance examples gốc.",
+      "explanation": "Lời giải mẫu minh họa các test case hợp lệ nhưng dễ bị bỏ sót: toàn số 0, số nguyên lớn gần giới hạn, và dấu trừ ở đầu biểu thức — cả ba đều là input hợp lệ có kết quả xác định rõ ràng, không phải trường hợp phải ném lỗi.",
       "rubric": "Đạt yêu cầu nếu đề xuất được ít nhất 2 test case thực sự khác biệt so với bảng acceptance examples và nêu đúng expected output/hành vi lỗi.",
       "sourceUsage": []
     },

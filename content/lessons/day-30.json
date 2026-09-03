@@ -222,6 +222,65 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day30-sec-acceptance",
+      "title": "Acceptance criteria: 7 hạng mục production readiness",
+      "blocks": [
+        {
+          "id": "day30-blk-17",
+          "type": "note",
+          "text": "Phạm vi chấm của bảng dưới đây: 4 trong 7 hạng mục của Lab 10 (JaCoCo coverage ≥ 75%, traceId propagation, /actuator/prometheus, GitHub Actions CI) là khoảng trống kiến thức thật sự của bộ nguồn hiện tại - authoring.limitations ghi rõ không có resource nào trong toàn bộ course-catalog mô tả chúng, và các section tương ứng (day30-blk-7, day30-blk-9, day30-blk-10, day30-blk-15) chỉ là ghi chú không trích dẫn. Vì vậy 4 hạng mục đó được đánh dấu CHƯA CHỐT ở cột 'Đạt khi': chúng vẫn nằm trong đề bài Lab 10 để học viên biết phải làm gì, nhưng KHÔNG dùng làm điều kiện chấm cho tới khi bộ nguồn có tài liệu tương ứng. Ba hạng mục còn lại (test hai tầng, OpenAPI, Docker/docker-compose) có đủ nội dung đã dạy và trích dẫn nên chấm bình thường.",
+          "citations": []
+        },
+        {
+          "id": "day30-blk-16",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra (observable)",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Unit test + Integration test (Testcontainers) cho mọi service",
+              "Chạy mvn test (hoặc mvn verify)",
+              "Build không lỗi; mỗi service có ít nhất 1 test @WebMvcTest (unit) và 1 test @SpringBootTest + Testcontainers (integration) tương ứng"
+            ],
+            [
+              "JaCoCo coverage ≥ 75%",
+              "Chạy mvn verify, mở report tại target/site/jacoco/index.html",
+              "CHƯA CHỐT - không dùng làm điều kiện chấm ở bài này (xem day30-blk-17). Mức quan sát duy nhất áp dụng ở đây: report được sinh ra và mở được. Cách cấu hình plugin, cách đọc chỉ số coverage và cách đặt ngưỡng để build fail (jacoco:check) không có nguồn nào trong khoá học mô tả - xem day30-blk-7 và authoring.limitations."
+            ],
+            [
+              "OpenAPI doc cho toàn bộ endpoint",
+              "GET /v3/api-docs; mở /swagger-ui.html",
+              "/v3/api-docs trả JSON OpenAPI hợp lệ liệt kê đủ các endpoint REST của dự án; Swagger UI render được danh sách endpoint tương ứng"
+            ],
+            [
+              "JSON structured logging + traceId propagation",
+              "Gọi 2 request đồng thời tới cùng một endpoint, quan sát log console/file",
+              "Mỗi dòng log ở định dạng JSON (ECS) - phần này có mẫu đã học đầy đủ ở Day 29. Phần traceId lan truyền: CHƯA CHỐT, không dùng làm điều kiện chấm ở bài này (xem day30-blk-17); Day 29 chỉ dạy đặt một correlation id vào MDC trong phạm vi một service, còn việc lan truyền xuyên nhiều service không có nguồn nào mô tả - xem day30-blk-9 và authoring.limitations."
+            ],
+            [
+              "Actuator + Prometheus + custom HealthIndicator",
+              "GET /actuator/health; GET /actuator/prometheus",
+              "/actuator/health trả status UP kèm thành phần HealthIndicator tuỳ chỉnh trong details - phần này có mẫu đã học đầy đủ ở Day 29. Phần /actuator/prometheus: CHƯA CHỐT, không dùng làm điều kiện chấm ở bài này (xem day30-blk-17); micrometer-registry-prometheus và định dạng exposition không có nguồn nào trong khoá học mô tả - xem day30-blk-10 và authoring.limitations."
+            ],
+            [
+              "Dockerfile + docker-compose.yml (app + DB + Redis)",
+              "docker compose up; sửa một dòng code ứng dụng rồi docker compose build lại",
+              "Cả 3 service (app/db/redis) khởi động thành công, app kết nối được tới db và redis (không có log lỗi connection refused); lần build lại sau khi chỉ sửa code ứng dụng tái sử dụng cache của layer dependencies (nhanh hơn lần build đầu tiên)"
+            ],
+            [
+              "GitHub Actions CI: build → test → docker build",
+              "Xem log chạy của workflow trên GitHub Actions",
+              "CHƯA CHỐT - không dùng làm điều kiện chấm ở bài này (xem day30-blk-17). Thứ tự build → test → docker build là một yêu cầu thiết kế pipeline (lý do đã nêu ở commonMistakes), nhưng cú pháp workflow GitHub Actions và cách quan sát log không có nguồn nào trong khoá học mô tả - xem day30-blk-15 và authoring.limitations."
+            ]
+          ],
+          "citations": ["day30-src-1", "day30-src-2", "day30-src-3", "day30-src-4", "day30-src-5", "day30-src-6", "day30-src-7", "day30-src-8", "day30-src-9", "day30-src-10", "day30-src-11", "day30-src-12", "day30-src-13"]
+        }
+      ]
     }
   ],
   "commonMistakes": [

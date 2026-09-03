@@ -116,7 +116,7 @@
           "id": "day15-blk-7",
           "type": "code",
           "language": "java",
-          "code": "interface NotificationService {\n    void send(String recipient, String message);\n}\n\nimport org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Component;\n\n@Component(\"emailSender\")\nclass EmailSender implements NotificationService {\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[email] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component(\"smsSender\")\nclass SmsSender implements NotificationService {\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[sms] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\nclass NotificationClient {\n\n    private final NotificationService emailSender;\n\n    // @Qualifier chọn đúng bean khi có nhiều implementation của cùng một\n    // interface — Spring resolve theo type trước (như học ở Day 14), rồi\n    // dùng tên @Qualifier để phân biệt giữa các ứng viên cùng type.\n    NotificationClient(@Qualifier(\"emailSender\") NotificationService emailSender) {\n        this.emailSender = emailSender;\n    }\n}\n",
+          "code": "enum NotificationType { EMAIL, SMS, PUSH }\n\ninterface NotificationService {\n    // Mỗi implementation tự khai báo loại thông báo mình xử lý — Factory\n    // (day15-blk-9) sẽ dựa vào đây để tự nhận diện sender, không cần biết\n    // trước tên bean cụ thể.\n    NotificationType supportedType();\n\n    void send(String recipient, String message);\n}\n\nimport org.springframework.beans.factory.annotation.Qualifier;\nimport org.springframework.stereotype.Component;\n\n@Component(\"emailSender\")\nclass EmailSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.EMAIL;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[email] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component(\"smsSender\")\nclass SmsSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.SMS;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[sms] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\nclass NotificationClient {\n\n    private final NotificationService emailSender;\n\n    // @Qualifier chọn đúng bean khi có nhiều implementation của cùng một\n    // interface — Spring resolve theo type trước (như học ở Day 14), rồi\n    // dùng tên @Qualifier để phân biệt giữa các ứng viên cùng type.\n    NotificationClient(@Qualifier(\"emailSender\") NotificationService emailSender) {\n        this.emailSender = emailSender;\n    }\n}\n",
           "compile": false,
           "citations": [
             "day15-src-8"
@@ -128,6 +128,15 @@
           "type": "note",
           "text": "Ngoài @Qualifier (chọn theo tên bean tường minh), có thể dùng @Profile(\"twilio\")/@Profile(\"firebase\") trên từng implementation để Spring chỉ đăng ký bean tương ứng khi profile đó đang active — hữu ích khi muốn đổi nhà cung cấp SMS/Push theo môi trường (dev dùng fake sender, prod dùng Twilio/Firebase thật) mà không sửa code gọi.",
           "citations": []
+        },
+        {
+          "id": "day15-blk-12",
+          "type": "code",
+          "language": "text",
+          "code": "// PushSender của assignment: chọn bằng @Profile thay vì @Qualifier —\n// cả hai bean cùng trả supportedType() = PUSH, nhưng Spring chỉ đăng ký\n// ĐÚNG MỘT bean trong số này tùy profile đang active, nên Factory\n// (day15-blk-9) không bao giờ thấy hai sender PUSH cùng lúc.\n\n@Component\n@Profile(\"dev\")\nclass FakePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[fake-push] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component\n@Profile(\"prod\")\nclass FirebasePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        // Gọi Firebase Cloud Messaging API thật ở đây, cấu hình theo\n        // FirebaseProperties (@ConfigurationProperties ở phần trên).\n        // Không có resource nào trong resourceIds của Day 15 mô tả API\n        // này — xem authoring.limitations.\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Minh họa @Profile chọn implementation (FakePushSender/FirebasePushSender, khớp với đáp án day15-prac-3) và hoàn thiện PushSender còn thiếu trong đề bài; không có resource nào trong resourceIds của Day 15 mô tả trực tiếp cơ chế @Profile-annotated-bean selection — fact về activation YAML theo profile (day15-src-5) là một claim khác và hẹp hơn nên không dùng làm citation (xem authoring.limitations). Không đưa vào bước javac của pipeline vì lý do tương tự các khối Spring khác trong bài (không có Spring jar trên classpath) và vì phần gọi Firebase thật nằm ngoài phạm vi nguồn đã đọc."
         }
       ]
     },
@@ -139,7 +148,7 @@
           "id": "day15-blk-9",
           "type": "code",
           "language": "java",
-          "code": "enum NotificationType { EMAIL, SMS, PUSH }\n\nimport java.util.Map;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass NotificationSenderFactory {\n\n    private final Map<NotificationType, NotificationService> senders;\n\n    // Spring tiêm toàn bộ các bean NotificationService vào Map, key là\n    // tên bean; Factory tự ánh xạ tên bean sang NotificationType để chọn\n    // đúng sender mà không cần chuỗi if/else theo type.\n    NotificationSenderFactory(Map<String, NotificationService> beansByName) {\n        this.senders = Map.of(\n                NotificationType.EMAIL, beansByName.get(\"emailSender\"),\n                NotificationType.SMS, beansByName.get(\"smsSender\"));\n    }\n\n    NotificationService senderFor(NotificationType type) {\n        NotificationService sender = senders.get(type);\n        if (sender == null) {\n            throw new IllegalArgumentException(\"Không có sender cho: \" + type);\n        }\n        return sender;\n    }\n}\n",
+          "code": "import java.util.List;\nimport java.util.Map;\nimport org.springframework.stereotype.Component;\n\n// NotificationType và interface NotificationService (với supportedType())\n// đã khai báo ở phần @Qualifier/@Profile phía trên — xem day15-blk-7.\n@Component\nclass NotificationSenderFactory {\n\n    private final Map<NotificationType, NotificationService> senders;\n\n    // Spring tiêm TOÀN BỘ bean NotificationService vào một List (không phải\n    // từng bean riêng lẻ qua tên) — mỗi sender tự khai báo NotificationType\n    // của mình qua supportedType(), nên Factory không cần biết trước tên\n    // bean hay số lượng loại sender đang tồn tại.\n    NotificationSenderFactory(List<NotificationService> senders) {\n        // TODO: derive this.senders từ tham số senders — với mỗi phần tử,\n        // dùng sender.supportedType() làm key và chính sender đó làm value\n        // (gợi ý: senders.stream().collect(Collectors.toMap(\n        // NotificationService::supportedType, Function.identity()))).\n        // KHÔNG được hardcode từng NotificationType trong constructor —\n        // nếu hardcode, thêm sender mới lại phải sửa Factory, đúng lỗi mà\n        // bài đã ghi nhận và sửa ở đây (xem day15-blk-10).\n        this.senders = null;\n    }\n\n    NotificationService senderFor(NotificationType type) {\n        NotificationService sender = senders.get(type);\n        if (sender == null) {\n            throw new IllegalArgumentException(\"Không có sender cho: \" + type);\n        }\n        return sender;\n    }\n}\n",
           "compile": false,
           "citations": [
             "day15-src-8"
@@ -149,7 +158,7 @@
         {
           "id": "day15-blk-10",
           "type": "note",
-          "text": "Factory nhận Map<String, NotificationService> (Spring tự tiêm toàn bộ bean cùng interface vào Map, key là tên bean) rồi tự ánh xạ sang NotificationType, tránh chuỗi if/else liên tiếp và dễ mở rộng khi thêm loại thông báo mới.",
+          "text": "Factory nhận List<NotificationService> (Spring tự tiêm toàn bộ bean cùng interface vào một List) rồi tự dựng Map theo supportedType() của từng sender — tránh chuỗi if/else liên tiếp, và quan trọng hơn: KHÔNG cần biết trước tên bean hay số lượng loại sender. Nhờ vậy, thêm một NotificationType mới (ví dụ SLACK) chỉ cần thêm một bean @Component mới implement NotificationService (kể cả supportedType()) — không cần sửa gì trong NotificationSenderFactory, kể cả constructor của nó. Đây là điểm khác với một Map<String, NotificationService> tra theo tên bean cứng: cách đó buộc Factory phải biết trước danh sách tên bean nào cần lấy ra, nên thêm loại mới vẫn phải sửa constructor.",
           "citations": []
         }
       ]
@@ -163,6 +172,54 @@
           "type": "note",
           "text": "Yêu cầu retry logic khi send thất bại không có resource nào trong resourceIds của Day 15 mô tả chi tiết (xem authoring.limitations). Cách làm phổ biến: bọc lỗi gửi trong vòng lặp thử lại tối đa N lần với backoff (ví dụ delay tăng dần giữa các lần thử), hoặc dùng @Retryable của Spring Retry (thư viện riêng, không nằm trong resourceIds đã đọc) nếu được phép thêm dependency; nếu vượt quá số lần thử, ghi log/ném exception nghiệp vụ để tầng gửi thất bại ở cấp cao hơn xử lý.",
           "citations": []
+        },
+        {
+          "id": "day15-blk-13",
+          "type": "code",
+          "language": "text",
+          "code": "class NotificationSendException extends Exception {\n    NotificationSendException(String message, Throwable cause) {\n        super(message, cause);\n    }\n}\n\nclass RetryingNotificationSender {\n\n    private static final int MAX_ATTEMPTS = 3;\n\n    private final NotificationService delegate;\n\n    RetryingNotificationSender(NotificationService delegate) {\n        this.delegate = delegate;\n    }\n\n    void sendWithRetry(String recipient, String message) {\n        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n            try {\n                delegate.send(recipient, message);\n                return;\n            } catch (RuntimeException sendFailed) {\n                // TODO: nếu attempt == MAX_ATTEMPTS, ném một exception nghiệp\n                // vụ (terminal) để tầng gọi biết gửi đã thất bại hẳn — KHÔNG\n                // nuốt lỗi âm thầm và KHÔNG thử lại vô hạn (xem commonMistakes).\n\n                // TODO: nếu chưa phải lần cuối, chờ một khoảng backoff tăng\n                // dần trước khi thử lại (ví dụ nhân đôi delay mỗi lần thử).\n                // Cẩn thận nếu dùng Thread.sleep: đây là luồng xử lý request,\n                // sleep trực tiếp sẽ chặn luồng đó tới khi hết retry.\n            }\n        }\n    }\n}\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Khung sườn minh họa cấu trúc attempt loop có giới hạn cho retry logic — không có resource nào trong resourceIds của Day 15 mô tả chủ đề retry/backoff (xem authoring.limitations và day15-blk-11), nên không đưa vào bước javac của pipeline."
+        }
+      ]
+    },
+    {
+      "id": "day15-sec-acceptance",
+      "title": "Tiêu chí nghiệm thu Assignment 5",
+      "blocks": [
+        {
+          "id": "day15-blk-14",
+          "type": "table",
+          "columns": ["Deliverable", "Cách kiểm tra (observable)", "Đạt khi"],
+          "rows": [
+            [
+              "Interface NotificationService + 3 implementation (Email/Sms/Push)",
+              "Gọi send() trên từng bean (EmailSender/SmsSender, và FakePushSender hoặc FirebasePushSender tùy profile); kiểm tra supportedType() của từng bean",
+              "Mỗi bean trả đúng NotificationType của mình (EMAIL/SMS/PUSH) qua supportedType(), và send() thực thi không ném lỗi với recipient/message hợp lệ"
+            ],
+            [
+              "@Qualifier hoặc @Profile chọn đúng implementation theo ngữ cảnh",
+              "Khởi tạo NotificationClient (dùng @Qualifier(\"emailSender\")); chạy ứng dụng lần lượt với profile dev và prod",
+              "NotificationClient luôn nhận đúng EmailSender qua @Qualifier; với profile dev, context chỉ có FakePushSender (không có FirebasePushSender) và ngược lại với prod — không bao giờ cả hai cùng tồn tại"
+            ],
+            [
+              "@ConfigurationProperties bất biến (SMTP/Twilio/Firebase), validate bằng Bean Validation",
+              "Khởi động ứng dụng với property hợp lệ; sau đó khởi động lại với một field bắt buộc để trống (ví dụ notification.twilio.account-sid rỗng)",
+              "Với property hợp lệ: context khởi động thành công và field đọc đúng giá trị cấu hình; với property thiếu: context KHÔNG khởi động được, ném lỗi ngay lúc startup (không phải lúc gọi API)"
+            ],
+            [
+              "Factory pattern chọn sender theo NotificationType, không if/else, mở rộng được",
+              "Gọi senderFor(EMAIL)/senderFor(SMS)/senderFor(PUSH) sau khi hoàn thành TODO ở day15-blk-9; sau đó thêm một bean @Component mới implement NotificationService (ví dụ SLACK) rồi gọi lại senderFor(SLACK)",
+              "senderFor() trả đúng bean tương ứng cho từng type đã có; sau khi thêm bean mới, senderFor(SLACK) trả đúng bean mới đó MÀ KHÔNG cần sửa bất kỳ dòng nào trong NotificationSenderFactory"
+            ],
+            [
+              "Retry logic có giới hạn số lần thử khi gửi thất bại",
+              "Gọi sendWithRetry() với một delegate cố tình ném lỗi liên tục (mọi lần gọi send() đều throw), đếm số lần delegate.send() thực sự được gọi",
+              "delegate.send() được gọi tối đa MAX_ATTEMPTS lần (không phải vô hạn lần); sau lần cuối thất bại, phương thức kết thúc bằng một exception nghiệp vụ thay vì im lặng bỏ qua lỗi"
+            ]
+          ],
+          "citations": ["day15-src-1", "day15-src-2", "day15-src-3", "day15-src-4", "day15-src-6", "day15-src-7", "day15-src-8"]
         }
       ]
     }
@@ -170,7 +227,10 @@
   "commonMistakes": [
     "Đặt property SMTP/Twilio/Firebase rải rác bằng nhiều @Value thay vì gom vào lớp @ConfigurationProperties riêng cho từng nhà cung cấp.",
     "Quên validate property cấu hình (ví dụ accountSid rỗng) khiến lỗi chỉ xuất hiện lúc gọi API thay vì lúc khởi động ứng dụng.",
-    "Retry vô hạn lần không có giới hạn, khiến request treo khi nhà cung cấp thông báo thất bại liên tục."
+    "Retry vô hạn lần không có giới hạn, khiến request treo khi nhà cung cấp thông báo thất bại liên tục.",
+    "Viết cứng từng NotificationType trong constructor của Factory (ví dụ Map.of(EMAIL, ..., SMS, ...)) thay vì derive từ danh sách sender được tiêm — làm mất khả năng mở rộng: thêm loại thông báo mới lại phải sửa Factory, dù enhancedExercise nói không cần.",
+    "Thêm một sender mới nhưng quên gắn @Component (hoặc quên implement supportedType() đúng loại) — Factory không tìm thấy sender, senderFor() ném IllegalArgumentException lúc runtime thay vì báo lỗi sớm.",
+    "Gắn hai bean cùng trả supportedType() giống nhau mà không tách bằng @Profile/@Qualifier — Spring context không khởi động được (nhiều bean cùng type) hoặc, nếu derive Map bằng Collectors.toMap không xử lý key trùng, Factory ném IllegalStateException lúc khởi động."
   ],
   "practices": [
     {
@@ -239,16 +299,18 @@
     },
     {
       "id": "day15-prac-4",
-      "type": "concept",
+      "type": "coding",
       "interaction": "self-check",
-      "prompt": "Trong hàm khởi tạo của NotificationSenderFactory, vì sao Factory nhận Map<String, NotificationService> thay vì từng sender riêng lẻ qua từng tham số constructor?",
+      "prompt": "Hoàn thành phần TODO trong constructor của NotificationSenderFactory (day15-blk-9): derive this.senders (Map<NotificationType, NotificationService>) từ tham số senders (List<NotificationService>) được Spring tiêm vào, sao cho thêm một NotificationType mới chỉ cần thêm một bean @Component mới (implement supportedType()) — không cần sửa gì trong NotificationSenderFactory.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Xem lại code NotificationSenderFactory trong bài.",
-      "solution": "Vì Spring tự động tiêm toàn bộ bean cùng interface NotificationService vào một Map với key là tên bean, giúp Factory không cần liệt kê từng tham số riêng cho từng loại sender và dễ dàng mở rộng khi thêm loại thông báo mới (chỉ cần thêm một bean @Component mới, không cần sửa constructor của Factory).",
-      "explanation": "Giải thích lợi ích mở rộng (extensibility) khi dùng Map thay vì tham số riêng lẻ.",
-      "rubric": "Đánh giá học viên nêu đúng cơ chế tiêm Map và lợi ích mở rộng.",
-      "sourceUsage": []
+      "hint": "Dùng senders.stream().collect(Collectors.toMap(NotificationService::supportedType, Function.identity())) — key lấy từ supportedType() của từng sender, value là chính sender đó. Không được viết cứng từng NotificationType (EMAIL, SMS, ...) trong constructor.",
+      "solution": "Không có cài đặt đầy đủ ở đây — phần TODO trong constructor cố tình để trống để bạn tự hoàn thành. Tự kiểm tra bằng cách thêm một bean giả implement NotificationService với supportedType() trả về một NotificationType chưa từng dùng (ví dụ tạm coi PUSH là 'mới' nếu bạn thử trước khi thêm FakePushSender/FirebasePushSender ở day15-blk-12), rồi xác nhận senderFor(...) trả đúng bean đó mà KHÔNG cần sửa bất kỳ dòng nào trong NotificationSenderFactory (xem bảng tiêu chí nghiệm thu ở cuối bài, day15-sec-acceptance).",
+      "explanation": "Collectors.toMap(NotificationService::supportedType, Function.identity()) là cách chuẩn để dựng một Map tra cứu từ một List các đối tượng tự mô tả (self-describing) — mỗi sender khai báo type của chính nó thay vì Factory phải biết trước. Đây chính là cách sửa mâu thuẫn giữa code cũ (Map<String,...> tra theo tên bean cứng, phải sửa constructor khi thêm loại mới) và mô tả trong enhancedExercise #1 (thêm loại mới không cần sửa Factory) — nay cả hai đã khớp nhau.",
+      "rubric": "Đánh giá đúng: dùng supportedType() của từng sender làm key (không hardcode NotificationType nào trong constructor); thêm sender mới (bean @Component mới) không đòi hỏi sửa NotificationSenderFactory; xử lý được khi senders rỗng hoặc có type trùng nhau (tùy chọn, không bắt buộc để đạt).",
+      "sourceUsage": [
+        "day15-src-8"
+      ]
     }
   ],
   "syllabusAssignments": [
@@ -258,7 +320,7 @@
     }
   ],
   "enhancedExercises": [
-    "Thêm một NotificationType mới (ví dụ SLACK) và một implementation tương ứng mà không sửa NotificationSenderFactory ngoài phần khởi tạo Map.",
+    "Thêm một NotificationType mới (ví dụ SLACK) và một implementation tương ứng — sau khi hoàn thành TODO ở day15-blk-9 đúng cách, việc này không cần sửa gì trong NotificationSenderFactory, kể cả constructor của nó.",
     "Viết test kiểm tra @ConfigurationProperties validate thất bại (accountSid rỗng) khiến context khởi động thất bại."
   ],
   "references": [
@@ -370,10 +432,10 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Retry logic khi gửi thất bại: không có resource nào trong resourceIds của Day 15 mô tả chủ đề này — trình bày bằng kiến thức chuẩn (retry có giới hạn + backoff) trong khối note không yêu cầu trích dẫn, không bịa đặt citation cho Spring Retry (thư viện ngoài phạm vi các resource đã đọc).",
-      "@Profile để chọn implementation: không tìm thấy fact nào trong resourceIds của Day 15 mô tả trực tiếp cơ chế @Profile-annotated-bean selection — fact 'Kích hoạt tài liệu YAML theo profile' (res-aee8bfb64b8c) chỉ nói về activation của property source theo profile (spring.config.activate.on-profile), là một claim khác và hẹp hơn @Profile chọn bean nên không được dùng làm citation cho khối note về @Profile chọn implementation (day15-blk-8) để tránh kéo căng citation.",
-      "PushSender/Firebase cụ thể: không có resource nào trong resourceIds của Day 15 mô tả Firebase Cloud Messaging API — ví dụ chỉ minh họa kiến trúc chọn implementation, không đi sâu vào API của từng nhà cung cấp.",
-      "Factory pattern (NotificationSenderFactory, day15-blk-9): không có resource nào trong resourceIds của Day 15 mô tả riêng kỹ thuật Spring tự tiêm Map<String, T> gom toàn bộ bean cùng interface — khối code này được trích dẫn lại bằng c8 (định nghĩa DI của Spring Framework: container tiêm dependency qua constructor argument dựa trên cấu hình metadata, ở đây là tên bean làm key của Map) vì đây vẫn là một biểu hiện cụ thể của nguyên tắc constructor injection đã trích dẫn cho day15-blk-7, không phải một khẳng định kỹ thuật mới cần nguồn riêng; bản thân mẫu Factory (dùng Map để tránh if/else) là kiến thức thiết kế phổ biến, không riêng của Spring."
+      "Retry logic khi gửi thất bại: không có resource nào trong resourceIds của Day 15 mô tả chủ đề này — trình bày bằng kiến thức chuẩn (retry có giới hạn + backoff) trong khối note (day15-blk-11) và một khung sườn code (day15-blk-13, language=text) không yêu cầu trích dẫn, không bịa đặt citation cho Spring Retry (thư viện ngoài phạm vi các resource đã đọc).",
+      "@Profile để chọn implementation: không tìm thấy fact nào trong resourceIds của Day 15 mô tả trực tiếp cơ chế @Profile-annotated-bean selection — fact 'Kích hoạt tài liệu YAML theo profile' (res-aee8bfb64b8c) chỉ nói về activation của property source theo profile (spring.config.activate.on-profile), là một claim khác và hẹp hơn @Profile chọn bean nên không được dùng làm citation cho khối note (day15-blk-8) và khối code minh họa FakePushSender/FirebasePushSender (day15-blk-12, language=text) về @Profile chọn implementation, để tránh kéo căng citation.",
+      "PushSender/Firebase cụ thể: không có resource nào trong resourceIds của Day 15 mô tả Firebase Cloud Messaging API — FirebasePushSender (day15-blk-12) chỉ minh họa kiến trúc chọn implementation qua @Profile, phần gọi API Firebase thật để lại dưới dạng chú thích, không đi sâu vào API của từng nhà cung cấp.",
+      "Factory pattern (NotificationSenderFactory, day15-blk-9): không có resource nào trong resourceIds của Day 15 mô tả riêng kỹ thuật Spring tự tiêm List<T>/Map<String, T> gom toàn bộ bean cùng interface — khối code này được trích dẫn lại bằng c8/day15-src-8 (định nghĩa DI của Spring Framework: container tiêm dependency qua constructor argument dựa trên cấu hình metadata) vì đây vẫn là một biểu hiện cụ thể của nguyên tắc constructor injection đã trích dẫn cho day15-blk-7, không phải một khẳng định kỹ thuật mới cần nguồn riêng; bản thân mẫu Factory (derive Map từ List theo supportedType() để tránh if/else và tránh hardcode theo tên bean) là kiến thức thiết kế phổ biến, không riêng của Spring. Phần derive Map cụ thể được để dưới dạng TODO trong day15-blk-9 (xem day15-prac-4) thay vì viết sẵn, để giữ đây là một bài tập tự làm chứ không phải lời giải hoàn chỉnh."
     ]
   }
 }

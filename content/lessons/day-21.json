@@ -68,13 +68,13 @@
         {
           "id": "day21-blk-3",
           "type": "paragraph",
-          "text": "Mô hình gồm 5 entity với các quan hệ: Category có quan hệ @OneToMany tới Product (một danh mục có nhiều sản phẩm); User có quan hệ @OneToMany tới Order (một người dùng có nhiều đơn hàng); Order có quan hệ @OneToMany hai chiều tới OrderItem (dùng mappedBy, CascadeType.PERSIST và orphanRemoval=true vì OrderItem chỉ thuộc về đúng một Order - đây là quan hệ composition, không phải aggregation); OrderItem có hai quan hệ @ManyToOne LAZY tới Order và Product. Việc chọn đúng CascadeType và orphanRemoval theo tiêu chí composition/aggregation áp dụng lại trực tiếp nguyên tắc đã học ở Day 19.",
+          "text": "Mô hình gồm 5 entity với các quan hệ: Category có quan hệ @OneToMany tới Product (một danh mục có nhiều sản phẩm); User có quan hệ @OneToMany tới Order (một người dùng có nhiều đơn hàng); Order có quan hệ @OneToMany hai chiều tới OrderItem (dùng mappedBy, CascadeType.PERSIST và orphanRemoval=true vì OrderItem chỉ thuộc về đúng một Order - đây là quan hệ composition, không phải aggregation); OrderItem có hai quan hệ @ManyToOne LAZY tới Order và Product. Việc chọn đúng CascadeType và orphanRemoval theo tiêu chí composition/aggregation áp dụng lại trực tiếp nguyên tắc đã học ở Day 19. Order↔OrderItem dưới đây là ví dụ đã giải đầy đủ theo đúng tiêu chí đó; Category↔Product và User↔Order cố tình để trống CascadeType/orphanRemoval (đánh dấu TODO trong khối mã) để bạn tự áp dụng lại cùng tiêu chí - gợi ý: xoá một Category có nên xoá luôn toàn bộ Product của nó không? Xoá một User có nên xoá luôn lịch sử Order của họ không?",
           "citations": []
         },
         {
           "id": "day21-blk-4",
           "type": "template",
-          "text": "import jakarta.persistence.*;\nimport java.math.BigDecimal;\nimport java.util.ArrayList;\nimport java.util.List;\n\n@Entity\nclass OrderEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"user_id\", nullable = false)\n    private UserEntity user;\n\n    @OneToMany(mappedBy = \"order\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<OrderItemEntity> items = new ArrayList<>();\n}\n\n@Entity\nclass OrderItemEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"order_id\", nullable = false)\n    private OrderEntity order;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"product_id\", nullable = false)\n    private ProductEntity product;\n\n    private int quantity;\n    private BigDecimal unitPriceAtOrder;\n}\n",
+          "text": "import jakarta.persistence.*;\nimport java.math.BigDecimal;\nimport java.time.Instant;\nimport java.util.ArrayList;\nimport java.util.List;\nimport org.springframework.data.annotation.CreatedDate;\nimport org.springframework.data.jpa.domain.support.AuditingEntityListener;\n\n@Entity\nclass CategoryEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    private String name;\n\n    // TODO: chọn CascadeType/orphanRemoval cho quan hệ Category -> Product dựa trên\n    // tiêu chí composition/aggregation đã nêu ở trên (so sánh với ví dụ Order -> OrderItem\n    // đã giải đầy đủ bên dưới).\n    @OneToMany(mappedBy = \"category\")\n    private List<ProductEntity> products = new ArrayList<>();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    private String name;\n    private BigDecimal unitPrice;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\", nullable = false)\n    private CategoryEntity category;\n}\n\n@Entity\nclass UserEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    private String email;\n\n    // TODO: chọn CascadeType/orphanRemoval cho quan hệ User -> Order dựa trên\n    // tiêu chí composition/aggregation đã nêu ở trên.\n    @OneToMany(mappedBy = \"user\")\n    private List<OrderEntity> orders = new ArrayList<>();\n}\n\n@Entity\n@EntityListeners(AuditingEntityListener.class)\nclass OrderEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"user_id\", nullable = false)\n    private UserEntity user;\n\n    @CreatedDate\n    @Column(name = \"created_at\", updatable = false)\n    private Instant createdAt;\n\n    @OneToMany(mappedBy = \"order\", cascade = CascadeType.PERSIST, orphanRemoval = true)\n    private List<OrderItemEntity> items = new ArrayList<>();\n}\n\n@Entity\nclass OrderItemEntity {\n\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"order_id\", nullable = false)\n    private OrderEntity order;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"product_id\", nullable = false)\n    private ProductEntity product;\n\n    private int quantity;\n    private BigDecimal unitPriceAtOrder;\n}\n",
           "citations": []
         },
         {
@@ -92,23 +92,30 @@
         {
           "id": "day21-blk-6",
           "type": "paragraph",
-          "text": "Ba truy vấn nghiệp vụ được yêu cầu - top-selling products, đơn hàng theo khoảng ngày, và lịch sử đơn hàng của một người dùng - đều áp dụng lại mẫu PagingAndSortingRepository và PageRequest.of đã học ở Day 20: mỗi truy vấn nhận một tham số Pageable để tránh nạp toàn bộ dữ liệu, dùng derived query method (findByUserId, findByCreatedAtBetween) khi có thể, và @Query tường minh cho truy vấn tổng hợp (group by/order by) như top-selling.",
+          "text": "Ba truy vấn nghiệp vụ được yêu cầu - top-selling products, đơn hàng theo khoảng ngày, và lịch sử đơn hàng của một người dùng - đều áp dụng lại mẫu PagingAndSortingRepository và PageRequest.of đã học ở Day 20: mỗi truy vấn nhận một tham số Pageable để tránh nạp toàn bộ dữ liệu, dùng derived query method (findByUserId, findByCreatedAtBetween) khi có thể, và @Query tường minh cho truy vấn tổng hợp (group by/order by) như top-selling. Trường createdAt dùng để lọc theo khoảng ngày được Spring tự động điền bằng @CreatedDate kết hợp @EntityListeners(AuditingEntityListener.class) trên OrderEntity - đúng kỹ thuật Spring Data JPA auditing đã học ở Day 20, áp dụng lại nguyên vẹn ở đây nên kiểu dữ liệu của nó là Instant, không phải LocalDate.",
           "citations": [
             "day21-src-1",
-            "day21-src-2"
+            "day21-src-2",
+            "day21-src-3"
           ]
         },
         {
           "id": "day21-blk-7",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.data.domain.Page;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.data.jpa.repository.Query;\nimport org.springframework.data.repository.query.Param;\nimport java.time.LocalDate;\n\ninterface OrderRepository extends PagingAndSortingRepository<OrderEntity, Long> {\n\n    @Query(\"select oi.product.id, sum(oi.quantity) as totalQty \"\n         + \"from OrderItemEntity oi group by oi.product.id order by totalQty desc\")\n    Page<Object[]> topSellingProducts(Pageable pageable);\n\n    Page<OrderEntity> findByCreatedAtBetween(\n        @Param(\"from\") LocalDate from, @Param(\"to\") LocalDate to, Pageable pageable);\n\n    Page<OrderEntity> findByUserId(@Param(\"userId\") Long userId, Pageable pageable);\n}\n",
+          "code": "import org.springframework.data.domain.Page;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.data.jpa.repository.Query;\nimport java.time.Instant;\n\ninterface OrderRepository extends PagingAndSortingRepository<OrderEntity, Long> {\n\n    @Query(\"select oi.product.id as productId, sum(oi.quantity) as totalQty \"\n         + \"from OrderItemEntity oi group by oi.product.id order by totalQty desc\")\n    Page<ProductSalesProjection> topSellingProducts(Pageable pageable);\n\n    Page<OrderEntity> findByCreatedAtBetween(Instant from, Instant to, Pageable pageable);\n\n    Page<OrderEntity> findByUserId(Long userId, Pageable pageable);\n}\n",
           "compile": false,
           "citations": [
             "day21-src-1",
             "day21-src-2"
           ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn). @Param đã bỏ khỏi hai derived query method (findByCreatedAtBetween, findByUserId) vì @Param chỉ cần thiết khi tên tham số method không khớp tên trong @Query tường minh hoặc khi biên dịch thiếu cờ -parameters - Spring Data tự suy ra tên tham số từ tên method cho derived query, nên giữ @Param ở đây là thừa và có thể gây hiểu nhầm."
+        },
+        {
+          "id": "day21-blk-9",
+          "type": "template",
+          "text": "interface ProductSalesProjection {\n    Long getProductId();\n    Long getTotalQty();\n}\n",
+          "citations": []
         }
       ]
     },
@@ -119,8 +126,59 @@
         {
           "id": "day21-blk-8",
           "type": "note",
-          "text": "Quy trình Flyway (đặt tên file migration theo chuẩn V{version}__{description}.sql, chạy tuần tự và ghi lại lịch sử trong bảng flyway_schema_history) và @DataJpaTest (slice test chỉ nạp cấu hình liên quan JPA, mặc định dùng database nhúng trong bộ nhớ và rollback sau mỗi test) không có resource nào trong resourceIds của Day 21 mô tả - resource res-553bbd92e5d0 dự kiến cho chủ đề này hiện không thể truy cập (xem authoring.limitations). Quy trình chuẩn: V1__init.sql tạo schema (bảng users, categories, products, orders, order_items cùng khoá ngoại), V2__seed_data.sql chèn dữ liệu mẫu để kiểm thử thủ công; @DataJpaTest kết hợp @Autowired TestEntityManager và repository để kiểm tra các truy vấn nghiệp vụ ở trên hoạt động đúng trên schema thật.",
+          "text": "Quy trình Flyway (đặt tên file migration theo chuẩn V{version}__{description}.sql, chạy tuần tự và ghi lại lịch sử trong bảng flyway_schema_history) và @DataJpaTest (slice test chỉ nạp cấu hình liên quan JPA, mặc định dùng database nhúng trong bộ nhớ và rollback sau mỗi test) không có resource nào trong resourceIds của Day 21 mô tả - resource res-553bbd92e5d0 dự kiến cho chủ đề này hiện không thể truy cập (xem authoring.limitations). Khối mã bên dưới minh hoạ V1__init.sql tạo đủ 5 bảng cùng khoá ngoại (categories, users, products, orders, order_items), và một OrderRepositoryTest với một test method mẫu đã dựng sẵn khung (các TODO còn lại là phần bài tập - viết thêm test cho topSellingProducts và findByCreatedAtBetween). V2__seed_data.sql thì chèn vài dòng dữ liệu mẫu cho từng bảng theo đúng thứ tự khoá ngoại (categories/users trước, rồi products, rồi orders/order_items) để kiểm thử thủ công.",
           "citations": []
+        },
+        {
+          "id": "day21-blk-10",
+          "type": "template",
+          "text": "-- V1__init.sql\nCREATE TABLE categories (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    name VARCHAR(255) NOT NULL\n);\n\nCREATE TABLE users (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    email VARCHAR(255) NOT NULL UNIQUE\n);\n\nCREATE TABLE products (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    name VARCHAR(255) NOT NULL,\n    unit_price DECIMAL(19, 2) NOT NULL,\n    category_id BIGINT NOT NULL,\n    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id)\n);\n\nCREATE TABLE orders (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    user_id BIGINT NOT NULL,\n    created_at TIMESTAMP NOT NULL,\n    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users (id)\n);\n\nCREATE TABLE order_items (\n    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,\n    order_id BIGINT NOT NULL,\n    product_id BIGINT NOT NULL,\n    quantity INT NOT NULL,\n    unit_price_at_order DECIMAL(19, 2) NOT NULL,\n    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id),\n    CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products (id)\n);\n\n-- TODO: nếu bạn quyết định cascade=REMOVE ở tầng ứng dụng cho Category -> Product\n-- hoặc User -> Order (xem TODO ở entity phía trên), cân nhắc có cần thêm ON DELETE\n-- tương ứng ở đây không - JPA cascade và DB-level ON DELETE là hai cơ chế độc lập,\n-- không tự suy ra nhau.\n",
+          "citations": []
+        },
+        {
+          "id": "day21-blk-11",
+          "type": "template",
+          "text": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageRequest;\nimport org.springframework.data.domain.Pageable;\n\nimport static org.assertj.core.api.Assertions.assertThat;\n\n@DataJpaTest\nclass OrderRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private OrderRepository orderRepository;\n\n    @Test\n    void findByUserId_shouldReturnOnlyOrdersOfThatUser() {\n        // TODO: dùng entityManager.persist(...) để tạo trước 1 CategoryEntity,\n        // 1 ProductEntity, rồi 2 UserEntity khác nhau, mỗi user 1 OrderEntity -\n        // đúng thứ tự khoá ngoại của schema V1__init.sql ở trên (category/user\n        // trước, order sau).\n        Long targetUserId = null; // TODO: gán bằng id của UserEntity vừa persist ở trên\n\n        Pageable pageable = PageRequest.of(0, 10);\n        Page<OrderEntity> result = orderRepository.findByUserId(targetUserId, pageable);\n\n        // TODO: assert result chỉ chứa order của targetUserId - không lẫn order\n        // của user còn lại đã persist ở trên.\n        assertThat(result.getContent()).isNotEmpty();\n    }\n\n    // TODO: viết thêm test method cho topSellingProducts() và findByCreatedAtBetween()\n    // dùng cùng kỹ thuật persist dữ liệu mẫu ở trên.\n}\n",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day21-sec-acceptance",
+      "title": "Tiêu chí nghiệm thu Assignment 7",
+      "blocks": [
+        {
+          "id": "day21-blk-12",
+          "type": "table",
+          "columns": ["Deliverable", "Cách kiểm tra (observable)", "Đạt khi"],
+          "rows": [
+            [
+              "5 entity (User, Product, Category, Order, OrderItem) với quan hệ đầy đủ",
+              "Đọc CategoryEntity/ProductEntity/UserEntity/OrderEntity/OrderItemEntity; kiểm tra mỗi entity có @Id, các trường quan hệ đúng phía (@OneToMany mappedBy ở phía 'một', @ManyToOne @JoinColumn ở phía 'nhiều')",
+              "Cả 5 entity đều tồn tại và biên dịch được (sau khi hoàn thành TODO cascade); Category↔Product, User↔Order, Order↔OrderItem, OrderItem↔Product đều khớp đúng chiều mappedBy/JoinColumn"
+            ],
+            [
+              "CascadeType/orphanRemoval đúng theo tiêu chí composition/aggregation",
+              "So sánh quyết định của bạn cho Category→Product và User→Order (đã hoàn thành TODO) với ví dụ Order→OrderItem; tự hỏi: xoá Category có nên xoá luôn Product không? Xoá User có nên xoá luôn Order không?",
+              "Category→Product và User→Order KHÔNG dùng CascadeType.REMOVE/orphanRemoval=true (aggregation - con vẫn tồn tại độc lập khi cha bị xoá), khác với Order→OrderItem (composition - đã cascade đúng ở ví dụ mẫu)"
+            ],
+            [
+              "3 repository query nghiệp vụ (top-selling, theo khoảng ngày, lịch sử user) có phân trang",
+              "Gọi topSellingProducts(pageable) và kiểm tra kiểu trả về là Page<ProductSalesProjection> (không phải Page<Object[]>); gọi findByCreatedAtBetween(Instant, Instant, Pageable) và findByUserId(Long, Pageable)",
+              "Cả 3 method nhận Pageable và trả Page<...>; topSellingProducts trả projection có getProductId()/getTotalQty() thay vì Object[]; findByCreatedAtBetween nhận Instant (không phải LocalDate) và không còn @Param thừa trên cả hai derived query"
+            ],
+            [
+              "Flyway migration V1__init.sql (5 bảng + khoá ngoại) và V2__seed_data.sql",
+              "Chạy ứng dụng với Flyway bật; kiểm tra bảng flyway_schema_history có ghi nhận V1 và V2 đã áp dụng thành công, không có lỗi thứ tự version",
+              "V1__init.sql tạo đủ 5 bảng (categories, users, products, orders, order_items) cùng các FOREIGN KEY đúng theo entity; V2__seed_data.sql chèn được dữ liệu mẫu tôn trọng đúng thứ tự khoá ngoại"
+            ],
+            [
+              "@DataJpaTest integration test cho các query nghiệp vụ",
+              "Chạy OrderRepositoryTest.findByUserId_shouldReturnOnlyOrdersOfThatUser() sau khi hoàn thành TODO (prac-4); thêm 2 test method cho topSellingProducts/findByCreatedAtBetween (enhancedExercise)",
+              "Test persist dữ liệu mẫu đúng thứ tự khoá ngoại, dùng TestEntityManager, và assertion so khớp đúng điều kiện nghiệp vụ (không chỉ kiểm tra danh sách không rỗng) - test phải fail nếu dữ liệu của user/khoảng ngày khác lọt vào kết quả"
+            ]
+          ],
+          "citations": ["day21-src-1", "day21-src-2", "day21-src-3"]
         }
       ]
     }
@@ -128,7 +186,10 @@
   "commonMistakes": [
     "Dùng orphanRemoval=true cho một quan hệ mà entity con thực chất được nhiều entity cha chia sẻ (ví dụ nhầm áp dụng cho Product-Category thay vì chỉ Order-OrderItem).",
     "Để OrderItem tham chiếu trực tiếp Product.unitPrice thay vì lưu unitPriceAtOrder, khiến lịch sử đơn hàng cũ hiển thị sai giá khi Product đổi giá.",
-    "Đặt sai thứ tự version trong tên file migration Flyway (ví dụ V2 trước V1), khiến Flyway báo lỗi hoặc bỏ qua migration."
+    "Đặt sai thứ tự version trong tên file migration Flyway (ví dụ V2 trước V1), khiến Flyway báo lỗi hoặc bỏ qua migration.",
+    "Copy y hệt cascade/orphanRemoval từ Order↔OrderItem sang Category↔Product hoặc User↔Order mà không áp dụng lại tiêu chí composition/aggregation - ví dụ đặt cascade=CascadeType.REMOVE cùng orphanRemoval=true trên Category→Product sẽ xoá luôn toàn bộ Product khi xoá một Category, dù Product vẫn cần tồn tại độc lập (đây là aggregation, không phải composition).",
+    "Giữ @Param trên derived query method (findByUserId, findByCreatedAtBetween) dù không cần thiết - @Param chỉ có tác dụng khi Spring không tự suy ra được tên tham số (native query, @Query phức tạp, hoặc thiếu cờ biên dịch -parameters); với derived query method, giữ @Param không gây lỗi nhưng cũng không có tác dụng gì, chỉ gây rối khi đọc code.",
+    "Trong test @DataJpaTest, gọi entityManager.persist() cho Order/OrderItem trước khi persist User/Product/Category tương ứng - vi phạm ràng buộc NOT NULL trên khoá ngoại của schema V1__init.sql, ném lỗi constraint ngay khi flush thay vì lỗi biên dịch dễ phát hiện hơn."
   ],
   "practices": [
     {
@@ -193,15 +254,15 @@
     },
     {
       "id": "day21-prac-4",
-      "type": "concept",
+      "type": "coding",
       "interaction": "self-check",
-      "prompt": "Nêu quy ước đặt tên file migration Flyway và vai trò của bảng flyway_schema_history.",
+      "prompt": "Hoàn thành các TODO trong OrderRepositoryTest.findByUserId_shouldReturnOnlyOrdersOfThatUser() (khối @DataJpaTest ở trên): persist đủ dữ liệu mẫu theo đúng thứ tự khoá ngoại, gán targetUserId, và viết assertion xác nhận Page trả về chỉ chứa order của đúng user đó.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Nhớ lại định dạng V{version}__{description}.sql đã nêu trong bài.",
-      "solution": "File migration Flyway đặt tên theo định dạng V{version}__{description}.sql (ví dụ V1__init.sql, V2__seed_data.sql), được Flyway chạy tuần tự theo số version tăng dần khi ứng dụng khởi động. Bảng flyway_schema_history được Flyway tự tạo trong database để ghi lại migration nào đã chạy, tránh chạy lại một migration đã áp dụng.",
-      "explanation": "Nhớ lại quy ước đặt tên và mục đích của bảng lịch sử migration.",
-      "rubric": "Đánh giá học viên nêu đúng định dạng tên file và vai trò chống chạy lại của flyway_schema_history.",
+      "hint": "Persist CategoryEntity rồi ProductEntity trước (không phụ thuộc User/Order); sau đó persist 2 UserEntity khác nhau, mỗi user gán ít nhất 1 OrderEntity riêng - đúng thứ tự khoá ngoại của schema V1__init.sql ở trên. entityManager.persist(...) trả về chính entity vừa persist nên bạn lấy id từ đó, không hardcode.",
+      "solution": "Không có lời giải viết sẵn ở đây, đúng nguyên tắc không giao bài làm sẵn của Assignment 7 - tự kiểm tra bằng cách chạy test: nếu bạn persist 2 user với order tách biệt và assertion so khớp đúng userId trên từng phần tử của result.getContent(), test phải pass; nếu cố tình để lẫn order của một user thứ 3 chưa lọc vào assertion mà test vẫn pass, nghĩa là assertion đang kiểm tra sai điều kiện (ví dụ chỉ assertThat(...).isNotEmpty() mà không so khớp userId). Đối chiếu thêm với bảng nghiệm thu ở day21-sec-acceptance.",
+      "explanation": "@DataJpaTest dùng database nhúng trong bộ nhớ và rollback sau mỗi test, nên dữ liệu persist trong một test method không rò sang test khác - đây là lý do phải tự persist đủ dữ liệu mẫu ở đầu mỗi test thay vì dựa vào dữ liệu có sẵn từ V2__seed_data.sql.",
+      "rubric": "Đánh giá đúng: thứ tự persist tôn trọng khoá ngoại (category/product trước, rồi user, rồi order gắn đúng user), targetUserId lấy từ entity vừa persist thay vì hardcode, và assertion so khớp userId trên từng phần tử thay vì chỉ kiểm tra danh sách không rỗng.",
       "sourceUsage": []
     }
   ],
@@ -213,7 +274,8 @@
   ],
   "enhancedExercises": [
     "Thêm truy vấn 'sản phẩm sắp hết hàng' (tồn kho dưới ngưỡng) dùng derived query method kết hợp Pageable.",
-    "Viết thêm một migration V3__add_index.sql tạo index trên order_items(product_id) và đo lại thời gian chạy truy vấn top-selling trước/sau khi có index."
+    "Viết thêm một migration V3__add_index.sql tạo index trên order_items(product_id) và đo lại thời gian chạy truy vấn top-selling trước/sau khi có index.",
+    "Viết thêm test method cho topSellingProducts() và findByCreatedAtBetween() trong OrderRepositoryTest, dùng cùng kỹ thuật persist dữ liệu mẫu đã áp dụng ở prac-4."
   ],
   "references": [
     {
@@ -264,8 +326,9 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Nguyên tắc chọn CascadeType/orphanRemoval theo composition vs aggregation, và bản thân mã nguồn mẫu 5 entity (OrderEntity, OrderItemEntity...): các nguyên tắc và mẫu quan hệ/cascade cụ thể này đã có trích dẫn đầy đủ ở Day 19 (res-cf695e39df80, res-749fa81acd48), nhưng hai resource đó không nằm trong resourceIds của Day 21 nên không thể trích dẫn lại theo quy tắc không mượn citation chéo giữa các bài; resource còn lại dự kiến cho Day 21 (res-553bbd92e5d0) trả về lỗi 404. Trình bày nguyên tắc trong khối note/paragraph không yêu cầu trích dẫn, và đưa mã nguồn mẫu vào khối template (mã khởi tạo cho bài tập, không phải nội dung giảng dạy có trích dẫn) thay vì khối code.",
-      "Flyway migration (quy ước đặt tên, bảng flyway_schema_history) và @DataJpaTest (slice test, TestEntityManager, database nhúng mặc định): resource res-553bbd92e5d0 dự kiến cho chủ đề này hiện trả về lỗi không truy cập được (404) khi thu thập nguồn cho pipeline này - không có resource nào khác trong resourceIds của Day 21 mô tả hai chủ đề này, nên trình bày bằng kiến thức thao tác công cụ chuẩn (Flyway, Spring Boot Test) trong khối note không yêu cầu trích dẫn.",
+      "Nguyên tắc chọn CascadeType/orphanRemoval theo composition vs aggregation, và bản thân mã nguồn mẫu 5 entity (CategoryEntity, ProductEntity, UserEntity, OrderEntity, OrderItemEntity - kể cả 2 quan hệ Category→Product và User→Order cố tình để TODO CascadeType/orphanRemoval cho học viên tự quyết định): các nguyên tắc và mẫu quan hệ/cascade cụ thể này đã có trích dẫn đầy đủ ở Day 19 (res-cf695e39df80, res-749fa81acd48), nhưng hai resource đó không nằm trong resourceIds của Day 21 nên không thể trích dẫn lại theo quy tắc không mượn citation chéo giữa các bài; resource còn lại dự kiến cho Day 21 (res-553bbd92e5d0) trả về lỗi 404. Trình bày nguyên tắc trong khối note/paragraph không yêu cầu trích dẫn, và đưa mã nguồn mẫu vào khối template (mã khởi tạo cho bài tập, không phải nội dung giảng dạy có trích dẫn) thay vì khối code.",
+      "Flyway migration (quy ước đặt tên, bảng flyway_schema_history, khối mã V1__init.sql) và @DataJpaTest (slice test, TestEntityManager, database nhúng mặc định, khối mã OrderRepositoryTest): resource res-553bbd92e5d0 dự kiến cho chủ đề này hiện trả về lỗi không truy cập được (404) khi thu thập nguồn cho pipeline này - không có resource nào khác trong resourceIds của Day 21 mô tả hai chủ đề này, nên trình bày bằng kiến thức thao tác công cụ chuẩn (Flyway, Spring Boot Test) trong khối note (nguyên tắc) và khối template (V1__init.sql, OrderRepositoryTest - không yêu cầu trích dẫn) thay vì khối code.",
+      "Interface-based projection (ProductSalesProjection thay cho Page<Object[]>): đây là kỹ thuật Spring Data JPA đã được dạy ở Day 20 dưới một resource cụ thể, nhưng resource đó không nằm trong resourceIds của Day 21 nên không thể trích dẫn lại theo cùng quy tắc không mượn citation chéo giữa các bài đã áp dụng ở mục trên; bản thân res-2e4a3dd62ec7 (nguồn chính của Day 21 cho phần repository/pagination) không có mục nào về Projection trong nội dung đã thu thập (chỉ có Overview/Initial Setup/Creating a Repository/Pagination/Pagination and Sorting/Conclusion). Trình bày interface projection trong khối template không yêu cầu trích dẫn.",
       "Nguyên tắc lưu unitPriceAtOrder trên OrderItem thay vì tham chiếu Product.unitPrice: là nguyên tắc thiết kế dữ liệu giao dịch chuẩn của lĩnh vực thương mại điện tử, không có resource nào trong resourceIds của Day 21 mô tả trực tiếp - trình bày trong khối note không yêu cầu trích dẫn."
     ]
   }

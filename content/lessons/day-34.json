@@ -182,6 +182,50 @@
           ]
         }
       ]
+    },
+    {
+      "id": "day34-sec-acceptance",
+      "title": "Acceptance criteria: 4 hạng mục Sprint 2",
+      "blocks": [
+        {
+          "id": "day34-blk-16",
+          "type": "note",
+          "text": "Phạm vi chấm của bảng dưới đây: hai hạng mục Sprint 2 chỉ tồn tại ở dạng khối template chưa có nội dung kỹ thuật được dạy. (1) Product search/filter dựa trên Specification (day34-blk-3): trong toàn khoá học, Specification chỉ được nhắc qua một lần ở day20-blk-47 và không có bài nào dạy cách dùng - riêng phần Pageable/Page thì đã học đầy đủ có trích dẫn ở Day 20/21 nên vẫn chấm được. (2) Cart/CartItem (day34-blk-9): là quyết định thiết kế nghiệp vụ, không có resource nào mô tả và bài không có khối code nào hiện thực. Ngoài ra, điều kiện 403 cho token không phải Admin phụ thuộc kiến trúc xác thực/phân quyền của capstone hiện chưa được chốt (Day 33 cấu hình Resource Server + scope, còn đề bài Sprint 1 và API contract Day 31 lại yêu cầu tự phát hành JWT ở /api/auth/login) - chấm theo status 403 quan sát được, không theo một cách biểu diễn quyền cố định. Hai hạng mục upload ảnh và caching có đủ nội dung đã dạy và trích dẫn nên chấm bình thường.",
+          "citations": []
+        },
+        {
+          "id": "day34-blk-15",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra (observable)",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Product CRUD: search/filter/pagination",
+              "GET /api/products?search=...&categoryId=...&page=0 với dữ liệu mẫu có nhiều category/tên khác nhau; gọi POST/PUT/DELETE bằng token không phải Admin",
+              "Phần phân trang chấm bình thường: đúng số phần tử theo page size và đúng trang được yêu cầu (Pageable/PageRequest/Page đã học có trích dẫn ở Day 20/21). Phần kết hợp search + categoryId trong cùng một truy vấn: CHƯA CHỐT, không dùng làm điều kiện chấm - Specification mà day34-blk-3 nhắc tới không được bài nào trong khoá học dạy (xem day34-blk-16). Phần 403 cho token không phải Admin: chấm theo hành vi quan sát được (403), KHÔNG chấm theo cách biểu diễn quyền Admin, vì kiến trúc xác thực/phân quyền của capstone chưa được chốt (xem day34-blk-16)."
+            ],
+            [
+              "Upload ảnh sản phẩm (MultipartFile + giới hạn dung lượng)",
+              "POST /api/products/{id}/image với (a) file hợp lệ nhỏ hơn max-file-size, (b) file vượt max-file-size",
+              "(a) upload thành công, Product.imageUrl được cập nhật; (b) request bị từ chối (413 hoặc lỗi tương ứng cấu hình), Product.imageUrl KHÔNG đổi"
+            ],
+            [
+              "Cart/CartItem: tổng tiền tính động",
+              "Thêm một CartItem vào giỏ, sau đó đổi Product.price của sản phẩm đó, rồi GET /api/cart/items",
+              "CHƯA CHỐT - không dùng làm điều kiện chấm ở bài này (xem day34-blk-16). Yêu cầu 'tổng tiền tính động từ quantity * Product.price hiện tại, không lưu cứng giá' là một quyết định thiết kế nghiệp vụ ghi trong khối template day34-blk-9; bài không có khối code nào hiện thực Cart/CartItem và không có resource nào mô tả nghiệp vụ giỏ hàng (xem day34-blk-10 và authoring.limitations)."
+            ],
+            [
+              "Caching Category/Product (@Cacheable/@CacheEvict/unless)",
+              "Gọi CategoryService.findAll() 2 lần liên tiếp không có ghi xen giữa (kiểm tra không truy vấn DB lần 2); sau đó tạo/sửa/xóa một category rồi gọi lại findAll(); và gọi findAll() khi DB đang rỗng rồi thêm 1 category (không evict) rồi gọi lại findAll()",
+              "Lần gọi thứ 2 (không có ghi xen giữa) không truy vấn lại DB (cache hit); sau khi ghi dữ liệu, findAll() tiếp theo trả đúng dữ liệu mới (cache đã bị evict); trường hợp DB rỗng, lần findAll() sau khi có category mới KHÔNG bị kẹt ở kết quả rỗng đã cache trước đó (nhờ unless=\"#result.isEmpty()\")"
+            ]
+          ],
+          "citations": ["day34-src-1", "day34-src-2", "day34-src-3", "day34-src-4", "day34-src-5", "day34-src-6", "day34-src-7", "day34-src-8"]
+        }
+      ]
     }
   ],
   "commonMistakes": [

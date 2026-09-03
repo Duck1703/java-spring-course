@@ -192,6 +192,60 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day33-sec-acceptance",
+      "title": "Acceptance criteria: 6 hạng mục Sprint 1",
+      "blocks": [
+        {
+          "id": "day33-blk-17",
+          "type": "note",
+          "text": "Phạm vi chấm của bảng dưới đây: kiến trúc xác thực của dự án capstone hiện CHƯA được khoá học chốt. Day 33 mô tả cấu hình OAuth2 Resource Server xác thực JWT do một issuer bên ngoài phát hành (day33-blk-8/blk-10) và phân quyền theo scope (day33-blk-12), nhưng chính đề bài Sprint 1 (day33-blk-1) lại yêu cầu module Auth tự đăng ký/đăng nhập/phát hành JWT, và API contract Day 31 có POST /api/auth/login 'trả về JWT'. Hai hướng này chưa được đối chiếu; Day 23 lại dạy phân quyền theo role với tiền tố ROLE_. Vì vậy hai hạng mục xác thực/phân quyền dưới đây chỉ chấm theo hành vi quan sát được (401 khi thiếu/sai token, 403 khi thiếu quyền Admin) và KHÔNG chấm theo một cách hiện thực hay một tiền tố quyền cố định. Ngoài ra User profile API và Category CRUD hiện chỉ có khối template (day33-blk-13) không có nguồn riêng - xem authoring.limitations.",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-16",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra (observable)",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Category entity + repository + migration",
+              "Gọi save() lần đầu với Category mới, rồi save() lại chính đối tượng vừa lưu",
+              "Lần save() đầu tạo đúng 1 row mới (INSERT/persist); lần save() thứ hai cập nhật cùng row đó (UPDATE/merge), không tạo row trùng lặp"
+            ],
+            [
+              "Quan hệ User-UserProfile (CascadeType.ALL, orphanRemoval)",
+              "Xóa một User có profile liên kết; hoặc gỡ liên kết profile (set null) rồi save() lại User",
+              "UserProfile liên kết bị xóa theo cùng thao tác — không còn row UserProfile mồ côi (không có User nào tham chiếu tới) trong DB"
+            ],
+            [
+              "Bảo vệ endpoint bằng Bearer JWT",
+              "Gọi một endpoint yêu cầu xác thực: (a) không kèm Bearer token, (b) kèm token hết hạn hoặc không hợp lệ, (c) kèm token hợp lệ",
+              "(a) và (b) trả 401 Unauthorized; (c) trả đúng response thành công của endpoint đó. Chấm theo hành vi quan sát được, KHÔNG bắt buộc một cách hiện thực cụ thể: phần cấu hình cụ thể (Resource Server với issuer-uri như day33-blk-8/blk-10 mô tả, hay tự phát hành token ở POST /api/auth/login như API contract Day 31 ghi) là CHƯA CHỐT - xem day33-blk-17."
+            ],
+            [
+              "Phân quyền ghi cho Category/Product chỉ dành cho Admin",
+              "Gọi endpoint ghi (POST/PUT/DELETE) của Category/Product bằng token của một user thường và bằng token của một Admin",
+              "Token Admin → request được xử lý bình thường; token user thường → 403 Forbidden. Cách biểu diễn quyền Admin trong token và trong @PreAuthorize (scope với tiền tố SCOPE_ như day33-blk-12 mô tả, hay role với tiền tố ROLE_ như Day 23 dạy) là CHƯA CHỐT, phụ thuộc quyết định ở day33-blk-17 - không chấm theo một tiền tố cố định."
+            ],
+            [
+              "User profile API (GET/PUT /api/users/me)",
+              "GET /api/users/me với token của một user cụ thể; PUT /api/users/me đổi một field rồi GET lại",
+              "GET trả đúng UserDto kèm profile của user gắn với token (không lẫn user khác); sau PUT, GET tiếp theo phản ánh đúng giá trị field vừa đổi"
+            ],
+            [
+              "Category CRUD (GET/POST/PUT/DELETE /api/categories)",
+              "Gọi đủ 4 thao tác trên đúng method/path mà API contract Day 31 ghi; gọi GET/PUT/DELETE với id không tồn tại",
+              "4 thao tác chạy được trên đúng method/path của contract (contract Day 31 chỉ quy định method/path/quyền, KHÔNG quy định status code và body cho từng thao tác, nên phần đó không phải điều kiện chấm ở đây); id không tồn tại trả lỗi qua GlobalExceptionHandler (Day 32) dưới dạng ProblemDetail, không phải lỗi 500 mặc định. Thiết kế endpoint chi tiết vẫn ở dạng template (day33-blk-13) - xem day33-blk-17."
+            ]
+          ],
+          "citations": ["day33-src-1", "day33-src-2", "day33-src-3", "day33-src-4", "day33-src-5", "day33-src-6", "day33-src-7", "day33-src-8", "day33-src-9", "day33-src-10"]
+        }
+      ]
     }
   ],
   "commonMistakes": [

@@ -109,7 +109,7 @@
           "id": "day27-blk-6",
           "type": "code",
           "language": "java",
-          "code": "import java.util.concurrent.CompletableFuture;\nimport org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass OrderNotificationService {\n\n    // Khong chan luong xu ly request tao don hang - gui email chay tren luong khac.\n    @Async\n    public void sendConfirmationEmail(Long orderId) {\n        emailClient.send(orderId);\n    }\n\n    // Method @Async tra ve gia tri phai dung CompletableFuture (khong duoc tra ve kieu thuong).\n    @Async\n    public CompletableFuture<Boolean> updateInventory(Long orderId) {\n        boolean updated = inventoryClient.reserve(orderId);\n        return CompletableFuture.completedFuture(updated);\n    }\n\n    private final EmailClient emailClient = new EmailClient();\n    private final InventoryClient inventoryClient = new InventoryClient();\n\n    static class EmailClient { void send(Long orderId) {} }\n    static class InventoryClient { boolean reserve(Long orderId) { return true; } }\n}\n",
+          "code": "import java.util.concurrent.CompletableFuture;\nimport org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Component;\nimport org.springframework.stereotype.Service;\n\n@Service\nclass OrderNotificationService {\n\n    private final EmailClient emailClient;\n    private final InventoryClient inventoryClient;\n\n    // Constructor injection - khong tu new(...) collaborator ngay trong field,\n    // de Spring quan ly vong doi va cho phep thay the/mock khi test.\n    OrderNotificationService(EmailClient emailClient, InventoryClient inventoryClient) {\n        this.emailClient = emailClient;\n        this.inventoryClient = inventoryClient;\n    }\n\n    // Khong chan luong xu ly request tao don hang - gui email chay tren luong khac.\n    @Async\n    public void sendConfirmationEmail(Long orderId) {\n        emailClient.send(orderId);\n    }\n\n    // Method @Async tra ve gia tri phai dung CompletableFuture (khong duoc tra ve kieu thuong).\n    @Async\n    public CompletableFuture<Boolean> updateInventory(Long orderId) {\n        boolean updated = inventoryClient.reserve(orderId);\n        return CompletableFuture.completedFuture(updated);\n    }\n\n    @Component\n    static class EmailClient { void send(Long orderId) {} }\n\n    @Component\n    static class InventoryClient { boolean reserve(Long orderId) { return true; } }\n}\n",
           "compile": false,
           "citations": [
             "day27-src-4",
@@ -136,7 +136,7 @@
           "id": "day27-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import java.time.Instant;\nimport java.time.temporal.ChronoUnit;\nimport java.util.List;\nimport org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass PendingOrderCleanupJob {\n\n    // Chay lai sau moi 5 phut TINH TU LUC LAN CHAY TRUOC KET THUC -\n    // phu hop vi job nay khong can chay dung gio tuyet doi, chi can dinh ky.\n    @Scheduled(fixedDelay = 5 * 60 * 1000)\n    public void cancelStalePendingOrders() {\n        Instant threshold = Instant.now().minus(30, ChronoUnit.MINUTES);\n        List<Long> staleOrderIds = findPendingOrdersOlderThan(threshold);\n        staleOrderIds.forEach(this::cancelOrder);\n    }\n\n    private List<Long> findPendingOrdersOlderThan(Instant threshold) { return List.of(); }\n    private void cancelOrder(Long orderId) { }\n}\n",
+          "code": "import java.time.Instant;\nimport java.time.temporal.ChronoUnit;\nimport java.util.List;\nimport org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass PendingOrderCleanupJob {\n\n    // Chay lai sau moi 5 phut TINH TU LUC LAN CHAY TRUOC KET THUC -\n    // phu hop vi job nay khong can chay dung gio tuyet doi, chi can dinh ky.\n    @Scheduled(fixedDelay = 5 * 60 * 1000)\n    public void cancelStalePendingOrders() {\n        Instant threshold = Instant.now().minus(30, ChronoUnit.MINUTES);\n        List<Long> staleOrderIds = findPendingOrdersOlderThan(threshold);\n        // CAN THAN: this::cancelOrder la self-invocation qua \"this\", KHONG di qua\n        // Spring AOP proxy. O day vo hai vi cancelOrder() khong co annotation nao\n        // (@Transactional, @Async...) - nhung neu sau nay them @Transactional vao\n        // cancelOrder(), annotation do se bi bo qua hoan toan khi goi qua this::,\n        // dung loi proxy da canh bao o Day 20/23/25.\n        staleOrderIds.forEach(this::cancelOrder);\n    }\n\n    private List<Long> findPendingOrdersOlderThan(Instant threshold) { return List.of(); }\n    private void cancelOrder(Long orderId) { }\n}\n",
           "compile": false,
           "citations": [
             "day27-src-6",
@@ -189,7 +189,7 @@
           "id": "day27-blk-12",
           "type": "code",
           "language": "java",
-          "code": "import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.reactive.function.client.WebClient;\n\n@Service\nclass PaymentGatewayClient {\n\n    private final WebClient webClient;\n\n    PaymentGatewayClient(WebClient.Builder builder) {\n        this.webClient = builder.baseUrl(\"https://payments.example.com\").build();\n    }\n\n    @CircuitBreaker(name = \"paymentGateway\", fallbackMethod = \"paymentUnavailable\")\n    public PaymentResult charge(Long orderId, java.math.BigDecimal amount) {\n        return webClient.post()\n                .uri(\"/charge\")\n                .bodyValue(new ChargeRequest(orderId, amount))\n                .retrieve()\n                .bodyToMono(PaymentResult.class)\n                .block();\n    }\n\n    // Fallback PHAI cung chu ky tra ve + them tham so Throwable o cuoi.\n    private PaymentResult paymentUnavailable(Long orderId, java.math.BigDecimal amount, Throwable t) {\n        return new PaymentResult(orderId, \"PENDING_MANUAL_REVIEW\");\n    }\n\n    record ChargeRequest(Long orderId, java.math.BigDecimal amount) {}\n    record PaymentResult(Long orderId, String status) {}\n}\n",
+          "code": "import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.reactive.function.client.WebClient;\nimport java.time.Duration;\n\n@Service\nclass PaymentGatewayClient {\n\n    private final WebClient webClient;\n\n    PaymentGatewayClient(WebClient.Builder builder) {\n        this.webClient = builder.baseUrl(\"https://payments.example.com\").build();\n    }\n\n    @CircuitBreaker(name = \"paymentGateway\", fallbackMethod = \"paymentUnavailable\")\n    public PaymentResult charge(Long orderId, java.math.BigDecimal amount) {\n        // .timeout(...) la bat buoc truoc .block(): neu thieu, mot payment gateway\n        // treo (ket noi duoc nhung khong bao gio tra du lieu) co the lam luong goi\n        // cho vo thoi han, cham can thread pool truoc khi Circuit Breaker kip ghi\n        // nhan du so lan goi cham/loi de mo circuit - dung kich ban cascading\n        // failure Day 26 da mo ta.\n        return webClient.post()\n                .uri(\"/charge\")\n                .bodyValue(new ChargeRequest(orderId, amount))\n                .retrieve()\n                .bodyToMono(PaymentResult.class)\n                .timeout(Duration.ofSeconds(3))\n                .block();\n    }\n\n    // Fallback PHAI cung chu ky tra ve + them tham so Throwable o cuoi.\n    private PaymentResult paymentUnavailable(Long orderId, java.math.BigDecimal amount, Throwable t) {\n        return new PaymentResult(orderId, \"PENDING_MANUAL_REVIEW\");\n    }\n\n    record ChargeRequest(Long orderId, java.math.BigDecimal amount) {}\n    record PaymentResult(Long orderId, String status) {}\n}\n",
           "compile": false,
           "citations": [
             "day27-src-9",
@@ -210,12 +210,76 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day27-sec-acceptance",
+      "title": "Tieu chi nghiem thu Assignment 9",
+      "blocks": [
+        {
+          "id": "day27-blk-29",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Cache danh sách sản phẩm + cây danh mục, evict khi tạo/sửa/xoá",
+              "Gọi listProducts(page,size) hai lần liên tiếp với cùng tham số (lần 2 phải lấy từ cache, không chạy lại queryProducts); tạo/sửa/xoá một sản phẩm rồi gọi lại listProducts",
+              "Lần gọi thứ hai với cùng (page,size) không invoke queryProducts() (xác minh bằng log/mock); sau onProductChanged()/onCategoryChanged(), lần đọc kế tiếp phản ánh đúng dữ liệu mới, không còn dữ liệu cache cũ"
+            ],
+            [
+              "@Async email xác nhận + cập nhật tồn kho",
+              "Gọi sendConfirmationEmail(orderId) và xác minh nó chạy trên thread khác thread gọi (so sánh Thread.currentThread().getName()); gọi updateInventory(orderId) và .get() trên CompletableFuture trả về",
+              "sendConfirmationEmail không chặn thread gọi; updateInventory trả CompletableFuture<Boolean> lấy được kết quả đúng; EmailClient/InventoryClient injected qua constructor, không new(...) trong field"
+            ],
+            [
+              "@Scheduled huỷ đơn hàng PENDING quá 30 phút",
+              "Seed một đơn hàng PENDING có createdAt hơn 30 phút trước, gọi trực tiếp cancelStalePendingOrders() (hoặc chờ chu kỳ fixedDelay), kiểm tra trạng thái đơn hàng sau đó",
+              "Đơn hàng PENDING quá hạn chuyển sang trạng thái đã huỷ; đơn hàng PENDING chưa quá 30 phút không bị huỷ; nếu cancelOrder() sau này thêm @Transactional, nó KHÔNG được gọi qua this:: (xem cảnh báo self-invocation)"
+            ],
+            [
+              "Product image upload + thumbnail",
+              "Upload một file ảnh hợp lệ và một file có phần mở rộng giả mạo (ví dụ .jpg chứa nội dung không phải ảnh); kiểm tra file lưu trữ có tên đã chuẩn hoá, nằm trong thư mục gốc cho phép",
+              "File hợp lệ lưu thành công với tên đã chuẩn hoá; file giả mạo bị từ chối trước khi lưu; thumbnail là khoảng trống kiến thức đã công bố (authoring.limitations) - học viên tự chọn thư viện xử lý ảnh, không có code mẫu để đối chiếu"
+            ],
+            [
+              "WebClient gọi payment gateway (mock) + Circuit Breaker",
+              "Giả lập payment gateway trả lỗi 5xx hoặc treo (không phản hồi) nhiều lần liên tiếp; gọi charge(orderId, amount) và kiểm tra kết quả trả về",
+              "Có .timeout(...) trong chuỗi WebClient trước .block() (không treo vô thời hạn khi gateway không phản hồi); sau đủ số lần lỗi/chậm theo cấu hình circuit breaker, charge() trả PENDING_MANUAL_REVIEW từ paymentUnavailable thay vì ném exception"
+            ],
+            [
+              "Xuất đơn hàng ra CSV (admin)",
+              "Gọi endpoint export CSV với danh sách đơn hàng có ký tự đặc biệt (dấu phẩy, dấu ngoặc kép) trong dữ liệu; mở file CSV xuất ra bằng Excel",
+              "Ký tự đặc biệt được escape đúng theo mẫu RFC 4180 đã học ở Day 26 (dấu ngoặc kép nhân đôi); file mở đúng bằng Excel không lỗi encoding (áp dụng BOM/UTF-8 đã học ở Day 26)"
+            ]
+          ],
+          "citations": [
+            "day27-src-1",
+            "day27-src-2",
+            "day27-src-3",
+            "day27-src-4",
+            "day27-src-5",
+            "day27-src-6",
+            "day27-src-7",
+            "day27-src-8",
+            "day27-src-9",
+            "day27-src-10"
+          ]
+        }
+      ]
     }
   ],
   "commonMistakes": [
     "Đánh @CachePut riêng cho từng sản phẩm thay đổi trong khi cache danh sách được key theo trang/bộ lọc - dữ liệu cache cũ vẫn còn hiển thị sai.",
     "Method @Async khai báo trả về kiểu thường (không phải CompletableFuture) - Spring bỏ qua giá trị trả về, gây khó debug khi cần biết kết quả tác vụ bất đồng bộ.",
-    "Không có fallbackMethod cho @CircuitBreaker - khi payment gateway lỗi, exception lan thẳng ra và làm hỏng toàn bộ request tạo đơn hàng."
+    "Không có fallbackMethod cho @CircuitBreaker - khi payment gateway lỗi, exception lan thẳng ra và làm hỏng toàn bộ request tạo đơn hàng.",
+    "Gọi một method @Async (ví dụ updateInventory) từ bên trong cùng một @Transactional method tạo đơn hàng - luồng bất đồng bộ chạy trên thread khác có thể đọc/ghi dữ liệu TRƯỚC KHI transaction tạo đơn hàng ở thread gốc commit, dẫn tới đọc dữ liệu chưa tồn tại hoặc race condition; @Async nên được gọi SAU KHI transaction tạo đơn hàng đã commit.",
+    "Coi @Scheduled(fixedDelay = ...) là 'không bao giờ chồng lấp' một cách tuyệt đối - điều đó chỉ đúng cho hai lần chạy liên tiếp của CÙNG một method trên MỘT scheduler; nếu ứng dụng scale ngang nhiều instance, mỗi instance đều tự chạy job huỷ đơn hàng riêng, có thể cùng huỷ một đơn hai lần nếu không có cơ chế điều phối (distributed lock) - đúng cái bẫy Day 25 đã cảnh báo.",
+    "Xây dựng cache key bằng nối chuỗi thủ công (key = \"#page + '-' + #size\") mà không kiểm soát định dạng tham số đầu vào - hai lời gọi có ý nghĩa khác nhau có thể vô tình nối ra cùng một chuỗi key nếu kiểu/định dạng tham số thay đổi, khiến đọc nhầm cache của nhau; nên ưu tiên SpEL key rõ ràng hoặc KeyGenerator khi tham số phức tạp hơn hai số nguyên đơn giản.",
+    "Gọi WebClient với .block() mà không có .timeout(...) trong chuỗi - nếu payment gateway treo, luồng gọi có thể chờ vô thời hạn, làm cạn thread pool trước khi Circuit Breaker kịp ghi nhận đủ số lần gọi chậm/lỗi để mở circuit.",
+    "Gọi this::cancelOrder (self-invocation) rồi sau đó thêm @Transactional vào cancelOrder() - lệnh gọi qua this không đi qua proxy AOP của Spring nên @Transactional bị bỏ qua hoàn toàn, đúng lỗi proxy đã cảnh báo ở Day 20/23/25."
   ],
   "practices": [
     {
@@ -325,7 +389,9 @@
   ],
   "enhancedExercises": [
     "Thêm health check định kỳ cho payment gateway bằng @Scheduled, cập nhật trạng thái circuit breaker vào bảng giám sát nội bộ.",
-    "Viết test cho fallbackMethod bằng cách giả lập payment gateway trả lỗi (WireMock hoặc MockWebServer)."
+    "Viết test cho fallbackMethod bằng cách giả lập payment gateway trả lỗi (WireMock hoặc MockWebServer).",
+    "Sửa cancelStalePendingOrders() để không dùng self-invocation this::cancelOrder khi cancelOrder() cần @Transactional - ví dụ tách cancelOrder() sang một @Component/@Service khác rồi gọi qua bean đó.",
+    "Viết test xác minh bước gọi updateInventory() chỉ chạy SAU KHI transaction tạo đơn hàng đã commit, ví dụ dùng @TransactionalEventListener(phase = AFTER_COMMIT) hoặc kiểm tra thứ tự log."
   ],
   "references": [
     {

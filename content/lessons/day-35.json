@@ -277,6 +277,71 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day35-sec-acceptance",
+      "title": "Acceptance criteria: 7 hạng mục Sprint 3",
+      "blocks": [
+        {
+          "id": "day35-blk-25",
+          "type": "note",
+          "text": "Lưu ý về day35-blk-5 (OrderService.checkout()): loadCart/createOrderFromCart/clearCart trong khối code minh họa cố tình trả về null/không làm gì (pseudocode) vì lý do classpath (xem partialReason của block đó), KHÔNG phải một lỗ hổng logic nghiệp vụ cần cảnh báo riêng - đây là quy ước trình bày code Spring nhất quán trong toàn khoá học (minh họa cấu trúc/annotation, không phải cài đặt đầy đủ). Bảng acceptance criteria dưới đây áp dụng cho bản cài đặt THẬT mà học viên tự hoàn thiện, không áp dụng nghĩa đen cho ba method stub trong block minh họa.",
+          "citations": []
+        },
+        {
+          "id": "day35-blk-27",
+          "type": "note",
+          "text": "Phạm vi chấm của bảng dưới đây: hai hạng mục có điều kiện phụ thuộc phần chưa được bài này trình bày, nên được đánh dấu CHƯA CHỐT ở cột 'Đạt khi' - vẫn nằm trong đề bài Sprint 3 để học viên biết phải làm gì, nhưng không dùng làm điều kiện chấm. (1) Tồn kho không xuống âm khi checkout đồng thời: cần cơ chế khóa (optimistic @Version / pessimistic lock) đã học ở Day 20 và được Day 32 (day32-blk-18) chỉ định cho đúng use case này; day35-blk-6 chỉ bàn mức isolation, và chọn isolation một mình không ngăn được lost update. (2) Lỗi @Async được log qua AsyncUncaughtExceptionHandler: handler này chỉ áp dụng cho @Async method trả về void, còn sendOrderConfirmation() ở day35-blk-9 trả về CompletableFuture<Void> - hai khối day35-blk-9 và day35-blk-13 hiện chưa khớp nhau về kiểu trả về. Năm hạng mục còn lại (transaction nguyên tử, @Async không chặn luồng chính, CSV escaping, layered jar cache, spring-boot-docker-compose) có đủ nội dung đã dạy và trích dẫn nên chấm bình thường.",
+          "citations": []
+        },
+        {
+          "id": "day35-blk-26",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra (observable)",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Checkout nguyên tử (@Transactional)",
+              "Ép lỗi xảy ra giữa bước tạo Order và bước xóa Cart (ví dụ throw exception thủ công trong test), rồi kiểm tra lại DB",
+              "KHÔNG có Order mới được lưu VÀ Cart vẫn còn nguyên item cũ (rollback toàn bộ) - không có trạng thái nửa vời (Order được tạo nhưng Cart chưa xóa, hoặc ngược lại)"
+            ],
+            [
+              "Isolation khi nhiều user checkout đồng thời sản phẩm sắp hết hàng",
+              "Giả lập 2 request checkout gần như đồng thời cho sản phẩm chỉ còn 1 đơn vị tồn kho",
+              "CHƯA CHỐT - không dùng làm điều kiện chấm ở bài này (xem day35-blk-27). Bảo đảm 'tồn kho không bao giờ xuống âm' cần một cơ chế khóa (optimistic @Version hoặc pessimistic lock), mà bài này không trình bày cơ chế nào: day35-blk-6 chỉ bàn về mức isolation, và bản thân việc chọn isolation không ngăn được lost update. Cơ chế đã học có trích dẫn nằm ở Day 20, và Day 32 (day32-blk-18) đã chỉ định áp dụng nó cho đúng use case giảm stock khi tạo Order - việc đưa cơ chế đó vào Sprint 3 là công việc còn lại, chưa phải điều kiện chấm."
+            ],
+            [
+              "Gửi email xác nhận không chặn luồng chính (@Async)",
+              "Gọi endpoint checkout với NotificationService.sendOrderConfirmation() cố tình chạy chậm (ví dụ Thread.sleep trong môi trường test); đo thời điểm response HTTP trả về",
+              "Response HTTP của checkout trả về mà KHÔNG đợi sendOrderConfirmation() chạy xong; việc gửi email diễn ra trên luồng riêng của ThreadPoolTaskExecutor đã cấu hình"
+            ],
+            [
+              "Xử lý lỗi khi @Async method thất bại",
+              "Ép sendOrderConfirmation() ném exception (ví dụ SMTP lỗi giả lập)",
+              "Chấm phần quan sát được: ứng dụng không crash và request checkout đã trả response trước đó không bị ảnh hưởng. Phần 'lỗi được log qua AsyncUncaughtExceptionHandler': CHƯA CHỐT, không dùng làm điều kiện chấm - xem day35-blk-27, vì handler đó chỉ được gọi cho @Async method trả về void, còn NotificationService.sendOrderConfirmation() trong bài (day35-blk-9) trả về CompletableFuture<Void>."
+            ],
+            [
+              "CSV export: escaping đúng chuẩn",
+              "Gọi escapeSpecialCharacters()/convertToCsvRow() (day35-blk-15) với trường dữ liệu chứa dấu phẩy, dấu nháy kép, và ký tự xuống dòng",
+              "Trường chứa dấu phẩy/nháy kép được bao trong dấu nháy kép và mỗi dấu nháy kép bên trong được nhân đôi (\"\"); ký tự xuống dòng bị thay bằng khoảng trắng - file CSV kết quả mở đúng số cột khi đọc lại bằng một CSV parser chuẩn"
+            ],
+            [
+              "Docker: layered jar tái sử dụng cache",
+              "Build image lần đầu; sửa một dòng code ứng dụng (KHÔNG đổi dependency); build lại image",
+              "Log build lần 2 cho thấy layer dependencies/snapshot-dependencies được lấy từ cache (không rebuild); thời gian build lần 2 ngắn hơn đáng kể so với lần đầu"
+            ],
+            [
+              "docker-compose tự khởi động dependency (DB/Redis)",
+              "Chạy ứng dụng ở chế độ dev với spring-boot-docker-compose trên classpath và docker-compose.yml có sẵn, KHÔNG tự tay chạy docker run cho Postgres/Redis trước",
+              "Ứng dụng tự động chạy 'docker compose up', chờ container sẵn sàng (healthcheck), rồi kết nối thành công tới DB/Redis mà không cần thao tác thủ công nào thêm"
+            ]
+          ],
+          "citations": ["day35-src-1", "day35-src-2", "day35-src-3", "day35-src-4", "day35-src-5", "day35-src-6", "day35-src-7", "day35-src-8", "day35-src-9", "day35-src-10", "day35-src-11", "day35-src-12", "day35-src-13", "day35-src-14", "day35-src-15", "day35-src-16", "day35-src-17", "day35-src-18"]
+        }
+      ]
     }
   ],
   "commonMistakes": [

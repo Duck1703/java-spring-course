@@ -163,12 +163,82 @@
           "citations": []
         }
       ]
+    },
+    {
+      "id": "day18-sec-acceptance",
+      "title": "Acceptance criteria & giới hạn đã biết",
+      "blocks": [
+        {
+          "id": "day18-blk-11",
+          "type": "table",
+          "columns": [
+            "Kiểm tra",
+            "Input/Hành động",
+            "Kết quả mong đợi (observable)"
+          ],
+          "rows": [
+            [
+              "Tạo Task hợp lệ",
+              "POST /api/tasks với title không rỗng, dueDate ở tương lai",
+              "201 Created, body là Task vừa tạo (có id)"
+            ],
+            [
+              "Tạo Task với title rỗng",
+              "POST /api/tasks với title = \"\" hoặc chỉ khoảng trắng",
+              "400 Bad Request, ProblemDetail có detail nhắc tới title"
+            ],
+            [
+              "Tạo Task với dueDate quá khứ",
+              "POST /api/tasks với dueDate là một ngày đã qua",
+              "400 Bad Request, ProblemDetail có detail nhắc tới dueDate"
+            ],
+            [
+              "Lấy Task theo id tồn tại",
+              "GET /api/tasks/{id} với id có thật",
+              "200 OK, body đúng Task tương ứng"
+            ],
+            [
+              "Lấy Task theo id không tồn tại",
+              "GET /api/tasks/{id} với id không có trong dữ liệu",
+              "404 Not Found (body rỗng, từ ResponseEntity.notFound())"
+            ],
+            [
+              "Chuyển trạng thái hợp lệ",
+              "PUT /api/tasks/{id}/status với (currentStatus, status) nằm trong bảng ALLOWED và currentStatus khớp đúng trạng thái thật của Task",
+              "Request được chấp nhận, Task được cập nhật đúng status mới"
+            ],
+            [
+              "Chuyển trạng thái không hợp lệ theo ALLOWED",
+              "PUT .../status với cặp (currentStatus, status) không có trong ALLOWED (ví dụ DONE -> IN_PROGRESS)",
+              "400 Bad Request, ProblemDetail sinh ra từ MethodArgumentNotValidException (bị @ValidStatusTransition chặn ở tầng validate)"
+            ],
+            [
+              "[Giới hạn đã biết — xem cảnh báo bên dưới] currentStatus client khai không khớp trạng thái thật",
+              "PUT .../status với currentStatus SAI so với Task thật trong DB, nhưng cặp (currentStatus khai, status) vẫn hợp lệ theo ALLOWED",
+              "Cài đặt hiện tại KHÔNG phát hiện được sai lệch này — request vẫn được chấp nhận. Đây không phải hành vi đúng, xem Hazard (1) bên dưới."
+            ],
+            [
+              "Postman collection",
+              "Export toàn bộ request/response mẫu của các endpoint trên",
+              "File .json collection import lại được, chạy đúng smoke test cho từng endpoint"
+            ]
+          ],
+          "citations": ["day18-src-1", "day18-src-2", "day18-src-3", "day18-src-4", "day18-src-5", "day18-src-6"]
+        },
+        {
+          "id": "day18-blk-12",
+          "type": "warning",
+          "text": "Hai giới hạn thiết kế đã biết trong bài mẫu (được ghi nhận ở đây, không sửa code trong phạm vi bài học này):\n\n(1) currentStatus không được đối chiếu với trạng thái thật trong DB: TaskController.updateStatus() gọi repository.updateStatus(id, request.status()) ngay sau khi @ValidStatusTransition chỉ kiểm tra cặp (currentStatus, status) DO CLIENT GỬI LÊN có hợp lệ theo ALLOWED hay không — không có bước so sánh request.currentStatus() với trạng thái thật đang lưu của Task (lấy qua repository.findById(id)) trước khi áp dụng. Đây là giới hạn cố hữu của cơ chế bean validation (@Constraint/ConstraintValidator chỉ kiểm tra dữ liệu trong chính payload gửi lên, không tự truy vấn DB): client có thể tự khai currentStatus sai để hợp thức hóa một chuyển trạng thái lẽ ra không được phép (Task thật đã DONE, client khai currentStatus=IN_PROGRESS để chuyển ngược về TODO). Phân loại: (A) trong phạm vi bản cập nhật này — ghi nhận qua dòng test case ở bảng trên để người học tự phát hiện khi viết test; (B) sửa triệt để (thêm bước đối chiếu trạng thái thật trước khi update) là thay đổi logic nghiệp vụ, không thuộc phạm vi bản cập nhật này.\n\n(2) findById/create trả trực tiếp entity Task ra response thay vì qua một DTO/response type riêng — vi phạm nguyên tắc 'không trả entity trực tiếp ra response' đã nêu ở Day 16 (Task ở đây đóng vai trò entity ánh xạ dữ liệu). Phân loại: (A) trong phạm vi bản cập nhật này — ghi nhận ở đây để người học đối chiếu lại nguyên tắc Day 16 khi tự làm bài; (B) sửa triệt để (thêm TaskResponse và tầng mapping) là thay đổi code mẫu, không thuộc phạm vi bản cập nhật này.",
+          "citations": ["day18-src-3", "day18-src-4"]
+        }
+      ]
     }
   ],
   "commonMistakes": [
     "Gắn @ValidStatusTransition ở @Target(FIELD) khiến validator không đọc được cả hai field cần so sánh.",
     "Quên xử lý TaskNotFoundException trong @RestControllerAdvice, để lỗi 500 mặc định lộ ra ngoài thay vì ProblemDetail 404 rõ ràng.",
-    "Cho phép chuyển trạng thái tùy ý (ví dụ DONE -> TODO) mà không kiểm tra qua ALLOWED map."
+    "Cho phép chuyển trạng thái tùy ý (ví dụ DONE -> TODO) mà không kiểm tra qua ALLOWED map.",
+    "Không đối chiếu currentStatus mà client gửi lên với trạng thái Task thật đang lưu trong DB trước khi cập nhật — cho phép client tự khai sai currentStatus để hợp thức hóa một chuyển trạng thái lẽ ra không được phép (xem giới hạn đã biết ở cuối bài, day18-blk-12)."
   ],
   "practices": [
     {

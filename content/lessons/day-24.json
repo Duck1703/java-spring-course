@@ -78,7 +78,31 @@
         {
           "id": "day24-blk-4",
           "type": "note",
-          "text": "Refresh token và Logout với Redis blacklist (lưu token đã bị thu hồi vào Redis, kiểm tra blacklist trước khi chấp nhận một access/refresh token, cho tới khi token đó tự hết hạn) không có resource nào trong resourceIds của Day 24 mô tả trực tiếp (xem authoring.limitations) - JWT theo thiết kế là stateless và không tự hỗ trợ thu hồi (revoke) trước hạn, nên việc thêm một danh sách đen (blacklist) ngoài Redis là kỹ thuật bổ sung phổ biến để xử lý logout/thu hồi token sớm.",
+          "text": "Refresh token và Logout với Redis blacklist là kỹ thuật bổ sung phổ biến cho hệ thống JWT stateless (JWT theo thiết kế không tự hỗ trợ thu hồi/revoke trước hạn) - không có resource nào trong resourceIds của Day 24 mô tả trực tiếp kỹ thuật này (xem authoring.limitations); phần thiết kế cụ thể (key format, TTL, nơi đặt bước kiểm tra revocation, chính sách rotate refresh token) trình bày ở các khối bên dưới như một phương án tham chiếu cho Lab 8, không phải quy tắc chung của Spring Security.",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-15",
+          "type": "paragraph",
+          "text": "Redis blacklist cần ba quyết định thiết kế cụ thể: (1) key format - băm token bằng SHA-256 rồi dùng chuỗi hex làm phần đuôi của key (ví dụ \"auth:blacklist:<sha256-hex>\"), tránh lưu nguyên văn token nhạy cảm làm key Redis; (2) TTL của mỗi entry đặt đúng bằng thời gian còn lại tới exp của token đó (Duration.between(now, expiresAt)) - không đặt TTL cố định, vì token gần hết hạn không cần chiếm bộ nhớ Redis lâu hơn thời gian nó còn hợp lệ; (3) nơi đặt bước kiểm tra blacklist - đây là quyết định phụ thuộc cách triển khai, KHÔNG có một thứ tự filter đúng cho mọi dự án. Ba phương án thường gặp: (a) một servlet filter riêng đọc thẳng header Authorization - phương án này chỉ có tác dụng nếu được đăng ký TRƯỚC bước xác thực token của dự án (với cấu hình oauth2ResourceServer().jwt() ở Day 22 thì mốc đó là BearerTokenAuthenticationFilter; nếu dự án tự viết filter xác thực JWT riêng thì mốc là chính filter đó), và đánh đổi là truy vấn Redis bằng một chuỗi chưa được xác minh chữ ký; (b) cắm bước kiểm tra vào chính thành phần giải mã/xác thực token, tức chạy SAU khi chữ ký và exp đã được xác minh - lúc này không cần thay đổi thứ tự filter nào; (c) kiểm tra sau khi đã xác thực, dựa trên một claim định danh token (ví dụ jti) lấy từ Authentication. Lab 8 chấp nhận bất kỳ phương án nào trong ba phương án trên, miễn là chứng minh được bằng quan sát rằng token đã thu hồi bị từ chối; việc chốt một kiến trúc phát hành/thu hồi token duy nhất cho toàn dự án (tự phát hành JWT như luồng Login ở đây, hay xác thực token do một authorization server bên ngoài phát hành như Day 33) vẫn là một quyết định còn mở của khoá học, không được quyết trong bài này.",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-16",
+          "type": "template",
+          "text": "import java.time.Duration;\nimport java.time.Instant;\nimport org.springframework.data.redis.core.StringRedisTemplate;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass TokenBlacklistService {\n\n    private static final String KEY_PREFIX = \"auth:blacklist:\";\n\n    private final StringRedisTemplate redisTemplate;\n\n    TokenBlacklistService(StringRedisTemplate redisTemplate) {\n        this.redisTemplate = redisTemplate;\n    }\n\n    void blacklist(String rawToken, Instant expiresAt) {\n        Duration ttl = Duration.between(Instant.now(), expiresAt);\n        if (ttl.isNegative() || ttl.isZero()) {\n            return; // token da tu het han, khong can blacklist nua\n        }\n        redisTemplate.opsForValue().set(KEY_PREFIX + hash(rawToken), \"revoked\", ttl);\n    }\n\n    boolean isBlacklisted(String rawToken) {\n        return Boolean.TRUE.equals(redisTemplate.hasKey(KEY_PREFIX + hash(rawToken)));\n    }\n\n    private String hash(String rawToken) {\n        // TODO: bam rawToken bang MessageDigest.getInstance(\"SHA-256\"), encode\n        // ket qua (byte[]) sang chuoi hex, va tra ve chuoi do - KHONG tra ve\n        // rawToken nguyen van (mau nay tam return rawToken de minh hoa luong goi).\n        return rawToken;\n    }\n}\n\nclass BlacklistCheckFilter extends org.springframework.web.filter.OncePerRequestFilter {\n\n    private final TokenBlacklistService blacklistService;\n\n    BlacklistCheckFilter(TokenBlacklistService blacklistService) {\n        this.blacklistService = blacklistService;\n    }\n\n    @Override\n    protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request,\n            jakarta.servlet.http.HttpServletResponse response,\n            jakarta.servlet.FilterChain chain) throws jakarta.servlet.ServletException, java.io.IOException {\n        String authHeader = request.getHeader(\"Authorization\");\n        if (authHeader != null && authHeader.startsWith(\"Bearer \")) {\n            String rawToken = authHeader.substring(7);\n            if (blacklistService.isBlacklisted(rawToken)) {\n                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, \"Token da bi thu hoi\");\n                return;\n            }\n        }\n        chain.doFilter(request, response);\n    }\n}\n\n// Phuong an (a) trong ba phuong an neu o khoi phia tren: dang ky filter nay\n// TRUOC buoc xac thuc token cua du an. Voi cau hinh oauth2ResourceServer().jwt()\n// nhu Day 22, moc do la BearerTokenAuthenticationFilter:\n// http.addFilterBefore(blacklistCheckFilter, BearerTokenAuthenticationFilter.class);\n// Neu du an tu viet filter xac thuc JWT rieng thi moc la chinh filter do.\n// Day KHONG phai quy tac chung cho moi du an: neu chon phuong an (b) hoac (c)\n// (kiem tra ngay trong buoc giai ma/xac thuc token, hoac kiem tra sau khi da\n// xac thuc dua tren claim jti) thi khong can dang ky filter nay va khong can\n// dat lai thu tu filter nao.\n",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-17",
+          "type": "paragraph",
+          "text": "Refresh token nên là một chuỗi ngẫu nhiên độc lập (không phải JWT tự xác thực) được server lưu và tra cứu được - vì refresh token sống lâu hơn access token nhiều nên cần thu hồi được ngay lập tức, khác với access token JWT vốn chấp nhận độ trễ thu hồi (khắc phục bằng blacklist ở trên). Khi issue lúc login, lưu vào Redis dạng key auth:refresh:<token> trỏ tới userId, với TTL bằng vòng đời refresh token (ví dụ 7 ngày). Khi gọi /auth/refresh: xoá NGAY bản ghi refresh token cũ trước khi issue một access token và một refresh token mới (single-use, gọi là rotation) - nếu client gọi lại /auth/refresh với refresh token cũ đã bị xoá, đó là dấu hiệu refresh token đã bị lộ và bị dùng lại (replay), cần từ chối thay vì âm thầm issue token mới.",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-18",
+          "type": "template",
+          "text": "import java.time.Duration;\nimport java.util.UUID;\nimport org.springframework.data.redis.core.StringRedisTemplate;\nimport org.springframework.stereotype.Component;\n\n@Component\nclass RefreshTokenService {\n\n    private static final String KEY_PREFIX = \"auth:refresh:\";\n    private static final Duration REFRESH_TTL = Duration.ofDays(7);\n\n    private final StringRedisTemplate redisTemplate;\n\n    RefreshTokenService(StringRedisTemplate redisTemplate) {\n        this.redisTemplate = redisTemplate;\n    }\n\n    String issue(Long userId) {\n        String refreshToken = UUID.randomUUID().toString();\n        redisTemplate.opsForValue().set(KEY_PREFIX + refreshToken, userId.toString(), REFRESH_TTL);\n        return refreshToken;\n    }\n\n    Long rotate(String oldRefreshToken) {\n        // TODO: doc userId tu key KEY_PREFIX + oldRefreshToken; neu khong ton\n        // tai (null), coi la refresh token bi tai su dung/khong hop le - nem\n        // mot exception nghiep vu, KHONG issue token moi.\n        // Neu ton tai: XOA ngay ban ghi cu (redisTemplate.delete(...)) truoc\n        // khi tra ve userId cho tang goi tu issue(...) mot cap access/refresh\n        // token moi - thu tu xoa-truoc-issue-sau dam bao tinh single-use.\n        return null;\n    }\n}\n",
           "citations": []
         }
       ]
@@ -91,6 +115,12 @@
           "id": "day24-blk-5",
           "type": "paragraph",
           "text": "Phân quyền CUSTOMER và ADMIN áp dụng lại nguyên mẫu @PreAuthorize(\"hasRole(...)\") đã học ở Day 23 (resource cụ thể về Method Security thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 - xem authoring.limitations): các endpoint quản trị (xoá sản phẩm, xem toàn bộ đơn hàng) dùng @PreAuthorize(\"hasRole('ADMIN')\"), còn các endpoint của khách hàng (xem đơn hàng của chính mình) có thể kết hợp thêm điều kiện so khớp id người dùng hiện tại trong biểu thức SpEL.",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-19",
+          "type": "template",
+          "text": "@RestController\n@RequestMapping(\"/api/orders\")\nclass OrderController {\n\n    // Mau nay ap dung lai @PreAuthorize(\"hasRole(...)\") da hoc o Day 23.\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    @GetMapping\n    List<OrderDto> findAll() {\n        // TODO: tra ve toan bo don hang - chi ADMIN moi duoc phep xem toan he thong.\n        return null;\n    }\n\n    // Hai chi tiet duoi day phu thuoc kien truc xac thuc ma du an chot, va khoa\n    // hoc chua chot: (1) chuoi quyen trong bieu thuc - hasRole('CUSTOMER') dung\n    // cho authority dang ROLE_CUSTOMER nhu Day 23, con neu du an xac thuc token\n    // do authorization server ben ngoai phat hanh thi quyen den tu claim scope\n    // va phai viet hasAuthority('SCOPE_...') nhu Day 33; (2) cach lay id cua\n    // nguoi dung hien tai - authentication.principal.id chi dung khi principal\n    // la mot UserDetails tuy chinh co field id (vi du CustomUserDetails.getId())\n    // sinh ra tu luong Register/Login tu phat hanh token; voi cau hinh resource\n    // server thi principal la mot Jwt va id phai lay tu claim (vi du\n    // authentication.token.claims['sub']).\n    // Lab 8 chap nhan ca hai huong, mien la dieu kien so khop chu so huu duoc\n    // dat trong @PreAuthorize; viec chon mot kien truc duy nhat cho toan du an\n    // khong thuoc pham vi bai nay.\n    @PreAuthorize(\"hasRole('CUSTOMER') and #userId == authentication.principal.id\")\n    @GetMapping(\"/user/{userId}\")\n    List<OrderDto> findByUser(@PathVariable Long userId) {\n        // TODO: tra ve don hang cua dung userId trong path - dieu kien SpEL o\n        // @PreAuthorize da dam bao #userId khop id cua chinh CUSTOMER dang dang\n        // nhap; khong tu them kiem tra userId lan hai trong than method.\n        return null;\n    }\n}\n",
           "citations": []
         }
       ]
@@ -111,7 +141,7 @@
           "id": "day24-blk-7",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.persistence.*;\nimport org.springframework.data.jpa.repository.EntityGraph;\nimport org.springframework.data.jpa.repository.Query;\nimport java.util.List;\n\ninterface ProductRepository extends org.springframework.data.repository.Repository<ProductEntity, Long> {\n\n    // JOIN FETCH nap Category cung mot cau truy van duy nhat,\n    // thay vi de proxy lazy tu phat sinh N truy van rieng le.\n    @Query(\"select p from ProductEntity p join fetch p.category\")\n    List<ProductEntity> findAllWithCategory();\n\n    // Tuong duong bang @EntityGraph, khong can viet JPQL thu cong.\n    @EntityGraph(attributePaths = \"category\")\n    List<ProductEntity> findAll();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    @NotFound(action = NotFoundAction.IGNORE)\n    private CategoryEntity category;\n}\n",
+          "code": "import jakarta.persistence.*;\nimport org.hibernate.annotations.NotFound;\nimport org.hibernate.annotations.NotFoundAction;\nimport org.springframework.data.jpa.repository.EntityGraph;\nimport org.springframework.data.jpa.repository.Query;\nimport java.util.List;\n\ninterface ProductRepository extends org.springframework.data.repository.Repository<ProductEntity, Long> {\n\n    // Cach 1: JOIN FETCH tuong minh trong JPQL - nap Category cung mot cau\n    // truy van duy nhat, thay vi de proxy lazy tu phat sinh N truy van rieng le.\n    @Query(\"select p from ProductEntity p join fetch p.category\")\n    List<ProductEntity> findAllWithCategoryJoinFetch();\n\n    // Cach 2: tuong duong Cach 1 bang @EntityGraph, khong can viet JPQL thu\n    // cong. Dat ten khac findAll() vi Repository<T, ID> la marker interface\n    // khong khai bao san method nao - day KHONG phai override, chi la mot\n    // query method doc lap do ban tu khai bao, giong findAllWithCategoryJoinFetch().\n    @EntityGraph(attributePaths = \"category\")\n    List<ProductEntity> findAllWithCategoryGraph();\n}\n\n@Entity\nclass ProductEntity {\n\n    @Id\n    private Long id;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    @JoinColumn(name = \"category_id\")\n    @NotFound(action = NotFoundAction.IGNORE)\n    private CategoryEntity category;\n}\n",
           "compile": false,
           "citations": [
             "day24-src-3",
@@ -179,6 +209,12 @@
           "citations": [
             "day24-src-10"
           ]
+        },
+        {
+          "id": "day24-blk-21",
+          "type": "paragraph",
+          "text": "Quy trình benchmark cụ thể để so sánh trước/sau: (1) seed cố định N=100 Product, mỗi Product gắn một Category (cùng một bộ dữ liệu mẫu cho cả hai lượt đo, đảm bảo công bằng); (2) bật spring.jpa.show-sql=true hoặc dùng datasource-proxy để đếm chính xác số câu SQL thực thi cho một lượt gọi API danh sách; (3) đo baseline bằng một method KHÔNG fetch Category (để proxy lazy tự phát sinh N+1) - kỳ vọng đúng 1 + N câu SQL; (4) đo lại bằng findAllWithCategoryJoinFetch()/findAllWithCategoryGraph() - kỳ vọng đúng 1 câu SQL; (5) ghi lại cả số câu SQL lẫn thời gian phản hồi của cả hai lượt đo, không chỉ một trong hai - số câu giảm chứng minh N+1 đã hết, thời gian giảm chứng minh cải thiện có ý nghĩa thực tế.",
+          "citations": []
         }
       ]
     },
@@ -191,6 +227,72 @@
           "type": "note",
           "text": "Viết integration test cho Auth Service áp dụng lại đúng mẫu @WithMockUser đã học ở Day 23 (resource cụ thể thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 - xem authoring.limitations): khai báo @WithMockUser(roles = \"ADMIN\") hoặc @WithMockUser(roles = \"CUSTOMER\") trên từng test method để xác minh @PreAuthorize chặn/cho phép đúng theo vai trò, kết hợp @DataJpaTest hoặc @SpringBootTest tuỳ phạm vi test cần kiểm tra.",
           "citations": []
+        },
+        {
+          "id": "day24-blk-20",
+          "type": "template",
+          "text": "@SpringBootTest\n@AutoConfigureMockMvc\nclass OrderControllerSecurityTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    @Test\n    @WithMockUser(roles = \"ADMIN\")\n    void findAll_allowsAdmin() throws Exception {\n        mockMvc.perform(get(\"/api/orders\")).andExpect(status().isOk());\n    }\n\n    @Test\n    @WithMockUser(roles = \"CUSTOMER\")\n    void findAll_deniesCustomer() throws Exception {\n        mockMvc.perform(get(\"/api/orders\")).andExpect(status().isForbidden());\n    }\n\n    // TODO: viet them 2 test cho findByUser(userId): mot truong hop CUSTOMER dung\n    // dung userId cua chinh minh (ky vong 200) va mot truong hop dung userId cua\n    // nguoi khac (ky vong 403) - dung dieu kien SpEL o OrderController.findByUser().\n}\n",
+          "citations": []
+        }
+      ]
+    },
+    {
+      "id": "day24-sec-acceptance",
+      "title": "Tiêu chí nghiệm thu Lab 8",
+      "blocks": [
+        {
+          "id": "day24-blk-23",
+          "type": "note",
+          "text": "Phạm vi chấm của dòng 'Register + Login + Refresh + Logout (Redis blacklist)' dưới đây tách hai nhóm hành vi. Nhóm BẮT BUỘC: access token bị từ chối với 401 sau khi logout - chấm theo hành vi quan sát được, không bắt buộc một cách hiện thực cụ thể (xem ba phương án đặt bước kiểm tra revocation ở day24-blk-15). Nhóm CHƯA CHỐT, KHÔNG dùng làm điều kiện chấm cho tới khi bộ nguồn của Day 24 có tài liệu tương ứng: refresh-token rotation (single-use) và phát hiện replay (dùng lại refresh token cũ) - không có resource nào trong resourceIds của Day 24 mô tả hai kỹ thuật này (xem authoring.limitations); RefreshTokenService.rotate() ở day24-blk-18 vẫn là khối TODO minh hoạ/enhancedExercise, không phải yêu cầu để Lab 8 đạt.",
+          "citations": []
+        },
+        {
+          "id": "day24-blk-22",
+          "type": "table",
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra",
+            "Đạt khi"
+          ],
+          "rows": [
+            [
+              "Register + Login + Refresh + Logout (Redis blacklist)",
+              "Login 2 lần liên tiếp cho cùng user để lấy 2 cặp access/refresh token; gọi /auth/logout rồi thử dùng lại access token đã logout. (Tuỳ chọn, không bắt buộc: nếu đã hoàn thành RefreshTokenService.rotate() ở enhancedExercise, gọi thêm /auth/refresh bằng refresh token CŨ sau khi đã rotate để tự kiểm tra)",
+              "access token đã logout bị từ chối với 401 ngay cả khi chữ ký/exp của nó vẫn hợp lệ - chấm theo hành vi quan sát được, không bắt buộc một cách hiện thực cụ thể (xem ba phương án đặt bước kiểm tra revocation ở phần Register/Login/Refresh/Logout). Refresh-token rotation và phát hiện replay CHƯA CHỐT, KHÔNG nằm trong điều kiện đạt (xem note đầu mục Tiêu chí nghiệm thu)"
+            ],
+            [
+              "@PreAuthorize role-based: CUSTOMER vs ADMIN",
+              "Gọi GET /api/orders với @WithMockUser(roles=ADMIN) và với @WithMockUser(roles=CUSTOMER); gọi GET /api/orders/user/{userId} với userId của chính CUSTOMER đó và với userId của người khác",
+              "ADMIN nhận 200 ở /api/orders, CUSTOMER nhận 403; CUSTOMER dùng đúng userId của mình nhận 200, dùng userId người khác nhận 403"
+            ],
+            [
+              "Product list API: fix N+1 khi load Category",
+              "Bật show-sql, gọi API danh sách Product qua findAllWithCategoryJoinFetch() hoặc findAllWithCategoryGraph(), đếm số câu SQL thực thi",
+              "Đúng 1 câu SQL cho toàn bộ danh sách (không tăng theo số lượng Product); Category đã soft-delete không làm ném EntityNotFoundException nhờ @NotFound(action = NotFoundAction.IGNORE)"
+            ],
+            [
+              "Benchmark trước/sau tối ưu",
+              "Thực hiện đúng quy trình benchmark ở trên (N=100 Product cố định, đếm SQL + đo thời gian cho cả baseline và bản đã sửa)",
+              "Baseline ra đúng 1+N câu SQL, bản đã sửa ra đúng 1 câu; kết quả benchmark ghi lại bằng số liệu đo thực tế trên schema của Lab 8, không phải con số suy đoán hay chép từ tài liệu tham khảo"
+            ],
+            [
+              "Security integration test với @WithMockUser",
+              "Chạy OrderControllerSecurityTest.findAll_allowsAdmin/findAll_deniesCustomer sau khi hoàn thành test cho findByUser(userId) (enhancedExercise)",
+              "Cả 4 test (2 có sẵn + 2 tự viết) pass; mỗi @PreAuthorize đều có ít nhất một test khẳng định ĐƯỢC phép và một test khẳng định BỊ từ chối, không chỉ test chiều được phép"
+            ]
+          ],
+          "citations": [
+            "day24-src-1",
+            "day24-src-2",
+            "day24-src-3",
+            "day24-src-4",
+            "day24-src-5",
+            "day24-src-6",
+            "day24-src-7",
+            "day24-src-8",
+            "day24-src-9",
+            "day24-src-10"
+          ]
         }
       ]
     }
@@ -199,7 +301,11 @@
     "Chỉ xoá token phía client khi logout mà không có blacklist phía server, khiến token bị lộ trước đó vẫn dùng được tới khi hết hạn.",
     "Sửa N+1 bằng cách đổi sang FetchType.EAGER thay vì dùng JOIN FETCH/@EntityGraph - vẫn gây N+1 nếu Hibernate chọn chiến lược nạp riêng lẻ.",
     "Bật hibernate.jdbc.batch_size mà quên bật order_inserts/order_updates, khiến batch không gộp được hiệu quả do thứ tự câu lệnh xen kẽ.",
-    "Quên @NotFound(action = NotFoundAction.IGNORE) cho quan hệ @ManyToOne LAZY trỏ tới entity có thể bị soft-delete, gây EntityNotFoundException runtime."
+    "Quên @NotFound(action = NotFoundAction.IGNORE) cho quan hệ @ManyToOne LAZY trỏ tới entity có thể bị soft-delete, gây EntityNotFoundException runtime.",
+    "Không xoay vòng (rotate) refresh token ở /auth/refresh - dùng lại y hệt refresh token cũ nhiều lần, khiến một refresh token bị đánh cắp có thể dùng vô thời hạn tới khi hết hạn tự nhiên thay vì bị vô hiệu hoá ngay sau lần dùng đầu tiên.",
+    "Chỉ kiểm tra blacklist thủ công trong từng controller thay vì đặt bước kiểm tra vào một chỗ dùng chung trên đường xác thực (một filter riêng, hoặc ngay trong bước giải mã/xác thực token) - chỉ cần một controller quên gọi là token đã thu hồi vẫn lọt qua. Nếu chọn phương án filter riêng đọc thẳng header thì filter đó phải được đăng ký TRƯỚC bước xác thực token của dự án, vì đặt sau sẽ không kịp chặn; đây là ràng buộc riêng của phương án đó, không phải quy tắc chung cho mọi cách hiện thực.",
+    "Extends CrudRepository/JpaRepository thay vì Repository trần khi chỉ cần đúng hai query method đã khai báo - kéo theo toàn bộ method CRUD mặc định (findAll(), deleteById()...) không cần thiết cho brief này, dễ vô tình lộ thao tác xoá/sửa không qua @PreAuthorize nếu repository bị expose trực tiếp.",
+    "Viết test @WithMockUser chỉ kiểm tra chiều được phép mà bỏ qua chiều bị từ chối (role không đủ quyền phải nhận 403) - lỗi cấu hình @PreAuthorize (ví dụ quên annotation) sẽ không bị test nào bắt được."
   ],
   "practices": [
     {
@@ -243,8 +349,8 @@
       "prompt": "Sửa một repository method đang gây N+1 khi nạp Product kèm Category bằng @EntityGraph.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Dùng @EntityGraph(attributePaths = \"category\") trên method findAll().",
-      "solution": "@EntityGraph(attributePaths = \"category\")\nList<ProductEntity> findAll();",
+      "hint": "Dùng @EntityGraph(attributePaths = \"category\") trên một method riêng, không trùng tên với method nào đã có sẵn trên Repository<T, ID>.",
+      "solution": "@EntityGraph(attributePaths = \"category\")\nList<ProductEntity> findAllWithCategoryGraph();",
       "explanation": "Áp dụng lại mẫu @EntityGraph đã học trong bài để gộp việc nạp Category vào cùng truy vấn Product.",
       "rubric": "Đánh giá đúng: có @EntityGraph với attributePaths trỏ đúng field category.",
       "sourceUsage": [
@@ -310,8 +416,10 @@
     }
   ],
   "enhancedExercises": [
-    "Thêm TTL cho từng entry trong Redis blacklist đúng bằng thời gian còn lại tới exp của token, tránh blacklist phình to vô hạn.",
-    "Đo và ghi lại số câu truy vấn SQL (qua log Hibernate) trước và sau khi áp dụng @EntityGraph cho Product list API với 100 sản phẩm mẫu."
+    "Triển khai đầy đủ hàm hash(rawToken) trong TokenBlacklistService bằng MessageDigest.getInstance(\"SHA-256\"), encode kết quả sang chuỗi hex, thay vì trả về rawToken nguyên văn như bản minh hoạ.",
+    "Đo và ghi lại số câu truy vấn SQL (qua log Hibernate) trước và sau khi áp dụng @EntityGraph cho Product list API với 100 sản phẩm mẫu, theo đúng quy trình benchmark ở phần Batch Fetching và Benchmark.",
+    "Hoàn thành RefreshTokenService.rotate(oldRefreshToken): xoá bản ghi cũ trước khi issue(...) token mới, và xử lý trường hợp oldRefreshToken không còn tồn tại trong Redis (dấu hiệu bị tái sử dụng) bằng cách từ chối, cân nhắc thu hồi toàn bộ refresh token đang hiệu lực của user đó.",
+    "Viết thêm test @WithMockUser cho findByUser(userId) ở cả hai trường hợp: CUSTOMER dùng đúng userId của mình (kỳ vọng 200) và dùng userId của người khác (kỳ vọng 403)."
   ],
   "references": [
     {
@@ -446,8 +554,8 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Redis blacklist cho refresh/logout (lưu token bị thu hồi, kiểm tra trước khi chấp nhận token, TTL theo thời gian hết hạn còn lại): không có resource nào trong resourceIds của Day 24 mô tả kỹ thuật này - trình bày bằng kỹ thuật bổ sung phổ biến cho hệ thống JWT stateless trong khối note không yêu cầu trích dẫn.",
-      "Method Security cụ thể (@PreAuthorize chi tiết) và @WithMockUser: resource mô tả các chủ đề này (res-fa00cc21947b) thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 theo nguyên tắc không mượn citation chéo giữa các bài - Day 24 chỉ áp dụng lại mẫu đã học, trình bày trong khối note không yêu cầu trích dẫn riêng cho Day 24."
+      "Redis blacklist cho refresh/logout và refresh-token rotation (key format, TTL theo thời gian hết hạn còn lại, single-use rotation): không có resource nào trong resourceIds của Day 24 mô tả kỹ thuật này - trình bày bằng kỹ thuật bổ sung phổ biến cho hệ thống JWT stateless, dùng block type paragraph/template (TokenBlacklistService, BlacklistCheckFilter, RefreshTokenService) vốn không yêu cầu trích dẫn.",
+      "Method Security cụ thể (@PreAuthorize chi tiết) và @WithMockUser: resource mô tả các chủ đề này (res-fa00cc21947b) thuộc resourceIds của Day 23, không lặp lại trong resourceIds của Day 24 theo nguyên tắc không mượn citation chéo giữa các bài - Day 24 chỉ áp dụng lại mẫu đã học, gồm cả hai khối template minh hoạ (OrderController với @PreAuthorize, OrderControllerSecurityTest với @WithMockUser) không yêu cầu trích dẫn riêng cho Day 24."
     ]
   }
 }
