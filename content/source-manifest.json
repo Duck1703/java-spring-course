@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-22T15:55:10.425154Z",
+  "generatedAt": "2026-09-03T00:51:56.747835Z",
   "source": {
     "workbook": "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx",
     "sheet": "JavaSpring_Schedule"
@@ -3549,6 +3549,272 @@
         "contentBytes": 20118,
         "contentSha256": "577c2ff2c29173fe29e413db7408313d881e6cb38d80c616a119bb9d87f679d0",
         "cacheText": ".course-cache/resources/res-fe3cc9768091.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-a019e1f110d5",
+      "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+      "labelVariants": [
+        "2.2. Concepts"
+      ],
+      "lessonIds": [
+        "day-19"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 15903,
+        "contentSha256": "cd584aca7b7b60d07b08a178abcfb7145547a25d9d257c78503762412af14cb8",
+        "cacheText": ".course-cache/resources/res-a019e1f110d5.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-cffd5452eff0",
+      "requestedUrl": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+      "labelVariants": [
+        "5.5. Constraints (Primary Keys, Foreign Keys)"
+      ],
+      "lessonIds": [
+        "day-19",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Entity Design & Relationships\n+ Entity mapping\n+ Relationships\n+ @ManyToMany\n+ Cascade & Orphan Removal\n+ FetchType",
+        "Assignment",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 46707,
+        "contentSha256": "5b1c78d31eca7d117ef8a939ab921dc2f888b04dc851028c8b52e74639619ab3",
+        "cacheText": ".course-cache/resources/res-cffd5452eff0.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-03607eec7dc9",
+      "requestedUrl": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+      "labelVariants": [
+        "7.2.1.1. Joined Tables"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 72769,
+        "contentSha256": "f77848506e1c158c69261c15a947f7bd4d9d9b62bdb7a209ace4e456982b2a1e",
+        "cacheText": ".course-cache/resources/res-03607eec7dc9.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-f0e4e317a0cc",
+      "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-select.html",
+      "labelVariants": [
+        "2.5. Querying a Table"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/tutorial-select.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 19838,
+        "contentSha256": "d599ce7712d4a1a78860494d835a541b275018330ac1524c8f78db5269f1bc60",
+        "cacheText": ".course-cache/resources/res-f0e4e317a0cc.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-92ca41586e78",
+      "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+      "labelVariants": [
+        "3.4. Transactions"
+      ],
+      "lessonIds": [
+        "day-20"
+      ],
+      "unitIds": [
+        "unit-07"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 21407,
+        "contentSha256": "8301bc52363edcf236bddb454ffc550bb27b26b5d1ffaafcd4a75ddc9bb00bac",
+        "cacheText": ".course-cache/resources/res-92ca41586e78.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-cb4ce5048048",
+      "requestedUrl": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "labelVariants": [
+        "13.2. Transaction Isolation"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/transaction-iso.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 47710,
+        "contentSha256": "beef1cd1c5f512e3934fd049454730e3cc9d459e69db8e938bf941125387cefc",
+        "cacheText": ".course-cache/resources/res-cb4ce5048048.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-4b719885d4a9",
+      "requestedUrl": "https://www.postgresql.org/docs/current/explicit-locking.html",
+      "labelVariants": [
+        "13.3. Explicit Locking"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/explicit-locking.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 46894,
+        "contentSha256": "0065ca9ef4808bc93c18b2e0747da5110c23cd043882274fd38900ab89b50fad",
+        "cacheText": ".course-cache/resources/res-4b719885d4a9.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-7b6cf1b4d88f",
+      "requestedUrl": "https://www.postgresql.org/docs/current/indexes-intro.html",
+      "labelVariants": [
+        "11.1. Introduction"
+      ],
+      "lessonIds": [
+        "day-20",
+        "day-32"
+      ],
+      "unitIds": [
+        "unit-07",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Query, Transaction & Patterns\n+ Repository\n+ Pagination & Sort\n+ Projection\n+ @Transactional\n+ Auditing",
+        "Guides/Review",
+        "System Design & Project Kickoff\n+ Database design\n+ Error handling strategy\n+ Development workflow"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T00:49:57.773487Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.postgresql.org/docs/current/indexes-intro.html",
+        "contentType": "text/html; charset=utf-8",
+        "contentBytes": 18673,
+        "contentSha256": "ed54640f2df0a1c7cb6c0e70e4269eeb5fc3556e28965338ef1f55b4f39f81d1",
+        "cacheText": ".course-cache/resources/res-7b6cf1b4d88f.txt",
         "truncated": false,
         "error": null
       }

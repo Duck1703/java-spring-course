@@ -435,6 +435,8 @@
 - [JPA Associations](https://www.baeldung.com/jpa-hibernate-associations) — stable `res-d20f2a5470d7` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [JPA Cascade Types](https://www.baeldung.com/jpa-cascade-types) — stable `res-cf695e39df80` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Lazy/Eager Loading](https://www.baeldung.com/hibernate-lazy-eager-loading) — stable `res-749fa81acd48` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [2.2. Concepts](https://www.postgresql.org/docs/current/tutorial-concepts.html) — stable `res-a019e1f110d5` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [5.5. Constraints (Primary Keys, Foreign Keys)](https://www.postgresql.org/docs/current/ddl-constraints.html) — stable `res-cffd5452eff0` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 20 — Query, Transaction & Patterns
 
@@ -458,6 +460,12 @@
 - [Lazy/Eager Loading](https://www.baeldung.com/hibernate-lazy-eager-loading) — stable `res-749fa81acd48` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [JPA Pagination & Sorting](https://www.baeldung.com/spring-data-jpa-pagination-sorting) — stable `res-2e4a3dd62ec7` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Database Auditing](https://www.baeldung.com/database-auditing-jpa) — stable `res-82b36b19c96f` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [7.2.1.1. Joined Tables](https://www.postgresql.org/docs/current/queries-table-expressions.html) — stable `res-03607eec7dc9` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [2.5. Querying a Table](https://www.postgresql.org/docs/current/tutorial-select.html) — stable `res-f0e4e317a0cc` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [3.4. Transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html) — stable `res-92ca41586e78` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [13.2. Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) — stable `res-cb4ce5048048` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [13.3. Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html) — stable `res-4b719885d4a9` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [11.1. Introduction](https://www.postgresql.org/docs/current/indexes-intro.html) — stable `res-7b6cf1b4d88f` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 21 — - Assignment 7: E-Commerce Data Layer
 
@@ -730,6 +738,12 @@
 - [JPA Entity](https://docs.spring.io/spring-data/jpa/reference/jpa/entity-persistence.html) — stable `res-afbebe6cf212` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Exception Handling](https://www.baeldung.com/exception-handling-for-rest-with-spring) — stable `res-b307e54a2685` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [ProblemDetail](https://www.baeldung.com/spring-problem-detail) — stable `res-af7171222f9a` ID generated from the normalized URL — không tìm thấy (HTTP 404)
+- [5.5. Constraints (Primary Keys, Foreign Keys)](https://www.postgresql.org/docs/current/ddl-constraints.html) — stable `res-cffd5452eff0` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [7.2.1.1. Joined Tables](https://www.postgresql.org/docs/current/queries-table-expressions.html) — stable `res-03607eec7dc9` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [2.5. Querying a Table](https://www.postgresql.org/docs/current/tutorial-select.html) — stable `res-f0e4e317a0cc` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [13.2. Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) — stable `res-cb4ce5048048` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [13.3. Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html) — stable `res-4b719885d4a9` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [11.1. Introduction](https://www.postgresql.org/docs/current/indexes-intro.html) — stable `res-7b6cf1b4d88f` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 33 — Development Sprint 1
 

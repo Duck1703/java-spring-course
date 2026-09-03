@@ -55,6 +55,58 @@
     "fallbackEvidence": null
   },
   {
+    "resourceId": "res-03607eec7dc9",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+    "lessonIds": [
+      "day-20",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+      "contentSha256": "f77848506e1c158c69261c15a947f7bd4d9d9b62bdb7a209ace4e456982b2a1e"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 7.2. Table Expressions",
+      "relevantHeadings": [
+        "7.2.1.1. Joined Tables"
+      ],
+      "topics": [
+        "INNER JOIN",
+        "LEFT/RIGHT/FULL OUTER JOIN",
+        "Điều kiện join ON/USING"
+      ],
+      "facts": [
+        {
+          "topic": "INNER JOIN chỉ giữ các cặp dòng khớp điều kiện",
+          "summary": "Với INNER JOIN, với mỗi dòng của bảng T1, bảng kết quả sẽ có một dòng cho mỗi dòng ở bảng T2 thỏa mãn điều kiện join với dòng đó; INNER là loại join mặc định khi không ghi rõ từ khóa.",
+          "locator": "7.2.1.1. Joined Tables"
+        },
+        {
+          "topic": "LEFT OUTER JOIN giữ lại mọi dòng bên trái",
+          "summary": "LEFT OUTER JOIN trước tiên thực hiện một inner join, sau đó với mỗi dòng của T1 không thỏa điều kiện join với bất kỳ dòng nào của T2, một dòng kết quả vẫn được thêm vào với các cột của T2 mang giá trị null; nhờ vậy bảng kết quả luôn có ít nhất một dòng cho mỗi dòng của T1.",
+          "locator": "7.2.1.1. Joined Tables"
+        },
+        {
+          "topic": "FULL OUTER JOIN kết hợp cả hai chiều",
+          "summary": "FULL OUTER JOIN thực hiện đồng thời logic của cả LEFT và RIGHT OUTER JOIN: những dòng không khớp ở T1 lẫn những dòng không khớp ở T2 đều được giữ lại trong kết quả, với các cột phía không khớp mang giá trị null.",
+          "locator": "7.2.1.1. Joined Tables"
+        },
+        {
+          "topic": "ON so với USING",
+          "summary": "Mệnh đề ON chấp nhận một biểu thức boolean tùy ý giống WHERE để xác định điều kiện khớp; mệnh đề USING là dạng rút gọn khi hai bên join dùng chung tên cột, đồng thời USING sẽ loại bỏ cột trùng lặp trong kết quả trong khi ON giữ nguyên toàn bộ cột của cả hai bảng.",
+          "locator": "7.2.1.1. Joined Tables"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
     "resourceId": "res-1559f0cd62e7",
     "batch": "data-security",
     "requestedUrl": "https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html",
@@ -218,6 +270,60 @@
     "fallbackEvidence": null
   },
   {
+    "resourceId": "res-4b719885d4a9",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/explicit-locking.html",
+    "lessonIds": [
+      "day-20",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/explicit-locking.html",
+      "contentSha256": "0065ca9ef4808bc93c18b2e0747da5110c23cd043882274fd38900ab89b50fad"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 13.3. Explicit Locking",
+      "relevantHeadings": [
+        "13.3.1. Table-Level Locks",
+        "13.3.2. Row-Level Locks",
+        "13.3.4. Deadlocks"
+      ],
+      "topics": [
+        "Table-level lock modes",
+        "Row-level lock (FOR UPDATE...)",
+        "Deadlock detection"
+      ],
+      "facts": [
+        {
+          "topic": "SELECT thường chỉ giữ khóa ACCESS SHARE",
+          "summary": "Một câu SELECT thông thường (không kèm FOR UPDATE/SHARE) chỉ giữ khóa ACCESS SHARE trên bảng được truy vấn — mức khóa yếu nhất, chỉ xung đột với ACCESS EXCLUSIVE; nói chung bất kỳ truy vấn nào chỉ đọc mà không sửa bảng đều dùng mức khóa này.",
+          "locator": "13.3.1. Table-Level Locks"
+        },
+        {
+          "topic": "Ghi dữ liệu dùng ROW EXCLUSIVE",
+          "summary": "Các lệnh UPDATE, DELETE, INSERT và MERGE giữ khóa ROW EXCLUSIVE trên bảng đích; nhìn chung mọi lệnh làm thay đổi dữ liệu trong bảng sẽ giữ mức khóa này, và một transaction không bao giờ tự xung đột với chính khóa của nó.",
+          "locator": "13.3.1. Table-Level Locks"
+        },
+        {
+          "topic": "FOR UPDATE khóa dòng đã đọc",
+          "summary": "SELECT ... FOR UPDATE khóa các dòng được truy vấn như thể sắp bị cập nhật, ngăn các transaction khác khóa/sửa/xóa những dòng đó cho tới khi transaction hiện tại kết thúc; nếu một transaction REPEATABLE READ/SERIALIZABLE cố khóa một dòng đã bị thay đổi từ khi transaction bắt đầu, PostgreSQL sẽ báo lỗi thay vì chờ.",
+          "locator": "13.3.2. Row-Level Locks"
+        },
+        {
+          "topic": "Deadlock được PostgreSQL tự phát hiện",
+          "summary": "Deadlock xảy ra khi hai (hoặc nhiều) transaction mỗi bên giữ một khóa mà bên kia đang cần, khiến cả hai cùng chờ nhau vô thời hạn; PostgreSQL tự động phát hiện tình huống này và giải quyết bằng cách hủy (abort) một trong các transaction liên quan, cho phép (các) transaction còn lại tiếp tục.",
+          "locator": "13.3.4. Deadlocks"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
     "resourceId": "res-553bbd92e5d0",
     "batch": "data-security",
     "requestedUrl": "https://docs.spring.io/spring-data/jpa/reference/repositories.html",
@@ -357,6 +463,58 @@
     "fallbackEvidence": null
   },
   {
+    "resourceId": "res-7b6cf1b4d88f",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/indexes-intro.html",
+    "lessonIds": [
+      "day-20",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/indexes-intro.html",
+      "contentSha256": "ed54640f2df0a1c7cb6c0e70e4269eeb5fc3556e28965338ef1f55b4f39f81d1"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 11.1. Introduction",
+      "relevantHeadings": [
+        "11.1. Introduction"
+      ],
+      "topics": [
+        "Index tăng tốc tra cứu",
+        "CREATE INDEX cơ bản",
+        "Chi phí bảo trì index"
+      ],
+      "facts": [
+        {
+          "topic": "Không có index buộc phải quét toàn bảng",
+          "summary": "Nếu không có index, để tìm các dòng khớp điều kiện WHERE id = constant, hệ thống buộc phải quét toàn bộ bảng từng dòng một; nếu bảng có nhiều dòng nhưng chỉ một vài dòng khớp điều kiện, cách làm này rõ ràng kém hiệu quả.",
+          "locator": "11.1. Introduction"
+        },
+        {
+          "topic": "Index giống mục lục cuối sách",
+          "summary": "Tài liệu ví index như mục lục ở cuối một cuốn sách phi hư cấu: người đọc quan tâm có thể quét mục lục rồi lật thẳng tới trang cần thiết thay vì phải đọc toàn bộ cuốn sách; việc chọn cột nào cần đánh index là nhiệm vụ của người lập trình cơ sở dữ liệu.",
+          "locator": "11.1. Introduction"
+        },
+        {
+          "topic": "CREATE INDEX và tự động cập nhật",
+          "summary": "Lệnh CREATE INDEX tên_index ON bảng (cột) tạo một index trên cột chỉ định; sau khi tạo, hệ thống tự động cập nhật index mỗi khi bảng thay đổi và tự quyết định dùng index khi planner cho rằng làm vậy hiệu quả hơn quét tuần tự (sequential scan), không cần can thiệp thêm.",
+          "locator": "11.1. Introduction"
+        },
+        {
+          "topic": "Index cũng có chi phí bảo trì",
+          "summary": "Sau khi tạo, hệ thống phải giữ index đồng bộ với bảng, việc này làm tăng chi phí cho các thao tác thay đổi dữ liệu; vì vậy các index hiếm khi hoặc không bao giờ được dùng trong truy vấn nên được cân nhắc loại bỏ.",
+          "locator": "11.1. Introduction"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
     "resourceId": "res-82b36b19c96f",
     "batch": "data-security",
     "requestedUrl": "https://www.baeldung.com/database-auditing-jpa",
@@ -460,6 +618,166 @@
           "topic": "Cần @NotFound cho @ManyToOne LAZY",
           "summary": "Khi entity cha có thể bị soft-delete, các quan hệ @ManyToOne(fetch = FetchType.LAZY) trỏ tới nó cần thêm @NotFound(action = NotFoundAction.EXCEPTION) vì sự tồn tại của khóa ngoại không còn đảm bảo entity cha vẫn còn (có thể đã bị soft-delete).",
           "locator": "The post_comments table is mapped to the PostComment entity as follows"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-92ca41586e78",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+    "lessonIds": [
+      "day-20"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+      "contentSha256": "8301bc52363edcf236bddb454ffc550bb27b26b5d1ffaafcd4a75ddc9bb00bac"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 3.4. Transactions",
+      "relevantHeadings": [
+        "3.4. Transactions"
+      ],
+      "topics": [
+        "Transaction atomicity",
+        "BEGIN/COMMIT/ROLLBACK",
+        "Savepoint"
+      ],
+      "facts": [
+        {
+          "topic": "Transaction gộp nhiều bước thành một thao tác tất-cả-hoặc-không-gì",
+          "summary": "Một transaction gộp nhiều bước riêng lẻ thành một thao tác duy nhất theo kiểu tất-cả-hoặc-không-gì (all-or-nothing); nếu có lỗi khiến transaction không hoàn tất được thì không bước nào trong số đó ảnh hưởng tới database, đây gọi là tính atomic.",
+          "locator": "3.4. Transactions"
+        },
+        {
+          "topic": "BEGIN/COMMIT thiết lập ranh giới transaction",
+          "summary": "Trong PostgreSQL, một transaction được thiết lập bằng cách bao các câu lệnh SQL giữa BEGIN và COMMIT; nếu giữa chừng muốn hủy bỏ, có thể dùng ROLLBACK thay cho COMMIT để hủy toàn bộ các thay đổi đã thực hiện từ đầu transaction.",
+          "locator": "3.4. Transactions"
+        },
+        {
+          "topic": "Mỗi câu lệnh đơn lẻ cũng chạy trong transaction ngầm định",
+          "summary": "Nếu không tự phát BEGIN, PostgreSQL vẫn coi mỗi câu lệnh SQL đơn lẻ như đang chạy trong một transaction, với BEGIN và (nếu thành công) COMMIT ngầm định được bao quanh nó.",
+          "locator": "3.4. Transactions"
+        },
+        {
+          "topic": "Savepoint cho phép hủy một phần transaction",
+          "summary": "SAVEPOINT cho phép kiểm soát chi tiết hơn bên trong một transaction: có thể định nghĩa một điểm lưu, rồi dùng ROLLBACK TO để hủy các thay đổi từ sau điểm lưu đó trong khi vẫn giữ lại các thay đổi trước đó, và sau đó vẫn có thể tiếp tục commit phần còn lại.",
+          "locator": "3.4. Transactions"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-a019e1f110d5",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+    "lessonIds": [
+      "day-19"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+      "contentSha256": "cd584aca7b7b60d07b08a178abcfb7145547a25d9d257c78503762412af14cb8"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 2.2. Concepts",
+      "relevantHeadings": [
+        "2.2. Concepts"
+      ],
+      "topics": [
+        "Khái niệm relation/table/row/column",
+        "Table và database cluster"
+      ],
+      "facts": [
+        {
+          "topic": "Table là named collection of rows",
+          "summary": "PostgreSQL định nghĩa mỗi bảng (table) là một tập hợp các dòng (row) có tên; mọi dòng trong cùng một bảng có chung một tập cột (column) được đặt tên, và mỗi cột thuộc một kiểu dữ liệu cụ thể.",
+          "locator": "2.2. Concepts"
+        },
+        {
+          "topic": "Cột có thứ tự cố định, dòng thì không",
+          "summary": "Tài liệu lưu ý các cột có thứ tự cố định trong mỗi dòng, nhưng SQL không đảm bảo thứ tự của các dòng bên trong bảng theo bất kỳ cách nào (dù có thể sắp xếp tường minh khi hiển thị).",
+          "locator": "2.2. Concepts"
+        },
+        {
+          "topic": "PostgreSQL là RDBMS quản lý dữ liệu dạng bảng",
+          "summary": "PostgreSQL được mô tả là một relational database management system (RDBMS) — hệ quản trị cơ sở dữ liệu quan hệ, quản lý dữ liệu được lưu trong các relation; relation về bản chất là thuật ngữ toán học tương đương với table.",
+          "locator": "2.2. Concepts"
+        },
+        {
+          "topic": "Database và database cluster",
+          "summary": "Các bảng được nhóm lại thành database, và một tập hợp các database do một PostgreSQL server instance quản lý được gọi là database cluster.",
+          "locator": "2.2. Concepts"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-cb4ce5048048",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/transaction-iso.html",
+    "lessonIds": [
+      "day-20",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "contentSha256": "beef1cd1c5f512e3934fd049454730e3cc9d459e69db8e938bf941125387cefc"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 13.2. Transaction Isolation",
+      "relevantHeadings": [
+        "13.2.1. Read Committed Isolation Level",
+        "13.2.2. Repeatable Read Isolation Level",
+        "13.2.3. Serializable Isolation Level"
+      ],
+      "topics": [
+        "4 mức isolation theo chuẩn SQL",
+        "Read Committed mặc định",
+        "Serializable & serialization failure"
+      ],
+      "facts": [
+        {
+          "topic": "Chuẩn SQL định nghĩa 4 mức isolation",
+          "summary": "Chuẩn SQL định nghĩa bốn mức cách ly transaction: Read Uncommitted, Read Committed, Repeatable Read, và Serializable — mức nghiêm ngặt nhất là Serializable, đảm bảo việc chạy đồng thời một tập transaction Serializable cho kết quả tương đương như chạy chúng lần lượt từng cái một.",
+          "locator": "13.2. Transaction Isolation"
+        },
+        {
+          "topic": "PostgreSQL chỉ hiện thực 3 mức isolation nội bộ",
+          "summary": "PostgreSQL cho phép yêu cầu cả 4 mức isolation chuẩn, nhưng nội bộ chỉ hiện thực 3 mức khác nhau: mức Read Uncommitted trong PostgreSQL hoạt động giống hệt Read Committed — đây là một hành vi đặc thù của PostgreSQL chứ không phải yêu cầu bắt buộc của chuẩn SQL.",
+          "locator": "13.2. Transaction Isolation"
+        },
+        {
+          "topic": "Read Committed là mặc định",
+          "summary": "Read Committed là mức isolation mặc định của PostgreSQL; ở mức này, một câu SELECT chỉ thấy dữ liệu đã được commit trước khi câu truy vấn đó bắt đầu chạy — tức là mỗi câu lệnh riêng lẻ trong transaction nhìn thấy một snapshot dữ liệu tại thời điểm nó bắt đầu.",
+          "locator": "13.2.1. Read Committed Isolation Level"
+        },
+        {
+          "topic": "Repeatable Read thấy snapshot cố định từ đầu transaction",
+          "summary": "Ở mức Repeatable Read, mọi câu truy vấn trong cùng một transaction đều nhìn thấy cùng một snapshot được chụp tại thời điểm câu lệnh đầu tiên của transaction bắt đầu, nên các SELECT liên tiếp trong cùng transaction luôn cho kết quả nhất quán với nhau.",
+          "locator": "13.2.2. Repeatable Read Isolation Level"
+        },
+        {
+          "topic": "Serializable phát hiện xung đột và có thể rollback",
+          "summary": "Mức Serializable mô phỏng việc thực thi tuần tự cho mọi transaction đã commit; nếu phát hiện một tổ hợp thực thi đồng thời không tương thích với bất kỳ thứ tự tuần tự nào, PostgreSQL sẽ cho một transaction commit và rollback (các) transaction còn lại với lỗi serialization failure, ứng dụng cần chuẩn bị sẵn logic thử lại.",
+          "locator": "13.2.3. Serializable Isolation Level"
         }
       ],
       "limitation": null
@@ -571,6 +889,64 @@
           "topic": "CascadeType.LOCK",
           "summary": "CascadeType.LOCK không khóa dữ liệu như tên gọi mà thực chất gắn lại (reattach) entity cha và entity con đã bị detach vào persistence context.",
           "locator": "3.6. CascadeType.LOCK"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-cffd5452eff0",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+    "lessonIds": [
+      "day-19",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+      "contentSha256": "5b1c78d31eca7d117ef8a939ab921dc2f888b04dc851028c8b52e74639619ab3"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 5.5. Constraints",
+      "relevantHeadings": [
+        "5.5.4. Primary Keys",
+        "5.5.5. Foreign Keys"
+      ],
+      "topics": [
+        "Primary Key constraint",
+        "Foreign Key constraint",
+        "Referential integrity"
+      ],
+      "facts": [
+        {
+          "topic": "Primary key = định danh duy nhất cho dòng",
+          "summary": "Ràng buộc primary key chỉ định một cột (hoặc nhóm cột) dùng làm định danh duy nhất cho các dòng trong bảng; điều này yêu cầu giá trị đó vừa phải là duy nhất (unique) vừa không được null.",
+          "locator": "5.5.4. Primary Keys"
+        },
+        {
+          "topic": "Một bảng chỉ có tối đa một primary key",
+          "summary": "Một bảng chỉ có thể có tối đa một primary key, dù có thể có nhiều unique constraint khác; việc thêm primary key sẽ tự động tạo một chỉ mục B-tree duy nhất trên (các) cột đó và buộc các cột này thành NOT NULL.",
+          "locator": "5.5.4. Primary Keys"
+        },
+        {
+          "topic": "Foreign key duy trì tính toàn vẹn tham chiếu",
+          "summary": "Ràng buộc foreign key quy định giá trị trong một cột (hoặc nhóm cột) của bảng tham chiếu phải khớp với giá trị xuất hiện ở một dòng nào đó của bảng được tham chiếu, qua đó duy trì tính toàn vẹn tham chiếu (referential integrity) giữa hai bảng có liên quan.",
+          "locator": "5.5.5. Foreign Keys"
+        },
+        {
+          "topic": "REFERENCES ngầm định dùng primary key",
+          "summary": "Khi khai báo cột kiểu integer REFERENCES products mà không liệt kê tên cột cụ thể, PostgreSQL ngầm định dùng primary key của bảng được tham chiếu làm cột đích; hệ thống sẽ từ chối chèn dòng có giá trị khóa ngoại không tồn tại ở bảng kia.",
+          "locator": "5.5.5. Foreign Keys"
+        },
+        {
+          "topic": "Tùy chọn ON DELETE cho khóa ngoại",
+          "summary": "Khi dòng ở bảng được tham chiếu bị xóa, foreign key có thể cấu hình hành vi qua ON DELETE với các lựa chọn RESTRICT (ngăn xóa), CASCADE (tự xóa các dòng tham chiếu theo), SET NULL, SET DEFAULT, hoặc mặc định là NO ACTION (cho phép xóa nhưng vẫn kiểm tra ràng buộc).",
+          "locator": "5.5.5. Foreign Keys"
         }
       ],
       "limitation": null
@@ -732,6 +1108,53 @@
           "topic": "User.withDefaultPasswordEncoder() chỉ dùng cho demo",
           "summary": "User.withDefaultPasswordEncoder() là tiện ích giúp hash nhanh mật khẩu cho demo/sample, tài liệu nêu rõ không dành cho production.",
           "locator": "Getting Started Experience"
+        }
+      ],
+      "limitation": null
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-f0e4e317a0cc",
+    "batch": "data-security",
+    "requestedUrl": "https://www.postgresql.org/docs/current/tutorial-select.html",
+    "lessonIds": [
+      "day-20",
+      "day-32"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.postgresql.org/docs/current/tutorial-select.html",
+      "contentSha256": "d599ce7712d4a1a78860494d835a541b275018330ac1524c8f78db5269f1bc60"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "PostgreSQL: Documentation: 18: 2.5. Querying a Table",
+      "relevantHeadings": [
+        "2.5. Querying a Table"
+      ],
+      "topics": [
+        "SELECT list và FROM",
+        "WHERE qualification",
+        "ORDER BY, DISTINCT"
+      ],
+      "facts": [
+        {
+          "topic": "Cấu trúc câu SELECT cơ bản",
+          "summary": "Một câu SELECT được chia thành select list (liệt kê các cột cần trả về), table list (liệt kê các bảng lấy dữ liệu), và một qualification tùy chọn (các ràng buộc lọc dòng); dấu * trong select list là cách viết tắt cho 'tất cả các cột'.",
+          "locator": "2.5. Querying a Table"
+        },
+        {
+          "topic": "WHERE lọc dòng theo biểu thức boolean",
+          "summary": "Mệnh đề WHERE chứa một biểu thức boolean; chỉ những dòng mà biểu thức đó cho kết quả true mới được giữ lại trong kết quả truy vấn, các toán tử AND/OR/NOT thông thường đều được phép dùng trong biểu thức lọc.",
+          "locator": "2.5. Querying a Table"
+        },
+        {
+          "topic": "ORDER BY và DISTINCT",
+          "summary": "ORDER BY yêu cầu kết quả truy vấn được trả về theo thứ tự sắp xếp chỉ định; nếu không dùng ORDER BY, thứ tự các dòng trong kết quả không được đảm bảo. DISTINCT loại bỏ các dòng trùng lặp khỏi kết quả, và nên kết hợp với ORDER BY nếu muốn thứ tự kết quả nhất quán giữa các lần chạy.",
+          "locator": "2.5. Querying a Table"
         }
       ],
       "limitation": null

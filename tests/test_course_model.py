@@ -1,4 +1,6 @@
+import contextlib
 import copy
+import io
 import json
 import re
 import tempfile
@@ -10,6 +12,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from tools.course_model import normalize_url, resource_id
 
 _GENERATED_AT_RE = re.compile(rb'"generatedAt": "[^"]*"')
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _bytes_ignoring_generated_at(path: Path) -> bytes:
@@ -225,6 +228,234 @@ class ScheduleParserTests(unittest.TestCase):
         self.assertEqual(catalog["lessons"][0]["label"], "Day 1")
         self.assertIn("Java/Spring Course Catalog", markdown)
         self.assertEqual(manifest["resources"][0]["check"], {})
+
+    def test_cli_adding_supplemental_resource_preserves_existing_check(self):
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            catalog_path = root / "course-catalog.json"
+            markdown_path = root / "course-catalog.md"
+            manifest_path = root / "content" / "source-manifest.json"
+            self._write_workbook(workbook)
+
+            self.assertEqual(
+                main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(catalog_path),
+                        "--markdown", str(markdown_path),
+                        "--manifest", str(manifest_path),
+                    ]
+                ),
+                0,
+            )
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            existing_resource = manifest["resources"][0]
+            existing_check = {
+                "attempted": True,
+                "checkedAt": "2026-08-22T16:30:00Z",
+                "status": "ok",
+                "httpStatus": 200,
+                "finalUrl": existing_resource["requestedUrl"],
+                "contentType": "text/html",
+                "contentBytes": 123,
+                "contentSha256": "a" * 64,
+                "cacheText": ".course-cache/resources/existing.txt",
+                "truncated": False,
+                "error": None,
+            }
+            existing_resource["check"] = existing_check
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            supplemental_url = "https://example.test/new-source"
+            registry = root / "supplemental-sources.json"
+            registry.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "resources": [
+                            {
+                                "url": supplemental_url,
+                                "title": "New Source",
+                                "publisher": "Example Publisher",
+                                "lessonIds": ["day-02"],
+                                "purpose": "Regression fixture for state preservation.",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(catalog_path),
+                        "--markdown", str(markdown_path),
+                        "--manifest", str(manifest_path),
+                        "--supplemental-sources", str(registry),
+                    ]
+                ),
+                0,
+            )
+            regenerated = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        resources = {resource["resourceId"]: resource for resource in regenerated["resources"]}
+        self.assertEqual(resources[existing_resource["resourceId"]]["check"], existing_check)
+        self.assertEqual(resources[resource_id(supplemental_url)]["check"], {})
+
+    def test_manifest_preserves_check_when_only_lesson_ids_change(self):
+        from tools.extract_catalog import build_manifest
+
+        catalog = _fixture_catalog()
+        existing = catalog["resources"][0]
+        previous_check = {"status": "ok", "contentSha256": "a" * 64}
+        previous_manifest = {
+            "resources": [
+                {
+                    "resourceId": existing["id"],
+                    "requestedUrl": existing["url"],
+                    "check": previous_check,
+                }
+            ]
+        }
+        merge_supplemental = _supplemental_entry(
+            url=existing["url"],
+            title="Existing Resource",
+            lesson_ids=("day-20",),
+        )
+        from tools.course_model import merge_supplemental_resources
+        merge_supplemental_resources(catalog, [merge_supplemental])
+
+        resource = build_manifest(catalog, previous_manifest)["resources"][0]
+
+        self.assertEqual(resource["lessonIds"], ["day-19", "day-20"])
+        self.assertEqual(resource["check"], previous_check)
+
+    def test_manifest_does_not_inherit_check_for_same_id_with_changed_url(self):
+        from tools.extract_catalog import build_manifest
+
+        catalog = _fixture_catalog()
+        current = catalog["resources"][0]
+        previous_manifest = {
+            "resources": [
+                {
+                    "resourceId": current["id"],
+                    "requestedUrl": "https://example.test/different-resource",
+                    "check": {"status": "ok", "contentSha256": "a" * 64},
+                }
+            ]
+        }
+
+        resource = build_manifest(catalog, previous_manifest)["resources"][0]
+
+        self.assertEqual(resource["check"], {})
+
+    def test_manifest_does_not_retain_removed_resource(self):
+        from tools.extract_catalog import build_manifest
+
+        catalog = _fixture_catalog()
+        current = catalog["resources"][0]
+        removed = {
+            "resourceId": "res-removed",
+            "requestedUrl": "https://example.test/removed",
+            "check": {"status": "ok", "contentSha256": "b" * 64},
+        }
+        previous_manifest = {
+            "resources": [
+                {
+                    "resourceId": current["id"],
+                    "requestedUrl": current["url"],
+                    "check": {"status": "ok", "contentSha256": "a" * 64},
+                },
+                removed,
+            ]
+        }
+
+        regenerated = build_manifest(catalog, previous_manifest)
+
+        self.assertNotIn("res-removed", {resource["resourceId"] for resource in regenerated["resources"]})
+
+    def test_cli_rejects_duplicate_previous_resource_ids_before_writing(self):
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            catalog_path = root / "course-catalog.json"
+            markdown_path = root / "course-catalog.md"
+            manifest_path = root / "source-manifest.json"
+            self._write_workbook(workbook)
+            sentinel = b"catalog must remain untouched"
+            catalog_path.write_bytes(sentinel)
+            duplicate = {
+                "resourceId": "res-duplicate",
+                "requestedUrl": "https://example.test/a",
+                "check": {},
+            }
+            manifest_path.write_text(
+                json.dumps({"resources": [duplicate, duplicate]}), encoding="utf-8"
+            )
+            output = io.StringIO()
+
+            with contextlib.redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(catalog_path),
+                        "--markdown", str(markdown_path),
+                        "--manifest", str(manifest_path),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 1)
+            self.assertEqual(catalog_path.read_bytes(), sentinel)
+            self.assertIn("previous manifest", output.getvalue())
+
+    def test_cli_rejects_malformed_previous_check_before_writing(self):
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workbook = root / "fixture.xlsx"
+            catalog_path = root / "course-catalog.json"
+            markdown_path = root / "course-catalog.md"
+            manifest_path = root / "source-manifest.json"
+            self._write_workbook(workbook)
+            sentinel = b"catalog must remain untouched"
+            catalog_path.write_bytes(sentinel)
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "resources": [
+                            {
+                                "resourceId": "res-bad",
+                                "requestedUrl": "https://example.test/a",
+                                "check": "not-an-object",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output = io.StringIO()
+
+            with contextlib.redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "--workbook", str(workbook),
+                        "--json", str(catalog_path),
+                        "--markdown", str(markdown_path),
+                        "--manifest", str(manifest_path),
+                    ]
+                )
+
+            self.assertEqual(exit_code, 1)
+            self.assertEqual(catalog_path.read_bytes(), sentinel)
+            self.assertIn("previous manifest", output.getvalue())
 
     def test_cli_omitting_supplemental_sources_matches_baseline_output(self):
         """Test A: no --supplemental-sources flag -> output identical to a
@@ -516,6 +747,95 @@ def _write_supplemental_file(path, entries):
     path.write_text(
         json.dumps({"schemaVersion": 1, "resources": entries}), encoding="utf-8"
     )
+
+
+class ProductionStateStabilityTests(unittest.TestCase):
+    def test_real_workbook_resources_keep_checks_when_supplemental_sources_are_added(self):
+        from tools.course_model import (
+            load_supplemental_sources,
+            merge_supplemental_resources,
+            parse_schedule,
+        )
+        from tools.extract_catalog import build_manifest
+
+        catalog = parse_schedule(ROOT / "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx")
+        workbook_ids = {resource["id"] for resource in catalog["resources"]}
+        self.assertEqual(len(workbook_ids), 111)
+        previous_checks = {
+            resource["id"]: {
+                "status": "ok",
+                "contentSha256": f"{index:064x}",
+            }
+            for index, resource in enumerate(catalog["resources"], start=1)
+        }
+        previous_manifest = {
+            "resources": [
+                {
+                    "resourceId": resource["id"],
+                    "requestedUrl": resource["url"],
+                    "check": previous_checks[resource["id"]],
+                }
+                for resource in catalog["resources"]
+            ]
+        }
+        entries = load_supplemental_sources(
+            ROOT / "content" / "supplemental-sources.json"
+        )
+
+        merge_supplemental_resources(catalog, entries)
+        manifest = build_manifest(catalog, previous_manifest)
+        by_id = {resource["resourceId"]: resource for resource in manifest["resources"]}
+        all_ids = set(by_id)
+        supplemental_ids = {entry["resourceId"] for entry in entries}
+
+        self.assertEqual(len(entries), 8)
+        self.assertEqual(len(all_ids), 119)
+        self.assertEqual(workbook_ids | supplemental_ids, all_ids)
+        self.assertEqual(
+            {resource_id: by_id[resource_id]["check"] for resource_id in workbook_ids},
+            previous_checks,
+        )
+        self.assertTrue(
+            all(by_id[resource_id]["check"] == {} for resource_id in supplemental_ids)
+        )
+
+    def test_repeated_real_generation_preserves_all_existing_checks(self):
+        from tools.extract_catalog import main
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            catalog_path = root / "course-catalog.json"
+            markdown_path = root / "course-catalog.md"
+            manifest_path = root / "source-manifest.json"
+            args = [
+                "--workbook", str(ROOT / "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx"),
+                "--json", str(catalog_path),
+                "--markdown", str(markdown_path),
+                "--manifest", str(manifest_path),
+                "--supplemental-sources", str(ROOT / "content" / "supplemental-sources.json"),
+            ]
+            self.assertEqual(main(args), 0)
+            first = json.loads(manifest_path.read_text(encoding="utf-8"))
+            expected_checks = {}
+            for index, resource in enumerate(first["resources"], start=1):
+                resource["check"] = {
+                    "status": "ok",
+                    "contentSha256": f"{index:064x}",
+                }
+                expected_checks[resource["resourceId"]] = resource["check"]
+            manifest_path.write_text(json.dumps(first), encoding="utf-8")
+
+            self.assertEqual(main(args), 0)
+            second = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(len(second["resources"]), 119)
+        self.assertEqual(
+            {
+                resource["resourceId"]: resource["check"]
+                for resource in second["resources"]
+            },
+            expected_checks,
+        )
 
 
 class SupplementalSourceLoadTests(unittest.TestCase):

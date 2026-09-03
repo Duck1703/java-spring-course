@@ -16,6 +16,7 @@ from unittest.mock import patch
 
 from tools import check_sources
 from tools.check_sources import fetch_resource, main
+from tools.validate_sources import validate_source_notes
 
 
 CHECKED_AT = "2026-08-22T16:30:00Z"
@@ -306,6 +307,223 @@ class CliTests(unittest.TestCase):
         self.assertIn("attempted=1", output.getvalue())
         self.assertEqual([path for path, _ in server.server.requests], ["/ok"])
 
+    def test_real_mode_fetches_only_unchecked_resources_and_rerun_is_no_op(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            urls = [
+                f"{server.base_url}/pace/already-checked",
+                f"{server.base_url}/pace/new",
+            ]
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            markdown_path = root / "catalog.md"
+            catalog = _catalog_without_lessons(urls)
+            manifest = _manifest_for_urls(urls)
+            retained_check = _successful_check(urls[0], content_sha256="a" * 64)
+            manifest["resources"][0]["check"] = retained_check
+            catalog["resources"][0]["check"] = {"status": "stale-catalog-value"}
+            _write_json(catalog_path, catalog)
+            _write_json(manifest_path, manifest)
+
+            first_output = io.StringIO()
+            with contextlib.redirect_stdout(first_output):
+                first_exit = main(
+                    [
+                        "--catalog", str(catalog_path),
+                        "--manifest", str(manifest_path),
+                        "--markdown", str(markdown_path),
+                        "--cache-dir", str(root / "cache"),
+                        "--max-workers", "2",
+                        "--per-host-delay", "0",
+                    ]
+                )
+
+            first_requests = [path for path, _ in server.server.requests]
+            first_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            first_catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            server.server.requests.clear()
+
+            second_output = io.StringIO()
+            with contextlib.redirect_stdout(second_output):
+                second_exit = main(
+                    [
+                        "--catalog", str(catalog_path),
+                        "--manifest", str(manifest_path),
+                        "--markdown", str(markdown_path),
+                        "--cache-dir", str(root / "cache"),
+                        "--max-workers", "2",
+                        "--per-host-delay", "0",
+                    ]
+                )
+            second_requests = [path for path, _ in server.server.requests]
+            second_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(first_exit, 0)
+        self.assertEqual(first_requests, ["/pace/new"])
+        self.assertEqual(first_manifest["resources"][0]["check"], retained_check)
+        self.assertEqual(
+            [resource["check"] for resource in first_catalog["resources"]],
+            [resource["check"] for resource in first_manifest["resources"]],
+        )
+        self.assertIn("attempted=1", first_output.getvalue())
+        self.assertIn("skipped=1", first_output.getvalue())
+        self.assertEqual(second_exit, 0)
+        self.assertEqual(second_requests, [])
+        self.assertEqual(second_manifest, first_manifest)
+        self.assertIn("attempted=0", second_output.getvalue())
+        self.assertIn("skipped=2", second_output.getvalue())
+
+    def test_adding_source_keeps_old_reviewed_hash_valid_when_live_body_changed(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            old_url = f"{server.base_url}/pace/old-body-has-drifted"
+            new_url = f"{server.base_url}/pace/new-source"
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            catalog = _catalog_without_lessons([old_url, new_url])
+            manifest = _manifest_for_urls([old_url, new_url])
+            retained_check = _successful_check(old_url, content_sha256="a" * 64)
+            manifest["resources"][0]["check"] = retained_check
+            note = {
+                "resourceId": "res-0",
+                "batch": "java-foundations",
+                "requestedUrl": old_url,
+                "lessonIds": [],
+                "access": {
+                    "status": retained_check["status"],
+                    "httpStatus": retained_check["httpStatus"],
+                    "finalUrl": retained_check["finalUrl"],
+                    "contentSha256": retained_check["contentSha256"],
+                },
+                "read": {
+                    "status": "read",
+                    "method": "cache",
+                    "pageTitle": "Reviewed Page",
+                    "relevantHeadings": ["Reviewed Heading"],
+                    "topics": ["Reviewed topic"],
+                    "facts": [
+                        {
+                            "topic": "Reviewed topic",
+                            "summary": "Tóm tắt bằng chứng đã được duyệt.",
+                            "locator": "Reviewed Heading",
+                        }
+                    ],
+                    "limitation": None,
+                },
+                "fallbackEvidence": None,
+            }
+            _write_json(catalog_path, catalog)
+            _write_json(manifest_path, manifest)
+
+            exit_code = main(
+                [
+                    "--catalog", str(catalog_path),
+                    "--manifest", str(manifest_path),
+                    "--markdown", str(root / "catalog.md"),
+                    "--cache-dir", str(root / "cache"),
+                    "--per-host-delay", "0",
+                ]
+            )
+
+            updated = json.loads(manifest_path.read_text(encoding="utf-8"))
+            requests = [path for path, _ in server.server.requests]
+            new_check = updated["resources"][1]["check"]
+            new_note = json.loads(json.dumps(note))
+            new_note.update(
+                {
+                    "resourceId": "res-1",
+                    "requestedUrl": new_url,
+                    "access": {
+                        field: new_check[field]
+                        for field in ("status", "httpStatus", "finalUrl", "contentSha256")
+                    },
+                }
+            )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(requests, ["/pace/new-source"])
+        self.assertEqual(updated["resources"][0]["check"], retained_check)
+        self.assertEqual(
+            validate_source_notes(
+                updated, [note, new_note], batch="java-foundations"
+            ),
+            [],
+        )
+
+    def test_real_mode_status_filter_retries_only_matching_resources(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            urls = [
+                f"{server.base_url}/pace/keep-ok",
+                f"{server.base_url}/pace/retry-blocked",
+                f"{server.base_url}/pace/keep-unchecked",
+            ]
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            catalog = _catalog_without_lessons(urls)
+            manifest = _manifest_for_urls(urls)
+            ok_check = _successful_check(urls[0], content_sha256="a" * 64)
+            blocked_check = dict(
+                _successful_check(urls[1], content_sha256="b" * 64),
+                status="blocked",
+                httpStatus=403,
+            )
+            manifest["resources"][0]["check"] = ok_check
+            manifest["resources"][1]["check"] = blocked_check
+            _write_json(catalog_path, catalog)
+            _write_json(manifest_path, manifest)
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "--catalog", str(catalog_path),
+                        "--manifest", str(manifest_path),
+                        "--markdown", str(root / "catalog.md"),
+                        "--cache-dir", str(root / "cache"),
+                        "--status", "blocked",
+                        "--per-host-delay", "0",
+                    ]
+                )
+
+            updated = json.loads(manifest_path.read_text(encoding="utf-8"))
+            requests = [path for path, _ in server.server.requests]
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(requests, ["/pace/retry-blocked"])
+        self.assertEqual(updated["resources"][0]["check"], ok_check)
+        self.assertEqual(updated["resources"][1]["check"]["status"], "ok")
+        self.assertEqual(updated["resources"][2]["check"], {})
+        self.assertIn("attempted=1", output.getvalue())
+        self.assertIn("skipped=2", output.getvalue())
+
+    def test_unknown_check_status_is_treated_as_unchecked(self):
+        with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            url = f"{server.base_url}/pace/unknown-status"
+            catalog_path = root / "catalog.json"
+            manifest_path = root / "manifest.json"
+            catalog = _catalog(url)
+            manifest = _manifest(url)
+            manifest["resources"][0]["check"] = {"status": "legacy-unknown"}
+            _write_json(catalog_path, catalog)
+            _write_json(manifest_path, manifest)
+
+            exit_code = main(
+                [
+                    "--catalog", str(catalog_path),
+                    "--manifest", str(manifest_path),
+                    "--markdown", str(root / "catalog.md"),
+                    "--cache-dir", str(root / "cache"),
+                    "--per-host-delay", "0",
+                ]
+            )
+            updated = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual([path for path, _ in server.server.requests], ["/pace/unknown-status"])
+        self.assertEqual(updated["resources"][0]["check"]["status"], "ok")
+
     def test_local_metadata_failure_isolated_to_one_resource(self):
         with LocalServer() as server, tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -563,6 +781,63 @@ class CliTests(unittest.TestCase):
         self.assertIn("https://invalid.example/never-requested", report)
         self.assertIn("blocked", report)
         self.assertIn("count=1", report)
+
+    def test_report_only_default_remains_checked_statuses_but_can_list_unchecked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manifest_path = Path(directory) / "manifest.json"
+            manifest = _manifest_for_urls(
+                [
+                    "https://invalid.example/checked",
+                    "https://invalid.example/unchecked",
+                ]
+            )
+            manifest["resources"][0]["check"] = {
+                "attempted": True,
+                "status": "blocked",
+                "error": "HTTPError: blocked",
+            }
+            _write_json(manifest_path, manifest)
+            default_output = io.StringIO()
+            unchecked_output = io.StringIO()
+
+            with contextlib.redirect_stdout(default_output):
+                default_exit = main(
+                    ["--report-only", "--manifest", str(manifest_path)]
+                )
+            with contextlib.redirect_stdout(unchecked_output):
+                unchecked_exit = main(
+                    [
+                        "--report-only",
+                        "--manifest", str(manifest_path),
+                        "--status", "unchecked",
+                    ]
+                )
+
+        self.assertEqual(default_exit, 0)
+        self.assertIn("res-0", default_output.getvalue())
+        self.assertNotIn("res-1", default_output.getvalue())
+        self.assertIn("count=1", default_output.getvalue())
+        self.assertEqual(unchecked_exit, 0)
+        self.assertNotIn("res-0", unchecked_output.getvalue())
+        self.assertIn("res-1", unchecked_output.getvalue())
+        self.assertIn("unchecked", unchecked_output.getvalue())
+        self.assertIn("count=1", unchecked_output.getvalue())
+
+
+def _successful_check(url, content_sha256):
+    return {
+        "attempted": True,
+        "checkedAt": CHECKED_AT,
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": url,
+        "contentType": "text/html",
+        "contentBytes": 100,
+        "contentSha256": content_sha256,
+        "cacheText": ".course-cache/resources/retained.txt",
+        "truncated": False,
+        "error": None,
+    }
 
 
 def _catalog(url):

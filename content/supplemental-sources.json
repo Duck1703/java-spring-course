@@ -1,4 +1,61 @@
 {
   "schemaVersion": 1,
-  "resources": []
+  "resources": [
+    {
+      "url": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+      "title": "2.2. Concepts",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-19"],
+      "purpose": "Grounds the table/row/column relational vocabulary Day 19 needs before mapping an entity to a table and a field to a column."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+      "title": "5.5. Constraints (Primary Keys, Foreign Keys)",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-19", "day-32"],
+      "purpose": "Grounds PRIMARY KEY and FOREIGN KEY semantics for Day 19's entity mapping foundation and Day 32's direct ERD/schema relationship design."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/queries-table-expressions.html",
+      "title": "7.2.1.1. Joined Tables",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20", "day-32"],
+      "purpose": "Grounds INNER JOIN and LEFT OUTER JOIN row-matching semantics for Day 20's SQL foundation and Day 32's relationship-aware query refinement."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/tutorial-select.html",
+      "title": "2.5. Querying a Table",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20", "day-32"],
+      "purpose": "Grounds SELECT/WHERE query semantics for Day 20 and Day 32's direct query-filtering refinement; the Joined Tables source assumes this foundation."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+      "title": "3.4. Transactions",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20"],
+      "purpose": "Grounds the transaction boundary, atomicity/durability, and BEGIN/COMMIT/ROLLBACK semantics Day 20 needs before introducing @Transactional."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+      "title": "13.2. Transaction Isolation",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20", "day-32"],
+      "purpose": "Grounds isolation levels and the anomalies they prevent (dirty/nonrepeatable/phantom read) for Day 20's basic isolation mental model, deepened at Day 32."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+      "title": "13.3. Explicit Locking",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20", "day-32"],
+      "purpose": "Grounds basic locking/concurrency-control reasoning for Day 20, deepened at Day 32's concurrency tradeoff discussion."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/current/indexes-intro.html",
+      "title": "11.1. Introduction",
+      "publisher": "PostgreSQL Global Development Group",
+      "lessonIds": ["day-20", "day-32"],
+      "purpose": "Grounds the basic index mental model (lookup vs. sequential scan) Day 20 needs before Day 24's performance content, deepened at Day 32."
+    }
+  ]
 }

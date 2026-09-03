@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import re
@@ -47,6 +48,7 @@ ACCESS_STATUSES = (
     "content_unreadable",
     "invalid",
 )
+CHECK_STATUSES = ("unchecked",) + ACCESS_STATUSES
 IGNORED_HTML_TAGS = {"script", "style", "svg", "noscript"}
 BLOCK_HTML_TAGS = {
     "title",
@@ -331,12 +333,24 @@ def main(argv=None) -> int:
         "--per-host-delay", type=float, default=DEFAULT_PER_HOST_DELAY
     )
     parser.add_argument("--report-only", action="store_true")
-    parser.add_argument("--status")
+    parser.add_argument(
+        "--status",
+        help=(
+            "Comma-separated check statuses to fetch or report. Real mode defaults "
+            "to unchecked; use an explicit status to retry previously checked resources."
+        ),
+    )
     args = parser.parse_args(argv)
 
     manifest = _read_json(args.manifest)
+    selected_statuses = _parse_statuses(
+        args.status,
+        CHECK_STATUSES,
+        parser,
+        default=ACCESS_STATUSES if args.report_only else ("unchecked",),
+    )
     if args.report_only:
-        return _report_only(manifest, args.status, parser)
+        return _report_only(manifest, selected_statuses)
 
     missing = [
         name
@@ -356,7 +370,11 @@ def main(argv=None) -> int:
 
     catalog = _read_json(args.catalog)
     catalog_by_id = _validate_inputs(catalog, manifest)
-    resources = manifest["resources"]
+    all_resources = manifest["resources"]
+    resources = [
+        resource for resource in all_resources
+        if _resource_check_status(resource) in selected_statuses
+    ]
     checked_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     pacer = _HostPacer(args.per_host_delay)
     worker_count = min(args.max_workers, MAX_WORKERS)
@@ -376,7 +394,11 @@ def main(argv=None) -> int:
 
     for resource, check in zip(resources, checks):
         resource["check"] = check
-        catalog_by_id[resource["resourceId"]]["check"] = dict(check)
+
+    for resource in all_resources:
+        catalog_by_id[resource["resourceId"]]["check"] = copy.deepcopy(
+            resource.get("check") or {}
+        )
 
     _atomic_write_json(args.manifest, manifest)
     _atomic_write_json(args.catalog, catalog)
@@ -386,22 +408,34 @@ def main(argv=None) -> int:
     status_summary = ",".join(
         f"{status}={counts[status]}" for status in ACCESS_STATUSES
     )
-    print(f"PASS attempted={len(checks)} status_counts={status_summary}")
+    print(
+        f"PASS attempted={len(checks)} skipped={len(all_resources) - len(checks)} "
+        f"status_counts={status_summary}"
+    )
     return 0
 
 
-def _report_only(manifest, raw_statuses, parser):
+def _resource_check_status(resource):
+    status = (resource.get("check") or {}).get("status")
+    return status if status in ACCESS_STATUSES else "unchecked"
+
+
+def _parse_statuses(raw_statuses, allowed_statuses, parser, default):
     if raw_statuses:
         statuses = [status.strip() for status in raw_statuses.split(",") if status.strip()]
     else:
-        statuses = list(ACCESS_STATUSES)
-    unknown = [status for status in statuses if status not in ACCESS_STATUSES]
+        statuses = list(default)
+    unknown = [status for status in statuses if status not in allowed_statuses]
     if unknown:
         parser.error(f"unknown status: {', '.join(unknown)}")
+    return set(statuses)
+
+
+def _report_only(manifest, statuses):
     selected = [
         resource
         for resource in manifest.get("resources", [])
-        if resource.get("check", {}).get("status") in statuses
+        if _resource_check_status(resource) in statuses
     ]
     print("resourceId\trequestedUrl\tstatus\terror")
     for resource in selected:
@@ -409,7 +443,7 @@ def _report_only(manifest, raw_statuses, parser):
         values = (
             resource.get("resourceId"),
             resource.get("requestedUrl"),
-            check.get("status"),
+            _resource_check_status(resource),
             check.get("error"),
         )
         print("\t".join(_table_cell(value) for value in values))

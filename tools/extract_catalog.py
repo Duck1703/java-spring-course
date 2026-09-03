@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import sys
 from pathlib import Path
@@ -12,6 +13,7 @@ from tools.course_model import (
     SupplementalSourceError,
     load_supplemental_sources,
     merge_supplemental_resources,
+    normalize_url,
     parse_schedule,
     render_catalog_markdown,
 )
@@ -34,9 +36,47 @@ BATCH_BY_UNIT = {
 }
 
 
-def build_manifest(catalog: dict) -> dict:
+def _index_previous_resources(previous_manifest: dict | None) -> dict:
+    if previous_manifest is None:
+        return {}
+    if not isinstance(previous_manifest, dict):
+        raise ValueError("previous manifest root must be an object")
+    resources = previous_manifest.get("resources")
+    if not isinstance(resources, list):
+        raise ValueError("previous manifest must contain a resources list")
+
+    by_id = {}
+    for index, resource in enumerate(resources):
+        location = f"previous manifest resources[{index}]"
+        if not isinstance(resource, dict):
+            raise ValueError(f"{location} must be an object")
+        resource_id = resource.get("resourceId")
+        if not isinstance(resource_id, str) or not resource_id:
+            raise ValueError(f"{location} must contain a nonempty resourceId")
+        if resource_id in by_id:
+            raise ValueError(f"previous manifest contains duplicate resourceId: {resource_id}")
+        requested_url = resource.get("requestedUrl")
+        if not isinstance(requested_url, str) or not requested_url:
+            raise ValueError(f"{location} must contain a nonempty requestedUrl")
+        if not isinstance(resource.get("check"), dict):
+            raise ValueError(f"{location} check must be an object")
+        by_id[resource_id] = resource
+    return by_id
+
+
+def _load_previous_manifest(path: Path) -> dict | None:
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"cannot read previous manifest {path}: {error}") from error
+
+
+def build_manifest(catalog: dict, previous_manifest: dict | None = None) -> dict:
     lessons = {lesson["id"]: lesson for lesson in catalog["lessons"]}
     units = {unit["id"]: unit for unit in catalog["units"]}
+    previous_by_id = _index_previous_resources(previous_manifest)
     records = []
     for resource in catalog["resources"]:
         lesson_ids = list(resource["lessonIds"])
@@ -50,6 +90,15 @@ def build_manifest(catalog: dict) -> dict:
                 if text not in outline:
                     outline.append(text)
         first_unit_number = units[unit_ids[0]]["number"]
+        previous = previous_by_id.get(resource["id"])
+        check = {}
+        if (
+            previous is not None
+            and normalize_url(previous["requestedUrl"]) == normalize_url(resource["url"])
+        ):
+            check = copy.deepcopy(previous["check"])
+        if check:
+            resource["check"] = copy.deepcopy(check)
         records.append(
             {
                 "resourceId": resource["id"],
@@ -59,7 +108,7 @@ def build_manifest(catalog: dict) -> dict:
                 "unitIds": unit_ids,
                 "relevantOutline": outline,
                 "assignedBatch": BATCH_BY_UNIT[first_unit_number],
-                "check": {},
+                "check": check,
             }
         )
     return {
@@ -105,7 +154,12 @@ def main(argv=None) -> int:
             print(f"ERROR supplemental-sources: {error}")
             return 1
 
-    manifest = build_manifest(catalog)
+    try:
+        previous_manifest = _load_previous_manifest(args.manifest)
+        manifest = build_manifest(catalog, previous_manifest)
+    except ValueError as error:
+        print(f"ERROR previous manifest: {error}")
+        return 1
     write_json(args.json, catalog)
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text(render_catalog_markdown(catalog), encoding="utf-8")

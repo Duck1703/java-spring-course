@@ -13,6 +13,7 @@ from tools.validate_sources import BATCHES, main, validate_source_notes
 CHECKED_AT = "2026-08-22T16:33:26.013701Z"
 HASH_A = "a" * 64
 HASH_B = "b" * 64
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _manifest(resources):
@@ -382,6 +383,21 @@ class ValidateSourceNotesTests(unittest.TestCase):
 
         self.assertEqual(errors, sorted(errors))
         self.assertEqual(len(errors), 2)
+
+
+class ProductionIntegrationTests(unittest.TestCase):
+    def test_canonical_manifest_and_source_notes_pass_strict_validation(self):
+        from tools.validate_sources import _load_notes_dir
+
+        manifest = json.loads(
+            (ROOT / "content" / "source-manifest.json").read_text(encoding="utf-8")
+        )
+        notes, loader_errors = _load_notes_dir(ROOT / "content" / "source-notes")
+
+        errors = loader_errors + validate_source_notes(manifest, notes)
+
+        self.assertEqual(len(manifest["resources"]), 119)
+        self.assertEqual(errors, [])
 
 
 class CliTests(unittest.TestCase):
