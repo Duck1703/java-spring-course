@@ -1275,5 +1275,212 @@
       "limitation": null
     },
     "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-4aa1d5866d14",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html",
+    "lessonIds": [
+      "day-22",
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html",
+      "contentSha256": "068a9df7151bdd419ab887ac8c2f67f94d45b0b2308f15289ea378ae67f83336"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Architecture :: Spring Security",
+      "relevantHeadings": [
+        "SecurityFilterChain",
+        "Security Filters",
+        "Handling Security Exceptions"
+      ],
+      "topics": [
+        "SecurityFilterChain",
+        "FilterChainProxy",
+        "HttpSecurity"
+      ],
+      "facts": [
+        {
+          "topic": "SecurityFilterChain la gi",
+          "summary": "SecurityFilterChain duoc FilterChainProxy dung de xac dinh Filter Spring Security nao se chay cho request hien tai; cac Security Filter la Bean nhung duoc dang ky voi FilterChainProxy thay vi DelegatingFilterProxy truc tiep.",
+          "locator": "SecurityFilterChain"
+        },
+        {
+          "topic": "HttpSecurity khai bao Security Filter",
+          "summary": "Cac Security Filter thuong duoc khai bao qua mot instance HttpSecurity; vi du .csrf()/.httpBasic()/.formLogin()/.authorizeHttpRequests() lan luot them CsrfFilter, BasicAuthenticationFilter, UsernamePasswordAuthenticationFilter, AuthorizationFilter vao chain theo dung thu tu (xac thuc truoc, phan quyen sau).",
+          "locator": "HttpSecurity / Adding Filters to the Filter Chain"
+        },
+        {
+          "topic": "Nhieu SecurityFilterChain, chi chain dau tien khop duoc dung",
+          "summary": "FilterChainProxy co the co nhieu SecurityFilterChain; chi SecurityFilterChain dau tien khop pattern cua request duoc goi (vi du request /api/messages/ chi khop SecurityFilterChain0 co pattern /api/**), cac chain con lai bi bo qua du cung khop.",
+          "locator": "SecurityFilterChain - Multiple SecurityFilterChain"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-5020e7509cfe",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html",
+    "lessonIds": [
+      "day-22",
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html",
+      "contentSha256": "5f3b8c4a7d66ba4f38adc9b7321603a7cc22421173246a4aa4ec211bf7d452d9"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Authorize HttpServletRequests :: Spring Security",
+      "relevantHeadings": [
+        "Understanding How Request Authorization Components Work",
+        "Security Matchers"
+      ],
+      "topics": [
+        "authorizeHttpRequests",
+        "AuthorizationFilter",
+        "permitAll/denyAll"
+      ],
+      "facts": [
+        {
+          "topic": "authorizeHttpRequests la DSL phan quyen theo request",
+          "summary": "Spring Security yeu cau moi request phai duoc xac thuc theo mac dinh; bat cu khi nao dung HttpSecurity thi bat buoc phai khai bao authorizeHttpRequests, vi du .anyRequest().authenticated() nghia la moi endpoint toi thieu can security context da xac thuc.",
+          "locator": "Authorize HttpServletRequests - phan mo dau"
+        },
+        {
+          "topic": "Thu tu quy tac va permitAll cho route cong khai",
+          "summary": "AuthorizationFilter ap dung quy tac theo dung thu tu khai bao, chi dung luat khop dau tien; requestMatchers(...).permitAll() dat truoc anyRequest().authenticated() de mo route cong khai (vi du /css/**) ma khong can xac thuc; permitAll/denyAll khong bao gio truy van Authentication tu session.",
+          "locator": "Security Matchers / permitAll, denyAll"
+        },
+        {
+          "topic": "Deny-by-default la thuc hanh an toan",
+          "summary": "authorizeHttpRequests khuyen khich ket thuc bang anyRequest().denyAll() de moi URL chua khop luat nao deu bi tu choi, bien tap luat thanh allow-list thay vi vo tinh bo sot endpoint chua cau hinh.",
+          "locator": "vi du day du (dispatcherTypeMatchers/admin/db/anyRequest().denyAll())"
+        },
+        {
+          "topic": "AuthorizationFilter va AccessDeniedException",
+          "summary": "AuthorizationFilter lay Authentication tu SecurityContextHolder, dua vao AuthorizationManager de doi chieu voi cac pattern trong authorizeHttpRequests; neu bi tu choi, mot AccessDeniedException duoc nem ra va ExceptionTranslationFilter xu ly tiep.",
+          "locator": "How AuthorizationFilter Works"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-68b01442c573",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
+    "lessonIds": [
+      "day-22"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
+      "contentSha256": "1edfc8b53d9581c1a33577f1dc4e4348c5d836f95f11ac508c363a48bcc10dbf"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "ExceptionTranslationFilter (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Class ExceptionTranslationFilter"
+      ],
+      "topics": [
+        "ExceptionTranslationFilter",
+        "401 vs 403 routing"
+      ],
+      "facts": [
+        {
+          "topic": "ExceptionTranslationFilter la cau noi exception -> HTTP response",
+          "summary": "ExceptionTranslationFilter xu ly AccessDeniedException va AuthenticationException phat sinh trong filter chain; no chi lo giao dien phan hoi (bridge giua Java exception va HTTP response), khong tu thuc hien viec kiem soat bao mat.",
+          "locator": "ExceptionTranslationFilter (class Javadoc, doan mo dau)"
+        },
+        {
+          "topic": "Quy tac dinh tuyen 401 vs 403",
+          "summary": "Neu phat hien AuthenticationException, filter luon goi authenticationEntryPoint. Neu phat hien AccessDeniedException, filter kiem tra user co phai anonymous hay khong: neu anonymous thi van goi authenticationEntryPoint (yeu cau dang nhap truoc), neu da xac thuc thi moi uy quyen cho AccessDeniedHandler (mac dinh la AccessDeniedHandlerImpl).",
+          "locator": "ExceptionTranslationFilter (class Javadoc, doan ve authenticationEntryPoint/requestCache)"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-d8b539831917",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html",
+    "lessonIds": [
+      "day-22"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html",
+      "contentSha256": "39fb1e501d49237c6ca05dfe771a7b9804001b37e49df92d65566dad5b782569"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "AuthenticationEntryPoint (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Interface AuthenticationEntryPoint"
+      ],
+      "topics": [
+        "AuthenticationEntryPoint",
+        "401 mechanism"
+      ],
+      "facts": [
+        {
+          "topic": "AuthenticationEntryPoint khoi dong luong xac thuc (401)",
+          "summary": "AuthenticationEntryPoint duoc ExceptionTranslationFilter dung de khoi dong mot co che xac thuc; phuong thuc duy nhat commence(request, response, authException) chinh sua header cua response de bat dau qua trinh xac thuc (vi du redirect trang login hoac set header WWW-Authenticate) khi client chua cung cap thong tin xac thuc.",
+          "locator": "AuthenticationEntryPoint (interface Javadoc), method commence()"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-340583a9c6b2",
+    "batch": "data-security",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
+    "lessonIds": [
+      "day-22"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
+      "contentSha256": "be6e1c546243fe78ccb49e59586becdb8c0753035b64321b35c88236a4290217"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "AccessDeniedHandler (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Interface AccessDeniedHandler"
+      ],
+      "topics": [
+        "AccessDeniedHandler",
+        "403 mechanism"
+      ],
+      "facts": [
+        {
+          "topic": "AccessDeniedHandler xu ly tu choi truy cap (403)",
+          "summary": "AccessDeniedHandler duoc ExceptionTranslationFilter dung de xu ly AccessDeniedException; phuong thuc duy nhat handle(request, response, accessDeniedException) cho phep thong bao cho user-agent rang truy cap bi tu choi, dung khi user da xac thuc nhung khong du quyen cho tai nguyen.",
+          "locator": "AccessDeniedHandler (interface Javadoc), method handle()"
+        }
+      ]
+    },
+    "fallbackEvidence": null
   }
 ]

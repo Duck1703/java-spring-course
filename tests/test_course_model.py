@@ -788,8 +788,8 @@ class ProductionStateStabilityTests(unittest.TestCase):
         all_ids = set(by_id)
         supplemental_ids = {entry["resourceId"] for entry in entries}
 
-        self.assertEqual(len(entries), 8)
-        self.assertEqual(len(all_ids), 119)
+        self.assertEqual(len(entries), 18)
+        self.assertEqual(len(all_ids), 129)
         self.assertEqual(workbook_ids | supplemental_ids, all_ids)
         self.assertEqual(
             {resource_id: by_id[resource_id]["check"] for resource_id in workbook_ids},
@@ -828,7 +828,7 @@ class ProductionStateStabilityTests(unittest.TestCase):
             self.assertEqual(main(args), 0)
             second = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-        self.assertEqual(len(second["resources"]), 119)
+        self.assertEqual(len(second["resources"]), 129)
         self.assertEqual(
             {
                 resource["resourceId"]: resource["check"]

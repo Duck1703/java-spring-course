@@ -509,6 +509,11 @@
 - [JWT with Spring Security](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html) — stable `res-65703b737426` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Password Storage](https://docs.spring.io/spring-security/reference/features/authentication/password-storage.html) — stable `res-d5aebfb9d1ed` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Stateless Session](https://docs.spring.io/spring-security/reference/servlet/authentication/session-management.html) — stable `res-f301a3d0645a` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [Architecture](https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html) — stable `res-4aa1d5866d14` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [Authorize HttpServletRequests](https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html) — stable `res-5020e7509cfe` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [ExceptionTranslationFilter](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html) — stable `res-68b01442c573` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [AuthenticationEntryPoint (Interface)](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html) — stable `res-d8b539831917` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [AccessDeniedHandler (Interface)](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html) — stable `res-340583a9c6b2` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 23 — Authorization & JPA Performance
 
@@ -767,6 +772,13 @@
 - [JWT with Spring Security](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html) — stable `res-65703b737426` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Spring Data Repositories](https://docs.spring.io/spring-data/jpa/reference/repositories.html) — stable `res-553bbd92e5d0` ID generated from the normalized URL — không tìm thấy (HTTP 404)
 - [Pagination & Sort](https://www.baeldung.com/spring-data-jpa-sort) — stable `res-aa4cbb2b9a5c` ID generated from the normalized URL — không tìm thấy (HTTP 404)
+- [Architecture](https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html) — stable `res-4aa1d5866d14` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [Servlet Authentication Architecture](https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html) — stable `res-1f9cf059207c` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [DaoAuthenticationProvider](https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html) — stable `res-ea083f388530` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [Authorize HttpServletRequests](https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html) — stable `res-5020e7509cfe` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [JwtEncoder (Interface)](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html) — stable `res-c396b40b74ea` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [NimbusJwtEncoder](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html) — stable `res-81f31cc79aa9` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [JwtClaimsSet](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html) — stable `res-88e7e93efd97` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 34 — Development Sprint 2
 

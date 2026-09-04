@@ -56,6 +56,76 @@
       "publisher": "PostgreSQL Global Development Group",
       "lessonIds": ["day-20", "day-32"],
       "purpose": "Grounds the basic index mental model (lookup vs. sequential scan) Day 20 needs before Day 24's performance content, deepened at Day 32."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html",
+      "title": "Architecture",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-22", "day-33"],
+      "purpose": "Grounds SecurityFilterChain/FilterChainProxy/HttpSecurity as the canonical Java-config mechanism for Day 22's authentication filter chain and Day 33's capstone security config, replacing the deprecated WebSecurityConfigurerAdapter pattern the lesson already warns against."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html",
+      "title": "Servlet Authentication Architecture",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds AuthenticationManager/ProviderManager/AuthenticationProvider and the credentials-to-Authentication flow Day 33 needs before the capstone can authenticate a login request prior to issuing a JWT."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html",
+      "title": "DaoAuthenticationProvider",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds exactly how DaoAuthenticationProvider validates a username/password pair via UserDetailsService and PasswordEncoder before AuthenticationManager returns a successful Authentication, completing Day 33's login-to-JWT-issuance chain."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html",
+      "title": "Authorize HttpServletRequests",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-22", "day-33"],
+      "purpose": "Grounds the authorizeHttpRequests DSL (permitAll/authenticated/hasRole, AuthorizationFilter, deny-by-default ordering) Day 22 relies on for its public-vs-protected route rules and Day 33 reuses for the capstone's own endpoint authorization."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html",
+      "title": "JwtEncoder (Interface)",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "The decisive JWT-issuance API: establishes the framework contract for signing/encrypting a JWT to its compact representation, grounding Day 33's self-issued token generation without custom crypto."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html",
+      "title": "NimbusJwtEncoder",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the concrete, framework-managed JwtEncoder implementation Day 33 issues tokens with — signing is delegated to a JWKSource-supplied key (symmetric or asymmetric), never hand-rolled."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html",
+      "title": "JwtClaimsSet",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the standard registered claims (subject, expiresAt, issuedAt, issuer) Day 33 must set when building the JwtEncoderParameters passed to JwtEncoder.encode()."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
+      "title": "ExceptionTranslationFilter",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-22"],
+      "purpose": "Grounds the exact routing rule Day 22 needs for 401 vs 403: an AuthenticationException always reaches AuthenticationEntryPoint, while an AccessDeniedException reaches AccessDeniedHandler only for an already-authenticated (non-anonymous) user."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html",
+      "title": "AuthenticationEntryPoint (Interface)",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-22"],
+      "purpose": "Grounds the exact 401/challenge mechanism (commence()) Day 22 cites for AuthenticationEntryPoint, the collaborator ExceptionTranslationFilter delegates to on authentication failure."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
+      "title": "AccessDeniedHandler (Interface)",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-22"],
+      "purpose": "Grounds the exact 403/access-denied mechanism (handle()) Day 22 cites for AccessDeniedHandler, the collaborator ExceptionTranslationFilter delegates to for an authenticated-but-unauthorized user."
     }
   ]
 }

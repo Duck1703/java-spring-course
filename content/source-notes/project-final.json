@@ -516,5 +516,211 @@
       "limitation": null
     },
     "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-1f9cf059207c",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html",
+      "contentSha256": "6505d6205bc65202146f29d55a9257b40678a36da824551c409b793d3ea111c1"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "Servlet Authentication Architecture :: Spring Security",
+      "relevantHeadings": [
+        "AuthenticationManager",
+        "ProviderManager",
+        "Authentication",
+        "AbstractAuthenticationProcessingFilter"
+      ],
+      "topics": [
+        "AuthenticationManager",
+        "ProviderManager",
+        "login flow"
+      ],
+      "facts": [
+        {
+          "topic": "AuthenticationManager la API xac thuc trung tam",
+          "summary": "AuthenticationManager dinh nghia cach cac Filter cua Spring Security thuc hien xac thuc; Authentication tra ve se duoc set vao SecurityContextHolder boi chinh Filter da goi AuthenticationManager. Cai dat pho bien nhat la ProviderManager.",
+          "locator": "AuthenticationManager"
+        },
+        {
+          "topic": "ProviderManager uy quyen cho danh sach AuthenticationProvider",
+          "summary": "ProviderManager uy quyen cho mot List AuthenticationProvider; moi AuthenticationProvider co the xac thuc thanh cong, that bai, hoac bo qua de AuthenticationProvider tiep theo quyet dinh. Neu khong provider nao xac thuc duoc, xac thuc that bai voi ProviderNotFoundException.",
+          "locator": "ProviderManager"
+        },
+        {
+          "topic": "Luong AbstractAuthenticationProcessingFilter khi submit credentials",
+          "summary": "Khi user submit credentials, AbstractAuthenticationProcessingFilter tao mot Authentication tu HttpServletRequest (vi du UsernamePasswordAuthenticationFilter tao UsernamePasswordAuthenticationToken), truyen vao AuthenticationManager; neu thanh cong thi set Authentication vao SecurityContextHolder va goi AuthenticationSuccessHandler, neu that bai thi xoa SecurityContextHolder va goi AuthenticationFailureHandler.",
+          "locator": "AbstractAuthenticationProcessingFilter"
+        },
+        {
+          "topic": "Authentication co hai vai tro",
+          "summary": "Interface Authentication vua la input cho AuthenticationManager mang theo credentials nguoi dung cung cap (isAuthenticated() tra false luc nay), vua dai dien cho user hien da xac thuc (lay qua SecurityContext); no chua principal (thuong la UserDetails), credentials (thuong la mat khau, bi xoa sau khi xac thuc) va authorities (GrantedAuthority nhu role/scope).",
+          "locator": "Authentication"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-ea083f388530",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html",
+      "contentSha256": "e35c833fb598d622bb2f23045ac9f51ff0d327f9bf683148f045cc4a711e3acc"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "DaoAuthenticationProvider :: Spring Security",
+      "relevantHeadings": [
+        "DaoAuthenticationProvider Usage"
+      ],
+      "topics": [
+        "DaoAuthenticationProvider",
+        "UserDetailsService",
+        "PasswordEncoder"
+      ],
+      "facts": [
+        {
+          "topic": "5 buoc DaoAuthenticationProvider xac thuc username/password",
+          "summary": "(1) Filter doc username/password tao UsernamePasswordAuthenticationToken truyen vao AuthenticationManager (ProviderManager); (2) ProviderManager cau hinh dung DaoAuthenticationProvider; (3) DaoAuthenticationProvider tra UserDetails qua UserDetailsService; (4) dung PasswordEncoder de xac minh mat khau tren UserDetails vua lay; (5) neu thanh cong, tra ve UsernamePasswordAuthenticationToken co principal la UserDetails, duoc Filter set vao SecurityContextHolder.",
+          "locator": "DaoAuthenticationProvider Usage (5 buoc danh so)"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-c396b40b74ea",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html",
+      "contentSha256": "c1ee2f43a5e443d71fa24a0b977fc9f805e94f785c5c868c8da73efb9a85112e"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "JwtEncoder (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Interface JwtEncoder"
+      ],
+      "topics": [
+        "JwtEncoder",
+        "JWT issuance contract"
+      ],
+      "facts": [
+        {
+          "topic": "JwtEncoder la hop dong phat hanh JWT cua framework",
+          "summary": "JwtEncoder la functional interface trong org.springframework.security.oauth2.jwt, co tu Spring Security 5.6; cai dat cua no chiu trach nhiem encode mot JWT thanh dang compact claims representation (JWS Compact Serialization neu ky, hoac JWE Compact Serialization neu ma hoa) - tuc viec ky/ma hoa duoc framework quan ly, khong tu viet tay.",
+          "locator": "JwtEncoder (interface Javadoc)"
+        },
+        {
+          "topic": "Phuong thuc duy nhat encode()",
+          "summary": "JwtEncoder chi khai bao mot phuong thuc truu tuong: Jwt encode(JwtEncoderParameters parameters), nem JwtEncodingException neu loi; parameters chua JOSE header va JWT Claims Set can ma hoa.",
+          "locator": "JwtEncoder - encode(JwtEncoderParameters)"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-81f31cc79aa9",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html",
+      "contentSha256": "20d695100fb21fae513c0b8e581d1e86730cc5401a8f2a8c0e5e7baf3954c642"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "NimbusJwtEncoder (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Class NimbusJwtEncoder"
+      ],
+      "topics": [
+        "NimbusJwtEncoder",
+        "JWKSource",
+        "framework-managed signing"
+      ],
+      "facts": [
+        {
+          "topic": "NimbusJwtEncoder la cai dat JwtEncoder chinh thuc",
+          "summary": "NimbusJwtEncoder (tu Spring Security 5.6, dung thu vien Nimbus JOSE+JWT SDK) la cai dat JwtEncoder ky JWT theo JWS Compact Serialization; private/secret key dung de ky duoc cung cap qua mot JWKSource (com.nimbusds.jose.jwk.source.JWKSource) truyen vao constructor, khong phai tu cai thuat toan ky.",
+          "locator": "NimbusJwtEncoder (class Javadoc)"
+        },
+        {
+          "topic": "Ho tro ca khoa doi xung lan bat doi xung",
+          "summary": "Vi JWKSource cung cap khoa duoi dang JWK tong quat, NimbusJwtEncoder ho tro ca khoa bi mat doi xung (OctetSequenceKey, dung cho HMAC) lan cap khoa bat doi xung (RSAKey, ECKey) ma khong can doi API; o nhanh 6.5 chi co constructor nhan JWKSource duoc ghi nhan - cac builder tinh (withKeyPair/RsaKeyPairJwtEncoderBuilder/SecretKeyJwtEncoderBuilder) chi xuat hien tu nhanh 7.0 nen chua dung cho khoa hoc Spring Boot 3.x nay.",
+          "locator": "NimbusJwtEncoder - Constructor, See Also"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-88e7e93efd97",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html",
+      "contentSha256": "c561f1f6050c434b5ced99a1cb46be39cdd2d7388da423cb67e0e97d898d9c2f"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "JwtClaimsSet (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Class JwtClaimsSet"
+      ],
+      "topics": [
+        "JwtClaimsSet",
+        "registered claims"
+      ],
+      "facts": [
+        {
+          "topic": "JwtClaimsSet dai dien tap claim cua JWT",
+          "summary": "JwtClaimsSet la lop final bieu dien JSON object chua cac claim cua JWT (implements JwtClaimAccessor), co tu Spring Security 5.6; JwtClaimsSet.Builder cung cap cac phuong thuc issuer(iss), subject(sub), audience(aud), issuedAt(iat), expiresAt(exp), notBefore(nbf), id(jti) cho cac registered claim chuan, cong them claim(name, value) cho claim tuy y.",
+          "locator": "JwtClaimsSet, JwtClaimsSet.Builder"
+        },
+        {
+          "topic": "builder()/from() va getClaims()",
+          "summary": "JwtClaimsSet.builder() tao builder rong, JwtClaimsSet.from(claims) tao builder khoi tao san tu mot JwtClaimsSet co san de copy-and-modify (vi du doi lai expiresAt); build() tra ve JwtClaimsSet bat bien, getClaims() tra ve Map cac claim de dung khi lap JwtEncoderParameters.",
+          "locator": "JwtClaimsSet - builder(), from(), getClaims()"
+        }
+      ]
+    },
+    "fallbackEvidence": null
   }
 ]

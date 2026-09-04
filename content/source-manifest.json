@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-03T00:51:56.747835Z",
+  "generatedAt": "2026-09-03T17:33:42.803972Z",
   "source": {
     "workbook": "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx",
     "sheet": "JavaSpring_Schedule"
@@ -3815,6 +3815,317 @@
         "contentBytes": 18673,
         "contentSha256": "ed54640f2df0a1c7cb6c0e70e4269eeb5fc3556e28965338ef1f55b4f39f81d1",
         "cacheText": ".course-cache/resources/res-7b6cf1b4d88f.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-4aa1d5866d14",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html",
+      "labelVariants": [
+        "Architecture"
+      ],
+      "lessonIds": [
+        "day-22",
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-08",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/architecture.html",
+        "contentType": "text/html",
+        "contentBytes": 112664,
+        "contentSha256": "068a9df7151bdd419ab887ac8c2f67f94d45b0b2308f15289ea378ae67f83336",
+        "cacheText": ".course-cache/res-4aa1d5866d14.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-1f9cf059207c",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html",
+      "labelVariants": [
+        "Servlet Authentication Architecture"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/architecture.html",
+        "contentType": "text/html",
+        "contentBytes": 87929,
+        "contentSha256": "6505d6205bc65202146f29d55a9257b40678a36da824551c409b793d3ea111c1",
+        "cacheText": ".course-cache/res-1f9cf059207c.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-ea083f388530",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html",
+      "labelVariants": [
+        "DaoAuthenticationProvider"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authentication/passwords/dao-authentication-provider.html",
+        "contentType": "text/html",
+        "contentBytes": 63420,
+        "contentSha256": "e35c833fb598d622bb2f23045ac9f51ff0d327f9bf683148f045cc4a711e3acc",
+        "cacheText": ".course-cache/res-ea083f388530.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-5020e7509cfe",
+      "requestedUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html",
+      "labelVariants": [
+        "Authorize HttpServletRequests"
+      ],
+      "lessonIds": [
+        "day-22",
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-08",
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/reference/6.5/servlet/authorization/authorize-http-requests.html",
+        "contentType": "text/html",
+        "contentBytes": 132847,
+        "contentSha256": "5f3b8c4a7d66ba4f38adc9b7321603a7cc22421173246a4aa4ec211bf7d452d9",
+        "cacheText": ".course-cache/res-5020e7509cfe.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-c396b40b74ea",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html",
+      "labelVariants": [
+        "JwtEncoder (Interface)"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html",
+        "contentType": "text/html",
+        "contentBytes": 10714,
+        "contentSha256": "c1ee2f43a5e443d71fa24a0b977fc9f805e94f785c5c868c8da73efb9a85112e",
+        "cacheText": ".course-cache/res-c396b40b74ea.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-81f31cc79aa9",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html",
+      "labelVariants": [
+        "NimbusJwtEncoder"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html",
+        "contentType": "text/html",
+        "contentBytes": 17186,
+        "contentSha256": "20d695100fb21fae513c0b8e581d1e86730cc5401a8f2a8c0e5e7baf3954c642",
+        "cacheText": ".course-cache/res-81f31cc79aa9.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-88e7e93efd97",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html",
+      "labelVariants": [
+        "JwtClaimsSet"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html",
+        "contentType": "text/html",
+        "contentBytes": 19434,
+        "contentSha256": "c561f1f6050c434b5ced99a1cb46be39cdd2d7388da423cb67e0e97d898d9c2f",
+        "cacheText": ".course-cache/res-88e7e93efd97.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-68b01442c573",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
+      "labelVariants": [
+        "ExceptionTranslationFilter"
+      ],
+      "lessonIds": [
+        "day-22"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
+        "contentType": "text/html",
+        "contentBytes": 31632,
+        "contentSha256": "1edfc8b53d9581c1a33577f1dc4e4348c5d836f95f11ac508c363a48bcc10dbf",
+        "cacheText": ".course-cache/res-68b01442c573.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-d8b539831917",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html",
+      "labelVariants": [
+        "AuthenticationEntryPoint (Interface)"
+      ],
+      "lessonIds": [
+        "day-22"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/AuthenticationEntryPoint.html",
+        "contentType": "text/html",
+        "contentBytes": 11303,
+        "contentSha256": "39fb1e501d49237c6ca05dfe771a7b9804001b37e49df92d65566dad5b782569",
+        "cacheText": ".course-cache/res-d8b539831917.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-340583a9c6b2",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
+      "labelVariants": [
+        "AccessDeniedHandler (Interface)"
+      ],
+      "lessonIds": [
+        "day-22"
+      ],
+      "unitIds": [
+        "unit-08"
+      ],
+      "relevantOutline": [
+        "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
+        "Assignment"
+      ],
+      "assignedBatch": "data-security",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-03T17:34:17.465489Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
+        "contentType": "text/html",
+        "contentBytes": 10899,
+        "contentSha256": "be6e1c546243fe78ccb49e59586becdb8c0753035b64321b35c88236a4290217",
+        "cacheText": ".course-cache/res-340583a9c6b2.txt",
         "truncated": false,
         "error": null
       }

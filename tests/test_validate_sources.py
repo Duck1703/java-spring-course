@@ -396,7 +396,7 @@ class ProductionIntegrationTests(unittest.TestCase):
 
         errors = loader_errors + validate_source_notes(manifest, notes)
 
-        self.assertEqual(len(manifest["resources"]), 119)
+        self.assertEqual(len(manifest["resources"]), 129)
         self.assertEqual(errors, [])
 
 
