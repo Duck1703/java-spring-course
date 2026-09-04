@@ -1221,7 +1221,8 @@
     "batch": "data-security",
     "requestedUrl": "https://www.baeldung.com/spring-security-method-security",
     "lessonIds": [
-      "day-23"
+      "day-23",
+      "day-33"
     ],
     "access": {
       "status": "ok",
@@ -1297,7 +1298,8 @@
       "relevantHeadings": [
         "SecurityFilterChain",
         "Security Filters",
-        "Handling Security Exceptions"
+        "Handling Security Exceptions",
+        "HttpSecurity / Adding Filters to the Filter Chain"
       ],
       "topics": [
         "SecurityFilterChain",
@@ -1344,7 +1346,8 @@
       "pageTitle": "Authorize HttpServletRequests :: Spring Security",
       "relevantHeadings": [
         "Understanding How Request Authorization Components Work",
-        "Security Matchers"
+        "Security Matchers",
+        "How AuthorizationFilter Works"
       ],
       "topics": [
         "authorizeHttpRequests",
@@ -1381,7 +1384,8 @@
     "batch": "data-security",
     "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
     "lessonIds": [
-      "day-22"
+      "day-22",
+      "day-35"
     ],
     "access": {
       "status": "ok",
@@ -1394,7 +1398,8 @@
       "method": "cache",
       "pageTitle": "ExceptionTranslationFilter (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Class ExceptionTranslationFilter"
+        "Class ExceptionTranslationFilter",
+        "ExceptionTranslationFilter"
       ],
       "topics": [
         "ExceptionTranslationFilter",
@@ -1433,7 +1438,8 @@
       "method": "cache",
       "pageTitle": "AuthenticationEntryPoint (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Interface AuthenticationEntryPoint"
+        "Interface AuthenticationEntryPoint",
+        "AuthenticationEntryPoint"
       ],
       "topics": [
         "AuthenticationEntryPoint",
@@ -1454,7 +1460,8 @@
     "batch": "data-security",
     "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
     "lessonIds": [
-      "day-22"
+      "day-22",
+      "day-35"
     ],
     "access": {
       "status": "ok",
@@ -1467,7 +1474,8 @@
       "method": "cache",
       "pageTitle": "AccessDeniedHandler (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Interface AccessDeniedHandler"
+        "Interface AccessDeniedHandler",
+        "AccessDeniedHandler"
       ],
       "topics": [
         "AccessDeniedHandler",

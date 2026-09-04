@@ -190,7 +190,7 @@
         {
           "id": "day30-blk-13",
           "type": "paragraph",
-          "text": "docker-compose.yml định nghĩa toàn bộ dịch vụ (app, database, Redis) chạy cùng nhau; với spring-boot-docker-compose trên classpath, Spring Boot tự động chạy docker compose up/down khi khởi động/tắt ứng dụng ở chế độ dev, và tự động tạo ConnectionDetails cho các service phổ biến (cùng cơ chế Service Connections như Testcontainers) - image tuỳ chỉnh cần gắn nhãn org.springframework.boot.service-connection để được nhận diện đúng loại dịch vụ.",
+          "text": "docker-compose.yml định nghĩa các dịch vụ mà ứng dụng thực sự cần (app, database) chạy cùng nhau; với spring-boot-docker-compose trên classpath, Spring Boot tự động chạy docker compose up/down khi khởi động/tắt ứng dụng ở chế độ dev, và tự động tạo ConnectionDetails cho các service phổ biến (cùng cơ chế Service Connections như Testcontainers) - image tuỳ chỉnh cần gắn nhãn org.springframework.boot.service-connection để được nhận diện đúng loại dịch vụ. Redis KHÔNG nằm trong yêu cầu chấm của Lab 10: dự án hiện chỉ dùng ConcurrentMapCacheManager mặc định cho cache (Day 34), chưa có code nào kết nối Redis - chỉ thêm service Redis vào compose nếu dự án thực sự chuyển sang backend cache đó.",
           "citations": [
             "day30-src-11",
             "day30-src-12",
@@ -201,7 +201,7 @@
           "id": "day30-blk-14",
           "type": "code",
           "language": "text",
-          "code": "# docker-compose.yml\nservices:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    depends_on:\n      - db\n      - redis\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_DB: shop\n      POSTGRES_PASSWORD: secret\n    ports:\n      - \"5432:5432\"\n\n  redis:\n    image: redis:7-alpine\n    ports:\n      - \"6379:6379\"\n\n# Voi spring-boot-docker-compose tren classpath, Spring Boot tu dong chay\n# \"docker compose up\" khi khoi dong ung dung o che do dev, va tu dong tao\n# ConnectionDetails cho db/redis qua co che Service Connections (nhu Testcontainers).\n",
+          "code": "# docker-compose.yml\nservices:\n  app:\n    build: .\n    ports:\n      - \"8080:8080\"\n    depends_on:\n      - db\n\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_DB: shop\n      POSTGRES_PASSWORD: secret\n    ports:\n      - \"5432:5432\"\n\n  # Redis KHONG bat buoc: du an hien chi dung ConcurrentMapCacheManager mac\n  # dinh cho cache (Day 34), chua co code nao ket noi Redis. Chi them service\n  # redis o day neu du an thuc su chuyen sang backend cache do.\n\n# Voi spring-boot-docker-compose tren classpath, Spring Boot tu dong chay\n# \"docker compose up\" khi khoi dong ung dung o che do dev, va tu dong tao\n# ConnectionDetails cho db qua co che Service Connections (nhu Testcontainers).\n",
           "compile": false,
           "citations": [
             "day30-src-11",
@@ -268,9 +268,9 @@
               "/actuator/health trả status UP kèm thành phần HealthIndicator tuỳ chỉnh trong details - phần này có mẫu đã học đầy đủ ở Day 29. Phần /actuator/prometheus: CHƯA CHỐT, không dùng làm điều kiện chấm ở bài này (xem day30-blk-17); micrometer-registry-prometheus và định dạng exposition không có nguồn nào trong khoá học mô tả - xem day30-blk-10 và authoring.limitations."
             ],
             [
-              "Dockerfile + docker-compose.yml (app + DB + Redis)",
+              "Dockerfile + docker-compose.yml (app + DB)",
               "docker compose up; sửa một dòng code ứng dụng rồi docker compose build lại",
-              "Cả 3 service (app/db/redis) khởi động thành công, app kết nối được tới db và redis (không có log lỗi connection refused); lần build lại sau khi chỉ sửa code ứng dụng tái sử dụng cache của layer dependencies (nhanh hơn lần build đầu tiên)"
+              "Cả 2 service (app/db) khởi động thành công, app kết nối được tới db (không có log lỗi connection refused); lần build lại sau khi chỉ sửa code ứng dụng tái sử dụng cache của layer dependencies (nhanh hơn lần build đầu tiên). Redis không phải điều kiện chấm ở bài này vì dự án chưa có code nào kết nối Redis (xem day30-blk-13)."
             ],
             [
               "GitHub Actions CI: build → test → docker build",
@@ -297,7 +297,7 @@
       "choices": [
         {
           "id": "day30-prac-1-a",
-          "text": "Vì 4 layer (dependencies/snapshot-dependencies/loader/application) được cache riêng - Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar"
+          "text": "Vì 4 layer (dependencies/snapshot-dependencies/resources/application) được cache riêng - Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar"
         },
         {
           "id": "day30-prac-1-b",
@@ -316,7 +316,7 @@
         "day30-prac-1-a"
       ],
       "hint": "Nghĩ về việc Docker cache layer nào không đổi giữa các lần build.",
-      "solution": "4 layer (dependencies/snapshot-dependencies/loader/application) được cache riêng nên Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar — đây là lý do layered jar giúp build nhanh hơn khi code ứng dụng thay đổi, vì các layer dependency không đổi được tái sử dụng từ cache.",
+      "solution": "4 layer (dependencies/snapshot-dependencies/resources/application) được cache riêng nên Docker chỉ cần rebuild lại layer application thay vì toàn bộ jar — đây là lý do layered jar giúp build nhanh hơn khi code ứng dụng thay đổi, vì các layer dependency không đổi được tái sử dụng từ cache.",
       "explanation": "Layered jar tách jar thành 4 layer riêng biệt; layer dependencies hiếm khi đổi nên Docker cache lại, chỉ layer application (code của chúng ta) cần rebuild khi code thay đổi - nhanh hơn nhiều so với việc phải build lại toàn bộ fat jar một layer duy nhất. Bài không xác định layered jar nhỏ hơn fat jar về dung lượng; lợi ích được nêu là khả năng cache riêng từng layer. Dockerfile vẫn dùng image JRE và lệnh java để chạy ứng dụng, nên việc 'không cần JDK' không phải cơ chế làm Docker build nhanh hơn. Tương tự, bài không mô tả Docker tự động nén layered jar tốt hơn; tốc độ đến từ việc tái sử dụng các layer không đổi, không phải từ nén.",
       "rubric": "Liên hệ đúng cơ chế cache theo layer của Docker với cấu trúc 4 layer mặc định.",
       "sourceUsage": [
@@ -327,12 +327,12 @@
       "id": "day30-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Viết một service trong docker-compose.yml chạy Redis cho ứng dụng, expose cổng mặc định.",
+      "prompt": "Viết một service Redis độc lập (không thuộc yêu cầu chấm của Lab 10) trong docker-compose.yml, expose cổng mặc định.",
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Dùng image chính thức redis, map cổng 6379.",
       "solution": "redis:\n  image: redis:7-alpine\n  ports:\n    - \"6379:6379\"",
-      "explanation": "Áp dụng lại mẫu docker-compose.yml đã học trong bài.",
+      "explanation": "Đây là bài luyện cú pháp khai báo service Redis trong docker-compose.yml (image, port mapping) một cách độc lập, không phải yêu cầu chấm của Lab 10 - dự án hiện tại chỉ dùng ConcurrentMapCacheManager và không có code nào kết nối Redis (xem day30-blk-13). Hữu ích nếu sau này dự án thực sự chuyển sang dùng Redis làm cache backend.",
       "rubric": "Đánh giá đúng: service dùng image redis, map cổng 6379:6379.",
       "sourceUsage": [
         "day30-src-11"
@@ -393,7 +393,7 @@
     }
   ],
   "enhancedExercises": [
-    "Thêm health group 'readiness' vào docker-compose healthcheck để container app chỉ được coi là sẵn sàng khi database/Redis đã kết nối được.",
+    "Thêm health group 'readiness' vào docker-compose healthcheck để container app chỉ được coi là sẵn sàng khi database đã kết nối được.",
     "Đo thử JaCoCo coverage hiện tại của dự án và xác định những class nào cần thêm test để đạt ngưỡng 75%."
   ],
   "references": [

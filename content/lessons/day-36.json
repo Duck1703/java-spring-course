@@ -206,7 +206,7 @@
         {
           "id": "day36-blk-13",
           "type": "paragraph",
-          "text": "Với integration test cần dữ liệu thật (không phải H2 giả lập), container Testcontainers có thể được quản lý bằng Spring Bean (@Bean trả về container trong @TestConfiguration) hoặc bằng JUnit extension (@Testcontainers trên test class + @Container trên static field).",
+          "text": "Với integration test cần dữ liệu thật (không phải H2 giả lập), có hai cách quản lý container Testcontainers, khác nhau về vòng đời: (1) khai báo @Bean trả về container trong @TestConfiguration - Spring khởi động bean container này trước các bean khác và dừng sau cùng, gắn đúng với vòng đời ApplicationContext; (2) dùng JUnit extension (@Testcontainers trên test class + @Container trên static field, minh hoạ ở day36-blk-14) - đơn giản hơn để viết, nhưng container gắn với static field nên bị dừng ngay khi test class đó chạy xong; nếu Spring TestContext Framework cache và tái sử dụng cùng một ApplicationContext cho một test class khác sau đó, context đó có thể đang trỏ tới một container đã đóng.",
           "citations": [
             "day36-src-6",
             "day36-src-7"
@@ -455,8 +455,8 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Liên hệ lại phần @Transactional/isolation đã học ở Sprint 3 (Day 35).",
-      "solution": "Câu trả lời nên đề cập: propagation REQUIRED đảm bảo tạo Order + xóa Cart nguyên tử trong một transaction; isolation level phù hợp (ví dụ READ_COMMITTED trở lên, hoặc khóa bi quan/optimistic locking trên tồn kho) để tránh dirty read/oversell khi nhiều request đồng thời trừ cùng một số lượng tồn kho.",
-      "explanation": "Liên hệ đúng cặp khái niệm propagation (nguyên tử hóa Order/Cart) và isolation/locking (tránh oversell) cho cùng một tình huống concurrency.",
+      "solution": "Câu trả lời nên đề cập: propagation REQUIRED đảm bảo tạo Order + xóa Cart nguyên tử trong một transaction; isolation level phù hợp (ví dụ READ_COMMITTED trở lên) là điều kiện cần nhưng không đủ để tránh oversell - cơ chế đủ là optimistic locking mặc định (field @Version trên Product, áp dụng vào bước trừ stock trong checkout() ở Day 35), phát hiện xung đột lúc ghi qua ObjectOptimisticLockingFailureException; chỉ chuyển một phần luồng sang pessimistic locking (@Lock(LockModeType.PESSIMISTIC_WRITE)) nếu đo đạc thực tế cho thấy vài sản phẩm cụ thể bị tranh chấp ghi rất cao.",
+      "explanation": "Liên hệ đúng ba khái niệm cho cùng một tình huống concurrency: propagation (nguyên tử hóa Order/Cart), isolation (điều kiện cần cho mức nhìn thấy dữ liệu) và locking (điều kiện đủ để tránh oversell/lost update), đúng theo quyết định mặc định optimistic-trước/pessimistic-khi-cần-thiết đã chốt ở Day 35.",
       "rubric": "Đánh giá đúng: liên hệ được @Transactional + isolation/locking cho tình huống concurrency cụ thể.",
       "sourceUsage": []
     }

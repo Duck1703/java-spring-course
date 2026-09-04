@@ -779,6 +779,11 @@
 - [JwtEncoder (Interface)](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoder.html) — stable `res-c396b40b74ea` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [NimbusJwtEncoder](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/NimbusJwtEncoder.html) — stable `res-81f31cc79aa9` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [JwtClaimsSet](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtClaimsSet.html) — stable `res-88e7e93efd97` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [JwsHeader](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html) — stable `res-352c59ed0526` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [MacAlgorithm](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html) — stable `res-51b94dcde325` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [JwtEncoderParameters](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html) — stable `res-28d362c904b7` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [MACSigner](https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html) — stable `res-4611e0c0d322` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [Method Security](https://www.baeldung.com/spring-security-method-security) — stable `res-fa00cc21947b` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 34 — Development Sprint 2
 
@@ -824,6 +829,8 @@
 - [Docker with Spring Boot](https://www.baeldung.com/spring-boot-docker-images) — stable `res-e3236d24d45f` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Docker Compose](https://www.baeldung.com/docker-compose-support-spring-boot) — stable `res-8d5e61cc0a53` ID generated from the normalized URL — truy xuất được (HTTP 200)
 - [Java CSV](https://www.baeldung.com/java-csv) — stable `res-ea68bcb99823` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [ExceptionTranslationFilter](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html) — stable `res-68b01442c573` ID generated from the normalized URL — truy xuất được (HTTP 200)
+- [AccessDeniedHandler (Interface)](https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html) — stable `res-340583a9c6b2` ID generated from the normalized URL — truy xuất được (HTTP 200)
 
 ## Day 36 — Final Defense
 

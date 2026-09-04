@@ -787,16 +787,23 @@ class ProductionStateStabilityTests(unittest.TestCase):
         by_id = {resource["resourceId"]: resource for resource in manifest["resources"]}
         all_ids = set(by_id)
         supplemental_ids = {entry["resourceId"] for entry in entries}
+        # One authored entry deliberately targets a URL the workbook already ships
+        # (a shared source reused by a second lesson), so it merges instead of
+        # introducing a resource; only genuinely new resources start unchecked.
+        merged_ids = supplemental_ids & workbook_ids
+        new_ids = supplemental_ids - workbook_ids
 
-        self.assertEqual(len(entries), 18)
-        self.assertEqual(len(all_ids), 129)
+        self.assertEqual(len(entries), 23)
+        self.assertEqual(len(all_ids), 133)
         self.assertEqual(workbook_ids | supplemental_ids, all_ids)
+        self.assertEqual(len(merged_ids), 1)
+        self.assertEqual(len(new_ids), 22)
         self.assertEqual(
             {resource_id: by_id[resource_id]["check"] for resource_id in workbook_ids},
             previous_checks,
         )
         self.assertTrue(
-            all(by_id[resource_id]["check"] == {} for resource_id in supplemental_ids)
+            all(by_id[resource_id]["check"] == {} for resource_id in new_ids)
         )
 
     def test_repeated_real_generation_preserves_all_existing_checks(self):
@@ -828,7 +835,7 @@ class ProductionStateStabilityTests(unittest.TestCase):
             self.assertEqual(main(args), 0)
             second = json.loads(manifest_path.read_text(encoding="utf-8"))
 
-        self.assertEqual(len(second["resources"]), 129)
+        self.assertEqual(len(second["resources"]), 133)
         self.assertEqual(
             {
                 resource["resourceId"]: resource["check"]

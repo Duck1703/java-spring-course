@@ -623,7 +623,9 @@
       "method": "cache",
       "pageTitle": "JwtEncoder (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Interface JwtEncoder"
+        "Interface JwtEncoder",
+        "JwtEncoder (interface Javadoc)",
+        "JwtEncoder - encode(JwtEncoderParameters)"
       ],
       "topics": [
         "JwtEncoder",
@@ -662,7 +664,9 @@
       "method": "cache",
       "pageTitle": "NimbusJwtEncoder (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Class NimbusJwtEncoder"
+        "Class NimbusJwtEncoder",
+        "NimbusJwtEncoder (class Javadoc)",
+        "NimbusJwtEncoder - Constructor, See Also"
       ],
       "topics": [
         "NimbusJwtEncoder",
@@ -702,7 +706,8 @@
       "method": "cache",
       "pageTitle": "JwtClaimsSet (spring-security-docs 6.5.x API)",
       "relevantHeadings": [
-        "Class JwtClaimsSet"
+        "Class JwtClaimsSet",
+        "JwtClaimsSet - builder(), from(), getClaims()"
       ],
       "topics": [
         "JwtClaimsSet",
@@ -718,6 +723,174 @@
           "topic": "builder()/from() va getClaims()",
           "summary": "JwtClaimsSet.builder() tao builder rong, JwtClaimsSet.from(claims) tao builder khoi tao san tu mot JwtClaimsSet co san de copy-and-modify (vi du doi lai expiresAt); build() tra ve JwtClaimsSet bat bien, getClaims() tra ve Map cac claim de dung khi lap JwtEncoderParameters.",
           "locator": "JwtClaimsSet - builder(), from(), getClaims()"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-352c59ed0526",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html",
+      "contentSha256": "6d2923aefa9e9046789c2cb156ae4cae9bd1207ceaaf0893089233087b476481"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "JwsHeader (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Class JwsHeader",
+        "JwsHeader - getAlgorithm()",
+        "JwsHeader - with(JwsAlgorithm), JwsHeader.Builder"
+      ],
+      "topics": [
+        "JwsHeader",
+        "JWS JOSE header",
+        "signing algorithm metadata"
+      ],
+      "facts": [
+        {
+          "topic": "JwsHeader la JOSE header mang thuat toan ky cua JWS",
+          "summary": "Javadoc mo ta JwsHeader ngan gon la 'JWS JOSE Header'; phuong thuc getAlgorithm() tra ve thuat toan JWA duoc dung de ky so JWS (hoac ma hoa JWE) va co kieu tra ve JwsAlgorithm. Nghia la thuat toan ky la mot phan metadata cua header, khong phai thuoc tinh cua claim set.",
+          "locator": "JwsHeader - getAlgorithm()"
+        },
+        {
+          "topic": "Chi tao JwsHeader qua with(JwsAlgorithm) roi build()",
+          "summary": "Trang Javadoc 6.5 cua JwsHeader khong co muc Constructor; chi co hai static factory tra ve JwsHeader.Builder la with(JwsAlgorithm jwsAlgorithm) va from(JwsHeader headers), cong voi nested static final class JwsHeader.Builder co build(). Vay de khai bao thuat toan ky can goi JwsHeader.with(<JwsAlgorithm>).build().",
+          "locator": "JwsHeader - with(JwsAlgorithm), JwsHeader.Builder"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-51b94dcde325",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html",
+      "contentSha256": "6f37f5a6538c18e96a5c37042dc33d5d10bf6ceae90d880d33adc4d8c55c786d"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "MacAlgorithm (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Enum Class MacAlgorithm",
+        "MacAlgorithm - Enum Constant Summary",
+        "MacAlgorithm - implements JwsAlgorithm"
+      ],
+      "topics": [
+        "MacAlgorithm",
+        "HS256",
+        "HMAC algorithm constants"
+      ],
+      "facts": [
+        {
+          "topic": "MacAlgorithm chi co dung ba hang so HMAC",
+          "summary": "Enum Constant Summary cua MacAlgorithm liet ke dung ba hang so: HS256 (HMAC using SHA-256, danh dau Required), HS384 (HMAC using SHA-384, Optional) va HS512 (HMAC using SHA-512, Optional). Vay HS256 la hang so bat buoc phai co, phu hop cho khoa bi mat doi xung cua du an.",
+          "locator": "MacAlgorithm - Enum Constant Summary"
+        },
+        {
+          "topic": "MacAlgorithm nam o package jose.jws va la mot JwsAlgorithm",
+          "summary": "URL Javadoc cho thay MacAlgorithm thuoc org.springframework.security.oauth2.jose.jws - khac package org.springframework.security.oauth2.jwt cua JwsHeader/JwtEncoderParameters, nen phai import rieng. Danh sach interface cua enum nay bao gom JwaAlgorithm va JwsAlgorithm, nen MacAlgorithm.HS256 dung duoc o cho can mot JwsAlgorithm.",
+          "locator": "MacAlgorithm - implements JwsAlgorithm"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-28d362c904b7",
+    "batch": "project-final",
+    "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html",
+      "contentSha256": "9ec6bb487c91a8f2f9c2ec8fcaa27c028b861bd5bcf3b771496b0b75facbc2cf"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "JwtEncoderParameters (spring-security-docs 6.5.x API)",
+      "relevantHeadings": [
+        "Class JwtEncoderParameters",
+        "JwtEncoderParameters - from(JwsHeader, JwtClaimsSet)",
+        "JwtEncoderParameters - getJwsHeader()"
+      ],
+      "topics": [
+        "JwtEncoderParameters",
+        "from(JwsHeader, JwtClaimsSet)",
+        "nullable JWS header"
+      ],
+      "facts": [
+        {
+          "topic": "Co hai overload from(), mot trong do nhan JwsHeader",
+          "summary": "Method Summary liet ke dung hai static factory: from(JwtClaimsSet claims) va from(JwsHeader jwsHeader, JwtClaimsSet claims) - ban hai tham so nhan JwsHeader truoc, claims sau, va Javadoc noi no khoi tao JwtEncoderParameters voi ca JwsHeader lan JwtClaimsSet duoc cung cap. Day la ban duy nhat cho phep khai bao thuat toan ky khi goi encode().",
+          "locator": "JwtEncoderParameters - from(JwsHeader, JwtClaimsSet)"
+        },
+        {
+          "topic": "getJwsHeader() la @Nullable nen ban mot tham so bo trong header",
+          "summary": "getJwsHeader() duoc chu thich @Nullable va Javadoc ghi tra ve JwsHeader hoac null neu khong duoc chi dinh. Vay JwtEncoderParameters.from(claims) tao tham so voi JWS header bang null, tuc khong he khai bao thuat toan ky nao cho encoder.",
+          "locator": "JwtEncoderParameters - getJwsHeader()"
+        }
+      ]
+    },
+    "fallbackEvidence": null
+  },
+  {
+    "resourceId": "res-4611e0c0d322",
+    "batch": "project-final",
+    "requestedUrl": "https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html",
+    "lessonIds": [
+      "day-33"
+    ],
+    "access": {
+      "status": "ok",
+      "httpStatus": 200,
+      "finalUrl": "https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html",
+      "contentSha256": "e39392664f5f59186b6e55326486bf1e1711ab3310000fd97a447a797ef77300"
+    },
+    "read": {
+      "status": "read",
+      "method": "cache",
+      "pageTitle": "MACSigner (Nimbus JOSE + JWT v9.37.3)",
+      "relevantHeadings": [
+        "Class MACSigner",
+        "MACSigner - Constructor Detail",
+        "MACSigner - getMinRequiredSecretLength(JWSAlgorithm)"
+      ],
+      "topics": [
+        "MACSigner",
+        "minimum HMAC secret length",
+        "KeyLengthException"
+      ],
+      "facts": [
+        {
+          "topic": "Secret HMAC phai dai toi thieu 256 bit",
+          "summary": "Ca bon constructor cua MACSigner (byte[], String, SecretKey, OctetSequenceKey) deu ghi cung mot dieu kien cho tham so secret: phai dai it nhat 256 bit va khong duoc null; neu ngan hon nguong 256-bit toi thieu do thi constructor nem KeyLengthException. Vay 256 bit (32 byte UTF-8) la nguong san toi thieu duoc tai lieu hoa cho chinh viec dung MACSigner, khong phai mot con so suy dien.",
+          "locator": "MACSigner - Constructor Detail"
+        },
+        {
+          "topic": "Nguong toi thieu la thuoc tinh cua tung thuat toan HMAC",
+          "summary": "Javadoc con phoi ra static int getMinRequiredSecretLength(JWSAlgorithm alg) tra ve do dai secret toi thieu tinh bang bit cho thuat toan HMAC duoc chi dinh, cong voi getCompatibleAlgorithms(int secretLength) tra ve tap thuat toan tuong thich va tra ve tap rong khi secret qua ngan cho bat ky thuat toan nao. Nghia la nguong toi thieu duoc tra theo tung thuat toan chu khong phai mot con so chung, nen khi doi thuat toan thi phai tra lai bang chinh phuong thuc nay; trang Javadoc nay khong in ra con so cu the cho HS384/HS512.",
+          "locator": "MACSigner - getMinRequiredSecretLength(JWSAlgorithm)"
         }
       ]
     },

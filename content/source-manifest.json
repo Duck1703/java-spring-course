@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-03T17:33:42.803972Z",
+  "generatedAt": "2026-09-04T11:57:06.692691Z",
   "source": {
     "workbook": "GST.CEN_Syllabus_JavaSpring_Dev2-3_v3.xlsx",
     "sheet": "JavaSpring_Schedule"
@@ -3436,14 +3436,17 @@
         "Method Security"
       ],
       "lessonIds": [
-        "day-23"
+        "day-23",
+        "day-33"
       ],
       "unitIds": [
-        "unit-08"
+        "unit-08",
+        "unit-11"
       ],
       "relevantOutline": [
         "Authorization & JPA Performance\n+ Method Security\n+ CORS & CSRF\n+ N+1 Problem\n+ Batch fetching\n+ Soft Delete",
-        "Guides/Review"
+        "Guides/Review",
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
       ],
       "assignedBatch": "data-security",
       "check": {
@@ -4038,20 +4041,143 @@
       }
     },
     {
+      "resourceId": "res-352c59ed0526",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html",
+      "labelVariants": [
+        "JwsHeader"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-04T09:19:20.328715Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html",
+        "contentType": "text/html",
+        "contentBytes": 36419,
+        "contentSha256": "6d2923aefa9e9046789c2cb156ae4cae9bd1207ceaaf0893089233087b476481",
+        "cacheText": ".course-cache/resources/res-352c59ed0526.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-51b94dcde325",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html",
+      "labelVariants": [
+        "MacAlgorithm"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-04T09:19:20.328715Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html",
+        "contentType": "text/html",
+        "contentBytes": 24235,
+        "contentSha256": "6f37f5a6538c18e96a5c37042dc33d5d10bf6ceae90d880d33adc4d8c55c786d",
+        "cacheText": ".course-cache/resources/res-51b94dcde325.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-28d362c904b7",
+      "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html",
+      "labelVariants": [
+        "JwtEncoderParameters"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-04T09:19:20.328715Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html",
+        "contentType": "text/html",
+        "contentBytes": 18386,
+        "contentSha256": "9ec6bb487c91a8f2f9c2ec8fcaa27c028b861bd5bcf3b771496b0b75facbc2cf",
+        "cacheText": ".course-cache/resources/res-28d362c904b7.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
+      "resourceId": "res-4611e0c0d322",
+      "requestedUrl": "https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html",
+      "labelVariants": [
+        "MACSigner"
+      ],
+      "lessonIds": [
+        "day-33"
+      ],
+      "unitIds": [
+        "unit-11"
+      ],
+      "relevantOutline": [
+        "Development Sprint 1\n- Implement core entities + repositories + migrations\n- Auth module (register, login, JWT)\n- User profile API\n- Category CRUD\n- Daily standup + progress review"
+      ],
+      "assignedBatch": "project-final",
+      "check": {
+        "attempted": true,
+        "checkedAt": "2026-09-04T11:57:35.245312Z",
+        "status": "ok",
+        "httpStatus": 200,
+        "finalUrl": "https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html",
+        "contentType": "text/html",
+        "contentBytes": 28073,
+        "contentSha256": "e39392664f5f59186b6e55326486bf1e1711ab3310000fd97a447a797ef77300",
+        "cacheText": ".course-cache/resources/res-4611e0c0d322.txt",
+        "truncated": false,
+        "error": null
+      }
+    },
+    {
       "resourceId": "res-68b01442c573",
       "requestedUrl": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
       "labelVariants": [
         "ExceptionTranslationFilter"
       ],
       "lessonIds": [
-        "day-22"
+        "day-22",
+        "day-35"
       ],
       "unitIds": [
-        "unit-08"
+        "unit-08",
+        "unit-12"
       ],
       "relevantOutline": [
         "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
-        "Assignment"
+        "Assignment",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "data-security",
       "check": {
@@ -4106,14 +4232,17 @@
         "AccessDeniedHandler (Interface)"
       ],
       "lessonIds": [
-        "day-22"
+        "day-22",
+        "day-35"
       ],
       "unitIds": [
-        "unit-08"
+        "unit-08",
+        "unit-12"
       ],
       "relevantOutline": [
         "Authentication with Spring Security + JWT\n+ Security Architecture\n+ JWT Structure\n+ JWT Flow\n+ Stateless Session\n+ Password Encoding",
-        "Assignment"
+        "Assignment",
+        "Development Sprint 3\n- Order checkout flow\n- Order management (user + admin)\n- @Async email notification\n- Export CSV (admin)\n- Docker + docker-compose finalize\n- CI pipeline verify"
       ],
       "assignedBatch": "data-security",
       "check": {

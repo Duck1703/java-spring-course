@@ -107,10 +107,45 @@
       "purpose": "Grounds the standard registered claims (subject, expiresAt, issuedAt, issuer) Day 33 must set when building the JwtEncoderParameters passed to JwtEncoder.encode()."
     },
     {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwsHeader.html",
+      "title": "JwsHeader",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the missing half of Day 33's token issuance: the JWS header is the object that carries the signing algorithm, and JwsHeader.with(JwsAlgorithm) is the only way to state it — without it NimbusJwtEncoder cannot know a symmetric MAC was intended."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jose/jws/MacAlgorithm.html",
+      "title": "MacAlgorithm",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the exact HMAC algorithm constant Day 33 must name (HS256) and its real package org.springframework.security.oauth2.jose.jws — distinct from the oauth2.jwt package the surrounding encoder types live in."
+    },
+    {
+      "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/oauth2/jwt/JwtEncoderParameters.html",
+      "title": "JwtEncoderParameters",
+      "publisher": "Spring Security",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the two-argument from(JwsHeader, JwtClaimsSet) factory Day 33's repair depends on, and the fact that getJwsHeader() is nullable — the single-argument from(claims) form leaves the algorithm unstated."
+    },
+    {
+      "url": "https://www.javadoc.io/static/com.nimbusds/nimbus-jose-jwt/9.37.3/com/nimbusds/jose/crypto/MACSigner.html",
+      "title": "MACSigner",
+      "publisher": "Connect2id",
+      "lessonIds": ["day-33"],
+      "purpose": "Grounds the minimum HMAC secret length Day 33's HS256 configuration must satisfy: NimbusJwtEncoder delegates symmetric signing to Nimbus JOSE+JWT's MACSigner, whose documented contract requires a secret of at least 256 bits and throws KeyLengthException below it — the constraint that governs the app.jwt.secret value the lesson configures."
+    },
+    {
+      "url": "https://www.baeldung.com/spring-security-method-security",
+      "title": "Method Security",
+      "publisher": "Baeldung",
+      "lessonIds": ["day-23", "day-33"],
+      "purpose": "Day 23's method-security source, reused by Day 33: the capstone SecurityConfig enables @EnableMethodSecurity, so Day 33 cites the same 'Enabling Method Security' section rather than re-teaching it."
+    },
+    {
       "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/ExceptionTranslationFilter.html",
       "title": "ExceptionTranslationFilter",
       "publisher": "Spring Security",
-      "lessonIds": ["day-22"],
+      "lessonIds": ["day-22", "day-35"],
       "purpose": "Grounds the exact routing rule Day 22 needs for 401 vs 403: an AuthenticationException always reaches AuthenticationEntryPoint, while an AccessDeniedException reaches AccessDeniedHandler only for an already-authenticated (non-anonymous) user."
     },
     {
@@ -124,7 +159,7 @@
       "url": "https://docs.spring.io/spring-security/site/docs/6.5.x/api/org/springframework/security/web/access/AccessDeniedHandler.html",
       "title": "AccessDeniedHandler (Interface)",
       "publisher": "Spring Security",
-      "lessonIds": ["day-22"],
+      "lessonIds": ["day-22", "day-35"],
       "purpose": "Grounds the exact 403/access-denied mechanism (handle()) Day 22 cites for AccessDeniedHandler, the collaborator ExceptionTranslationFilter delegates to for an authenticated-but-unauthorized user."
     }
   ]

@@ -69,13 +69,13 @@
         {
           "id": "day34-blk-3",
           "type": "template",
-          "text": "ProductController hiện thực đầy đủ CRUD theo API contract (Day 31): GET /api/products?search=&categoryId=&page= dùng Pageable + Specification để kết hợp tìm kiếm theo tên, lọc theo categoryId, và phân trang; POST/PUT/DELETE dành riêng cho Admin.",
+          "text": "ProductController hiện thực CRUD theo API contract (Day 31): POST/PUT/DELETE dành riêng cho Admin (@PreAuthorize(\"hasRole('ADMIN')\"), nhất quán tiền tố ROLE_ đã chốt ở Day 33). GET /api/products?search=&categoryId=&page= dùng Pageable (đã học có trích dẫn ở Day 20/21) để phân trang; phần tìm kiếm/lọc chọn một trong các derived query method tuỳ tham số nào có mặt trên request - ví dụ findByNameContainingIgnoreCaseAndCategoryId(...) khi có cả search và categoryId, findByNameContainingIgnoreCase(...) khi chỉ có search, findByCategoryId(...) khi chỉ có categoryId, và findAll(...) khi không có tham số lọc nào - đều là derived query method đã quen thuộc từ các Unit trước, KHÔNG cần dùng Specification.",
           "citations": []
         },
         {
           "id": "day34-blk-4",
           "type": "note",
-          "text": "Hai resource được gán cho Day 34 (repository query methods, Spring Data JPA sort - vốn là nơi thường mô tả Pageable/Sort) trả về HTTP 404 tại thời điểm khảo sát; phần tìm kiếm/lọc/phân trang trong bài dựa trên kiến thức Spring Data JPA đã có từ các Unit trước, không có trích dẫn riêng cho Day 34.",
+          "text": "Hai resource được gán cho Day 34 (repository query methods, Spring Data JPA sort) trả về HTTP 404 tại thời điểm khảo sát; phần tìm kiếm/lọc/phân trang trong bài dùng derived query method + Pageable đã học từ các Unit trước, không có trích dẫn riêng cho Day 34. Specification (org.springframework.data.jpa.domain.Specification) chỉ được nhắc thoáng qua một lần ở day20-blk-47 và KHÔNG có bài nào trong khoá học dạy cách dùng - vì vậy đây KHÔNG phải cách bắt buộc để hiện thực tìm kiếm/lọc của Sprint 2 (xem cách đạt yêu cầu bằng derived query method ở trên); dùng Specification để gộp điều kiện lọc linh hoạt hơn chỉ là một hướng tự tìm hiểu thêm (enhancement), không phải yêu cầu chấm điểm.",
           "citations": []
         }
       ]
@@ -97,7 +97,7 @@
           "id": "day34-blk-6",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.multipart.MultipartFile;\n\n@RestController\nclass ProductImageController {\n\n    // Spring Boot khong can khai bao servlet thu cong, chi can starter-web tren classpath.\n    @PostMapping(\"/api/products/{id}/image\")\n    void uploadImage(@RequestParam(\"file\") MultipartFile file) {\n        String originalFilename = file.getOriginalFilename();\n        String contentType = file.getContentType();\n        // luu file, cap nhat Product.imageUrl...\n    }\n}\n",
+          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.multipart.MultipartFile;\n\n@RestController\nclass ProductImageController {\n\n    // Spring Boot khong can khai bao servlet thu cong, chi can starter-web tren classpath.\n    // Ghi (upload anh) thuoc nhom quan tri Product - can ROLE_ADMIN dung theo\n    // API contract Day 31 va quy uoc @PreAuthorize/@EnableMethodSecurity Day 33.\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    @PostMapping(\"/api/products/{id}/image\")\n    void uploadImage(@RequestParam(\"file\") MultipartFile file) {\n        String originalFilename = file.getOriginalFilename();\n        String contentType = file.getContentType();\n        // luu file, cap nhat Product.imageUrl...\n    }\n}\n",
           "compile": false,
           "citations": [
             "day34-src-2"
@@ -133,9 +133,15 @@
           "citations": []
         },
         {
+          "id": "day34-blk-17",
+          "type": "template",
+          "text": "class CartController {\n\n    // KHONG nhan userId tu client (khong co trong path/body) - Cart luon gan\n    // voi nguoi dung dang xac thuc. Giong co che da thiet lap o Day 24/33: o\n    // moi request da xac thuc bang Bearer JWT, principal la mot doi tuong Jwt\n    // (KHONG phai UserDetails), id nguoi dung la claim sub da nhung vao JWT\n    // luc phat hanh o Day 33 - doc qua\n    // ((Jwt) authentication.getPrincipal()).getSubject(). TUYET DOI khong lay\n    // userId tu mot truong do client tu gui (path/body), vi client co the gia\n    // mao gia tri do de doc/sua gio hang cua nguoi khac.\n    @org.springframework.web.bind.annotation.GetMapping(\"/api/cart/items\")\n    java.util.List<CartItemDto> getItems(org.springframework.security.core.Authentication authentication) {\n        Long currentUserId = Long.valueOf(\n            ((org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal()).getSubject());\n        Cart cart = cartService.findOrCreateForUser(currentUserId);\n        return cart.getItems();\n    }\n}\n",
+          "citations": []
+        },
+        {
           "id": "day34-blk-10",
           "type": "note",
-          "text": "Không có resource nào trong resourceIds của Day 34 mô tả riêng nghiệp vụ giỏ hàng - phần thiết kế Cart/CartItem ở trên là quyết định thiết kế nghiệp vụ (domain design) của dự án, không có nguồn trích dẫn kỹ thuật cụ thể.",
+          "text": "Không có resource nào trong resourceIds của Day 34 mô tả riêng nghiệp vụ giỏ hàng - phần thiết kế Cart/CartItem (day34-blk-9) là quyết định thiết kế nghiệp vụ (domain design) của dự án, không có nguồn trích dẫn kỹ thuật cụ thể. Cơ chế xác định chủ sở hữu Cart từ Authentication (day34-blk-17) tái sử dụng đúng quy ước đã có trích dẫn ở Day 24/33 (Resource Server, principal là Jwt, claim sub), không tạo trích dẫn mới cho Day 34.",
           "citations": []
         }
       ]
@@ -190,7 +196,7 @@
         {
           "id": "day34-blk-16",
           "type": "note",
-          "text": "Phạm vi chấm của bảng dưới đây: hai hạng mục Sprint 2 chỉ tồn tại ở dạng khối template chưa có nội dung kỹ thuật được dạy. (1) Product search/filter dựa trên Specification (day34-blk-3): trong toàn khoá học, Specification chỉ được nhắc qua một lần ở day20-blk-47 và không có bài nào dạy cách dùng - riêng phần Pageable/Page thì đã học đầy đủ có trích dẫn ở Day 20/21 nên vẫn chấm được. (2) Cart/CartItem (day34-blk-9): là quyết định thiết kế nghiệp vụ, không có resource nào mô tả và bài không có khối code nào hiện thực. Ngoài ra, điều kiện 403 cho token không phải Admin phụ thuộc kiến trúc xác thực/phân quyền của capstone hiện chưa được chốt (Day 33 cấu hình Resource Server + scope, còn đề bài Sprint 1 và API contract Day 31 lại yêu cầu tự phát hành JWT ở /api/auth/login) - chấm theo status 403 quan sát được, không theo một cách biểu diễn quyền cố định. Hai hạng mục upload ảnh và caching có đủ nội dung đã dạy và trích dẫn nên chấm bình thường.",
+          "text": "Phạm vi chấm của bảng dưới đây: Specification (nhắc tới ở day20-blk-47) không được bài nào trong khoá học dạy chi tiết, nên KHÔNG phải cách bắt buộc để hiện thực tìm kiếm/lọc sản phẩm - Product CRUD dùng derived query method (đã quen thuộc từ các Unit trước) kết hợp Pageable (có trích dẫn ở Day 20/21) để đạt đúng yêu cầu search + categoryId + phân trang, xem day34-blk-3/blk-4. Kiến trúc xác thực/phân quyền của capstone đã được chốt ở Day 33 (hệ thống tự phát hành JWT ở /api/auth/login, phân quyền theo tiền tố ROLE_ đọc từ claim tuỳ chỉnh \"roles\") - áp dụng nhất quán cho Product CRUD (POST/PUT/DELETE chỉ Admin) và Cart (mỗi Cart gắn với user xác định qua claim sub của JWT, xem day34-blk-17). Cart/CartItem chỉ có thiết kế dạng template (day34-blk-9, không có resource riêng - xem authoring.limitations), nhưng hành vi tổng tiền tính động và quyền sở hữu theo Authentication đã được đặc tả đủ rõ để chấm theo quan sát được, tương tự cách Day 33 chấm User profile API/Category CRUD dù cũng chỉ có template.",
           "citations": []
         },
         {
@@ -205,17 +211,17 @@
             [
               "Product CRUD: search/filter/pagination",
               "GET /api/products?search=...&categoryId=...&page=0 với dữ liệu mẫu có nhiều category/tên khác nhau; gọi POST/PUT/DELETE bằng token không phải Admin",
-              "Phần phân trang chấm bình thường: đúng số phần tử theo page size và đúng trang được yêu cầu (Pageable/PageRequest/Page đã học có trích dẫn ở Day 20/21). Phần kết hợp search + categoryId trong cùng một truy vấn: CHƯA CHỐT, không dùng làm điều kiện chấm - Specification mà day34-blk-3 nhắc tới không được bài nào trong khoá học dạy (xem day34-blk-16). Phần 403 cho token không phải Admin: chấm theo hành vi quan sát được (403), KHÔNG chấm theo cách biểu diễn quyền Admin, vì kiến trúc xác thực/phân quyền của capstone chưa được chốt (xem day34-blk-16)."
+              "Phần phân trang chấm bình thường: đúng số phần tử theo page size và đúng trang được yêu cầu (Pageable/PageRequest/Page đã học có trích dẫn ở Day 20/21). Phần search + categoryId cũng chấm bình thường: kết quả đúng theo derived query method tương ứng tham số nào có mặt trên request (day34-blk-3) - KHÔNG bắt buộc dùng Specification (xem day34-blk-16). Phần 403 cho token không phải Admin chấm theo kiến trúc đã chốt ở Day 33: token của user không có ROLE_ADMIN (claim \"roles\" không chứa ADMIN) → 403 Forbidden."
             ],
             [
-              "Upload ảnh sản phẩm (MultipartFile + giới hạn dung lượng)",
-              "POST /api/products/{id}/image với (a) file hợp lệ nhỏ hơn max-file-size, (b) file vượt max-file-size",
-              "(a) upload thành công, Product.imageUrl được cập nhật; (b) request bị từ chối (413 hoặc lỗi tương ứng cấu hình), Product.imageUrl KHÔNG đổi"
+              "Upload ảnh sản phẩm (MultipartFile + giới hạn dung lượng + quyền Admin)",
+              "POST /api/products/{id}/image bằng token Admin với (a) file hợp lệ nhỏ hơn max-file-size, (b) file vượt max-file-size; và bằng token của một user thường (c)",
+              "(a) upload thành công, Product.imageUrl được cập nhật; (b) request bị từ chối (413 hoặc lỗi tương ứng cấu hình), Product.imageUrl KHÔNG đổi; (c) 403 Forbidden vì endpoint ghi thuộc nhóm quản trị Product, chỉ ROLE_ADMIN mới gọi được (@PreAuthorize, xem day34-blk-6)"
             ],
             [
-              "Cart/CartItem: tổng tiền tính động",
-              "Thêm một CartItem vào giỏ, sau đó đổi Product.price của sản phẩm đó, rồi GET /api/cart/items",
-              "CHƯA CHỐT - không dùng làm điều kiện chấm ở bài này (xem day34-blk-16). Yêu cầu 'tổng tiền tính động từ quantity * Product.price hiện tại, không lưu cứng giá' là một quyết định thiết kế nghiệp vụ ghi trong khối template day34-blk-9; bài không có khối code nào hiện thực Cart/CartItem và không có resource nào mô tả nghiệp vụ giỏ hàng (xem day34-blk-10 và authoring.limitations)."
+              "Cart/CartItem: tổng tiền tính động và quyền sở hữu theo Authentication",
+              "(a) Thêm một CartItem vào giỏ, đổi Product.price của sản phẩm đó, rồi GET /api/cart/items; (b) gọi GET /api/cart/items lần lượt bằng token của hai user khác nhau, mỗi user đã tự thêm CartItem riêng, không truyền userId nào trong request",
+              "(a) tổng tiền trả về phản ánh đúng Product.price MỚI (không phải giá tại thời điểm thêm vào giỏ) - vì tổng tiền tính động từ CartItem.quantity * Product.price hiện tại, không lưu cứng (day34-blk-9); (b) mỗi user chỉ thấy đúng CartItem trong Cart gắn với chính mình - userId được suy ra từ claim sub của JWT (day34-blk-17), KHÔNG lấy từ trường client tự gửi, nên không user nào thấy được giỏ hàng của người khác"
             ],
             [
               "Caching Category/Product (@Cacheable/@CacheEvict/unless)",
@@ -231,6 +237,7 @@
   "commonMistakes": [
     "Không giới hạn spring.servlet.multipart.max-file-size, để endpoint upload ảnh sản phẩm bị lạm dụng gửi file khổng lồ.",
     "Lưu cứng giá sản phẩm trong CartItem tại thời điểm thêm vào giỏ, khiến giỏ hàng hiển thị sai giá khi Product.price thay đổi sau đó.",
+    "Nhận userId từ tham số client gửi (path/body) khi hiện thực /api/cart/items thay vì suy ra từ claim sub trong JWT của Authentication, khiến client có thể giả mạo userId để đọc/sửa giỏ hàng của người khác.",
     "Dùng @Cacheable cho method ghi dữ liệu (tạo/sửa category) khiến lần ghi đầu tiên bị bỏ qua nếu cache đã có key trùng."
   ],
   "practices": [

@@ -22,14 +22,19 @@
     "resourceIds": [
       "res-65703b737426",
       "res-d5aebfb9d1ed",
-      "res-f301a3d0645a"
+      "res-f301a3d0645a",
+      "res-4aa1d5866d14",
+      "res-5020e7509cfe",
+      "res-68b01442c573",
+      "res-d8b539831917",
+      "res-340583a9c6b2"
     ]
   },
   "unitId": "unit-08",
   "group": "spring",
   "kind": "theory",
   "title": "Authentication with Spring Security + JWT",
-  "summary": "Xác thực stateless bằng JWT qua Spring Security OAuth2 Resource Server: quy trình discovery JWK Set, JwtAuthenticationProvider xác thực mỗi request, cấu hình SessionCreationPolicy.STATELESS, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder.",
+  "summary": "Kiến trúc filter chain của Spring Security (SecurityFilterChain/FilterChainProxy) và cách một request mang JWT được xác thực (validate) tại runtime: quy trình discovery JWK Set qua OAuth2 Resource Server, JwtAuthenticationProvider xác thực mỗi request, cấu hình SessionCreationPolicy.STATELESS, ExceptionTranslationFilter định tuyến 401 vs 403, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder. Luồng PHÁT HÀNH JWT (đăng ký/đăng nhập, tự ký token) là kiến trúc chuẩn của khoá học và được lắp ráp đầy đủ ở Day 33.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO8"
@@ -41,7 +46,8 @@
     "Giải thích đúng luồng xác thực JWT qua OAuth2 Resource Server (discovery, JwtAuthenticationProvider, kiểm tra claim).",
     "Cấu hình đúng SessionCreationPolicy.STATELESS cho API xác thực bằng JWT.",
     "Cấu hình đúng DelegatingPasswordEncoder và giải thích định dạng {id}encodedPassword.",
-    "Nhận diện đúng vì sao User.withDefaultPasswordEncoder() không an toàn cho production."
+    "Nhận diện đúng vì sao User.withDefaultPasswordEncoder() không an toàn cho production.",
+    "Phân biệt đúng 401 (AuthenticationEntryPoint, chưa xác thực được) và 403 (AccessDeniedHandler, đã xác thực nhưng thiếu quyền), và giải thích ExceptionTranslationFilter là nơi định tuyến quyết định đó."
   ],
   "sections": [
     {
@@ -68,14 +74,26 @@
       "blocks": [
         {
           "id": "day22-blk-3",
-          "type": "note",
-          "text": "Kiến trúc filter chain tổng quát của Spring Security (thứ tự các filter mặc định, SecurityContextHolder) không có resource nào trong resourceIds của Day 22 mô tả trực tiếp (xem authoring.limitations) - phần dưới đây tập trung vào phần kiến trúc có nguồn: xác thực JWT qua cơ chế OAuth2 Resource Server.",
-          "citations": []
+          "type": "important",
+          "text": "Kiến trúc xác thực chuẩn của khoá học là JWT TỰ PHÁT HÀNH (self-issued): chính ứng dụng của bạn - không phải một authorization server bên ngoài - xác minh mật khẩu và ký JWT khi người dùng đăng nhập. Luồng phát hành cụ thể (AuthenticationManager, DaoAuthenticationProvider, JwtEncoder) được dạy đầy đủ ở Day 33 khi lắp ráp module Auth của dự án capstone. Bài này dạy nửa còn lại, áp dụng cho MỌI kiến trúc xác thực bằng JWT dù token do ai phát hành: (1) mô hình filter chain nền tảng mà mọi request đi qua, và (2) cách một request mang JWT được XÁC THỰC (validate) khi nó tới đích. Cơ chế 'OAuth2 Resource Server' của Spring Security dùng để validate JWT hoạt động giống nhau dù JWT do một authorization server bên ngoài phát hành hay do chính ứng dụng tự phát hành - khác biệt duy nhất nằm ở việc JwtDecoder lấy khoá công khai để kiểm tra chữ ký từ đâu.",
+          "citations": [
+            "day22-src-3",
+            "day22-src-4"
+          ]
+        },
+        {
+          "id": "day22-blk-30",
+          "type": "paragraph",
+          "text": "Spring Security được ghép vào ứng dụng như một chuỗi Filter servlet chạy TRƯỚC DispatcherServlet: FilterChainProxy dùng một SecurityFilterChain để quyết định Filter nào sẽ chạy cho request hiện tại - các Security Filter (CsrfFilter, UsernamePasswordAuthenticationFilter, AuthorizationFilter, ...) là Bean nhưng được đăng ký với FilterChainProxy chứ không đăng ký trực tiếp với servlet container qua DelegatingFilterProxy. Chúng thường được khai báo qua một instance HttpSecurity: gọi .authorizeHttpRequests(...) thêm AuthorizationFilter vào chain, gọi .oauth2ResourceServer(...) thêm filter xác thực Bearer token - và Spring Security luôn thêm các filter theo đúng thứ tự cố định (xác thực trước, phân quyền sau) bất kể bạn khai báo các dòng .xxx() theo thứ tự nào trong code.",
+          "citations": [
+            "day22-src-12",
+            "day22-src-13"
+          ]
         },
         {
           "id": "day22-blk-4",
           "type": "paragraph",
-          "text": "Khi cấu hình oauth2ResourceServer().jwt() với một issuer-uri, Spring Security tự động suy ra địa chỉ JWK Set endpoint của authorization server (theo chuẩn OpenID Connect Discovery) và tải bộ khoá công khai ngay khi ứng dụng khởi động - đây là quy trình 'startup expectations'. Nếu authorization server không sẵn sàng lúc khởi động, Spring Security vẫn cho phép ứng dụng khởi động thành công nhưng sẽ thử tải lại JWK Set khi có request đầu tiên cần xác thực.",
+          "text": "Khi cấu hình oauth2ResourceServer().jwt() với một issuer-uri, Spring Security tự động suy ra địa chỉ JWK Set endpoint của authorization server (theo chuẩn OpenID Connect Discovery) và tải bộ khoá công khai ngay khi ứng dụng khởi động - đây là quy trình 'startup expectations'. Nếu authorization server không sẵn sàng lúc khởi động, Spring Security vẫn cho phép ứng dụng khởi động thành công nhưng sẽ thử tải lại JWK Set khi có request đầu tiên cần xác thực. issuer-uri phù hợp khi có một authorization server ĐỘC LẬP (bên ngoài ứng dụng) phát hành JWT và công bố JWK Set qua endpoint discovery chuẩn - đây KHÔNG phải điều kiện bắt buộc để dùng JWT. Với kiến trúc tự phát hành của khoá học (Day 33), ứng dụng tự ký token bằng khoá của chính nó nên không có JWK Set endpoint bên ngoài nào để tự động discovery; việc cấu hình JwtDecoder cho trường hợp này được trình bày cụ thể ở Day 33 cùng với luồng phát hành, còn phần 'Runtime Expectations' về xác thực chữ ký/exp ngay bên dưới áp dụng như nhau cho cả hai cách cấu hình.",
           "citations": [
             "day22-src-1",
             "day22-src-2"
@@ -102,10 +120,11 @@
         {
           "id": "day22-blk-20",
           "type": "paragraph",
-          "text": "Mental model của Spring Security: nó là một chuỗi `Filter` đặt *trước* `DispatcherServlet`. Mỗi request đi qua từng filter theo thứ tự cố định; nhiệm vụ của chuỗi này là trả lời hai câu hỏi khác nhau — 'bạn là ai' (authentication) và 'bạn được làm gì' (authorization). Kết quả của bước một được lưu vào `SecurityContextHolder` dưới dạng một `Authentication`; bước hai chỉ đọc lại thông tin đó. Vì mọi thứ diễn ra ở tầng filter, code controller của bạn không cần biết gì về bảo mật, nhưng cũng vì thế mà lỗi bảo mật *không* đi qua `@RestControllerAdvice` (Day 17).",
+          "text": "Mental model của Spring Security: nó là một chuỗi `Filter` đặt *trước* `DispatcherServlet`, được quản lý bởi `FilterChainProxy` thông qua một (hoặc nhiều) `SecurityFilterChain`. Mỗi request đi qua từng filter theo thứ tự cố định; nhiệm vụ của chuỗi này là trả lời hai câu hỏi khác nhau — 'bạn là ai' (authentication) và 'bạn được làm gì' (authorization). Kết quả của bước một được lưu vào `SecurityContextHolder` dưới dạng một `Authentication`; bước hai (do `AuthorizationFilter`, được thêm vào chain khi bạn gọi `authorizeHttpRequests(...)`) chỉ đọc lại thông tin đó để đối chiếu với quy tắc. Vì mọi thứ diễn ra ở tầng filter, code controller của bạn không cần biết gì về bảo mật, nhưng cũng vì thế mà lỗi bảo mật *không* đi qua `@RestControllerAdvice` (Day 17).",
           "citations": [
-            "day22-src-1",
-            "day22-src-2"
+            "day22-src-12",
+            "day22-src-13",
+            "day22-src-14"
           ]
         },
         {
@@ -120,7 +139,7 @@
         {
           "id": "day22-blk-22",
           "type": "paragraph",
-          "text": "Bên dưới, `oauth2ResourceServer().jwt()` dựng một `BearerTokenAuthenticationFilter`: nó lấy token từ header `Authorization: Bearer ...`, giao cho `JwtDecoder` để (1) xác thực chữ ký bằng khóa lấy từ JWKS của issuer, (2) kiểm tra `exp`/`nbf` và `iss`, rồi (3) chuyển claims thành `Authentication` với các quyền được suy ra từ claim `scope`. Bất kỳ bước nào thất bại đều cho 401 với header `WWW-Authenticate`. Thứ tự này giải thích một điều quan trọng: token hết hạn hay sai chữ ký bị chặn *trước khi* chạm tới code của bạn.",
+          "text": "Bên dưới, `oauth2ResourceServer().jwt()` dựng một `BearerTokenAuthenticationFilter`: nó lấy token từ header `Authorization: Bearer ...`, giao cho `JwtDecoder` để (1) xác thực chữ ký bằng khóa lấy từ JWKS của issuer, (2) kiểm tra `exp`/`nbf` và `iss`, rồi (3) chuyển claims thành `Authentication` với các quyền được suy ra từ claim `scope`. Bất kỳ bước nào thất bại đều cho 401 với header `WWW-Authenticate`. Thứ tự này giải thích một điều quan trọng: token hết hạn hay sai chữ ký bị chặn *trước khi* chạm tới code của bạn. Lưu ý bước (3) mô tả hành vi MẶC ĐỊNH (claim `scope` → quyền có tiền tố `SCOPE_`); dự án capstone cấu hình lại `JwtAuthenticationConverter` để đọc claim `roles` với tiền tố `ROLE_` cho khớp `hasRole(...)` đã học ở Day 23 - xem Day 33.",
           "citations": [
             "day22-src-3",
             "day22-src-4"
@@ -138,10 +157,11 @@
         {
           "id": "day22-blk-24",
           "type": "note",
-          "text": "Phân biệt 401 và 403 vì hai mã này hay bị dùng lẫn: 401 Unauthorized nghĩa là 'chưa xác thực được bạn là ai' (thiếu token, token sai, token hết hạn) và do `AuthenticationEntryPoint` sinh ra; 403 Forbidden nghĩa là 'đã biết bạn là ai nhưng bạn không có quyền này' và do `AccessDeniedHandler` sinh ra. Trong API JSON, bạn thường muốn thay body HTML mặc định bằng ProblemDetail — cấu hình tại `exceptionHandling()` chứ không phải trong `@RestControllerAdvice`.",
+          "text": "Phân biệt 401 và 403 vì hai mã này hay bị dùng lẫn, và cơ chế định tuyến nằm ở `ExceptionTranslationFilter` - filter này bắt `AuthenticationException` và `AccessDeniedException` ném ra từ chain rồi 'dịch' chúng thành response HTTP, chứ bản thân nó không tự quyết định ai được phép làm gì. Quy tắc định tuyến chính xác: nếu là `AuthenticationException` (thiếu token, token sai, token hết hạn), `ExceptionTranslationFilter` LUÔN gọi `AuthenticationEntryPoint.commence()` → 401. Nếu là `AccessDeniedException`, filter kiểm tra thêm: user đang ở trạng thái anonymous (chưa xác thực) thì VẪN gọi `AuthenticationEntryPoint` → 401 (yêu cầu đăng nhập trước), còn nếu user ĐÃ xác thực nhưng thiếu quyền thì mới uỷ quyền cho `AccessDeniedHandler.handle()` → 403. Nói ngắn gọn: 401 nghĩa là 'chưa biết bạn là ai', 403 nghĩa là 'đã biết bạn là ai nhưng không đủ quyền'. Trong API JSON, bạn thường muốn thay body HTML mặc định bằng ProblemDetail — cấu hình cả hai handler tại `exceptionHandling()` chứ không phải trong `@RestControllerAdvice` (lỗi bảo mật không đi qua đó, xem block trên).",
           "citations": [
-            "day22-src-1",
-            "day22-src-2"
+            "day22-src-16",
+            "day22-src-17",
+            "day22-src-18"
           ]
         }
       ]
@@ -165,7 +185,8 @@
           "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            // Khai bao endpoint cong khai truoc, cu the hon anyRequest();\n            // Spring Security xet cac rule theo dung thu tu khai bao.\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .anyRequest().authenticated())\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
           "compile": false,
           "citations": [
-            "day22-src-9"
+            "day22-src-9",
+            "day22-src-15"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
@@ -278,7 +299,9 @@
     "Xác minh mật khẩu bằng encode(raw).equals(stored) thay vì matches(raw, stored), luôn cho kết quả sai vì salt ngẫu nhiên.",
     "Vẫn dùng WebSecurityConfigurerAdapter theo tài liệu cũ trong khi Spring Security 6 đã loại bỏ nó và yêu cầu bean SecurityFilterChain.",
     "Kỳ vọng logout làm token hết hiệu lực ngay, trong khi JWT chỉ mất hiệu lực khi hết hạn nếu không có danh sách chặn phía server.",
-    "Quên gọi authorizeHttpRequests(...) (hoặc quên @Configuration/@Bean) khi khai báo SecurityFilterChain, khiến toàn bộ API vô tình trở thành công khai dù các cấu hình khác (STATELESS, oauth2ResourceServer) trông như đã 'bảo mật'."
+    "Quên gọi authorizeHttpRequests(...) (hoặc quên @Configuration/@Bean) khi khai báo SecurityFilterChain, khiến toàn bộ API vô tình trở thành công khai dù các cấu hình khác (STATELESS, oauth2ResourceServer) trông như đã 'bảo mật'.",
+    "Nghĩ rằng phải có một authorization server bên ngoài (issuer-uri) mới dùng được JWT - ứng dụng hoàn toàn có thể tự phát hành và tự xác thực JWT của chính mình (Day 33); cơ chế Resource Server validate token giống nhau ở cả hai trường hợp, chỉ khác nguồn lấy khoá công khai.",
+    "Trả 403 khi user chưa hề gửi token hợp lệ (anonymous) thay vì 401 - ExceptionTranslationFilter luôn gọi AuthenticationEntryPoint cho cả AuthenticationException lẫn AccessDeniedException xảy ra trên user anonymous; 403/AccessDeniedHandler chỉ dành cho user đã xác thực nhưng thiếu quyền."
   ],
   "practices": [
     {
@@ -467,6 +490,48 @@
       "type": "external",
       "resourceId": "res-d5aebfb9d1ed",
       "citationId": "day22-src-8"
+    },
+    {
+      "id": "day22-ref-13",
+      "type": "external",
+      "resourceId": "res-4aa1d5866d14",
+      "citationId": "day22-src-12"
+    },
+    {
+      "id": "day22-ref-14",
+      "type": "external",
+      "resourceId": "res-4aa1d5866d14",
+      "citationId": "day22-src-13"
+    },
+    {
+      "id": "day22-ref-15",
+      "type": "external",
+      "resourceId": "res-5020e7509cfe",
+      "citationId": "day22-src-14"
+    },
+    {
+      "id": "day22-ref-16",
+      "type": "external",
+      "resourceId": "res-5020e7509cfe",
+      "citationId": "day22-src-15"
+    },
+    {
+      "id": "day22-ref-17",
+      "type": "external",
+      "resourceId": "res-68b01442c573",
+      "citationId": "day22-src-16"
+    },
+    {
+      "id": "day22-ref-18",
+      "type": "external",
+      "resourceId": "res-d8b539831917",
+      "citationId": "day22-src-17"
+    },
+    {
+      "id": "day22-ref-19",
+      "type": "external",
+      "resourceId": "res-340583a9c6b2",
+      "citationId": "day22-src-18"
     }
   ],
   "sourceUsage": [
@@ -535,13 +600,56 @@
       "resourceId": "res-f301a3d0645a",
       "locator": "Understanding Session Fixation Attack Protection",
       "topic": "Bảo vệ tấn công session fixation"
+    },
+    {
+      "id": "day22-src-12",
+      "resourceId": "res-4aa1d5866d14",
+      "locator": "SecurityFilterChain",
+      "topic": "SecurityFilterChain do FilterChainProxy dùng để chọn Filter nào chạy cho request hiện tại"
+    },
+    {
+      "id": "day22-src-13",
+      "resourceId": "res-4aa1d5866d14",
+      "locator": "HttpSecurity / Adding Filters to the Filter Chain",
+      "topic": "HttpSecurity khai báo các Security Filter theo đúng thứ tự cố định (xác thực trước, phân quyền sau)"
+    },
+    {
+      "id": "day22-src-14",
+      "resourceId": "res-5020e7509cfe",
+      "locator": "How AuthorizationFilter Works",
+      "topic": "AuthorizationFilter đối chiếu Authentication với quy tắc trong authorizeHttpRequests và ném AccessDeniedException khi bị từ chối"
+    },
+    {
+      "id": "day22-src-15",
+      "resourceId": "res-5020e7509cfe",
+      "locator": "Security Matchers / permitAll, denyAll",
+      "topic": "Thứ tự khai báo quy tắc quyết định kết quả; permitAll/denyAll không tra cứu Authentication từ session"
+    },
+    {
+      "id": "day22-src-16",
+      "resourceId": "res-68b01442c573",
+      "locator": "ExceptionTranslationFilter (class Javadoc, doan ve authenticationEntryPoint/requestCache)",
+      "topic": "ExceptionTranslationFilter là cầu nối exception -> HTTP response, định tuyến 401 vs 403"
+    },
+    {
+      "id": "day22-src-17",
+      "resourceId": "res-d8b539831917",
+      "locator": "AuthenticationEntryPoint (interface Javadoc), method commence()",
+      "topic": "AuthenticationEntryPoint.commence() khởi động cơ chế xác thực khi trả 401"
+    },
+    {
+      "id": "day22-src-18",
+      "resourceId": "res-340583a9c6b2",
+      "locator": "AccessDeniedHandler (interface Javadoc), method handle()",
+      "topic": "AccessDeniedHandler.handle() xử lý khi đã xác thực nhưng thiếu quyền, trả 403"
     }
   ],
   "authoring": {
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Kiến trúc filter chain tổng quát của Spring Security (thứ tự filter mặc định, SecurityContextHolder) và cấu trúc thô của một JWT (header.payload.signature, base64url encoding, danh sách claim chuẩn): không có resource nào trong resourceIds của Day 22 mô tả hai chủ đề này trực tiếp - trình bày bằng kiến thức chuẩn của Spring Security/JWT trong khối note không yêu cầu trích dẫn, tập trung phần có nguồn vào luồng xác thực (JwtAuthenticationProvider) và cấu hình cụ thể (stateless, password encoding)."
+      "Cấu trúc thô của một JWT (header.payload.signature, base64url encoding, danh sách claim chuẩn như sub/exp/scope): không có resource nào trong resourceIds của Day 22 mô tả trực tiếp định dạng token ở mức byte - trình bày bằng kiến thức chuẩn của JWT (RFC 7519) trong khối paragraph, không yêu cầu trích dẫn riêng vì đây là nền tảng chung của định dạng token chứ không phải hành vi cụ thể của Spring Security.",
+      "Cấu hình JwtDecoder/JwtEncoder cụ thể cho kiến trúc JWT tự phát hành (không có issuer-uri, không có JWK Set endpoint bên ngoài) được đề cập ở mức kiến trúc tại Day 22 nhưng chỉ trình bày đầy đủ với API cụ thể (NimbusJwtDecoder, SecretKey/RSAPublicKey...) ở Day 33 cùng với luồng phát hành - tránh trích dẫn API chưa dạy ở bài này."
     ]
   }
 }

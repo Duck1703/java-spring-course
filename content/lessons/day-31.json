@@ -115,7 +115,7 @@
         {
           "id": "day31-blk-8",
           "type": "deliverable",
-          "text": "API contract template cho toàn bộ capstone - dùng làm điểm tham chiếu chung khi các module được hiện thực ở Sprint 1-3.",
+          "text": "API contract THỰC THI ĐƯỢC cho toàn bộ capstone - đủ 7 chiều thông tin (method, path, auth, request-shape, success-status, response-shape, error-status) cho từng endpoint, dùng làm điểm tham chiếu chung khi các module được hiện thực ở Sprint 1-3 (Day 33-35); mọi giá trị mang tính nghiệp vụ (userId chủ sở hữu, tổng tiền đơn hàng...) đều được server tự suy ra từ Authentication đã xác thực - cụ thể là claim sub của JWT do chính hệ thống phát hành, đọc qua authentication.principal.subject vì principal ở mỗi request đã xác thực là một đối tượng Jwt (xem Day 24/33) - KHÔNG bao giờ nhận từ trường do client tự gửi trong request.",
           "citations": []
         },
         {
@@ -124,63 +124,120 @@
           "columns": [
             "Method",
             "Path",
-            "Mo ta",
-            "Auth"
+            "Auth",
+            "Request",
+            "Success",
+            "Response",
+            "Error"
           ],
           "rows": [
             [
               "POST",
               "/api/auth/register",
-              "Đăng ký tài khoản mới",
-              "Không"
+              "Không",
+              "JSON { email, password, fullName }",
+              "201 Created",
+              "JSON { id, email, fullName } - KHÔNG trả password/hash",
+              "400 (email sai định dạng/password rỗng); 409 (email đã tồn tại)"
             ],
             [
               "POST",
               "/api/auth/login",
-              "Đăng nhập, trả về JWT",
-              "Không"
+              "Không",
+              "JSON { email, password }",
+              "200 OK",
+              "JSON { accessToken, tokenType: \"Bearer\", expiresIn } - JWT tự phát hành, xem Day 33",
+              "401 (sai email hoặc password)"
             ],
             [
-              "GET/POST/PUT/DELETE",
+              "GET /api/users/me, PUT /api/users/me",
+              "/api/users/me",
+              "User đã đăng nhập (mọi role) - luôn là CHÍNH user gắn với token, userId lấy từ claim sub của JWT (authentication.principal.subject); path KHÔNG chứa userId và request KHÔNG nhận userId từ client",
+              "GET: (không có body); PUT: JSON các field profile được phép sửa, ví dụ { fullName }",
+              "GET 200; PUT 200",
+              "JSON UserDto { id, email, fullName } kèm các field profile của chính user đó - KHÔNG trả password/hash",
+              "400 (dữ liệu profile không hợp lệ); 401 (thiếu/không hợp lệ token)"
+            ],
+            [
+              "GET /api/categories, GET /api/categories/{id}",
               "/api/categories[/{id}]",
-              "CRUD danh mục",
-              "Admin (write)"
+              "Không",
+              "(không có body)",
+              "200 OK",
+              "GET danh sách: JSON [ { id, name } ]; GET theo id: JSON { id, name }",
+              "404 (GET theo id: category không tồn tại)"
+            ],
+            [
+              "POST /api/categories, PUT/DELETE /api/categories/{id}",
+              "/api/categories[/{id}]",
+              "Admin (ROLE_ADMIN)",
+              "POST/PUT: JSON { name }; DELETE: (không có body)",
+              "POST 201; PUT 200; DELETE 204",
+              "POST/PUT: JSON { id, name } vừa tạo/sửa; DELETE: không có body",
+              "400 (name rỗng); 401 (thiếu/không hợp lệ token); 403 (không phải ADMIN); 404 (PUT/DELETE: id không tồn tại)"
             ],
             [
               "GET",
               "/api/products?search=&categoryId=&page=",
-              "Tìm kiếm/lọc/phân trang sản phẩm",
-              "Không"
+              "Không",
+              "(query param, không có body)",
+              "200 OK",
+              "JSON trang kết quả { content: [ { id, name, price, categoryId } ], page, size, totalElements } - danh sách rỗng nếu không khớp điều kiện lọc",
+              "Không áp dụng (luôn trả 200 kể cả khi content rỗng)"
             ],
             [
-              "POST/PUT/DELETE",
+              "POST /api/products, PUT/DELETE /api/products/{id}",
               "/api/products[/{id}]",
-              "CRUD sản phẩm",
-              "Admin"
+              "Admin (ROLE_ADMIN)",
+              "POST/PUT: JSON { name, price, categoryId }; DELETE: (không có body)",
+              "POST 201; PUT 200; DELETE 204",
+              "POST/PUT: JSON Product vừa tạo/sửa; DELETE: không có body",
+              "400 (name/price không hợp lệ); 401; 403 (không phải ADMIN); 404 (id sản phẩm hoặc categoryId không tồn tại)"
             ],
             [
-              "GET/POST/DELETE",
+              "POST /api/products/{id}/image",
+              "/api/products/{id}/image",
+              "Admin (ROLE_ADMIN)",
+              "multipart/form-data - field \"file\" (ảnh sản phẩm), giới hạn dung lượng qua spring.servlet.multipart.max-file-size (xem Day 34)",
+              "200 OK",
+              "Product.imageUrl vừa cập nhật (không có body chuẩn hoá riêng ở phạm vi Sprint 2)",
+              "401 (thiếu/không hợp lệ token); 403 (không phải ADMIN); 404 (id sản phẩm không tồn tại); 413 (file vượt max-file-size)"
+            ],
+            [
+              "GET /api/cart/items, POST /api/cart/items, DELETE /api/cart/items/{id}",
               "/api/cart/items[/{id}]",
-              "Quản lý giỏ hàng của user hiện tại",
-              "User"
+              "User (ROLE_CUSTOMER) - giỏ hàng của CHÍNH user đang đăng nhập, userId lấy từ claim sub của JWT (authentication.principal.subject), không nhận từ client",
+              "GET/DELETE: (không có body); POST: JSON { productId, quantity }",
+              "GET 200; POST 201; DELETE 204",
+              "GET: JSON [ { id, productId, quantity } ] của user hiện tại; POST: JSON CartItem vừa thêm; DELETE: không có body",
+              "400 (quantity <= 0); 401; 404 (productId hoặc cart item không tồn tại)"
             ],
             [
               "POST",
               "/api/orders",
-              "Checkout: tạo order từ cart",
-              "User"
+              "User (ROLE_CUSTOMER)",
+              "(không có body - checkout dùng luôn giỏ hàng hiện tại của user; tổng tiền và userId đều do server tự tính/suy ra, KHÔNG nhận từ client)",
+              "201 Created",
+              "JSON Order { id, status, totalAmount, items: [ { productId, quantity, unitPrice } ] }",
+              "400 (giỏ hàng rỗng); 401; 409 (một sản phẩm trong giỏ đã hết hàng tại thời điểm checkout - xem invariant tồn kho ở Day 35)"
             ],
             [
               "GET",
               "/api/orders[/{id}]",
-              "Xem đơn hàng của user hiện tại",
-              "User"
+              "User (ROLE_CUSTOMER) - chỉ xem đơn hàng của CHÍNH mình, so khớp chủ sở hữu qua claim sub của JWT (authentication.principal.subject)",
+              "(không có body)",
+              "200 OK",
+              "GET danh sách: JSON [ Order ] của user hiện tại; GET theo id: JSON Order (chỉ khi order đó thuộc user hiện tại)",
+              "401; 403 (id thuộc order của user khác); 404 (id không tồn tại)"
             ],
             [
               "GET",
               "/api/admin/orders/export",
-              "Xuất CSV danh sách đơn hàng",
-              "Admin"
+              "Admin (ROLE_ADMIN)",
+              "(không có body)",
+              "200 OK",
+              "File CSV (Content-Type: text/csv) - danh sách toàn bộ đơn hàng",
+              "401; 403 (không phải ADMIN)"
             ]
           ],
           "citations": [

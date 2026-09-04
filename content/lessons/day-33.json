@@ -21,14 +21,26 @@
       "res-cf695e39df80",
       "res-65703b737426",
       "res-553bbd92e5d0",
-      "res-aa4cbb2b9a5c"
+      "res-aa4cbb2b9a5c",
+      "res-4aa1d5866d14",
+      "res-1f9cf059207c",
+      "res-ea083f388530",
+      "res-5020e7509cfe",
+      "res-c396b40b74ea",
+      "res-81f31cc79aa9",
+      "res-88e7e93efd97",
+      "res-352c59ed0526",
+      "res-51b94dcde325",
+      "res-28d362c904b7",
+      "res-4611e0c0d322",
+      "res-fa00cc21947b"
     ]
   },
   "unitId": "unit-11",
   "group": "spring",
   "kind": "project",
   "title": "Development Sprint 1",
-  "summary": "Sprint 1 của dự án capstone: hiện thực Category entity kế thừa BaseEntity, quan hệ User-UserProfile với CascadeType.ALL, cấu hình Spring Security OAuth2 Resource Server xác thực JWT qua issuer-uri, User profile API, Category CRUD, và daily standup.",
+  "summary": "Sprint 1 của dự án capstone: hiện thực Category entity kế thừa BaseEntity, quan hệ User-UserProfile với CascadeType.ALL, module Auth tự phát hành JWT (Register/Login qua AuthenticationManager, JwtEncoder) và xác thực JWT ở mỗi request qua Resource Server, User profile API, Category CRUD, và daily standup.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO6",
@@ -42,7 +54,7 @@
   "outcomes": [
     "Hiện thực entity kế thừa BaseEntity và hiểu đúng hành vi persist/merge của save().",
     "Cấu hình đúng quan hệ cascade (CascadeType.ALL, orphanRemoval) cho User-UserProfile.",
-    "Cấu hình Spring Security OAuth2 Resource Server xác thực JWT chỉ qua issuer-uri.",
+    "Hiện thực Register/Login tự phát hành JWT (AuthenticationManager, DaoAuthenticationProvider, JwtEncoder/JwtClaimsSet) và cấu hình Resource Server xác thực JWT đó ở mỗi request bằng JwtDecoder/JwtAuthenticationConverter.",
     "Hiện thực đầy đủ Category CRUD và User profile API theo API contract đã thống nhất."
   ],
   "sections": [
@@ -117,6 +129,17 @@
             "day33-src-4",
             "day33-src-6"
           ]
+        },
+        {
+          "id": "day33-blk-18",
+          "type": "code",
+          "language": "java",
+          "code": "import jakarta.persistence.Entity;\n\n@Entity\nclass UserProfile extends BaseEntity<Long> {\n\n    // Ho ten hien thi cua user - duoc set luc Register (day33-blk-24) va\n    // sua qua PUT /api/users/me theo dung API contract Day 31 (day33-blk-9).\n    private String fullName;\n}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-2"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         }
       ]
     },
@@ -127,44 +150,170 @@
         {
           "id": "day33-blk-8",
           "type": "paragraph",
-          "text": "Sau khi user đăng nhập và nhận JWT, mọi request tới API bảo vệ kèm Bearer token được xác thực bằng cách chỉ khai báo spring.security.oauth2.resourceserver.jwt.issuer-uri - Resource Server tự khám phá public key của authorization server dựa trên claim iss.",
-          "citations": [
-            "day33-src-7"
-          ]
+          "text": "Kiến trúc xác thực CHUẨN của khoá học (áp dụng xuyên suốt Day 22/24/31/33/34/35): hệ thống TỰ PHÁT HÀNH JWT, không dựa vào một authorization server bên ngoài. Luồng Register: validate RegisterRequest bằng Bean Validation (@Valid), kiểm tra email đã tồn tại chưa (userRepository.existsByEmail), mã hoá mật khẩu bằng PasswordEncoder (DelegatingPasswordEncoder đã cấu hình ở Day 22), rồi persist User (kế thừa BaseEntity như day33-blk-3 đã mô tả - save() gọi persist() vì User là entity mới).",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-24",
+          "type": "template",
+          "text": "record RegisterRequest(\n    @jakarta.validation.constraints.Email @jakarta.validation.constraints.NotBlank String email,\n    @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(min = 8) String password,\n    @jakarta.validation.constraints.NotBlank String fullName) {\n}\n\nrecord RegisterResponse(Long id, String email, String fullName) {\n}\n\nrecord LoginRequest(String email, String password) {\n}\n\nrecord TokenResponse(String accessToken, String tokenType, long expiresIn) {\n}\n\n@org.springframework.web.bind.annotation.RestController\n@org.springframework.web.bind.annotation.RequestMapping(\"/api/auth\")\nclass AuthController {\n\n    private final AuthService authService;\n\n    AuthController(AuthService authService) {\n        this.authService = authService;\n    }\n\n    @org.springframework.web.bind.annotation.PostMapping(\"/register\")\n    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.CREATED)\n    RegisterResponse register(@org.springframework.web.bind.annotation.RequestBody @jakarta.validation.Valid RegisterRequest request) {\n        return authService.register(request.email(), request.password(), request.fullName());\n    }\n\n    @org.springframework.web.bind.annotation.PostMapping(\"/login\")\n    TokenResponse login(@org.springframework.web.bind.annotation.RequestBody LoginRequest request) {\n        return authService.login(request.email(), request.password());\n    }\n}\n\n@org.springframework.stereotype.Service\nclass AuthService {\n\n    private final UserRepository userRepository;\n    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;\n\n    AuthService(UserRepository userRepository,\n            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {\n        this.userRepository = userRepository;\n        this.passwordEncoder = passwordEncoder;\n    }\n\n    RegisterResponse register(String email, String rawPassword, String fullName) {\n        if (userRepository.existsByEmail(email)) {\n            // 409 theo API contract Day 31 (email da ton tai) - KHONG dung\n            // ValidationException (Day 32 anh xa 400, danh cho loi nghiep vu\n            // thong thuong); ConflictException rieng anh xa CONFLICT.\n            throw new ConflictException(\"email da duoc su dung\");\n        }\n        UserProfile profile = new UserProfile();\n        profile.setFullName(fullName);\n\n        User user = new User();\n        user.setEmail(email);\n        user.setPasswordHash(passwordEncoder.encode(rawPassword));\n        user.setRole(\"CUSTOMER\");\n        user.setProfile(profile);\n        userRepository.save(user);\n\n        return new RegisterResponse(user.getId(), user.getEmail(), fullName);\n    }\n\n    // login(...): xem khoi Login ben duoi - can AuthenticationManager va TokenIssuer.\n}\n",
+          "citations": []
         },
         {
           "id": "day33-blk-9",
           "type": "paragraph",
-          "text": "Việc khám phá cấu hình (jwks_url, thuật toán hỗ trợ) diễn ra trễ, ở request đầu tiên có JWT - nhờ vậy ứng dụng khởi động được ngay cả khi authorization server chưa sẵn sàng.",
+          "text": "Luồng Login dùng đúng 5 bước của DaoAuthenticationProvider: (1) AuthController nhận LoginRequest (email, password), tạo một UsernamePasswordAuthenticationToken CHƯA xác thực rồi truyền vào AuthenticationManager; (2) AuthenticationManager (cài đặt phổ biến là ProviderManager) uỷ quyền cho DaoAuthenticationProvider; (3) DaoAuthenticationProvider gọi UserDetailsService để lấy UserDetails ứng với email; (4) dùng PasswordEncoder (giống PasswordEncoder đã dùng ở Register) để xác minh mật khẩu trên UserDetails vừa lấy; (5) nếu thành công, trả về một Authentication ĐÃ xác thực có principal là chính UserDetails đó (CustomUserDetails - một UserDetails tuỳ chỉnh bọc lấy User vừa persist, có field id). Nếu không provider nào xác thực được, ProviderManager ném ProviderNotFoundException.",
           "citations": [
-            "day33-src-8"
+            "day33-src-11",
+            "day33-src-12",
+            "day33-src-13"
           ]
         },
         {
-          "id": "day33-blk-10",
+          "id": "day33-blk-25",
+          "type": "note",
+          "text": "AbstractAuthenticationProcessingFilter là cơ chế Spring Security dùng cho form-login truyền thống (ví dụ UsernamePasswordAuthenticationFilter): filter tự đọc HttpServletRequest để tạo Authentication rồi gọi AuthenticationManager, thành công thì set Authentication vào SecurityContextHolder và gọi AuthenticationSuccessHandler. Vì đây là REST API stateless trả về JWT (không dùng session/SecurityContextHolder giữa các request), luồng Login của Sprint 1 KHÔNG dùng filter này mà gọi thẳng authenticationManager.authenticate(...) trong một @RestController/@Service, rồi tự xây JWT từ Authentication trả về thay vì lưu vào SecurityContextHolder.",
+          "citations": [
+            "day33-src-14",
+            "day33-src-15"
+          ]
+        },
+        {
+          "id": "day33-blk-26",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        http.authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/auth/**\").permitAll()\n                .anyRequest().authenticated())\n            // Resource Server: xac thuc JWT dua tren issuer-uri, khong tu quan ly session.\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));\n        return http.build();\n    }\n}\n",
+          "code": "import org.springframework.security.authentication.AuthenticationManager;\nimport org.springframework.security.authentication.UsernamePasswordAuthenticationToken;\nimport org.springframework.security.core.Authentication;\n\n@org.springframework.stereotype.Service\nclass AuthService {\n\n    private final AuthenticationManager authenticationManager;\n    private final UserRepository userRepository;\n    private final TokenIssuer tokenIssuer;\n\n    AuthService(AuthenticationManager authenticationManager,\n            UserRepository userRepository, TokenIssuer tokenIssuer) {\n        this.authenticationManager = authenticationManager;\n        this.userRepository = userRepository;\n        this.tokenIssuer = tokenIssuer;\n    }\n\n    TokenResponse login(String email, String rawPassword) {\n        // Buoc (1): Authentication CHUA xac thuc, mang credentials nguoi dung nhap.\n        Authentication unauthenticated = new UsernamePasswordAuthenticationToken(email, rawPassword);\n\n        // Buoc (2)+(3)+(4): AuthenticationManager (ProviderManager) uy quyen cho\n        // DaoAuthenticationProvider; DaoAuthenticationProvider goi UserDetailsService\n        // lay UserDetails roi dung PasswordEncoder xac minh mat khau tren UserDetails do.\n        // That bai se nem AuthenticationException (vi du BadCredentialsException).\n        Authentication authenticated = authenticationManager.authenticate(unauthenticated);\n\n        // Buoc (5): thanh cong -> Authentication co principal la UserDetails\n        // (CustomUserDetails boc User da persist tu Register, co field id).\n        CustomUserDetails principal = (CustomUserDetails) authenticated.getPrincipal();\n        User user = userRepository.findById(principal.getId())\n            .orElseThrow(() -> new ResourceNotFoundException(\"user\"));\n\n        String accessToken = tokenIssuer.issue(user.getId(), java.util.List.of(user.getRole()));\n        return new TokenResponse(accessToken, \"Bearer\", 3600);\n    }\n}\n",
           "compile": false,
           "citations": [
-            "day33-src-7"
+            "day33-src-11",
+            "day33-src-13"
           ],
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
+          "id": "day33-blk-27",
+          "type": "paragraph",
+          "text": "Sau khi có Authentication đã xác thực ở Login, JWT được phát hành qua JwtEncoder - functional interface của framework (có từ Spring Security 5.6) chỉ khai báo một phương thức trừu tượng encode(JwtEncoderParameters parameters), chịu trách nhiệm encode thành JWS Compact Serialization (ký) hoặc JWE (mã hoá) - việc ký/mã hoá do framework quản lý, không tự viết tay. NimbusJwtEncoder là cài đặt chính thức của JwtEncoder (dùng thư viện Nimbus JOSE+JWT SDK): khoá dùng để ký được cung cấp qua một JWKSource truyền vào constructor, hỗ trợ cả khoá bí mật đối xứng (dùng cho HMAC) lẫn cặp khoá bất đối xứng mà không cần đổi API - ở nhánh Spring Security 6.5 của khoá học chỉ có constructor nhận JWKSource được ghi nhận, CHƯA có các static builder tiện lợi (withKeyPair/RsaKeyPairJwtEncoderBuilder/SecretKeyJwtEncoderBuilder chỉ xuất hiện từ nhánh 7.0).",
+          "citations": [
+            "day33-src-16",
+            "day33-src-17",
+            "day33-src-18",
+            "day33-src-19"
+          ]
+        },
+        {
+          "id": "day33-blk-28",
+          "type": "paragraph",
+          "text": "JwtClaimsSet là lớp final biểu diễn tập claim của JWT (implements JwtClaimAccessor); JwtClaimsSet.Builder cung cấp các phương thức issuer/subject/audience/issuedAt/expiresAt/notBefore/id cho các registered claim chuẩn, cộng thêm claim(name, value) cho claim tuỳ ý - dự án dùng subject để nhúng id người dùng (khớp với sub mà bước xác thực mỗi request sau này đọc lại) và một claim tuỳ chỉnh \"roles\" để nhúng quyền. JwtClaimsSet.builder() tạo builder rỗng, build() trả về JwtClaimsSet bất biến, và getClaims() trả về Map các claim.",
+          "citations": [
+            "day33-src-20",
+            "day33-src-21"
+          ]
+        },
+        {
+          "id": "day33-blk-31",
+          "type": "paragraph",
+          "text": "Nhưng claim set KHÔNG mang thuật toán ký. Thuật toán ký là metadata của JWS JOSE header: JwsHeader là lớp biểu diễn header đó, và getAlgorithm() của nó trả về thuật toán JWA dùng để ký JWS. Trang API 6.5 của JwsHeader không có constructor - chỉ có static factory with(JwsAlgorithm) trả về JwsHeader.Builder (cùng from(JwsHeader) để sao lại header có sẵn), nên cách duy nhất để khai báo thuật toán là JwsHeader.with(<JwsAlgorithm>).build(). Với khoá bí mật đối xứng mà dự án dùng, JwsAlgorithm cần chọn là MacAlgorithm.HS256 - enum MacAlgorithm chỉ có ba hằng số HS256 (HMAC using SHA-256, mức Required), HS384 và HS512 (Optional), và enum này implements JwsAlgorithm nên dùng được ở chỗ cần một JwsAlgorithm; lưu ý MacAlgorithm nằm ở package org.springframework.security.oauth2.jose.jws, KHÁC package org.springframework.security.oauth2.jwt của JwsHeader/JwtEncoderParameters, nên phải import riêng.",
+          "citations": [
+            "day33-src-23",
+            "day33-src-24",
+            "day33-src-25",
+            "day33-src-26"
+          ]
+        },
+        {
+          "id": "day33-blk-32",
+          "type": "important",
+          "text": "JwtEncoderParameters có ĐÚNG hai static factory: from(JwtClaimsSet claims) và from(JwsHeader jwsHeader, JwtClaimsSet claims). Bản MỘT tham số để JWS header trống - getJwsHeader() được chú thích @Nullable và trả về null nếu không được chỉ định - nghĩa là tham số truyền vào encode() không khai báo thuật toán ký nào cả. Vì thuật toán ký chỉ tồn tại trong header, với cấu hình khoá bí mật đối xứng của bài này (ImmutableSecret bọc SecretKeySpec ở day33-blk-29) thuật toán PHẢI được biểu diễn tường minh trong JWS header, nên luồng phát hành của dự án dùng bản HAI tham số. Mô hình cần nhớ: claims → JwsHeader khai báo HS256 → JwtEncoderParameters.from(header, claims) → JwtEncoder.encode(...) → JWT đã ký (JWS Compact Serialization ba đoạn, đoạn header giải ra {\"alg\":\"HS256\"}).",
+          "citations": [
+            "day33-src-23",
+            "day33-src-25",
+            "day33-src-27",
+            "day33-src-28"
+          ]
+        },
+        {
+          "id": "day33-blk-29",
+          "type": "code",
+          "language": "java",
+          "code": "import com.nimbusds.jose.jwk.source.ImmutableSecret;\nimport com.nimbusds.jose.jwk.source.JWKSource;\nimport com.nimbusds.jose.proc.SecurityContext;\nimport org.springframework.security.oauth2.jose.jws.MacAlgorithm;\nimport org.springframework.security.oauth2.jwt.JwsHeader;\nimport org.springframework.security.oauth2.jwt.JwtClaimsSet;\nimport org.springframework.security.oauth2.jwt.JwtEncoder;\nimport org.springframework.security.oauth2.jwt.JwtEncoderParameters;\nimport org.springframework.security.oauth2.jwt.NimbusJwtEncoder;\n\nimport javax.crypto.spec.SecretKeySpec;\nimport java.nio.charset.StandardCharsets;\nimport java.time.Duration;\nimport java.time.Instant;\nimport java.util.List;\n\n@org.springframework.context.annotation.Configuration\nclass JwtIssuanceConfig {\n\n    // CHI DUNG CHO DEV/DEMO: doc secret tu config (application.properties/bien\n    // moi truong), KHONG hardcode/commit len source control o moi truong that -\n    // san xuat can mot secret duoc quan ly rieng (vi du secret manager). O nhanh\n    // Spring Security 6.5, NimbusJwtEncoder chi co constructor nhan JWKSource\n    // duoc ghi nhan - CHUA dung cac static builder (chi co tu nhanh 7.0).\n    @org.springframework.beans.factory.annotation.Value(\"${app.jwt.secret}\")\n    private String jwtSecret;\n\n    @org.springframework.context.annotation.Bean\n    JwtEncoder jwtEncoder() {\n        SecretKeySpec key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), \"HmacSHA256\");\n        JWKSource<SecurityContext> jwkSource = new ImmutableSecret<>(key);\n        return new NimbusJwtEncoder(jwkSource);\n    }\n}\n\n@org.springframework.stereotype.Component\nclass TokenIssuer {\n\n    private static final String ISSUER = \"spendwise-capstone\";\n    private static final Duration TTL = Duration.ofHours(1);\n\n    private final JwtEncoder jwtEncoder;\n\n    TokenIssuer(JwtEncoder jwtEncoder) {\n        this.jwtEncoder = jwtEncoder;\n    }\n\n    String issue(Long userId, List<String> roles) {\n        Instant now = Instant.now();\n        JwtClaimsSet claims = JwtClaimsSet.builder()\n            .issuer(ISSUER)\n            .subject(String.valueOf(userId))\n            .issuedAt(now)\n            .expiresAt(now.plus(TTL))\n            .claim(\"roles\", roles)\n            .build();\n\n        // Thuat toan ky nam o JWS header, KHONG nam trong claim set: phai khai\n        // bao tuong minh HS256 roi truyen ca header lan claims vao encoder.\n        // JwtEncoderParameters.from(claims) (mot tham so) de JWS header = null,\n        // tuc khong khai bao thuat toan nao ca.\n        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();\n        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-16",
+            "day33-src-17",
+            "day33-src-18",
+            "day33-src-19",
+            "day33-src-20",
+            "day33-src-21"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day33-blk-33",
+          "type": "warning",
+          "text": "Với cấu hình HS256 của bài này, secret ký được cấu hình phải thoả độ dài khoá tối thiểu mà thư viện JOSE bên dưới yêu cầu. NimbusJwtEncoder không tự cài thuật toán ký - nó lấy khoá từ JWKSource và uỷ quyền phần ký cho thư viện Nimbus JOSE+JWT - nên ràng buộc thực sự nằm ở MACSigner của Nimbus: cả bốn constructor của MACSigner đều ghi cùng một điều kiện cho secret là phải dài ít nhất 256 bit và không được null, và ném KeyLengthException nếu ngắn hơn ngưỡng 256-bit tối thiểu đó. Vì đây là điều kiện của chính constructor, nó áp dụng cho mọi lần dựng MACSigner, trong đó có đường ký HS256 mà bài này cấu hình. Lưu ý phạm vi: 256 bit là ngưỡng constructor mà Javadoc ghi rõ, còn Javadoc KHÔNG in ra con số riêng cho HS384/HS512 - nó chỉ phơi ra static getMinRequiredSecretLength(JWSAlgorithm) trả về độ dài secret tối thiểu tính bằng bit cho thuật toán được chỉ định, nên nếu đổi thuật toán thì tra lại bằng chính phương thức đó thay vì suy ra từ con số 256. Hệ quả cho dự án: 256 bit = 32 byte UTF-8, và secret ngắn hơn KHÔNG làm ứng dụng chết lúc khởi động - bean JwtEncoder vẫn tạo được, chỉ tới lần encode() đầu tiên (tức đúng lúc Register/Login phát hành token) mới thất bại. Giữ app.jwt.secret là cấu hình bên ngoài (biến môi trường/secret manager), KHÔNG hardcode giá trị secret vào code.",
+          "citations": [
+            "day33-src-18",
+            "day33-src-19",
+            "day33-src-29",
+            "day33-src-30"
+          ]
+        },
+        {
+          "id": "day33-blk-34",
+          "type": "code",
+          "language": "properties",
+          "code": "# application.properties - app.jwt.secret la CAU HINH, khong phai hang so trong code.\n# Gia tri that lay tu bien moi truong/secret manager va KHONG commit len git;\n# duoi day chi la HINH DANG cau hinh voi placeholder.\n# HS256: secret phai >= 256 bit, tuc >= 32 byte sau khi encode UTF-8.\napp.jwt.secret=${APP_JWT_SECRET}\n",
+          "compile": false,
+          "citations": [
+            "day33-src-29"
+          ],
+          "partialReason": "Minh họa cấu hình ứng dụng (application.properties), không phải mã Java; không áp dụng được bước compile-check javac --release 17 của pipeline này."
+        },
+        {
+          "id": "day33-blk-10",
+          "type": "template",
+          "text": "@org.springframework.context.annotation.Configuration\n// Bat Method Security (xem lai ly thuyet o Day 23/day23-blk-2) - THIEU annotation\n// nay thi moi @PreAuthorize trong du an (day33-blk-12, day34-blk-6) bi Spring\n// BO QUA HOAN TOAN, khong chan gi ca du code annotation van con nguyen.\n@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity\nclass SecurityConfig {\n\n    @org.springframework.beans.factory.annotation.Value(\"${app.jwt.secret}\")\n    private String jwtSecret;\n\n    // Dung LAI dung secret voi JwtEncoder o tren de xac thuc chu ky JWT tu\n    // phat hanh - KHONG goi jwks_url/authorization server ben ngoai nao.\n    @org.springframework.context.annotation.Bean\n    org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder() {\n        javax.crypto.spec.SecretKeySpec key = new javax.crypto.spec.SecretKeySpec(\n            jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), \"HmacSHA256\");\n        return org.springframework.security.oauth2.jwt.NimbusJwtDecoder.withSecretKey(key).build();\n    }\n\n    // Du an quy uoc ROLE_ (khong phai SCOPE_ mac dinh cua framework - xem khoi\n    // important ben duoi): doc claim \"roles\" da nhung vao JWT luc phat hanh,\n    // sinh GrantedAuthority voi tien to ROLE_ thay vi doc claim scope mac dinh.\n    @org.springframework.context.annotation.Bean\n    org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter() {\n        var authorities = new org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter();\n        authorities.setAuthorityPrefix(\"ROLE_\");\n        authorities.setAuthoritiesClaimName(\"roles\");\n\n        var converter = new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter();\n        converter.setJwtGrantedAuthoritiesConverter(authorities);\n        return converter;\n    }\n\n    @org.springframework.context.annotation.Bean\n    org.springframework.security.web.SecurityFilterChain filterChain(\n            org.springframework.security.config.annotation.web.builders.HttpSecurity http,\n            org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder,\n            org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {\n        http.authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/auth/register\", \"/api/auth/login\").permitAll()\n                // API contract Day 31: GET category/product khong yeu cau dang nhap\n                // (Auth: Khong); chi POST/PUT/DELETE moi can ROLE_ADMIN qua @PreAuthorize.\n                .requestMatchers(org.springframework.http.HttpMethod.GET, \"/api/categories/**\", \"/api/products/**\").permitAll()\n                .anyRequest().authenticated())\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt\n                .decoder(jwtDecoder)\n                .jwtAuthenticationConverter(jwtAuthenticationConverter)));\n        return http.build();\n    }\n}\n",
+          "citations": []
+        },
+        {
           "id": "day33-blk-11",
           "type": "paragraph",
-          "text": "Với mỗi request có JWT hợp lệ, Resource Server xác thực chữ ký bằng public key lấy từ jwks_url, kiểm tra exp/nbf/iss, rồi ánh xạ từng scope trong token thành granted authority có tiền tố SCOPE_.",
+          "text": "Ở mỗi request mang Bearer JWT, JwtAuthenticationProvider (được cấu hình tự động bởi oauth2ResourceServer().jwt(...)) dùng JwtDecoder để giải mã/xác thực chữ ký và kiểm tra các claim như exp, trước khi tạo Authentication - hành vi này không phụ thuộc việc khoá xác minh lấy từ đâu (jwks_url của một authorization server bên ngoài, hay trực tiếp từ cấu hình cục bộ như JwtDecoder ở trên). Khi thành công, JwtAuthenticationProvider trả về JwtAuthenticationToken có principal là chính đối tượng Jwt (KHÔNG phải một UserDetails được nạp lại từ DB) và dùng JwtAuthenticationConverter để sinh tập GrantedAuthority từ claim của JWT.",
           "citations": [
-            "day33-src-9"
+            "day33-src-10"
           ]
         },
         {
           "id": "day33-blk-12",
           "type": "important",
-          "text": "Khi viết @PreAuthorize cho các endpoint Category/Product CRUD (chỉ Admin), phải dùng đúng tiền tố SCOPE_ (ví dụ hasAuthority('SCOPE_admin')) - JwtAuthenticationProvider tạo JwtAuthenticationToken với authority theo đúng quy ước này, không phải role thuần túy.",
+          "text": "Mặc định, JwtAuthenticationConverter ánh xạ mỗi giá trị trong claim scope thành GrantedAuthority có tiền tố SCOPE_ (ví dụ hasAuthority('SCOPE_admin')). Dự án CHỐT dùng tiền tố ROLE_ để nhất quán với @PreAuthorize(\"hasRole(...)\") đã học ở Day 23: JwtAuthenticationConverter được cấu hình lại (xem bean jwtAuthenticationConverter() ở day33-blk-10) để đọc claim \"roles\" - do chính TokenIssuer nhúng vào JWT lúc phát hành - thay vì claim scope mặc định, và sinh authority với tiền tố ROLE_. Vì vậy @PreAuthorize cho Category/Product CRUD (chỉ Admin) phải dùng hasRole('ADMIN'), KHÔNG dùng hasAuthority('SCOPE_...') - viết sai tiền tố khiến phân quyền không hoạt động vì JWT của dự án không mang claim scope.",
           "citations": [
             "day33-src-10"
+          ]
+        },
+        {
+          "id": "day33-blk-19",
+          "type": "important",
+          "text": "@PreAuthorize CHỈ có hiệu lực khi Method Security được bật tường minh bằng @EnableMethodSecurity trên một class cấu hình (lý thuyết đầy đủ ở Day 23/day23-blk-2/day23-blk-21) - dự án đặt annotation này ngay trên SecurityConfig (xem lại day33-blk-10). Thiếu annotation này, Spring KHÔNG báo lỗi gì cả - @PreAuthorize(\"hasRole('ADMIN')\") ở Category/Product CRUD (day33-blk-12) và upload ảnh sản phẩm (Day 34/day34-blk-6) đơn giản bị bỏ qua, khiến MỌI user đã xác thực (kể cả không phải Admin) gọi được các endpoint lẽ ra chỉ dành cho Admin.",
+          "citations": [
+            "day33-src-22"
+          ]
+        },
+        {
+          "id": "day33-blk-20",
+          "type": "note",
+          "text": "AuthService.register() (day33-blk-24) LUÔN gán role \"CUSTOMER\" cho tài khoản mới - không có đường nào qua API tự tạo ra một tài khoản ADMIN. Vì các bài tập/tiêu chí chấm từ Day 33 đến Day 36 đều cần một token Admin để kiểm tra nhánh 403 (Category/Product CRUD, upload ảnh sản phẩm), dự án phải SEED SẴN ít nhất một User với role=\"ADMIN\" ngoài luồng Register - ví dụ một script migration seed (cùng cơ chế Flyway V__seed_data.sql đã dùng ở Day 21) chèn thẳng một row User với password đã được mã hoá SẴN bằng CÙNG thuật toán mà PasswordEncoder của dự án dùng lúc Register (không insert plaintext, vì DaoAuthenticationProvider so khớp bằng PasswordEncoder.matches() ở Login). Đây là dữ liệu khởi tạo cho môi trường dev/chấm bài, KHÔNG phải một endpoint 'tạo Admin' công khai.",
+          "citations": []
+        },
+        {
+          "id": "day33-blk-30",
+          "type": "note",
+          "text": "Phương án thay thế (CHỈ khi dự án chọn xác thực JWT do MỘT AUTHORIZATION SERVER BÊN NGOÀI phát hành, ví dụ Keycloak/Auth0/Okta, thay vì tự phát hành như kiến trúc CHUẨN ở trên - đây là lựa chọn kiến trúc được gắn nhãn rõ ràng, KHÔNG phải mặc định của dự án): Resource Server có thể cấu hình tối giản chỉ qua spring.security.oauth2.resourceserver.jwt.issuer-uri, tự khám phá public key của authorization server dựa trên claim iss; việc khám phá jwks_url và thuật toán hỗ trợ diễn ra trễ ở request đầu tiên có JWT nên ứng dụng khởi động được ngay cả khi authorization server chưa sẵn sàng; và theo mặc định, mỗi scope trong token vẫn được ánh xạ thành authority tiền tố SCOPE_ như day33-blk-12 mô tả. Khi chọn phương án này, KHÔNG cần các bean JwtEncoder/JwtDecoder/TokenIssuer tự viết ở trên - Resource Server tự cấu hình toàn bộ từ issuer-uri.",
+          "citations": [
+            "day33-src-7",
+            "day33-src-8",
+            "day33-src-9"
           ]
         }
       ]
@@ -200,7 +349,7 @@
         {
           "id": "day33-blk-17",
           "type": "note",
-          "text": "Phạm vi chấm của bảng dưới đây: kiến trúc xác thực của dự án capstone hiện CHƯA được khoá học chốt. Day 33 mô tả cấu hình OAuth2 Resource Server xác thực JWT do một issuer bên ngoài phát hành (day33-blk-8/blk-10) và phân quyền theo scope (day33-blk-12), nhưng chính đề bài Sprint 1 (day33-blk-1) lại yêu cầu module Auth tự đăng ký/đăng nhập/phát hành JWT, và API contract Day 31 có POST /api/auth/login 'trả về JWT'. Hai hướng này chưa được đối chiếu; Day 23 lại dạy phân quyền theo role với tiền tố ROLE_. Vì vậy hai hạng mục xác thực/phân quyền dưới đây chỉ chấm theo hành vi quan sát được (401 khi thiếu/sai token, 403 khi thiếu quyền Admin) và KHÔNG chấm theo một cách hiện thực hay một tiền tố quyền cố định. Ngoài ra User profile API và Category CRUD hiện chỉ có khối template (day33-blk-13) không có nguồn riêng - xem authoring.limitations.",
+          "text": "Kiến trúc xác thực của dự án capstone đã được khoá học CHỐT (nhất quán xuyên suốt Day 22/24/31/33/34/35): module Auth TỰ PHÁT HÀNH JWT ở Register/Login (AuthenticationManager → DaoAuthenticationProvider → JwtEncoder, day33-blk-8 đến blk-30), khớp với đề bài Sprint 1 (day33-blk-1: module Auth tự đăng ký/đăng nhập/phát hành JWT) và API contract Day 31 (POST /api/auth/login 'trả về JWT'). Phân quyền dùng tiền tố ROLE_ (claim tuỳ chỉnh \"roles\" nhúng lúc phát hành, JwtAuthenticationConverter cấu hình lại ở day33-blk-10), nhất quán với @PreAuthorize(\"hasRole(...)\") đã học ở Day 23 - KHÔNG dùng tiền tố SCOPE_ mặc định của framework (chỉ đúng khi chưa cấu hình lại converter, xem day33-prac-3). Phương án xác thực bằng authorization server bên ngoài (issuer-uri) chỉ là lựa chọn thay thế được gắn nhãn rõ ràng (day33-blk-30), KHÔNG phải kiến trúc mặc định của dự án. Hai hạng mục xác thực/phân quyền dưới đây chấm theo hành vi quan sát được (401 khi thiếu/sai token, 403 khi thiếu quyền Admin) trên đúng kiến trúc đã chốt này. Ngoài ra User profile API và Category CRUD hiện chỉ có khối template (day33-blk-13) không có nguồn riêng - xem authoring.limitations.",
           "citations": []
         },
         {
@@ -225,12 +374,12 @@
             [
               "Bảo vệ endpoint bằng Bearer JWT",
               "Gọi một endpoint yêu cầu xác thực: (a) không kèm Bearer token, (b) kèm token hết hạn hoặc không hợp lệ, (c) kèm token hợp lệ",
-              "(a) và (b) trả 401 Unauthorized; (c) trả đúng response thành công của endpoint đó. Chấm theo hành vi quan sát được, KHÔNG bắt buộc một cách hiện thực cụ thể: phần cấu hình cụ thể (Resource Server với issuer-uri như day33-blk-8/blk-10 mô tả, hay tự phát hành token ở POST /api/auth/login như API contract Day 31 ghi) là CHƯA CHỐT - xem day33-blk-17."
+              "(a) và (b) trả 401 Unauthorized; (c) trả đúng response thành công của endpoint đó. Chấm theo hành vi quan sát được (401 khi thiếu/sai token, response thành công khi token hợp lệ) trên kiến trúc đã chốt: hệ thống tự phát hành JWT ở POST /api/auth/login (AuthenticationManager → DaoAuthenticationProvider → JwtEncoder, xem day33-blk-8 đến blk-30) và Resource Server xác thực JWT đó bằng JwtDecoder cấu hình cùng khoá - không dùng authorization server bên ngoài."
             ],
             [
               "Phân quyền ghi cho Category/Product chỉ dành cho Admin",
               "Gọi endpoint ghi (POST/PUT/DELETE) của Category/Product bằng token của một user thường và bằng token của một Admin",
-              "Token Admin → request được xử lý bình thường; token user thường → 403 Forbidden. Cách biểu diễn quyền Admin trong token và trong @PreAuthorize (scope với tiền tố SCOPE_ như day33-blk-12 mô tả, hay role với tiền tố ROLE_ như Day 23 dạy) là CHƯA CHỐT, phụ thuộc quyết định ở day33-blk-17 - không chấm theo một tiền tố cố định."
+              "Token Admin → request được xử lý bình thường; token user thường → 403 Forbidden. Kiến trúc đã chốt: quyền Admin nhúng vào claim tuỳ chỉnh \"roles\" lúc phát hành JWT (TokenIssuer, day33-blk-29), JwtAuthenticationConverter cấu hình lại để đọc claim đó với tiền tố ROLE_ (day33-blk-10), và @PreAuthorize dùng hasRole('ADMIN') - nhất quán với tiền tố ROLE_ đã học ở Day 23, KHÔNG dùng tiền tố SCOPE_ mặc định của framework (xem day33-blk-12)."
             ],
             [
               "User profile API (GET/PUT /api/users/me)",
@@ -240,16 +389,16 @@
             [
               "Category CRUD (GET/POST/PUT/DELETE /api/categories)",
               "Gọi đủ 4 thao tác trên đúng method/path mà API contract Day 31 ghi; gọi GET/PUT/DELETE với id không tồn tại",
-              "4 thao tác chạy được trên đúng method/path của contract (contract Day 31 chỉ quy định method/path/quyền, KHÔNG quy định status code và body cho từng thao tác, nên phần đó không phải điều kiện chấm ở đây); id không tồn tại trả lỗi qua GlobalExceptionHandler (Day 32) dưới dạng ProblemDetail, không phải lỗi 500 mặc định. Thiết kế endpoint chi tiết vẫn ở dạng template (day33-blk-13) - xem day33-blk-17."
+              "4 thao tác chạy được trên đúng method/path/quyền và trả đúng status code + body mà contract Day 31 quy định (GET danh sách/theo id 200; POST 201 kèm body { id, name } vừa tạo; PUT 200 kèm body vừa sửa; DELETE 204 không body; ghi yêu cầu ROLE_ADMIN → 401 khi thiếu/sai token, 403 khi không phải Admin); id không tồn tại trả 404 qua GlobalExceptionHandler (Day 32) dưới dạng ProblemDetail, không phải lỗi 500 mặc định. Riêng cách tổ chức lớp/tên lớp bên trong vẫn ở dạng template (day33-blk-13) và không phải điều kiện chấm - xem day33-blk-17."
             ]
           ],
-          "citations": ["day33-src-1", "day33-src-2", "day33-src-3", "day33-src-4", "day33-src-5", "day33-src-6", "day33-src-7", "day33-src-8", "day33-src-9", "day33-src-10"]
+          "citations": ["day33-src-1", "day33-src-2", "day33-src-3", "day33-src-4", "day33-src-5", "day33-src-6", "day33-src-7", "day33-src-8", "day33-src-9", "day33-src-10", "day33-src-11", "day33-src-12", "day33-src-13", "day33-src-14", "day33-src-15", "day33-src-16", "day33-src-17", "day33-src-18", "day33-src-19", "day33-src-20", "day33-src-21"]
         }
       ]
     }
   ],
   "commonMistakes": [
-    "Dùng hasRole('admin') thay vì hasAuthority('SCOPE_admin') khi bảo vệ endpoint Category/Product CRUD, khiến phân quyền JWT-based không hoạt động đúng.",
+    "Dùng hasAuthority('SCOPE_admin') (tiền tố mặc định của framework khi chưa cấu hình lại JwtAuthenticationConverter) thay vì hasRole('ADMIN') khi bảo vệ endpoint Category/Product CRUD - dự án Sprint 1 cấu hình JwtAuthenticationConverter đọc claim \"roles\" với tiền tố ROLE_ (xem day33-blk-10/blk-12), nên dùng nhầm SCOPE_ khiến phân quyền không hoạt động vì JWT của dự án không mang claim scope.",
     "Quên orphanRemoval=true trên quan hệ User-UserProfile, để lại UserProfile mồ côi trong DB khi gỡ liên kết.",
     "Bỏ qua daily standup, khiến các thành viên không phát hiện sớm việc entity/API bị lệch khỏi contract đã thống nhất ở Day 31."
   ],
@@ -326,7 +475,7 @@
       "id": "day33-prac-3",
       "type": "concept",
       "interaction": "multiple-choice",
-      "prompt": "Trong JwtAuthenticationToken, một scope 'admin' trong JWT được ánh xạ thành granted authority nào?",
+      "prompt": "Nếu KHÔNG cấu hình lại JwtAuthenticationConverter (hành vi MẶC ĐỊNH của framework), một scope 'admin' trong JWT được JwtAuthenticationProvider ánh xạ thành granted authority nào?",
       "choices": [
         {
           "id": "day33-prac-3-b",
@@ -348,10 +497,10 @@
       "correctChoiceIds": [
         "day33-prac-3-a"
       ],
-      "hint": "Nhớ lại tiền tố mặc định mà JwtAuthenticationConverter dùng cho scope.",
-      "solution": "Scope 'admin' trong JWT được ánh xạ thành granted authority SCOPE_admin vì JwtAuthenticationConverter thêm tiền tố SCOPE_ cho mỗi scope; do đó @PreAuthorize phải kiểm tra hasAuthority('SCOPE_admin').",
-      "explanation": "JwtAuthenticationProvider dùng JwtAuthenticationConverter để ánh xạ mỗi scope trong JWT thành granted authority có tiền tố SCOPE_ - vì vậy @PreAuthorize phải dùng hasAuthority('SCOPE_admin') chứ không phải hasRole('admin'). ROLE_admin thể hiện nhầm scope thành role, còn chuỗi admin bỏ mất tiền tố SCOPE_ mà converter thêm mặc định. AUTHORITY_admin cũng dùng một tiền tố không được bài mô tả; quy ước được nêu cụ thể là SCOPE_ cho scope-based authority.",
-      "rubric": "Liên hệ đúng tiền tố SCOPE_ mặc định cho scope-based authority.",
+      "hint": "Nhớ lại tiền tố mặc định mà JwtAuthenticationConverter dùng cho scope khi chưa bị cấu hình lại.",
+      "solution": "Mặc định, scope 'admin' trong JWT được ánh xạ thành granted authority SCOPE_admin vì JwtAuthenticationConverter thêm tiền tố SCOPE_ cho mỗi scope. Đây là hành vi MẶC ĐỊNH của framework - dự án Sprint 1 (day33-blk-10/blk-12) cấu hình lại JwtAuthenticationConverter để đọc claim \"roles\" thay vì scope, nên trong dự án thực tế @PreAuthorize dùng hasRole('ADMIN'), không phải hasAuthority('SCOPE_admin').",
+      "explanation": "Mặc định (chưa cấu hình jwtGrantedAuthoritiesConverter tuỳ chỉnh), JwtAuthenticationProvider dùng JwtAuthenticationConverter để ánh xạ mỗi scope trong JWT thành granted authority có tiền tố SCOPE_. ROLE_admin thể hiện nhầm scope thành role theo quy ước mặc định, còn chuỗi admin bỏ mất tiền tố SCOPE_ mà converter thêm mặc định; AUTHORITY_admin cũng dùng một tiền tố không được nguồn mô tả. Lưu ý: đây là hành vi MẶC ĐỊNH của framework khi dùng nguyên JwtGrantedAuthoritiesConverter - dự án Sprint 1 CHỐT cấu hình lại converter này (đọc claim \"roles\", tiền tố ROLE_) để nhất quán với Day 23, nên câu hỏi này chỉ kiểm tra hiểu biết về hành vi mặc định của framework, không phải cách dự án thực sự cấu hình - xem day33-blk-10/blk-12 cho cấu hình thực tế của dự án.",
+      "rubric": "Liên hệ đúng tiền tố SCOPE_ mặc định cho scope-based authority khi chưa cấu hình lại converter; không nhầm với ROLE_ mà dự án Sprint 1 chốt dùng sau khi cấu hình lại.",
       "sourceUsage": [
         "day33-src-10"
       ]
@@ -440,6 +589,126 @@
       "type": "external",
       "resourceId": "res-65703b737426",
       "citationId": "day33-src-8"
+    },
+    {
+      "id": "day33-ref-12",
+      "type": "external",
+      "resourceId": "res-1f9cf059207c",
+      "citationId": "day33-src-11"
+    },
+    {
+      "id": "day33-ref-13",
+      "type": "external",
+      "resourceId": "res-1f9cf059207c",
+      "citationId": "day33-src-12"
+    },
+    {
+      "id": "day33-ref-14",
+      "type": "external",
+      "resourceId": "res-ea083f388530",
+      "citationId": "day33-src-13"
+    },
+    {
+      "id": "day33-ref-15",
+      "type": "external",
+      "resourceId": "res-1f9cf059207c",
+      "citationId": "day33-src-14"
+    },
+    {
+      "id": "day33-ref-16",
+      "type": "external",
+      "resourceId": "res-1f9cf059207c",
+      "citationId": "day33-src-15"
+    },
+    {
+      "id": "day33-ref-17",
+      "type": "external",
+      "resourceId": "res-c396b40b74ea",
+      "citationId": "day33-src-16"
+    },
+    {
+      "id": "day33-ref-18",
+      "type": "external",
+      "resourceId": "res-c396b40b74ea",
+      "citationId": "day33-src-17"
+    },
+    {
+      "id": "day33-ref-19",
+      "type": "external",
+      "resourceId": "res-81f31cc79aa9",
+      "citationId": "day33-src-18"
+    },
+    {
+      "id": "day33-ref-20",
+      "type": "external",
+      "resourceId": "res-81f31cc79aa9",
+      "citationId": "day33-src-19"
+    },
+    {
+      "id": "day33-ref-21",
+      "type": "external",
+      "resourceId": "res-88e7e93efd97",
+      "citationId": "day33-src-20"
+    },
+    {
+      "id": "day33-ref-22",
+      "type": "external",
+      "resourceId": "res-88e7e93efd97",
+      "citationId": "day33-src-21"
+    },
+    {
+      "id": "day33-ref-23",
+      "type": "external",
+      "resourceId": "res-fa00cc21947b",
+      "citationId": "day33-src-22"
+    },
+    {
+      "id": "day33-ref-24",
+      "type": "external",
+      "resourceId": "res-352c59ed0526",
+      "citationId": "day33-src-23"
+    },
+    {
+      "id": "day33-ref-25",
+      "type": "external",
+      "resourceId": "res-352c59ed0526",
+      "citationId": "day33-src-24"
+    },
+    {
+      "id": "day33-ref-26",
+      "type": "external",
+      "resourceId": "res-51b94dcde325",
+      "citationId": "day33-src-25"
+    },
+    {
+      "id": "day33-ref-27",
+      "type": "external",
+      "resourceId": "res-51b94dcde325",
+      "citationId": "day33-src-26"
+    },
+    {
+      "id": "day33-ref-28",
+      "type": "external",
+      "resourceId": "res-28d362c904b7",
+      "citationId": "day33-src-27"
+    },
+    {
+      "id": "day33-ref-29",
+      "type": "external",
+      "resourceId": "res-28d362c904b7",
+      "citationId": "day33-src-28"
+    },
+    {
+      "id": "day33-ref-30",
+      "type": "external",
+      "resourceId": "res-4611e0c0d322",
+      "citationId": "day33-src-29"
+    },
+    {
+      "id": "day33-ref-31",
+      "type": "external",
+      "resourceId": "res-4611e0c0d322",
+      "citationId": "day33-src-30"
     }
   ],
   "sourceUsage": [
@@ -502,6 +771,126 @@
       "resourceId": "res-65703b737426",
       "locator": "How JWT Authentication Works",
       "topic": "JwtAuthenticationProvider"
+    },
+    {
+      "id": "day33-src-11",
+      "resourceId": "res-1f9cf059207c",
+      "locator": "AuthenticationManager",
+      "topic": "AuthenticationManager là API trung tâm điều phối xác thực"
+    },
+    {
+      "id": "day33-src-12",
+      "resourceId": "res-1f9cf059207c",
+      "locator": "ProviderManager",
+      "topic": "ProviderManager uỷ quyền cho danh sách AuthenticationProvider"
+    },
+    {
+      "id": "day33-src-13",
+      "resourceId": "res-ea083f388530",
+      "locator": "DaoAuthenticationProvider Usage (5 buoc danh so)",
+      "topic": "5 bước DaoAuthenticationProvider xác thực bằng UserDetailsService + PasswordEncoder"
+    },
+    {
+      "id": "day33-src-14",
+      "resourceId": "res-1f9cf059207c",
+      "locator": "Authentication",
+      "topic": "Authentication mang vai trò kép: input trước xác thực và kết quả sau xác thực"
+    },
+    {
+      "id": "day33-src-15",
+      "resourceId": "res-1f9cf059207c",
+      "locator": "AbstractAuthenticationProcessingFilter",
+      "topic": "Cơ chế filter-based form-login, đối chiếu với gọi authenticate() thủ công"
+    },
+    {
+      "id": "day33-src-16",
+      "resourceId": "res-c396b40b74ea",
+      "locator": "JwtEncoder (interface Javadoc)",
+      "topic": "JwtEncoder là functional interface phát hành JWT"
+    },
+    {
+      "id": "day33-src-17",
+      "resourceId": "res-c396b40b74ea",
+      "locator": "JwtEncoder - encode(JwtEncoderParameters)",
+      "topic": "Phương thức encode(JwtEncoderParameters) của JwtEncoder"
+    },
+    {
+      "id": "day33-src-18",
+      "resourceId": "res-81f31cc79aa9",
+      "locator": "NimbusJwtEncoder (class Javadoc)",
+      "topic": "NimbusJwtEncoder là cài đặt chính thức của JwtEncoder"
+    },
+    {
+      "id": "day33-src-19",
+      "resourceId": "res-81f31cc79aa9",
+      "locator": "NimbusJwtEncoder - Constructor, See Also",
+      "topic": "Constructor NimbusJwtEncoder nhận JWKSource; ràng buộc nhánh 6.5 vs 7.0"
+    },
+    {
+      "id": "day33-src-20",
+      "resourceId": "res-88e7e93efd97",
+      "locator": "JwtClaimsSet, JwtClaimsSet.Builder",
+      "topic": "JwtClaimsSet và Builder cho các registered claim + claim tuỳ chỉnh"
+    },
+    {
+      "id": "day33-src-21",
+      "resourceId": "res-88e7e93efd97",
+      "locator": "JwtClaimsSet - builder(), from(), getClaims()",
+      "topic": "builder()/from()/getClaims() của JwtClaimsSet"
+    },
+    {
+      "id": "day33-src-22",
+      "resourceId": "res-fa00cc21947b",
+      "locator": "2. Enabling Method Security",
+      "topic": "Bật Method Security bằng @EnableMethodSecurity (áp dụng cho SecurityConfig dự án, xem lại lý thuyết ở Day 23)"
+    },
+    {
+      "id": "day33-src-23",
+      "resourceId": "res-352c59ed0526",
+      "locator": "JwsHeader - getAlgorithm()",
+      "topic": "Thuật toán ký là metadata của JWS JOSE header, không phải của claim set"
+    },
+    {
+      "id": "day33-src-24",
+      "resourceId": "res-352c59ed0526",
+      "locator": "JwsHeader - with(JwsAlgorithm), JwsHeader.Builder",
+      "topic": "Chỉ tạo JwsHeader qua static factory with(JwsAlgorithm) rồi build()"
+    },
+    {
+      "id": "day33-src-25",
+      "resourceId": "res-51b94dcde325",
+      "locator": "MacAlgorithm - Enum Constant Summary",
+      "topic": "MacAlgorithm.HS256 là hằng số HMAC-SHA256 mức Required cho khoá đối xứng"
+    },
+    {
+      "id": "day33-src-26",
+      "resourceId": "res-51b94dcde325",
+      "locator": "MacAlgorithm - implements JwsAlgorithm",
+      "topic": "MacAlgorithm nằm ở package jose.jws và là một JwsAlgorithm nên dùng được cho JwsHeader.with(...)"
+    },
+    {
+      "id": "day33-src-27",
+      "resourceId": "res-28d362c904b7",
+      "locator": "JwtEncoderParameters - from(JwsHeader, JwtClaimsSet)",
+      "topic": "Overload from(JwsHeader, JwtClaimsSet) là bản duy nhất khai báo được thuật toán ký"
+    },
+    {
+      "id": "day33-src-28",
+      "resourceId": "res-28d362c904b7",
+      "locator": "JwtEncoderParameters - getJwsHeader()",
+      "topic": "getJwsHeader() là @Nullable nên bản from(claims) một tham số bỏ trống JWS header"
+    },
+    {
+      "id": "day33-src-29",
+      "resourceId": "res-4611e0c0d322",
+      "locator": "MACSigner - Constructor Detail",
+      "topic": "Secret HMAC phải dài tối thiểu 256 bit, ngắn hơn thì ném KeyLengthException"
+    },
+    {
+      "id": "day33-src-30",
+      "resourceId": "res-4611e0c0d322",
+      "locator": "MACSigner - getMinRequiredSecretLength(JWSAlgorithm)",
+      "topic": "Ngưỡng độ dài secret tối thiểu là thuộc tính của từng thuật toán HMAC"
     }
   ],
   "authoring": {
