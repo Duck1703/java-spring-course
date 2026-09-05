@@ -80,39 +80,17 @@
       "blocks": [
         {
           "id": "day37-blk-3",
-          "type": "table",
-          "columns": [
-            "LO",
-            "Giai doan on tap",
-            "Trong tam kien thuc"
-          ],
-          "rows": [
-            [
-              "LO1-LO2",
-              "Nền tảng Java (Java Core)",
-              "Cú pháp/ngữ nghĩa Java 17 theo JLS: kiểu dữ liệu, biến, package/module, class/interface - JLS 17 chia 19 chương từ Introduction đến Syntax Summary"
-            ],
-            [
-              "LO3-LO5",
-              "Java nâng cao (OOP, Collections, Exception)",
-              "Kế thừa/đa hình, Collections Framework, xử lý ngoại lệ - vẫn nằm trong phạm vi cú pháp/ngôn ngữ do JLS 17 định nghĩa"
-            ],
-            [
-              "LO6-LO7",
-              "Spring Core & Data",
-              "IoC Container, Spring Data JPA, Transaction - theo cấu trúc phần Core Technologies và Data Access của Spring Framework Reference"
-            ],
-            [
-              "LO8-LO9",
-              "Spring Web & Security",
-              "Spring MVC, DispatcherServlet, REST API, Spring Security/JWT - theo phần Web Servlet của Spring Framework Reference"
-            ],
-            [
-              "LO10",
-              "Testing, tối ưu & triển khai",
-              "Testing (@DataJpaTest/@WebMvcTest/Testcontainers), caching, async, Docker - kết hợp 3 mục tiêu cốt lõi của Spring Boot (khởi động nhanh, opinionated defaults, non-functional features có sẵn)"
-            ]
-          ],
+          "type": "code",
+          "language": "text",
+          "code": "LO   | Day (goc)                          | Chu de da hoc\nLO1  | Day 01-03                          | JVM/JRE/JDK & kieu du lieu; Operator & control flow; Lab StringCalculator\nLO2  | Day 04-06                          | Class/Object/Encapsulation; Ke thua/Da hinh/Abstract; Assignment Employee Management System\nLO3  | Day 07-09                          | Interface/Inner Class/Enum; Generics/Collections/Exception Handling; Lab Custom Collection & Exception Framework\nLO4  | Day 10-12                          | Lambda & Stream API; Concurrency & File I/O; Assignment Data Processing Pipeline\nLO5  | Day 13-15                          | Spring Boot Fundamentals & Bean Lifecycle; Dependency Injection & Configuration; Assignment Multi-module Notification Service\nLO6  | Day 16-18 (ap dung lai Day 33-34)  | Controller & Request/Response; Validation & Exception Handling; Lab User & Task Management API\nLO7  | Day 19-21 (ap dung lai Day 33-34)  | Entity Design & Relationships; Query/Transaction & Pattern; Assignment E-Commerce Data Layer\nLO8  | Day 22-24 (ap dung lai Day 33, 35) | Authentication voi Spring Security + JWT; Authorization & JPA Performance; Lab Auth Service + Performance Optimization\nLO9  | Day 25-27 (ap dung lai Day 34-35)  | Caching & Async Processing; File Upload/Download & External API; Assignment Product & Order Features\nLO10 | Day 28-30 (ap dung lai Day 35-36)  | Testing Spring Boot; Documentation/Logging/Monitoring & Docker; Lab Production Readiness\n",
+          "compile": false,
+          "citations": [],
+          "partialReason": "Đây là bảng đối chiếu LO-to-Day nội bộ (dùng ngôn ngữ 'text', không phải mã Java thật) - lấy trực tiếp từ trường 'objectives' của course-catalog.json, không phải một khẳng định kỹ thuật cần trích dẫn nguồn ngoài."
+        },
+        {
+          "id": "day37-blk-4",
+          "type": "note",
+          "text": "Bảng trên map chính xác từng LO1-LO10 vào (các) Day cụ thể, lấy trực tiếp từ trường 'objectives' của mỗi lesson trong course-catalog.json (nguồn nội bộ, không phải trích dẫn ngoài) - đây là bảng đối chiếu LO-to-Day đầu tiên được tổng hợp cho bài thi này. Các dòng LO6-LO10 có ghi chú 'áp dụng lại' vì kỹ năng đó được dạy lần đầu ở Unit tương ứng rồi được tái sử dụng trong Sprint 1-3 của dự án capstone (Day 33-36), không phải kiến thức mới. Phạm vi LO1-LO4 nằm trong JLS 17 (19 chương, từ Introduction đến Syntax Summary); phạm vi LO5-LO10 nằm trong 3 mục tiêu cốt lõi của Spring Boot (khởi động nhanh, opinionated defaults, non-functional features có sẵn) và cấu trúc 7 phần của Spring Framework Reference.",
           "citations": [
             "day37-src-1",
             "day37-src-2",
@@ -121,9 +99,15 @@
           ]
         },
         {
-          "id": "day37-blk-4",
+          "id": "day37-blk-6",
           "type": "note",
-          "text": "Bảng trên nhóm LO1-LO10 theo giai đoạn học chung (không map chính xác từng LO vào một Day cụ thể, vì tài liệu này không có một bảng đối chiếu LO-to-Day chính thức) - dùng để định hướng ôn tập theo mảng kiến thức lớn, không thay thế đề cương chi tiết từng buổi học.",
+          "text": "Các 'bẫy' kỹ thuật xuất hiện lặp lại xuyên suốt khóa học, nên ôn kỹ trước khi thi vì hay bị hỏi lại dưới dạng câu hỏi suy luận: (1) Spring AOP self-invocation - gọi method @Transactional/@Async trực tiếp qua this (cùng class) thay vì qua bean/proxy khác khiến annotation bị bỏ qua hoàn toàn (Day 20, Day 35); (2) N+1 query khi truy cập collection lazy-loading trong vòng lặp, khắc phục bằng JOIN FETCH/@EntityGraph (Day 20, Day 23); (3) Singleton bean (mặc định scope của Spring) không được lưu state theo từng request trong field instance (Day 13, Day 22); (4) Phân biệt Entity (JPA, mang quan hệ/lazy loading) và DTO (dữ liệu trả ra API, không lộ trực tiếp entity) (Day 17, Day 19); (5) Optimistic locking (@Version) và pessimistic locking (@Lock/SELECT ... FOR UPDATE) phù hợp với mức độ tranh chấp dữ liệu khác nhau (Day 20).",
+          "citations": []
+        },
+        {
+          "id": "day37-blk-7",
+          "type": "template",
+          "text": "Gợi ý mẫu phân bổ 60 phút ôn tập trước giờ thi (điều chỉnh lại theo đúng 3 chủ đề yếu nhất mà bạn tự xác định ở day37-prac-4, đây chỉ là khung tham khảo): 15 phút - Java nền tảng (LO1-LO4): lướt nhanh cú pháp, Stream API, Concurrency & File I/O; 15 phút - Spring Core & Data (LO5-LO7): Bean lifecycle, DI, Entity/Query/Transaction; 20 phút - Spring Security & JPA Performance, Caching/Async (LO8-LO9): luồng JWT (JwtEncoder/JwtDecoder), N+1, self-invocation của @Async; 10 phút - Testing & triển khai (LO10): @DataJpaTest/@WebMvcTest/Testcontainers, Docker.",
           "citations": []
         },
         {
@@ -140,42 +124,42 @@
   ],
   "commonMistakes": [
     "Chỉ ôn phần Spring nâng cao (LO6-LO10) mà bỏ qua nền tảng Java (LO1-LO5) - JLS 17 vẫn là phần kiến thức nền cho toàn bộ cú pháp Java sử dụng xuyên suốt khóa học.",
-    "Nhầm lẫn phạm vi giữa Spring Framework (IoC, AOP, MVC...) và Spring Boot (khởi động nhanh, opinionated defaults, auto-configuration) khi trả lời câu hỏi lý thuyết."
+    "Nhầm lẫn phạm vi giữa Spring Framework (IoC, AOP, MVC...) và Spring Boot (khởi động nhanh, opinionated defaults, auto-configuration) khi trả lời câu hỏi lý thuyết.",
+    "Không giải thích được self-invocation trong Spring AOP (gọi method @Transactional/@Async qua this thay vì qua proxy) - lỗi này lặp lại từ Day 20 đến Day 35 và hay bị hỏi lại ở bài thi lý thuyết.",
+    "Học thuộc định nghĩa nhưng không giải thích được TẠI SAO (ví dụ tại sao N+1 làm chậm hệ thống, tại sao JwtDecoder cần verify chữ ký ở mỗi request) - bài thi ưu tiên câu hỏi suy luận/áp dụng hơn ghi nhớ thuần túy."
   ],
   "practices": [
     {
       "id": "day37-prac-1",
-      "type": "concept",
+      "type": "predict-output",
       "interaction": "multiple-choice",
-      "prompt": "JLS 17 (Java SE 17 Edition) định nghĩa phạm vi nội dung nào?",
+      "prompt": "Trong OrderService (một @Service bean), method public sendConfirmation() gọi trực tiếp this.sendConfirmationAsync(...) - cùng class, không thông qua một bean khác - và sendConfirmationAsync() có @Async. Điều gì xảy ra khi sendConfirmation() được gọi?",
       "choices": [
         {
           "id": "day37-prac-1-b",
-          "text": "Chỉ các API của thư viện chuẩn java.util"
-        },
-        {
-          "id": "day37-prac-1-a",
-          "text": "Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks"
+          "text": "Spring tự phát hiện self-invocation ở runtime và vẫn tạo một proxy ẩn để chạy sendConfirmationAsync() bất đồng bộ như bình thường"
         },
         {
           "id": "day37-prac-1-c",
-          "text": "Chỉ cú pháp cũ trước Java 8, không bao gồm tính năng mới"
+          "text": "Ứng dụng sẽ không compile được vì Spring kiểm tra self-invocation ngay tại thời điểm biên dịch"
+        },
+        {
+          "id": "day37-prac-1-a",
+          "text": "sendConfirmationAsync() chạy đồng bộ trên cùng luồng gọi - @Async bị bỏ qua hoàn toàn vì lời gọi qua this không đi qua Spring AOP proxy (self-invocation)"
         },
         {
           "id": "day37-prac-1-d",
-          "text": "Chỉ đặc tả JVM bytecode, không liên quan cú pháp ngôn ngữ"
+          "text": "@Async chỉ có tác dụng với method trả về void; vì sendConfirmationAsync() không trả về void nên annotation luôn bị bỏ qua dù gọi theo cách nào"
         }
       ],
       "correctChoiceIds": [
         "day37-prac-1-a"
       ],
-      "hint": "JLS là 'Language Specification', không phải đặc tả JVM hay tài liệu API.",
-      "solution": "\"Toàn bộ cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm cả tính năng mới như sealed classes, pattern matching for switch, records, text blocks\" là đáp án đúng vì JLS 17 là đặc tả ngôn ngữ Java SE 17, không phải tài liệu của một thư viện hay đặc tả bytecode.",
-      "explanation": "JLS 17 bao quát cú pháp và ngữ nghĩa của ngôn ngữ Java 17, gồm các tính năng Java 17 được nêu trong đáp án đúng. Giới hạn phạm vi ở java.util nhầm đặc tả ngôn ngữ với tài liệu API thư viện; giới hạn ở cú pháp trước Java 8 mâu thuẫn với Java SE 17 Edition và việc bài nêu các tính năng mới; coi JLS chỉ là đặc tả JVM bytecode nhầm Language Specification với phạm vi JVM và loại bỏ sai phần cú pháp ngôn ngữ.",
-      "rubric": "Liên hệ đúng phạm vi của JLS: ngôn ngữ Java, không phải thư viện hay JVM bytecode.",
-      "sourceUsage": [
-        "day37-src-1"
-      ]
+      "hint": "Spring AOP (mặc định) hoạt động bằng cách bọc bean gốc trong một proxy - annotation chỉ có hiệu lực khi lời gọi đi qua proxy đó, không phải qua this.",
+      "solution": "sendConfirmationAsync() chạy đồng bộ trên cùng luồng - @Async bị bỏ qua vì lời gọi qua this không đi qua proxy do Spring tạo ra để bọc bean OrderService.",
+      "explanation": "Spring AOP mặc định dùng proxy runtime (JDK dynamic proxy hoặc CGLIB) bọc quanh bean gốc; annotation @Transactional/@Async chỉ được áp dụng khi lời gọi đi qua proxy đó, tức là khi một bean khác inject và gọi OrderService. Gọi qua this là gọi thẳng vào object gốc, bỏ qua proxy nên annotation vô hiệu. Phương án 'Spring tự phát hiện và tạo proxy ẩn' sai vì không có cơ chế runtime nào tự sửa self-invocation. Phương án 'không compile được' sai vì đây không phải lỗi cú pháp - proxy-based AOP là cơ chế runtime, không có bước kiểm tra ở compile-time. Phương án cho rằng @Async chỉ áp dụng cho void sai vì bài đã học @Async hỗ trợ cả void lẫn CompletableFuture; vấn đề ở đây là self-invocation, không phải kiểu trả về.",
+      "rubric": "Liên hệ đúng nguyên nhân: self-invocation bỏ qua Spring AOP proxy, không phải do kiểu trả về hay lỗi biên dịch.",
+      "sourceUsage": []
     },
     {
       "id": "day37-prac-2",
@@ -213,18 +197,35 @@
     },
     {
       "id": "day37-prac-3",
-      "type": "concept",
-      "interaction": "self-check",
-      "prompt": "Spring Framework Reference Documentation chia thành mấy phần chính? Liệt kê.",
-      "choices": [],
-      "correctChoiceIds": [],
-      "hint": "Nhớ lại cấu trúc: Overview, Core, Testing, Data Access, Web Servlet, Web Reactive, Integration.",
-      "solution": "7 phần: Overview (History, Design Philosophy), Core Technologies (IoC Container, AOP, Validation, SpEL...), Testing (Mock Objects, TestContext Framework...), Data Access (Transactions, JDBC, R2DBC, O/R Mapping), Web Servlet (Spring MVC, WebSocket), Web Reactive (WebFlux, WebClient), Integration (REST Clients, JMS, Caching, Observability).",
-      "explanation": "Đối chiếu đúng thứ tự và tên gọi 7 phần theo tài liệu chính thức, không bỏ sót phần nào.",
-      "rubric": "Đánh giá đúng: liệt kê đủ 7 phần theo đúng thứ tự tài liệu chính thức.",
-      "sourceUsage": [
-        "day37-src-4"
-      ]
+      "type": "predict-output",
+      "interaction": "multiple-choice",
+      "prompt": "Đoạn code lặp qua danh sách Order rồi với mỗi Order gọi order.getItems().size() để đếm số item (OrderItem quan hệ @OneToMany, mặc định lazy). Hiện tượng hiệu năng nào dễ xảy ra nhất, và cách khắc phục đã học là gì?",
+      "choices": [
+        {
+          "id": "day37-prac-3-b",
+          "text": "Đây chỉ là vấn đề tầng network khi DB đặt ở server khác - dùng lazy loading vẫn tránh được nếu đường truyền tới DB đủ nhanh"
+        },
+        {
+          "id": "day37-prac-3-a",
+          "text": "N+1 query - Hibernate phát sinh 1 query lấy danh sách Order và thêm N query cho từng Order khi truy cập items; khắc phục bằng JOIN FETCH hoặc @EntityGraph"
+        },
+        {
+          "id": "day37-prac-3-c",
+          "text": "Chỉ xảy ra với quan hệ @ManyToOne, không xảy ra với @OneToMany - khắc phục bằng cách đổi toàn bộ quan hệ sang @ManyToOne"
+        },
+        {
+          "id": "day37-prac-3-d",
+          "text": "Không phải N+1 vì mỗi Order chỉ gọi .size() đúng một lần - N+1 chỉ tính khi gọi lặp lại nhiều lần trên cùng một entity"
+        }
+      ],
+      "correctChoiceIds": [
+        "day37-prac-3-a"
+      ],
+      "hint": "Đếm số query thực thi: 1 query cho danh sách Order, cộng thêm 1 query cho MỖI Order khi getItems() được truy cập lần đầu.",
+      "solution": "N+1 query - khắc phục bằng JOIN FETCH trong JPQL hoặc @EntityGraph để gộp việc lấy Order và OrderItem liên quan vào một (hoặc ít) query thay vì N query rời rạc.",
+      "explanation": "Với quan hệ lazy, mỗi lần getItems() được gọi trên một Order khác nhau sẽ kích hoạt một query SELECT riêng tới DB - N Order tạo ra N query bổ sung, cộng với 1 query gốc lấy danh sách Order, thành N+1 query. JOIN FETCH/@EntityGraph gộp việc lấy dữ liệu liên quan vào cùng một query. Phương án đổ lỗi cho network sai vì vấn đề là SỐ LƯỢNG round-trip tới DB, không phải tốc độ đường truyền. Phương án giới hạn N+1 ở @ManyToOne sai vì N+1 xảy ra với bất kỳ quan hệ lazy nào (gồm cả @OneToMany) khi truy cập trong vòng lặp. Phương án cho rằng phải gọi lặp lại trên CÙNG một entity mới tính N+1 hiểu sai bản chất - N+1 tính trên số Order khác nhau được lặp qua, mỗi Order kích hoạt một query lazy riêng.",
+      "rubric": "Liên hệ đúng nguyên nhân N+1 (số query tỉ lệ với số bản ghi lặp qua) và cách khắc phục JOIN FETCH/@EntityGraph đã học.",
+      "sourceUsage": []
     },
     {
       "id": "day37-prac-4",
@@ -282,6 +283,11 @@
       "description": "Phạm vi ôn tập bao trùm toàn bộ Day 1-36 của khóa học, không chỉ giới hạn ở các resource được trích dẫn trực tiếp trong bài thi này."
     },
     {
+      "id": "day37-ref-8",
+      "type": "internal",
+      "description": "Bảng LO1-LO10 → Day ở day37-blk-3 lấy trực tiếp từ trường 'objectives' của từng lesson record trong course-catalog.json (Day 01-36) - đối chiếu nội bộ, không phải suy diễn ngoài phạm vi dữ liệu khóa học."
+    },
+    {
       "id": "day37-ref-7",
       "type": "external",
       "resourceId": "res-004dba8a7332",
@@ -330,7 +336,7 @@
     "baseline": "Java 17 / Spring Boot 3.x / Spring Framework 6 / Jakarta",
     "reviewStatus": "reviewed",
     "limitations": [
-      "Bảng ánh xạ LO1-LO10 theo 'giai đoạn ôn tập' là tổng hợp sư phạm cho mục đích ôn tập, không phải bảng đối chiếu LO-to-Day chính thức từ course-catalog.json - course-catalog.json không cung cấp một bảng như vậy nên không thể trích dẫn cụ thể hơn mà không suy diễn ngoài phạm vi tài liệu đã đọc.",
+      "Bảng LO1-LO10 → Day ở day37-blk-3 map chính xác theo trường 'objectives' của course-catalog.json (nguồn nội bộ) - các dòng LO6-LO10 có Day bổ sung (33-36) vì kỹ năng được tái sử dụng ở Sprint 1-3 của capstone, không phải dạy mới; mức độ chi tiết của cột 'Chủ đề đã học' giới hạn ở tiêu đề lesson, không mở rộng thêm nội dung kỹ thuật nào ngoài phạm vi Day 1-36 đã dạy.",
       "2 trong 5 resource của Day 37 (Java Tutorial, Java Back to Basics) chỉ là series landing page (trang mục lục), không có nội dung kỹ thuật sâu để trích dẫn chi tiết - được trình bày trung thực như nguồn tra cứu bổ sung, không dùng làm cơ sở cho các khẳng định kỹ thuật cụ thể."
     ]
   }

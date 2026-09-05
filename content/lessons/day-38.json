@@ -53,7 +53,7 @@
         {
           "id": "day38-blk-1",
           "type": "deliverable",
-          "text": "Bài thi thực hành cuối khóa (offline, 300 phút): xây dựng bổ sung một tính năng nghiệp vụ mới cho hệ thống e-commerce capstone đã hoàn thiện ở Sprint 1-3 (Day 33-35), áp dụng lại toàn bộ kỹ năng LO5-LO12.",
+          "text": "Bài thi thực hành cuối khóa (offline, 300 phút): xây dựng bổ sung một tính năng nghiệp vụ mới cho hệ thống e-commerce capstone đã hoàn thiện ở Sprint 1-3 - Day 33 (6 hạng mục acceptance: Category, User/UserProfile, Auth JWT), Day 34 (4 hạng mục: Product CRUD, upload ảnh, Cart, caching), Day 35 (8 hạng mục: checkout/order, @Async notification, export CSV, Docker/CI) - áp dụng lại toàn bộ kỹ năng LO5-LO12.",
           "citations": []
         },
         {
@@ -71,25 +71,31 @@
         {
           "id": "day38-blk-3",
           "type": "paragraph",
-          "text": "LO5-LO7 (nền tảng entity/repository, Spring Data JPA, Auth JWT): được xây dựng tại Sprint 1, Day 33.",
+          "text": "LO5 (Spring Boot Core & IoC Container): Bean lifecycle/Dependency Injection được dạy ở Day 13-15, là nền tảng mọi @Service/@Repository/@Component dùng xuyên suốt dự án - không riêng một Sprint nào.",
           "citations": []
         },
         {
           "id": "day38-blk-4",
           "type": "paragraph",
-          "text": "LO8-LO9 (upload file, caching, transaction, @Async): được xây dựng tại Sprint 2-3, Day 34-35.",
+          "text": "LO6-LO7 (Spring MVC/REST, Spring Data JPA & Database): dạy ở Day 16-21, áp dụng lại khi xây entity/repository/migration và REST endpoint ở Sprint 1 (Day 33) và Sprint 2 (Day 34).",
           "citations": []
         },
         {
           "id": "day38-blk-5",
           "type": "paragraph",
-          "text": "LO10 (export CSV, Docker/docker-compose, CI pipeline, testing với Testcontainers): được xây dựng tại Sprint 3 và Final Defense, Day 35-36.",
+          "text": "LO8-LO9 (Spring Security & JPA Performance; Caching/Async/File/External API): dạy ở Day 22-27, áp dụng lại ở module Auth JWT (Day 33), upload ảnh sản phẩm/caching Category-Product (Day 34), và NotificationService @Async (Day 35).",
           "citations": []
         },
         {
           "id": "day38-blk-6",
           "type": "paragraph",
-          "text": "LO11-LO12 (thiết kế kiến trúc/API, quy trình phát triển dự án thực tế): được thiết lập tại Day 31-32 (System Design & Project Kickoff) và áp dụng xuyên suốt Sprint 1-3.",
+          "text": "LO10 (Testing, Documentation, Monitoring & Docker): dạy ở Day 28-30, áp dụng lại ở Docker/docker-compose/CI pipeline (Day 35) và bằng chứng kiểm thử (@DataJpaTest/@WebMvcTest/Testcontainers) cùng tài liệu API (springdoc-openapi) tại Final Defense (Day 36).",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-6b",
+          "type": "paragraph",
+          "text": "LO11 (Project Planning & Implementation) được thiết lập tại Day 31-32 (System Design & Project Kickoff - kiến trúc, API contract) và áp dụng xuyên suốt Sprint 1-3. LO12 (Implementation Sprint & Final Defense) KHÔNG xuất hiện ở Day 31-32 - theo course-catalog.json, LO12 bắt đầu từ Day 34 (Sprint 2), tiếp tục ở Day 35 (Sprint 3) và Day 36 (Final Defense).",
           "citations": []
         }
       ]
@@ -114,7 +120,7 @@
           "id": "day38-blk-8",
           "type": "code",
           "language": "text",
-          "code": "De thi thuc hanh (300 phut, offline) - cau truc du kien:\n1. De bai nghiep vu bo sung cho he thong e-commerce da xay dung (Sprint 1-3)\n   - vi du: them tinh nang \"ma giam gia\" (coupon) hoac \"danh gia san pham\" (review).\n2. Yeu cau ky thuat cu the: entity/repository moi, endpoint REST theo dung\n   API contract style (Day 31), validation, xu ly loi qua GlobalExceptionHandler.\n3. Yeu cau kiem thu: it nhat 1 test (@DataJpaTest hoac @WebMvcTest) cho tinh\n   nang moi.\n4. Tieu chi cham diem duoc cong bo kem de bai - doc ky truoc khi bat dau code.\n",
+          "code": "De thi thuc hanh (300 phut, offline) - cau truc du kien:\n1. De bai nghiep vu bo sung cho he thong e-commerce da xay dung (Sprint 1-3)\n   - vi du: them tinh nang \"ma giam gia\" (coupon) hoac \"danh gia san pham\" (review).\n2. Yeu cau ky thuat cu the: entity/repository moi (kem Flyway migration Vx__mo_ta.sql\n   neu can them cot/bang, dung quy uoc Day 21/33), endpoint REST theo dung\n   API contract style (Day 31), validation, xu ly loi qua GlobalExceptionHandler.\n3. Yeu cau kiem thu: it nhat 1 test (@DataJpaTest hoac @WebMvcTest) cho tinh\n   nang moi.\n4. Tieu chi cham diem duoc cong bo kem de bai - doc ky truoc khi bat dau code.\n",
           "compile": false,
           "citations": [],
           "partialReason": "Đây là bản mẫu cấu trúc/tiêu chí tham khảo (không phải mã nguồn), dùng ngôn ngữ 'text' nên không yêu cầu trích dẫn kỹ thuật hay biên dịch."
@@ -134,7 +140,13 @@
         {
           "id": "day38-blk-10",
           "type": "template",
-          "text": "Tự chấm trước khi nộp theo 5 tiêu chí: (1) Tính đúng đắn - API hoạt động đúng yêu cầu đề bài; (2) Chất lượng code - đặt tên rõ ràng, tách layer Controller/Service/Repository; (3) Xử lý lỗi - dùng GlobalExceptionHandler/ProblemDetail nhất quán với phần còn lại của dự án; (4) Kiểm thử - có ít nhất một test pass cho tính năng mới; (5) Vệ sinh Git - commit rõ ràng, không commit file thừa (target/, .idea/...).",
+          "text": "Rubric tự đánh giá (Tiêu chí | Trọng số | Cần cải thiện | Đạt yêu cầu | Đạt tốt): Tính đúng đắn | 30% | API không chạy được, hoặc sai luồng chính theo yêu cầu đề bài | API chạy đúng luồng chính theo yêu cầu đề bài | Như 'Đạt yêu cầu' và xử lý đúng cả edge case (input rỗng/không hợp lệ). Chất lượng code | 20% | Không tách layer Controller/Service/Repository, đặt tên không rõ nghĩa | Tách đúng layer, đặt tên rõ ràng theo đúng quy ước dự án đã dùng ở Sprint 1-3 | Như 'Đạt yêu cầu' và tái sử dụng đúng pattern đã có (DTO, mapper...) thay vì tạo cách làm mới không nhất quán. Xử lý lỗi | 20% | Exception mới không được xử lý, lộ lỗi 500 mặc định ra client | Exception mới có @ExceptionHandler trong GlobalExceptionHandler chung của dự án, trả về ProblemDetail | Như 'Đạt yêu cầu' và ProblemDetail có message rõ ràng, đúng HTTP status theo ngữ nghĩa nghiệp vụ. Kiểm thử | 20% | Không có test nào cho tính năng mới | Có ít nhất một test (@DataJpaTest hoặc @WebMvcTest) pass cho tính năng mới - không đặt điều kiện theo % coverage cụ thể (xem day30-blk-17: ngưỡng JaCoCo 75% CHƯA CHỐT làm điều kiện chấm ở khóa học này) | Như 'Đạt yêu cầu' và có thêm test cho ít nhất một luồng lỗi/exception mới, không chỉ luồng thành công. Vệ sinh Git | 10% | Commit message không rõ nghĩa, hoặc commit nhầm file build (target/, .idea/...) | Commit rõ ràng, không commit file thừa | Như 'Đạt yêu cầu' và lịch sử commit chia theo bước hợp lý (không dồn thành một commit khổng lồ).",
+          "citations": []
+        },
+        {
+          "id": "day38-blk-11",
+          "type": "note",
+          "text": "Trọng số cụ thể (30/20/20/20/10%) đi theo đúng cấu trúc rubric có trọng số của Day 36 (Final Defense) để nhất quán thuật ngữ/thang đánh giá giữa hai bài đánh giá cuối Sprint - đây vẫn là quyết định sư phạm của giảng viên, không đến từ một resource kỹ thuật cụ thể. Tiêu chí kiểm thử KHÔNG đặt ngưỡng % coverage vì Day 30 đã xác nhận ngưỡng JaCoCo 75% chưa chốt làm điều kiện chấm trong khóa học này - Day 38 giữ nguyên mức quan sát được: có test pass, không suy diễn thêm một ngưỡng số liệu mà khóa học chưa dạy.",
           "citations": []
         }
       ]
@@ -143,7 +155,8 @@
   "commonMistakes": [
     "Bắt đầu code ngay mà không đọc kỹ đề bài và tiêu chí chấm điểm, dẫn đến làm sai trọng tâm yêu cầu.",
     "Không viết test nào cho tính năng mới vì thiếu thời gian - nên phân bổ thời gian kiểm thử ngay từ đầu thay vì để tới phút cuối.",
-    "Không tái sử dụng quy ước đã có của dự án (GlobalExceptionHandler, package layout, @Async) mà tạo cách làm mới không nhất quán."
+    "Không tái sử dụng quy ước đã có của dự án (GlobalExceptionHandler, package layout, @Async) mà tạo cách làm mới không nhất quán.",
+    "Quên viết Flyway migration (Vx__mo_ta.sql, đúng thứ tự version như đã học ở Day 21/33) khi entity mới cần thêm cột/bảng, khiến schema không khớp entity khi chạy ứng dụng."
   ],
   "practices": [
     {

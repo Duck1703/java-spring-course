@@ -61,6 +61,24 @@
           ]
         },
         {
+          "id": "day3964-sec-refresher",
+          "title": "Refresher ky thuat theo LO truoc khi nhan task",
+          "blocks": [
+            {
+              "id": "day3964-blk-refresher-1",
+              "type": "template",
+              "text": "Refresher kỹ thuật theo LO trước khi nhận task (LO | Day gốc | Bẫy cần nhớ): LO6 | Day 16-18 | Không trả Entity JPA trực tiếp qua response API - map sang DTO trước khi trả về, tránh lộ quan hệ lazy/trường nội bộ. LO7 | Day 19-21 | N+1 query khi lặp qua collection lazy-loading trong vòng lặp - khắc phục bằng JOIN FETCH/@EntityGraph; chọn optimistic (@Version) hay pessimistic locking theo mức tranh chấp dữ liệu. LO8 | Day 22-24 | JwtDecoder verify chữ ký JWT ở mỗi request; kiểm tra ownership (chủ sở hữu bản ghi) PHẢI lấy từ SecurityContext đã xác thực, không tin field client tự gửi trong request body. LO9 | Day 25-27 | @Cacheable dùng sai cho method ghi dữ liệu (phải dùng @CachePut/@CacheEvict); quên @EnableCaching; gọi method @Async qua this (self-invocation) khiến annotation bị bỏ qua; MDC không tự truyền sang thread @Async/CompletableFuture, phải MDC.clear() trong finally để tránh rò rỉ traceId sang request sau. LO10 | Day 28-30 | @DataJpaTest/@WebMvcTest/Testcontainers @ServiceConnection cho test tích hợp; JaCoCo report tạo được và mở được - khóa học KHÔNG chốt một ngưỡng % coverage bắt buộc. LO11 | Day 31-32 | Tuân thủ đúng API contract/kiến trúc chung đã thống nhất ở System Design & Project Kickoff, không tự đổi convention khi nhận task mới. LO12 | Day 34-36 | Tuân theo quy ước Git/PR, tái sử dụng GlobalExceptionHandler/ProblemDetail chung của dự án, review theo đúng acceptance criteria đã thiết lập ở Sprint 1-3.",
+              "citations": []
+            },
+            {
+              "id": "day3964-blk-refresher-2",
+              "type": "note",
+              "text": "Bảng trên là refresher tra cứu nhanh trước khi nhận task đầu tiên và sau mỗi lần chuyển sang loại task mới - không phải nội dung dạy mới, chỉ tổng hợp lại các 'bẫy' đã được nêu trong commonMistakes của từng Day gốc để tránh lặp lại lỗi khi áp dụng vào task thực tế của FSU Project.",
+              "citations": []
+            }
+          ]
+        },
+        {
           "id": "day3964-sec-worklog",
           "title": "Mẫu nhật ký công việc hàng tuần",
           "blocks": [
@@ -91,7 +109,25 @@
             {
               "id": "day3964-blk-6",
               "type": "template",
-              "text": "Checklist evidence khi đề nghị code review, ánh xạ theo các LO đã xây dựng ở Unit 5-12: LO6-LO7 (repository/JPA) - PR có mô tả entity/migration rõ ràng kèm test; LO8-LO9 (bảo mật, hiệu năng) - PR description nêu rõ đã kiểm tra phân quyền/N+1; LO10 (caching/async/tích hợp) - có evidence log hoặc test cho hành vi async/cache; LO11 (kiểm thử/vận hành) - test liên quan pass và có ghi chú ảnh hưởng tới coverage; LO12 (tổ chức và quy trình dự án) - PR tuân theo quy ước nhánh/commit do mentor hướng dẫn cho FSU Project. Không tự suy diễn coding convention cụ thể ngoài những gì mentor/dự án cung cấp.",
+              "text": "Checklist evidence khi đề nghị code review, ánh xạ theo các LO đã xây dựng ở Unit 5-12: LO6 (Spring MVC/REST, Day 16-18) - PR mô tả rõ endpoint/request-response và tách DTO khỏi entity; LO7 (Spring Data JPA & repository, Day 19-21) - PR có mô tả entity/migration rõ ràng kèm test; LO8 (bảo mật & JPA performance, Day 22-24) - PR description nêu rõ đã kiểm tra ownership server-derived/N+1; LO9 (caching/async/tích hợp, Day 25-27) - có evidence log hoặc test cho hành vi async/cache, không rò rỉ MDC giữa các request; LO10 (kiểm thử/vận hành, Day 28-30) - test liên quan pass và có ghi chú ảnh hưởng tới coverage; LO11 (thiết kế/kiến trúc dự án, Day 31-32) - PR tuân theo API contract/kiến trúc đã thống nhất; LO12 (tổ chức và quy trình Sprint, Day 34-36) - PR tuân theo quy ước nhánh/commit do mentor hướng dẫn cho FSU Project. Không tự suy diễn coding convention cụ thể ngoài những gì mentor/dự án cung cấp.",
+              "citations": []
+            }
+          ]
+        },
+        {
+          "id": "day3964-sec-checkpoint",
+          "title": "Checkpoint giua giai doan va dieu kien hoan thanh OJT",
+          "blocks": [
+            {
+              "id": "day3964-blk-checkpoint-1",
+              "type": "template",
+              "text": "Checkpoint giữa giai đoạn (khoảng ngày làm việc thứ 13/26, giữa 26 ngày OJT): (1) Tổng hợp lại nhật ký công việc của nửa đầu giai đoạn, đối chiếu với mục tiêu 2 tuần đầu đã đặt ở checklist onboarding; (2) Cùng mentor xác nhận tiến độ đang đi đúng phạm vi hay cần điều chỉnh (tăng/giảm độ khó task, đổi loại task); (3) Rà lại danh sách blocker đã escalate - còn blocker nào chưa được giải quyết dứt điểm; (4) Chọn tạm 1-2 PR/task tiêu biểu nhất tính tới thời điểm này để tập dượt trước cho evidence portfolio ở Day 65-66.",
+              "citations": []
+            },
+            {
+              "id": "day3964-blk-exit-1",
+              "type": "template",
+              "text": "Điều kiện để coi giai đoạn OJT (Day 39-64) đã hoàn thành, sẵn sàng bước sang đánh giá Day 65-66: (1) Có nhật ký công việc cho phần lớn ngày làm việc chính trong 26 ngày, không có khoảng trống kéo dài nhiều ngày liên tiếp không giải thích được; (2) Có ít nhất vài PR/task đã hoàn thành với evidence code-review bám theo checklist LO6-LO12 ở trên; (3) Không còn blocker nào đang treo mà chưa từng escalate cho mentor; (4) Đã chuẩn bị sẵn 2-3 PR/task tiêu biểu nhất kèm lý do chọn, dùng trực tiếp cho evidence portfolio ở Day 65-66. Đây là điều kiện tối thiểu để có đủ evidence cho buổi đánh giá, không phải thang điểm chính thức của giai đoạn OJT.",
               "citations": []
             }
           ]
@@ -131,15 +167,32 @@
         },
         {
           "id": "day3964-prac-3",
-          "type": "concept",
-          "interaction": "self-check",
-          "prompt": "Viết một đoạn reflection ngắn (3-5 câu) về một incident/blocker giả định trong OJT và cách bạn xử lý theo đúng quy trình escalate ở checklist buổi check-in mentor.",
-          "choices": [],
-          "correctChoiceIds": [],
-          "hint": "Nêu rõ: blocker là gì, bạn đã thử gì trước khi escalate, và escalate cho mentor như thế nào.",
-          "solution": "Không có đáp án cố định - reflection tốt nêu blocker cụ thể (không chung chung), ít nhất một hành động đã thử trước khi escalate, và cách trình bày blocker đó cho mentor kèm evidence cụ thể (không phải mô tả mơ hồ 'bị kẹt').",
-          "explanation": "Reflection cụ thể, gắn với evidence thật, giúp học viên rút kinh nghiệm cho các blocker tương tự trong các task tiếp theo của OJT.",
-          "rubric": "Đánh giá đúng: blocker cụ thể, có hành động đã thử, cách escalate rõ ràng kèm evidence.",
+          "type": "predict-output",
+          "interaction": "multiple-choice",
+          "prompt": "Một PR bạn được nhờ review có endpoint PUT /orders/{id}/cancel nhận thêm field userId trong request body và dùng chính giá trị đó để xác định quyền hủy đơn (thay vì lấy từ SecurityContext của JWT đã xác thực). Đây có phải rủi ro không, và nên góp ý gì?",
+          "choices": [
+            {
+              "id": "day3964-prac-3-b",
+              "text": "Không rủi ro vì request đã đi qua JWT validation ở filter chain nên mọi field trong body, kể cả userId, cũng đáng tin cậy tương đương"
+            },
+            {
+              "id": "day3964-prac-3-c",
+              "text": "Chỉ rủi ro nếu ứng dụng không dùng HTTPS - nếu có HTTPS thì field userId trong request body luôn an toàn để tin dùng"
+            },
+            {
+              "id": "day3964-prac-3-d",
+              "text": "Không rủi ro vì Order entity đã có @Version - optimistic locking đã đủ để ngăn người khác hủy nhầm đơn"
+            },
+            {
+              "id": "day3964-prac-3-a",
+              "text": "Có rủi ro - userId xác định quyền phải lấy từ SecurityContext (JWT đã xác thực), không tin field client tự gửi lên, vì client có thể sửa userId để hủy đơn của người khác"
+            }
+          ],
+          "correctChoiceIds": ["day3964-prac-3-a"],
+          "hint": "Phân biệt xác thực (request có JWT hợp lệ hay không) với việc tin một trường tùy ý trong body - hai việc khác nhau.",
+          "solution": "Có rủi ro - đây là lỗi ownership không server-derived. Góp ý PR: đổi sang lấy userId/ownerId từ Authentication/SecurityContext (đã được JwtDecoder xác thực), bỏ hẳn việc đọc userId từ request body cho mục đích phân quyền.",
+          "explanation": "JWT validation ở filter chain chỉ xác nhận request đến từ một người dùng đã đăng nhập hợp lệ - nó không tự động đảm bảo MỘT TRƯỜNG TÙY Ý trong body khớp đúng với danh tính đó, vì client hoàn toàn có thể gửi userId bất kỳ. Vì vậy so sánh quyền phải dựa trên ownerId lấy được từ SecurityContext, không dựa vào input client. HTTPS chỉ bảo vệ dữ liệu trên đường truyền khỏi bị nghe lén/sửa đổi giữa đường, không liên quan tới việc có nên tin một trường do chính client tự khai hay không. @Version chỉ chống lost update khi nhiều luồng cùng sửa một bản ghi, không liên quan gì tới việc xác định AI được phép thực hiện thao tác.",
+          "rubric": "Chọn đúng: ownership phải server-derived từ SecurityContext, không tin field client tự gửi; loại đúng các lý do sai (JWT filter không tự bảo chứng field body, HTTPS không liên quan, @Version không liên quan authorization).",
           "sourceUsage": []
         },
         {
@@ -182,7 +235,7 @@
         {
           "id": "day3964-ref-1",
           "type": "internal",
-          "description": "Day 19-30 (Spring Data JPA, Security, caching/async, testing/vận hành) là nguồn kỹ năng kỹ thuật cho LO6-LO10 được áp dụng vào các task OJT thực tế."
+          "description": "Day 16-30 (Spring MVC/REST, Spring Data JPA, Security, caching/async, testing/vận hành) là nguồn kỹ năng kỹ thuật cho LO6-LO10 được tổng hợp lại ở bảng refresher theo LO (day3964-blk-refresher-1) và áp dụng vào các task OJT thực tế."
         },
         {
           "id": "day3964-ref-2",
@@ -243,6 +296,18 @@
               "type": "note",
               "text": "Day 65-66 chỉ có 1 dòng lịch trong course-catalog.json (row 63: 'Evaluate learners after training and OJT phase') và không có resourceId/URL tài liệu ngoài nào được gán - toàn bộ mẫu portfolio/rubric dưới đây là khung đánh giá nội bộ do syllabus không cung cấp thang điểm hay quy trình đánh giá chính thức; mọi mức điểm/nhãn xuất hiện trong bài đều được ghi rõ là gợi ý tham khảo, không phải thang điểm chính thức của chương trình.",
               "citations": []
+            },
+            {
+              "id": "day6566-blk-agenda",
+              "type": "template",
+              "text": "Gợi ý phân bổ 600 phút (2 ngày, hình thức Virtual) - khung tham khảo, không phải lịch trình chính thức vì syllabus chỉ ghi 1 dòng lịch không chia buổi cụ thể: Ngày 1 (300 phút) - 60 phút nộp và rà soát evidence portfolio; 90 phút tự đánh giá (self-assessment) theo LO10-LO12; 90 phút chuẩn bị câu trả lời cho các câu hỏi phản biện (bao gồm 2 câu yêu cầu bảo vệ lựa chọn thiết kế); 60 phút review chéo với bạn học hoặc trao đổi thêm với mentor nếu cần. Ngày 2 (300 phút) - 180 phút buổi đánh giá/phản biện trực tiếp với evaluator theo rubric LO10-LO12; 60 phút ghi nhận phản hồi từ evaluator; 60 phút viết improvement plan.",
+              "citations": []
+            },
+            {
+              "id": "day6566-blk-lo-scope",
+              "type": "note",
+              "text": "Vì sao buổi đánh giá này chỉ chấm LO10-LO12 dù OJT (Day 39-64) áp dụng cả LO6-LO12: LO6-LO9 (kỹ năng kỹ thuật - REST/JPA/bảo mật/caching-async) đã có hai điểm đánh giá cuối khóa riêng - Day 37 (lý thuyết, LO1-LO10) và Day 38 (thực hành, LO5-LO12) - nên không cần chấm lại ở đây. LO10-LO12 được chọn cho buổi đánh giá cuối OJT vì đây là 3 outcome chỉ có thể quan sát được qua 26 ngày làm việc thực tế (tích hợp/vận hành liên tục, tuân thủ quy trình dự án thật, phối hợp với mentor/đồng đội) - không thể đánh giá đầy đủ qua một bài thi 60 hay 300 phút. Evidence LO6-LO9 (ví dụ PR review trong portfolio, mục 'Mẫu evidence portfolio') vẫn được thu thập nhưng dùng để LÀM RÕ NGỮ CẢNH cho nhận định LO10-LO12 (ví dụ: chất lượng của chính buổi code-review, không phải tính đúng đắn của query JPA trong PR đó), không phải căn cứ để chấm lại LO6-LO9.",
+              "citations": []
             }
           ]
         },
@@ -277,7 +342,13 @@
             {
               "id": "day6566-blk-5",
               "type": "template",
-              "text": "Gợi ý mẫu rubric tham khảo (không phải thang điểm chính thức của chương trình đào tạo) cho evaluator, theo 3 mức 'Cần cải thiện / Đạt yêu cầu / Đạt tốt' trên từng LO: LO10 (tích hợp/vận hành - caching, async, testing, tài liệu API) - đánh giá qua evidence PR và kết quả test trong portfolio; LO11 (quy trình kỹ thuật dự án - nhánh, review, CI/CD nếu có) - đánh giá qua mức tuân thủ quy ước dự án ghi nhận trong nhật ký công việc; LO12 (phối hợp và tổ chức công việc) - đánh giá qua chất lượng trao đổi trong các buổi check-in mentor và khả năng tự escalate blocker đúng lúc.",
+              "text": "Gợi ý rubric evaluator (LO | Cần cải thiện | Đạt yêu cầu | Đạt tốt): LO10 (kiểm thử & vận hành - testing, tài liệu API, giám sát/triển khai nếu có chạm tới trong OJT) | Portfolio không có evidence PR/test cụ thể nào, hoặc chỉ liệt kê tên PR mà không giải thích được hành vi/kết quả test | Có evidence PR và kết quả test cụ thể cho ít nhất một task liên quan testing/tài liệu/vận hành trong OJT | Như 'Đạt yêu cầu' và giải thích được TẠI SAO chọn cách kiểm thử/triển khai đó khi được hỏi trong buổi phản biện. LO11 (quy trình kỹ thuật dự án - nhánh, review, CI/CD nếu có) | Nhật ký công việc không đều đặn hoặc không thể hiện việc tuân thủ quy ước dự án (nhánh/PR/CI) | Nhật ký công việc ghi nhận việc tuân thủ quy ước dự án ở phần lớn task | Như 'Đạt yêu cầu' và có ví dụ cụ thể tự phát hiện/tự sửa vi phạm quy ước trước khi mentor nhắc. LO12 (phối hợp và tổ chức công việc) | Không có evidence check-in mentor cụ thể, hoặc blocker không được escalate đúng lúc theo quy trình đã học ở Day 39-64 | Có evidence check-in đều đặn, escalate blocker đúng lúc kèm bằng chứng cụ thể | Như 'Đạt yêu cầu' và self-assessment của học viên khớp với phản hồi thực tế mentor đã đưa ra trong OJT.",
+              "citations": []
+            },
+            {
+              "id": "day6566-blk-5-note",
+              "type": "note",
+              "text": "3 mức 'Cần cải thiện / Đạt yêu cầu / Đạt tốt' và mô tả từng mức là gợi ý tham khảo cho evaluator, không phải thang điểm chính thức của chương trình đào tạo (syllabus không cung cấp một thang điểm chi tiết cho giai đoạn này). Evidence caching/async (LO9) nếu xuất hiện trong portfolio chỉ dùng làm ngữ cảnh minh họa cho hàng LO10, không phải căn cứ để chấm lại LO9 - xem day6566-blk-lo-scope.",
               "citations": []
             }
           ]
@@ -290,6 +361,12 @@
               "id": "day6566-blk-6",
               "type": "template",
               "text": "Câu hỏi phản biện/reflection mẫu cho buổi đánh giá: (1) Mô tả task khó nhất bạn xử lý trong OJT liên quan LO10 - bạn đã áp dụng kỹ thuật nào và vì sao chọn cách đó? (2) Nếu làm lại task đó, bạn sẽ thay đổi gì trong cách tổ chức/kiểm thử (LO11)? (3) Kể lại một tình huống bạn phải phối hợp với mentor hoặc thành viên khác để giải quyết blocker và bài học rút ra (LO12).",
+              "citations": []
+            },
+            {
+              "id": "day6566-blk-6b",
+              "type": "template",
+              "text": "Câu hỏi phản biện kỹ thuật - yêu cầu bảo vệ lựa chọn thiết kế trước một phương án cụ thể khác (không trả lời được bằng lý thuyết chung, phải gắn với task thật đã làm): (4) Trong một task OJT có tranh chấp dữ liệu (nhiều người/luồng cùng sửa một bản ghi), bạn chọn optimistic locking (@Version) hay pessimistic locking (@Lock/SELECT ... FOR UPDATE)? Vì sao phương án đó phù hợp hơn phương án còn lại trong đúng bối cảnh task, và bạn xử lý trường hợp xung đột (OptimisticLockException hoặc chờ khóa) như thế nào? (5) Nếu một task cần gửi thông báo hoặc xử lý tác vụ không cần chặn response, bạn dùng @Async hay xử lý đồng bộ trong cùng luồng request? Vì sao phương án đã chọn phù hợp hơn phương án còn lại cho đúng task đó, và bạn đã tránh lỗi self-invocation (gọi qua this thay vì qua proxy) như thế nào?",
               "citations": []
             }
           ]
