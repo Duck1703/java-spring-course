@@ -1714,12 +1714,13 @@
     const STATE_VERSION = 3;
 
     // Case A of the progress-migration contract: build-task ids RENAMED between
-    // artifact revisions, old id -> new id. Empty today, and deliberately so —
-    // the migration machinery ships and is tested while it is a no-op, so the
-    // first wave that renames a task meets working code. Without an entry here a
-    // renamed id is silently dropped by the validBuildTaskIds filter below,
-    // which is correct sanitization and wrong migration.
-    const RENAME_MAP = Object.freeze({});
+    // artifact revisions, old id -> new id. Filled by P1 (task-category-enum →
+    // task-category-model — the model gains JPA mapping at V0.5, so the id no
+    // longer names the mechanism; the work is identical, so completion
+    // survives). Without an entry here a renamed id is silently dropped by the
+    // validBuildTaskIds filter below, which is correct sanitization and wrong
+    // migration.
+    const RENAME_MAP = Object.freeze({ "task-category-enum": "task-category-model" });
 
     /* Migrate a projectProgress object across artifact revisions:
          1. apply RENAME_MAP first, so a renamed task keeps its completion;
@@ -4830,7 +4831,7 @@
             directChildren.indexOf(directHeader) < directChildren.indexOf(directContext) &&
             directChildren.indexOf(directContext) < directChildren.indexOf(directTheory) &&
             (!directReferences || directChildren.indexOf(directApplication) < directChildren.indexOf(directReferences)) &&
-            directView.querySelectorAll('[data-action="toggle-build-task"]').length === 3;
+            directView.querySelectorAll('[data-action="toggle-build-task"]').length === 5;
           location.hash = "#/lesson/day-05";
           routeRender();
           var futureView = document.getElementById("route-view");

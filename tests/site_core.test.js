@@ -226,14 +226,60 @@ test("migrateProjectProgress carries an existing legacyCompleted forward and nev
   assert.deepEqual(overlap, []);
 });
 
-test("RENAME_MAP is empty at this wave, so the migration is a deliberate no-op for renames", () => {
-  // The machinery ships and is tested while it has no entries: the first wave
-  // that renames a task id meets already-working code. RENAME_MAP is frozen, so
-  // the rename branch cannot be exercised from here — the wave that adds the
-  // first entry must add a test alongside it asserting the old id's completion
-  // survives, which only holds because the rename is applied BEFORE the
-  // valid-id filter.
-  assert.deepEqual(core.RENAME_MAP, {});
+test("RENAME_MAP carries exactly the P1 rename, and renamed completion survives migration", () => {
+  // P1's Case A rename: task-category-enum became task-category-model (it
+  // gains JPA mapping at V0.5, so the id no longer names the mechanism). The
+  // map is frozen, so the rename branch is exercised through
+  // migrateProjectProgress, which applies it BEFORE the valid-id filter — the
+  // old id's completion must survive as the new id.
+  assert.deepEqual(core.RENAME_MAP, { "task-category-enum": "task-category-model" });
+  const known = new Set(["task-category-model", "task-a"]);
+  const migrated = core.migrateProjectProgress(
+    { buildTasks: ["task-category-enum", "task-a"] },
+    known,
+  );
+  // renamed id lands under its NEW identity in buildTasks
+  assert.ok(migrated.buildTasks.includes("task-category-model"));
+  assert.ok(migrated.buildTasks.includes("task-a"));
+  assert.equal(migrated.buildTasks.length, 2);
+  assert.deepEqual(migrated.legacyCompleted, []);
+});
+
+test("split-task ids (retired, never renamed) are preserved as legacyCompleted and no successor auto-completes", () => {
+  // P1's Case B splits: task-rest-controllers -> 3 endpoint tasks;
+  // task-jwt-auth -> 4+1 auth tasks. The old ids have NO rename entry, so they
+  // partition to legacyCompleted (history preserved) and none of the
+  // successors is marked complete — auto-completing them would claim work the
+  // learner never did (the JWT split in particular contains a post-capstone
+  // task).
+  const known = new Set([
+    "task-account-endpoints", "task-transaction-endpoints", "task-category-endpoints",
+    "task-auth-foundation", "task-user-migration", "task-ownership-checks",
+    "task-token-lifecycle", "task-canonical-token-issuer", "task-auth-hardening-review",
+  ]);
+  const migrated = core.migrateProjectProgress(
+    { buildTasks: ["task-rest-controllers", "task-jwt-auth"] },
+    known,
+  );
+  assert.deepEqual(migrated.buildTasks, []);
+  assert.equal(migrated.legacyCompleted.length, 2);
+  assert.ok(migrated.legacyCompleted.includes("task-rest-controllers"));
+  assert.ok(migrated.legacyCompleted.includes("task-jwt-auth"));
+});
+
+test("unchanged P1 ids keep their completion and legacyCompleted stays a partition", () => {
+  // Ids the P1 artifact kept (e.g. task-money-vo, task-atomic-transfer) must
+  // still migrate into buildTasks, and a previously-retired id never
+  // re-overlaps with the kept set.
+  const known = new Set(["task-money-vo", "task-atomic-transfer"]);
+  const migrated = core.migrateProjectProgress(
+    { buildTasks: ["task-money-vo"], legacyCompleted: ["task-rest-controllers"] },
+    known,
+  );
+  assert.deepEqual(migrated.buildTasks, ["task-money-vo"]);
+  assert.deepEqual(migrated.legacyCompleted, ["task-rest-controllers"]);
+  const overlap = migrated.buildTasks.filter((id) => migrated.legacyCompleted.includes(id));
+  assert.deepEqual(overlap, []);
 });
 
 test("calculateReleaseProgress counts only required tasks for the release", () => {

@@ -77,8 +77,8 @@ class PublicationModelTests(unittest.TestCase):
     def test_project_data_layer_embedded(self):
         project = self.model["project"]
         self.assertEqual(len(project["releases"]), 10)
-        self.assertEqual(len(project["features"]), 25)
-        self.assertEqual(len(project["buildTasks"]), 24)
+        self.assertEqual(len(project["features"]), 27)
+        self.assertEqual(len(project["buildTasks"]), 33)
         self.assertEqual(project["product"]["id"], "spendwise")
 
     def test_project_lesson_map_keys_are_published_lessons(self):
