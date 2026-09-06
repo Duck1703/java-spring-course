@@ -10,7 +10,10 @@ closed-schema, referential-integrity discipline of tools/validate_lessons.py
 - every cross-object id reference resolves (release<->feature<->buildTask,
   milestone->release, architectureStage->release, lessonMap->release/feature/
   buildTask, buildTask/lessonMap->lesson);
-- lessonMap applicationType enum and per-type required fields.
+- lessonMap applicationType enum and per-type required fields;
+- the optional top-level buildSteps array: contiguous per-task ordering and
+  prereqs that never point forward in the release spine;
+- the capstone window (day-31..day-36) never carries a build-task CTA.
 
 Returns "ERROR ..." strings the same way validate_lessons.py does; an empty
 list means the artifact is valid. build_site.py imports validate_project() and
@@ -26,6 +29,14 @@ import sys
 from pathlib import Path
 
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+ARCH_RULE_RE = re.compile(r"^R\d{1,2}$")
+
+# The capstone window. Day 31-36 teach project planning and defence, not
+# Spendwise execution: KNOWLEDGE UNLOCK != PROJECT EXECUTION. These lessons may
+# map to a release/feature for context, but must never expose a build-task CTA,
+# because a learner reaching day-33 has not yet reached the execution window for
+# the tasks it unlocks (V0.6 token issuance happens in the post-day-36 roadmap).
+CAPSTONE_WINDOW_LESSON_IDS = tuple(f"day-{n}" for n in range(31, 37))
 
 # Canonical 40-lesson course sequence (matches build_site.EXPECTED_LESSON_IDS).
 LESSON_IDS = [f"day-{n:02d}" for n in range(1, 39)] + ["day-39-64", "day-65-66"]
@@ -77,7 +88,7 @@ CANONICAL_OUT_OF_SCOPE = [
 
 TOP_LEVEL_KEYS = {
     "schemaVersion", "product", "releases", "features", "buildTasks",
-    "milestones", "architectureStages", "lessonMap",
+    "milestones", "architectureStages", "lessonMap", "buildSteps",
 }
 PRODUCT_KEYS = {"id", "name", "type", "vision", "outOfScope"}
 RELEASE_KEYS = {
@@ -89,11 +100,20 @@ BUILD_TASK_KEYS = {
     "id", "title", "releaseId", "featureIds", "problem", "goal",
     "constraints", "acceptanceCriteria", "relevantLessonIds", "required",
 }
+# buildSteps is a new TOP-LEVEL array, not a field inside buildTask: BUILD_TASK_KEYS
+# is closed, so nesting "steps" would fail validation for every existing task.
+BUILD_STEP_REQUIRED_KEYS = {
+    "id", "taskId", "order", "title", "intent", "knowledgePrereqLessonIds",
+    "artifactPrereqTaskIds", "filesTouched", "doneWhen", "verifyCommand",
+    "architectureRules",
+}
+BUILD_STEP_OPTIONAL_KEYS = {"commonMistake", "mentorHint", "estimatedMinutes"}
+BUILD_STEP_KEYS = BUILD_STEP_REQUIRED_KEYS | BUILD_STEP_OPTIONAL_KEYS
 MILESTONE_KEYS = {"id", "name", "releaseIds", "summary"}
 ARCH_STAGE_KEYS = {"id", "releaseId", "title", "layers", "diagram", "changesFromPrev", "rationale"}
 LESSON_MAP_KEYS = {
     "applicationType", "releaseId", "featureIds", "buildTaskIds",
-    "projectProblem", "context", "application",
+    "projectProblem", "context", "application", "alsoUsedIn",
 }
 
 
@@ -143,6 +163,46 @@ def _require_str_list(obj: dict, key: str, scope: str, *, nonempty_list: bool = 
     return errors
 
 
+def _authored_list(obj: dict, key: str) -> list:
+    """The authored value of a reference list, in a form safe to iterate.
+
+    A non-list value has already been reported by _require_str_list ("must be a
+    list"), so yielding nothing here skips reference resolution instead of
+    raising TypeError on `for item in 7`. The artifact stays invalid; it fails
+    with a diagnostic rather than a traceback. Nothing is coerced.
+    """
+    value = obj.get(key)
+    return value if isinstance(value, list) else []
+
+
+def _is_known(value, known: set) -> bool:
+    """True when value is a string naming a member of known.
+
+    Every membership test in this module goes through here. A list or dict
+    reaching `value in known` raises TypeError: unhashable type and aborts the
+    whole run, so the type is checked first; a non-string simply does not
+    resolve, and the caller reports it.
+    """
+    return isinstance(value, str) and value in known
+
+
+def _tasks_by_id(build_tasks) -> dict:
+    """Index buildTasks by id, tolerating a malformed buildTasks value.
+
+    `build_tasks or []` only covered the falsy case: a truthy non-list (7, True,
+    1.5) still reached `for task in 7`. _validate_build_tasks already reported
+    "buildTasks must be a list", so an empty index here keeps that one
+    diagnostic instead of replacing it with a traceback.
+    """
+    if not isinstance(build_tasks, list):
+        return {}
+    return {
+        task["id"]: task
+        for task in build_tasks
+        if isinstance(task, dict) and isinstance(task.get("id"), str)
+    }
+
+
 def _validate_product(product, seen_ids: dict, errors: list[str]) -> None:
     if not isinstance(product, dict):
         errors.append(_error("product", "product must be an object"))
@@ -155,9 +215,16 @@ def _validate_product(product, seen_ids: dict, errors: list[str]) -> None:
     out_of_scope = product.get("outOfScope")
     errors.extend(_require_str_list(product, "outOfScope", "product", nonempty_list=True))
     if isinstance(out_of_scope, list):
-        duplicates = sorted({item for item in out_of_scope if out_of_scope.count(item) > 1})
+        # count() compares by equality, so unhashable items are safe here; the
+        # deduplicating set is not, hence the string filter.
+        duplicates = sorted(
+            {item for item in out_of_scope if isinstance(item, str) and out_of_scope.count(item) > 1}
+        )
         if duplicates:
             errors.append(_error("product", f"outOfScope has duplicate item(s) {duplicates}"))
+        unhashable = [item for item in out_of_scope if not isinstance(item, str)]
+        if unhashable:
+            errors.append(_error("product", "outOfScope entries must be strings"))
         if out_of_scope != CANONICAL_OUT_OF_SCOPE:
             missing = [item for item in CANONICAL_OUT_OF_SCOPE if item not in out_of_scope]
             extra = [item for item in out_of_scope if item not in CANONICAL_OUT_OF_SCOPE]
@@ -197,7 +264,7 @@ def _validate_releases(releases, feature_ids: set, seen_ids: dict, errors: list[
         if release.get("order") != index + 1:
             errors.append(_error(scope, f"order must be {index + 1} (contiguous 1..N)"))
         status = release.get("status")
-        if status not in RELEASE_STATUSES:
+        if not _is_known(status, RELEASE_STATUSES):
             errors.append(_error(scope, f"status must be one of {sorted(RELEASE_STATUSES)}"))
         errors.extend(_require_str(release, "title", scope))
         errors.extend(_require_str(release, "problem", scope))
@@ -206,8 +273,8 @@ def _validate_releases(releases, feature_ids: set, seen_ids: dict, errors: list[
         errors.extend(_require_str_list(release, "learningDependencies", scope))
         errors.extend(_require_str_list(release, "acceptanceCriteria", scope, nonempty_list=True))
         errors.extend(_require_str_list(release, "buildTaskIds", scope))
-        for fid in release.get("featureIds") or []:
-            if fid not in feature_ids:
+        for fid in _authored_list(release, "featureIds"):
+            if not _is_known(fid, feature_ids):
                 errors.append(_error(scope, f"featureId {fid!r} does not resolve to a feature"))
     return release_ids
 
@@ -259,27 +326,148 @@ def _validate_build_tasks(build_tasks, release_ids, feature_ids, lesson_ids, see
         errors.extend(_require_str_list(task, "constraints", scope))
         errors.extend(_require_str_list(task, "acceptanceCriteria", scope, nonempty_list=True))
         errors.extend(_require_str_list(task, "relevantLessonIds", scope, nonempty_list=True))
-        if task.get("releaseId") not in release_ids:
+        if not _is_known(task.get("releaseId"), release_ids):
             errors.append(_error(scope, f"releaseId {task.get('releaseId')!r} does not resolve to a release"))
         if not isinstance(task.get("required"), bool):
             errors.append(_error(scope, "required must be a boolean"))
-        for fid in task.get("featureIds") or []:
-            if fid not in feature_ids:
+        for fid in _authored_list(task, "featureIds"):
+            if not _is_known(fid, feature_ids):
                 errors.append(_error(scope, f"featureId {fid!r} does not resolve to a feature"))
-        for lid in task.get("relevantLessonIds") or []:
-            if lid not in lesson_ids:
+        for lid in _authored_list(task, "relevantLessonIds"):
+            if not _is_known(lid, lesson_ids):
                 errors.append(_error(scope, f"relevantLessonId {lid!r} is not a known lesson"))
     return task_ids
+
+
+def _release_order_by_id(releases) -> dict:
+    """Map release id -> spine position (1-based) from the releases list order.
+
+    Position is taken from the list index rather than the authored "order" field
+    so that a malformed order value produces one error in _validate_releases
+    instead of silently changing what counts as a forward reference here.
+    """
+    order_by_id: dict = {}
+    if not isinstance(releases, list):
+        return order_by_id
+    for index, release in enumerate(releases):
+        if isinstance(release, dict) and isinstance(release.get("id"), str):
+            order_by_id.setdefault(release["id"], index + 1)
+    return order_by_id
+
+
+def _release_position(release_order: dict, value) -> int | None:
+    """Spine position of a release id, or None when value is not a string.
+
+    A malformed releaseId (list/dict) would raise TypeError as a dict key, so it
+    resolves to "no known position" instead; the forward-reference guard then
+    stays silent for that step and the malformed value is reported by the task's
+    own releaseId check.
+    """
+    return release_order.get(value) if isinstance(value, str) else None
+
+
+def _validate_build_steps(
+    build_steps, task_ids, build_tasks, releases, lesson_ids, seen_ids, errors,
+    *, present: bool
+) -> None:
+    """Validate the optional top-level buildSteps array.
+
+    An ABSENT buildSteps key is valid: the array is authored per-release in later
+    waves, and the artifact must stay buildable while it is empty or missing. An
+    explicit null is NOT the same thing and is rejected, so a truncated write
+    cannot masquerade as "not authored yet".
+    """
+    if not present:
+        return
+    if not isinstance(build_steps, list):
+        errors.append(_error("buildSteps", "buildSteps must be a list"))
+        return
+
+    tasks_by_id = _tasks_by_id(build_tasks)
+    release_order = _release_order_by_id(releases)
+    orders_by_task: dict = {}
+
+    for index, step in enumerate(build_steps):
+        scope = f"buildStep[{index}]"
+        if not isinstance(step, dict):
+            errors.append(_error(scope, "buildStep must be an object"))
+            continue
+        sid = step.get("id")
+        scope = f"buildStep {sid}" if isinstance(sid, str) and sid else scope
+        errors.extend(_closed_keys(step, BUILD_STEP_KEYS, scope))
+        errors.extend(_check_id(sid, scope, seen_ids, "buildStep"))
+        missing = sorted(BUILD_STEP_REQUIRED_KEYS - set(step))
+        if missing:
+            errors.append(_error(scope, f"missing required key(s) {missing}"))
+        errors.extend(_require_str(step, "title", scope))
+        errors.extend(_require_str(step, "intent", scope))
+        errors.extend(_require_str(step, "doneWhen", scope))
+        errors.extend(_require_str(step, "verifyCommand", scope))
+        errors.extend(_require_str_list(step, "knowledgePrereqLessonIds", scope))
+        errors.extend(_require_str_list(step, "artifactPrereqTaskIds", scope))
+        errors.extend(_require_str_list(step, "filesTouched", scope, nonempty_list=True))
+        errors.extend(_require_str_list(step, "architectureRules", scope))
+        for optional_key in ("commonMistake", "mentorHint"):
+            if optional_key in step:
+                errors.extend(_require_str(step, optional_key, scope))
+        if "estimatedMinutes" in step:
+            minutes = step.get("estimatedMinutes")
+            if isinstance(minutes, bool) or not isinstance(minutes, int) or minutes <= 0:
+                errors.append(_error(scope, "estimatedMinutes must be a positive integer"))
+
+        task_id = step.get("taskId")
+        # Non-string ids already produced an error above; they are skipped here
+        # rather than fed to a set membership test, which would raise TypeError
+        # on an unhashable value and abort the whole run instead of reporting.
+        if not _is_known(task_id, task_ids):
+            errors.append(_error(scope, f"taskId {task_id!r} does not resolve to a buildTask"))
+            task_id = None
+
+        order = step.get("order")
+        if isinstance(order, bool) or not isinstance(order, int):
+            errors.append(_error(scope, "order must be an integer"))
+        elif task_id is not None:
+            orders_by_task.setdefault(task_id, []).append(order)
+
+        for lesson_id in _authored_list(step, "knowledgePrereqLessonIds"):
+            if not _is_known(lesson_id, lesson_ids):
+                errors.append(_error(scope, f"knowledgePrereqLessonId {lesson_id!r} is not a known lesson"))
+        for rule in _authored_list(step, "architectureRules"):
+            if not isinstance(rule, str) or not ARCH_RULE_RE.match(rule):
+                errors.append(_error(scope, f"architectureRules entry {rule!r} must match ^R\\d{{1,2}}$"))
+
+        # Prereq artifacts may never point forward in the release spine: a step
+        # cannot require a task the learner has not reached yet.
+        own_order = _release_position(release_order, (tasks_by_id.get(task_id) or {}).get("releaseId"))
+        for prereq_id in _authored_list(step, "artifactPrereqTaskIds"):
+            if not _is_known(prereq_id, task_ids):
+                errors.append(_error(scope, f"artifactPrereqTaskId {prereq_id!r} does not resolve to a buildTask"))
+                continue
+            if prereq_id == task_id:
+                errors.append(_error(scope, f"artifactPrereqTaskId {prereq_id!r} is the step's own task"))
+                continue
+            prereq_order = _release_position(release_order, tasks_by_id[prereq_id].get("releaseId"))
+            if own_order is not None and prereq_order is not None and prereq_order > own_order:
+                errors.append(_error(
+                    scope,
+                    f"artifactPrereqTaskId {prereq_id!r} belongs to release "
+                    f"{tasks_by_id[prereq_id].get('releaseId')!r} which is ordered after "
+                    f"this step's release {(tasks_by_id.get(task_id) or {}).get('releaseId')!r}",
+                ))
+
+    for task_id, orders in sorted(orders_by_task.items()):
+        expected = list(range(1, len(orders) + 1))
+        if sorted(orders) != expected:
+            errors.append(_error(
+                f"buildTask {task_id}",
+                f"buildStep order must be contiguous 1..{len(orders)}, found {sorted(orders)}",
+            ))
 
 
 def _validate_release_task_links(releases, build_tasks, task_ids, errors) -> None:
     if not isinstance(releases, list) or not isinstance(build_tasks, list):
         return
-    tasks_by_id = {
-        task.get("id"): task
-        for task in build_tasks
-        if isinstance(task, dict) and isinstance(task.get("id"), str)
-    }
+    tasks_by_id = _tasks_by_id(build_tasks)
     listed_under: dict[str, str] = {}
     for release in releases:
         if not isinstance(release, dict):
@@ -290,6 +478,14 @@ def _validate_release_task_links(releases, build_tasks, task_ids, errors) -> Non
             continue
         seen_in_release: set[str] = set()
         for task_id in ordered_ids:
+            if not isinstance(task_id, str):
+                # Reported as a type error by _require_str_list; a list or dict
+                # here cannot enter a set or a dict lookup without raising.
+                errors.append(_error(
+                    f"release {release_id}",
+                    f"buildTaskId {task_id!r} does not resolve to a buildTask",
+                ))
+                continue
             if task_id in seen_in_release:
                 errors.append(_error(
                     f"release {release_id}",
@@ -333,7 +529,7 @@ def _validate_feature_release_links(features, release_ids, errors) -> None:
         if not isinstance(feature, dict):
             continue
         rid = feature.get("introducedInReleaseId")
-        if rid not in release_ids:
+        if not _is_known(rid, release_ids):
             errors.append(_error(f"feature {feature.get('id')}", f"introducedInReleaseId {rid!r} does not resolve to a release"))
 
 
@@ -357,7 +553,7 @@ def _validate_milestones(milestones, release_ids, seen_ids, errors) -> None:
             errors.append(_error(scope, "releaseIds must be a nonempty list"))
             release_id_list = []
         for rid in release_id_list:
-            if rid not in release_ids:
+            if not _is_known(rid, release_ids):
                 errors.append(_error(scope, f"releaseId {rid!r} does not resolve to a release"))
 
 
@@ -380,7 +576,7 @@ def _validate_arch_stages(stages, release_ids, seen_ids, errors) -> None:
         errors.extend(_require_str(stage, "diagram", scope))
         errors.extend(_require_str(stage, "changesFromPrev", scope))
         errors.extend(_require_str(stage, "rationale", scope))
-        if stage.get("releaseId") not in release_ids:
+        if not _is_known(stage.get("releaseId"), release_ids):
             errors.append(_error(scope, f"releaseId {stage.get('releaseId')!r} does not resolve to a release"))
 
 
@@ -390,11 +586,7 @@ def _validate_lesson_map(
     if not isinstance(lesson_map, dict):
         errors.append(_error("lessonMap", "lessonMap must be an object keyed by lesson id"))
         return
-    tasks_by_id = {
-        task.get("id"): task
-        for task in build_tasks or []
-        if isinstance(task, dict) and isinstance(task.get("id"), str)
-    }
+    tasks_by_id = _tasks_by_id(build_tasks)
     for lesson_id, entry in lesson_map.items():
         scope = f"lessonMap {lesson_id}"
         if lesson_id not in lesson_ids:
@@ -404,24 +596,55 @@ def _validate_lesson_map(
             continue
         errors.extend(_closed_keys(entry, LESSON_MAP_KEYS, scope))
         app_type = entry.get("applicationType")
-        if app_type not in APPLICATION_TYPES:
+        if not _is_known(app_type, APPLICATION_TYPES):
             errors.append(_error(scope, f"applicationType must be one of {sorted(APPLICATION_TYPES)}"))
         errors.extend(_require_str(entry, "context", scope))
-        if app_type in {"direct", "future"}:
+        if _is_known(app_type, {"direct", "future"}):
             rid = entry.get("releaseId")
-            if rid not in release_ids:
+            if not _is_known(rid, release_ids):
                 errors.append(_error(scope, f"releaseId {rid!r} does not resolve to a release"))
             errors.extend(_require_str_list(entry, "featureIds", scope, nonempty_list=True))
             errors.extend(_require_str_list(entry, "buildTaskIds", scope))
             if app_type == "direct" or "projectProblem" in entry:
                 errors.extend(_require_str(entry, "projectProblem", scope))
             errors.extend(_require_str(entry, "application", scope))
-            for fid in entry.get("featureIds") or []:
-                if fid not in feature_ids:
+            for fid in _authored_list(entry, "featureIds"):
+                if not _is_known(fid, feature_ids):
                     errors.append(_error(scope, f"featureId {fid!r} does not resolve to a feature"))
-        entry_features = set(entry.get("featureIds") or [])
-        for tid in entry.get("buildTaskIds") or []:
-            if tid not in task_ids:
+        else:
+            # A theory entry need not link to the project, but the coverage and
+            # capstone logic below reads these keys for EVERY applicationType.
+            # Absent stays valid; authored must still be a list of strings, or a
+            # malformed value would slip through unreported.
+            for key in ("featureIds", "buildTaskIds"):
+                if key in entry:
+                    errors.extend(_require_str_list(entry, key, scope))
+        entry_features = {
+            fid for fid in _authored_list(entry, "featureIds") if isinstance(fid, str)
+        }
+        entry_task_ids = _authored_list(entry, "buildTaskIds")
+        # alsoUsedIn lets a lesson reference tasks owned by ANOTHER lesson's
+        # mapping without claiming them: the ids must resolve, but none of the
+        # release/feature-coverage obligations below apply to them.
+        if "alsoUsedIn" in entry:
+            errors.extend(_require_str_list(entry, "alsoUsedIn", scope, nonempty_list=True))
+            for tid in _authored_list(entry, "alsoUsedIn"):
+                if not _is_known(tid, task_ids):
+                    errors.append(_error(scope, f"alsoUsedIn buildTaskId {tid!r} does not resolve to a buildTask"))
+                elif tid in entry_task_ids:
+                    errors.append(_error(scope, f"alsoUsedIn buildTaskId {tid!r} is already owned via buildTaskIds"))
+        # R-CAPSTONE-GUARD: day-31..day-36 must not expose a build-task CTA.
+        # An empty (or absent) buildTaskIds renders no toggle, because
+        # appendBuildTaskList returns early on an empty array.
+        if lesson_id in CAPSTONE_WINDOW_LESSON_IDS and entry_task_ids:
+            errors.append(_error(
+                scope,
+                "lessons day-31..day-36 are the capstone window and must not carry a "
+                f"non-empty buildTaskIds (found {entry_task_ids}); "
+                "knowledge unlock is not project execution",
+            ))
+        for tid in entry_task_ids:
+            if not _is_known(tid, task_ids):
                 errors.append(_error(scope, f"buildTaskId {tid!r} does not resolve to a buildTask"))
                 continue
             task = tasks_by_id[tid]
@@ -431,7 +654,10 @@ def _validate_lesson_map(
                     f"buildTaskId {tid!r} has releaseId {task.get('releaseId')!r}, "
                     f"not lesson releaseId {entry.get('releaseId')!r}",
                 ))
-            missing_features = sorted(set(task.get("featureIds") or []) - entry_features)
+            task_features = {
+                fid for fid in _authored_list(task, "featureIds") if isinstance(fid, str)
+            }
+            missing_features = sorted(task_features - entry_features)
             if missing_features:
                 errors.append(_error(
                     scope,
@@ -464,6 +690,10 @@ def validate_project(project: dict, *, valid_lesson_ids: set | None = None) -> l
     )
     _validate_release_task_links(
         project.get("releases"), build_tasks, task_ids, errors
+    )
+    _validate_build_steps(
+        project.get("buildSteps"), task_ids, build_tasks, project.get("releases"),
+        lesson_ids, seen_ids, errors, present="buildSteps" in project
     )
     _validate_milestones(project.get("milestones"), release_ids, seen_ids, errors)
     _validate_arch_stages(project.get("architectureStages"), release_ids, seen_ids, errors)

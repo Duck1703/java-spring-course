@@ -1711,7 +1711,43 @@
       return groups;
     }
 
-    const STATE_VERSION = 2;
+    const STATE_VERSION = 3;
+
+    // Case A of the progress-migration contract: build-task ids RENAMED between
+    // artifact revisions, old id -> new id. Empty today, and deliberately so —
+    // the migration machinery ships and is tested while it is a no-op, so the
+    // first wave that renames a task meets working code. Without an entry here a
+    // renamed id is silently dropped by the validBuildTaskIds filter below,
+    // which is correct sanitization and wrong migration.
+    const RENAME_MAP = Object.freeze({});
+
+    /* Migrate a projectProgress object across artifact revisions:
+         1. apply RENAME_MAP first, so a renamed task keeps its completion;
+         2. partition by the CURRENT artifact — ids it still knows become
+            buildTasks, ids it has retired become legacyCompleted;
+         3. synthesize nothing. When one task splits into several, the retired id
+            is recorded as history and NONE of its successors is marked
+            complete: auto-completing them would claim work never done.
+       legacyCompleted is history only. It is never an input to a completion
+       calculation, and it holds exactly the ids the current artifact does not
+       have, so the two lists can never overlap. */
+    function migrateProjectProgress(progress, validBuildTaskIds = new Set()) {
+      const out = { buildTasks: [], legacyCompleted: [] };
+      if (!progress || typeof progress !== "object" || Array.isArray(progress)) return out;
+      const kept = new Set();
+      const retired = new Set();
+      for (const source of [progress.buildTasks, progress.legacyCompleted]) {
+        if (!Array.isArray(source)) continue;
+        for (const raw of source) {
+          if (typeof raw !== "string" || !raw) continue;
+          const id = Object.prototype.hasOwnProperty.call(RENAME_MAP, raw) ? RENAME_MAP[raw] : raw;
+          (validBuildTaskIds.has(id) ? kept : retired).add(id);
+        }
+      }
+      out.buildTasks = [...kept];
+      out.legacyCompleted = [...retired];
+      return out;
+    }
 
     function defaultState() {
       return {
@@ -1725,7 +1761,7 @@
         // completed[] is lesson completion; projectProgress.buildTasks[] is
         // Spendwise build-task completion. Completing a lesson never touches
         // this list, and vice versa.
-        projectProgress: { buildTasks: [] },
+        projectProgress: { buildTasks: [], legacyCompleted: [] },
       };
     }
 
@@ -1754,12 +1790,11 @@
       // Project Progress. A fresh, independent object each call so course
       // fields can never share state with it. A v1 state (no projectProgress)
       // migrates by simply keeping course fields and starting an empty build
-      // list; version is always normalized to the current STATE_VERSION.
-      out.projectProgress = { buildTasks: [] };
-      const pp = input.projectProgress;
-      if (pp && typeof pp === "object" && !Array.isArray(pp) && Array.isArray(pp.buildTasks)) {
-        out.projectProgress.buildTasks = [...new Set(pp.buildTasks.filter((id) => validBuildTaskIds.has(id)))];
-      }
+      // list; a v2 state (no legacyCompleted) is carried forward by
+      // migrateProjectProgress, which preserves renamed ids and records retired
+      // ones as history instead of dropping them. version is always normalized
+      // to the current STATE_VERSION.
+      out.projectProgress = migrateProjectProgress(input.projectProgress, validBuildTaskIds);
       return out;
     }
 
@@ -1804,6 +1839,7 @@
     globalThis.CourseCore = Object.freeze({
       normalizeSearch, parseRoute, calculateProgress, nextLessonId,
       sanitizeState, searchLessons, defaultState, STATE_VERSION,
+      migrateProjectProgress, RENAME_MAP,
       escapeHtml, safeExternalUrl,
       selectCurrentRelease, selectNextBuildTask,
       calculateReleaseProgress, calculateFeatureProgress,
@@ -1874,10 +1910,15 @@
       function toggleBuildTask(taskId) {
         if (!BUILD_TASK_IDS.has(taskId)) return false;
         if (!state.projectProgress || typeof state.projectProgress !== 'object') {
-          state.projectProgress = { buildTasks: [] };
+          state.projectProgress = { buildTasks: [], legacyCompleted: [] };
         }
         if (!Array.isArray(state.projectProgress.buildTasks)) {
           state.projectProgress.buildTasks = [];
+        }
+        // legacyCompleted is history about retired ids; a defensive reset here
+        // must not invent it away, and toggling never writes to it.
+        if (!Array.isArray(state.projectProgress.legacyCompleted)) {
+          state.projectProgress.legacyCompleted = [];
         }
         var list = state.projectProgress.buildTasks;
         var idx = list.indexOf(taskId);
@@ -5112,22 +5153,44 @@
           assert("project sub-nav marks the correct tab active on all 5 project views without growing the 4-item primary nav",
             subnavOk && primaryNavStillFour);
 
-          /* 53 — four releases legitimately carry no build tasks yet. Those
-             must state that honestly instead of rendering 0/0 · 0% with an
-             empty bar, which reads as "you have completed none of the work"
-             rather than "there is no work tracked here yet". Releases that
-             do have tasks keep the real count + <progress>. */
-          var emptyRelease = (projectData.releases || []).find(function(r) { return (r.buildTaskIds || []).length === 0; });
+          /* 53 — a release carrying no build tasks must say so honestly
+             instead of rendering 0/0 · 0% with an empty bar, which reads as
+             "you have completed none of the work" rather than "there is no
+             work tracked here yet". Releases that do have tasks keep the real
+             count + <progress>.
+
+             The empty case is driven by a SYNTHETIC release, not by finding a
+             real one. Four releases (V0.7-V1.0) carry no tasks today, but they
+             are authored in a later wave, after which no real release has an
+             empty buildTaskIds — a `find(...)` for one then returns undefined
+             and dereferencing `.id` throws a TypeError that the outer catch
+             turns into a single opaque "self-test crashed" line for the whole
+             harness. A synthetic release keeps this assertion meaningful in
+             both eras and keeps the failure attributable to #53. */
+          var syntheticEmptyRelease = { id: "release-selftest-no-tasks", version: "V9.9", order: 99 };
+          var syntheticProgressEl = createProjectProgress(syntheticEmptyRelease, "Release Progress");
+          var emptyProgressOk = !!syntheticProgressEl.querySelector(".project-progress-note") &&
+            !syntheticProgressEl.querySelector(".project-progress-count") &&
+            !syntheticProgressEl.querySelector("progress") &&
+            syntheticProgressEl.textContent.indexOf("0/0") === -1;
+          /* Any real release that is still unstocked must render that same
+             honest note on its own detail route. Vacuous once every release
+             owns tasks; never a crash, because an empty list simply loops zero
+             times. */
+          var realEmptyReleasesOk = (projectData.releases || [])
+            .filter(function(r) { return (r.buildTaskIds || []).length === 0; })
+            .every(function(r) {
+              location.hash = "#/release/" + r.id;
+              routeRender();
+              var view = document.getElementById("route-view");
+              var progressEl = view.querySelector(".project-progress");
+              return !!progressEl &&
+                !!progressEl.querySelector(".project-progress-note") &&
+                !progressEl.querySelector(".project-progress-count") &&
+                !progressEl.querySelector("progress") &&
+                view.textContent.indexOf("0/0") === -1;
+            });
           var stockedRelease = (projectData.releases || []).find(function(r) { return (r.buildTaskIds || []).length > 0; });
-          location.hash = "#/release/" + emptyRelease.id;
-          routeRender();
-          var emptyReleaseView = document.getElementById("route-view");
-          var emptyProgressEl = emptyReleaseView.querySelector(".project-progress");
-          var emptyProgressOk = !!emptyProgressEl &&
-            !!emptyProgressEl.querySelector(".project-progress-note") &&
-            !emptyProgressEl.querySelector(".project-progress-count") &&
-            !emptyProgressEl.querySelector("progress") &&
-            emptyReleaseView.textContent.indexOf("0/0") === -1;
           location.hash = "#/release/" + stockedRelease.id;
           routeRender();
           var stockedProgressEl = document.getElementById("route-view").querySelector(".project-progress");
@@ -5139,7 +5202,7 @@
           routeRender();
           var roadmapZeroOfZero = document.getElementById("route-view").textContent.indexOf("0/0") === -1;
           assert("releases with no tracked build task state that honestly instead of showing 0/0 · 0%, while stocked releases keep a real count and bar",
-            emptyProgressOk && stockedProgressOk && roadmapZeroOfZero);
+            emptyProgressOk && realEmptyReleasesOk && stockedProgressOk && roadmapZeroOfZero);
 
           /* 54 — Map and Architecture are Project Track sub-views reachable
              only from the project sub-nav, so the primary nav must keep the
@@ -5206,6 +5269,28 @@
           });
           assert("dashboard Next panel exposes both the next lesson and the next build task as real links",
             !!dashNextTask && learnLinkOk && buildLinkOk);
+
+          /* 58 — R-CAPSTONE-GUARD. Day 31-36 are the capstone window: they
+             teach project planning, security review and defence, and they
+             UNLOCK knowledge whose Spendwise execution belongs to the
+             post-day-36 roadmap. Knowledge unlock is not project execution, so
+             none of these lessons may render a build-task CTA — a learner who
+             sees a toggle on day-33 is being told to build now, at the exact
+             point the schedule says not to.
+
+             This is the render-side half of the guard; the artifact-side half
+             is the day-31..day-36 rule in tools/validate_project.py. It passes
+             today (all six entries are `theory`, which renders no toggle) and
+             its value is as a regression guard for the wave that converts
+             day-33 to `direct v0-6` with a permanently empty buildTaskIds. */
+          var capstoneWindowOk = ["day-31", "day-32", "day-33", "day-34", "day-35", "day-36"].every(function(id) {
+            location.hash = "#/lesson/" + id;
+            routeRender();
+            return document.getElementById("route-view")
+              .querySelectorAll('[data-action="toggle-build-task"]').length === 0;
+          });
+          assert("capstone-window lessons day-31..day-36 render no build-task CTA",
+            capstoneWindowOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {

@@ -90,6 +90,24 @@ def _build_task(tid="task-x", **overrides):
     return task
 
 
+def _build_step(sid="step-task-x-01", **overrides):
+    step = {
+        "id": sid,
+        "taskId": "task-x",
+        "order": 1,
+        "title": "Create the Money value object",
+        "intent": "Money must be exact before anything totals it.",
+        "knowledgePrereqLessonIds": ["day-01"],
+        "artifactPrereqTaskIds": [],
+        "filesTouched": ["src/main/java/com/spendwise/common/money/Money.java"],
+        "doneWhen": "MoneyTest passes.",
+        "verifyCommand": "./mvnw -Dtest=MoneyTest test",
+        "architectureRules": ["R1"],
+    }
+    step.update(overrides)
+    return step
+
+
 def _milestone(mid="ms-x", **overrides):
     milestone = {
         "id": mid,
@@ -362,6 +380,269 @@ class BuildTaskTests(unittest.TestCase):
         self.assertTrue(any("day-99" in error and "known lesson" in error for error in errors))
 
 
+class BuildStepTests(unittest.TestCase):
+    """The optional top-level buildSteps array (absent is valid; see
+    ValidFixtureTests, whose fixture carries no buildSteps key)."""
+
+    def test_accepts_absent_build_steps(self):
+        project = _project()
+        self.assertNotIn("buildSteps", project)
+        self.assertEqual(validate_project(project), [])
+
+    def test_accepts_empty_build_steps(self):
+        self.assertEqual(validate_project(_project(buildSteps=[])), [])
+
+    def test_rejects_explicit_null_build_steps(self):
+        """An absent key means "not authored yet"; an explicit null means a
+        truncated write, and must not be silently tolerated as the same thing."""
+        errors = validate_project(_project(buildSteps=None))
+        self.assertTrue(any("buildSteps must be a list" in error for error in errors))
+
+    def test_accepts_a_valid_step(self):
+        self.assertEqual(validate_project(_project(buildSteps=[_build_step()])), [])
+
+    def test_accepts_optional_keys(self):
+        step = _build_step(
+            commonMistake="Using double for money.",
+            mentorHint="Point at BigDecimal, not the answer.",
+            estimatedMinutes=45,
+        )
+        self.assertEqual(validate_project(_project(buildSteps=[step])), [])
+
+    def test_rejects_non_list_build_steps(self):
+        errors = validate_project(_project(buildSteps={"id": "step-x"}))
+        self.assertTrue(any("buildSteps must be a list" in error for error in errors))
+
+    def test_rejects_unknown_step_key(self):
+        errors = validate_project(_project(buildSteps=[_build_step(steps=[])]))
+        self.assertTrue(any("unexpected key" in error for error in errors))
+
+    def test_rejects_missing_required_key(self):
+        step = _build_step()
+        del step["doneWhen"]
+        errors = validate_project(_project(buildSteps=[step]))
+        self.assertTrue(any("missing required key(s)" in error and "doneWhen" in error for error in errors))
+
+    def test_rejects_duplicate_step_id(self):
+        steps = [_build_step(), _build_step(order=2)]
+        errors = validate_project(_project(buildSteps=steps))
+        self.assertTrue(any("duplicate id 'step-task-x-01'" in error for error in errors))
+
+    def test_rejects_step_id_colliding_with_another_object(self):
+        errors = validate_project(_project(buildSteps=[_build_step(sid="task-x")]))
+        self.assertTrue(any("duplicate id 'task-x'" in error for error in errors))
+
+    def test_rejects_dangling_task_id(self):
+        errors = validate_project(_project(buildSteps=[_build_step(taskId="task-missing")]))
+        self.assertTrue(any("task-missing" in error and "does not resolve" in error for error in errors))
+
+    def test_rejects_non_integer_order(self):
+        errors = validate_project(_project(buildSteps=[_build_step(order="1")]))
+        self.assertTrue(any("order must be an integer" in error for error in errors))
+
+    def test_rejects_order_gap_within_a_task(self):
+        steps = [_build_step(), _build_step(sid="step-task-x-03", order=3)]
+        errors = validate_project(_project(buildSteps=steps))
+        self.assertTrue(any("contiguous 1..2" in error and "[1, 3]" in error for error in errors))
+
+    def test_rejects_duplicate_order_within_a_task(self):
+        steps = [_build_step(), _build_step(sid="step-task-x-02", order=1)]
+        errors = validate_project(_project(buildSteps=steps))
+        self.assertTrue(any("contiguous 1..2" in error for error in errors))
+
+    def test_accepts_contiguous_orders_across_two_tasks(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-y", releaseId="v0-2")],
+            buildSteps=[
+                _build_step(),
+                _build_step(sid="step-task-x-02", order=2),
+                _build_step(sid="step-task-y-01", taskId="task-y", order=1),
+            ],
+        )
+        releases = _releases()
+        releases[1]["buildTaskIds"] = ["task-y"]
+        project["releases"] = releases
+        self.assertEqual(validate_project(project), [])
+
+    def test_rejects_unknown_knowledge_prereq_lesson(self):
+        errors = validate_project(_project(buildSteps=[_build_step(knowledgePrereqLessonIds=["day-99"])]))
+        self.assertTrue(any("day-99" in error and "known lesson" in error for error in errors))
+
+    def test_accepts_empty_prereq_lists(self):
+        step = _build_step(knowledgePrereqLessonIds=[], artifactPrereqTaskIds=[])
+        self.assertEqual(validate_project(_project(buildSteps=[step])), [])
+
+    def test_rejects_empty_files_touched(self):
+        errors = validate_project(_project(buildSteps=[_build_step(filesTouched=[])]))
+        self.assertTrue(any("filesTouched" in error and "nonempty list" in error for error in errors))
+
+    def test_rejects_dangling_artifact_prereq(self):
+        errors = validate_project(_project(buildSteps=[_build_step(artifactPrereqTaskIds=["task-missing"])]))
+        self.assertTrue(any("artifactPrereqTaskId 'task-missing'" in error for error in errors))
+
+    def test_rejects_self_referential_artifact_prereq(self):
+        errors = validate_project(_project(buildSteps=[_build_step(artifactPrereqTaskIds=["task-x"])]))
+        self.assertTrue(any("own task" in error for error in errors))
+
+    def test_rejects_artifact_prereq_from_a_later_release(self):
+        """The rule that makes learning-order dependency mechanical: a V0.1 step
+        may not require an artifact that V0.4 produces."""
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-later", releaseId="v0-4")],
+            buildSteps=[_build_step(artifactPrereqTaskIds=["task-later"])],
+        )
+        releases = _releases()
+        releases[3]["buildTaskIds"] = ["task-later"]
+        project["releases"] = releases
+        errors = validate_project(project)
+        self.assertTrue(any(
+            "task-later" in error and "ordered after" in error for error in errors
+        ))
+
+    def test_accepts_artifact_prereq_from_an_earlier_release(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-later", releaseId="v0-4")],
+            buildSteps=[_build_step(
+                sid="step-task-later-01", taskId="task-later",
+                artifactPrereqTaskIds=["task-x"],
+            )],
+        )
+        releases = _releases()
+        releases[3]["buildTaskIds"] = ["task-later"]
+        project["releases"] = releases
+        self.assertEqual(validate_project(project), [])
+
+    def test_accepts_artifact_prereq_from_the_same_release(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-sibling")],
+            buildSteps=[_build_step(artifactPrereqTaskIds=["task-sibling"])],
+        )
+        releases = _releases()
+        releases[0]["buildTaskIds"] = ["task-x", "task-sibling"]
+        project["releases"] = releases
+        self.assertEqual(validate_project(project), [])
+
+    def test_rejects_architecture_rule_not_matching_the_pattern(self):
+        for rule in ("R22a", "R100", "r22", "R", "RULE22"):
+            with self.subTest(rule=rule):
+                errors = validate_project(_project(buildSteps=[_build_step(architectureRules=[rule])]))
+                self.assertTrue(any("architectureRules entry" in error for error in errors))
+
+    def test_accepts_one_and_two_digit_architecture_rules(self):
+        step = _build_step(architectureRules=["R1", "R9", "R22", "R26"])
+        self.assertEqual(validate_project(_project(buildSteps=[step])), [])
+
+    def test_rejects_non_positive_estimated_minutes(self):
+        for minutes in (0, -5, "30", 12.5, True):
+            with self.subTest(minutes=minutes):
+                errors = validate_project(_project(buildSteps=[_build_step(estimatedMinutes=minutes)]))
+                self.assertTrue(any("estimatedMinutes" in error for error in errors))
+
+    def test_rejects_blank_optional_string(self):
+        errors = validate_project(_project(buildSteps=[_build_step(mentorHint="")]))
+        self.assertTrue(any("mentorHint" in error for error in errors))
+
+    def test_reports_non_string_ids_instead_of_raising(self):
+        """A non-string id must produce an ERROR line, never a TypeError from a
+        set-membership test: the validator's contract is to return errors, and a
+        crash inside build_site.py would surface as a traceback, not a message."""
+        step = _build_step(
+            taskId=["task-x"],
+            artifactPrereqTaskIds=[{}],
+            knowledgePrereqLessonIds=[["day-01"]],
+        )
+        errors = validate_project(_project(buildSteps=[step]))
+        self.assertTrue(any("taskId" in error for error in errors))
+        self.assertTrue(any("artifactPrereqTaskId" in error for error in errors))
+        self.assertTrue(any("knowledgePrereqLessonId" in error for error in errors))
+
+
+class CapstoneWindowGuardTests(unittest.TestCase):
+    """R-CAPSTONE-GUARD: day-31..day-36 unlock knowledge; they never schedule
+    Spendwise execution, so they must expose no build-task CTA."""
+
+    def test_rejects_non_empty_build_task_ids_in_the_capstone_window(self):
+        for lesson_id in ("day-31", "day-32", "day-33", "day-34", "day-35", "day-36"):
+            with self.subTest(lesson_id=lesson_id):
+                project = _project(lessonMap={lesson_id: _lesson_entry()})
+                errors = validate_project(project)
+                self.assertTrue(any(
+                    "capstone window" in error and lesson_id in error for error in errors
+                ))
+
+    def test_accepts_capstone_window_direct_entry_with_empty_build_task_ids(self):
+        project = _project(lessonMap={"day-33": _lesson_entry(buildTaskIds=[])})
+        self.assertEqual(validate_project(project), [])
+
+    def test_accepts_capstone_window_theory_entry(self):
+        project = _project(lessonMap={"day-33": {
+            "applicationType": "theory",
+            "context": "Unlocks JwtEncoder knowledge; execution is post-day-36.",
+        }})
+        self.assertEqual(validate_project(project), [])
+
+    def test_allows_build_task_ids_immediately_outside_the_window(self):
+        for lesson_id in ("day-30", "day-37"):
+            with self.subTest(lesson_id=lesson_id):
+                project = _project(lessonMap={lesson_id: _lesson_entry()})
+                self.assertEqual(validate_project(project), [])
+
+    def test_real_artifact_capstone_window_carries_no_build_task_ids(self):
+        project = json.loads(REAL_PROJECT_PATH.read_text(encoding="utf-8"))
+        for lesson_id in ("day-31", "day-32", "day-33", "day-34", "day-35", "day-36"):
+            entry = project["lessonMap"][lesson_id]
+            self.assertEqual(entry.get("buildTaskIds", []), [], lesson_id)
+
+
+class AlsoUsedInTests(unittest.TestCase):
+    def test_accepts_a_resolving_also_used_in(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-y")],
+            lessonMap={"day-01": _lesson_entry(alsoUsedIn=["task-y"])},
+        )
+        releases = _releases()
+        releases[0]["buildTaskIds"] = ["task-x", "task-y"]
+        project["releases"] = releases
+        self.assertEqual(validate_project(project), [])
+
+    def test_also_used_in_task_need_not_share_the_lesson_release(self):
+        """The point of the key: reference a task another lesson owns, without
+        inheriting the release/feature-coverage obligations of buildTaskIds."""
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-later", releaseId="v0-4")],
+            lessonMap={"day-01": _lesson_entry(alsoUsedIn=["task-later"])},
+        )
+        releases = _releases()
+        releases[3]["buildTaskIds"] = ["task-later"]
+        project["releases"] = releases
+        self.assertEqual(validate_project(project), [])
+
+    def test_rejects_dangling_also_used_in(self):
+        project = _project(lessonMap={"day-01": _lesson_entry(alsoUsedIn=["task-missing"])})
+        errors = validate_project(project)
+        self.assertTrue(any("alsoUsedIn" in error and "task-missing" in error for error in errors))
+
+    def test_rejects_also_used_in_duplicating_an_owned_task(self):
+        project = _project(lessonMap={"day-01": _lesson_entry(alsoUsedIn=["task-x"])})
+        errors = validate_project(project)
+        self.assertTrue(any("alsoUsedIn" in error and "already owned" in error for error in errors))
+
+    def test_rejects_empty_also_used_in(self):
+        project = _project(lessonMap={"day-01": _lesson_entry(alsoUsedIn=[])})
+        errors = validate_project(project)
+        self.assertTrue(any("alsoUsedIn" in error and "nonempty list" in error for error in errors))
+
+    def test_also_used_in_stays_optional(self):
+        project = _project()
+        self.assertNotIn("alsoUsedIn", project["lessonMap"]["day-01"])
+        self.assertEqual(validate_project(project), [])
+
+    def test_reports_non_string_also_used_in_instead_of_raising(self):
+        project = _project(lessonMap={"day-01": _lesson_entry(alsoUsedIn=[{}])})
+        errors = validate_project(project)
+        self.assertTrue(any("alsoUsedIn" in error for error in errors))
+
+
 class MilestoneAndArchStageTests(unittest.TestCase):
     def test_rejects_milestone_releaseid_dangling(self):
         project = _project(milestones=[_milestone(releaseIds=["v9-9"])])
@@ -445,6 +726,210 @@ class ObjectShapeTests(unittest.TestCase):
         entry = _lesson_entry(concept="Encapsulation")
         errors = validate_project(_project(lessonMap={"day-01": entry}))
         self.assertTrue(any("concept" in error and "unexpected key" in error for error in errors))
+
+
+# --- Malformed-input totality -------------------------------------------------
+# The validator's contract is TOTAL: any JSON that parses must come back as a
+# list of "ERROR ..." diagnostics, never as an uncaught exception. build_site.py
+# calls validate_project() before embedding, so a raised TypeError reaches the
+# author as a bare traceback with no scope and no file, and the closed schema
+# stops functioning as a gate. Two crash families are covered here:
+#   unhashable   -- `["v0-1"] in release_ids` -> TypeError: unhashable type
+#   not iterable -- `for fid in 7`            -> TypeError: 'int' is not iterable
+# Each case must ALSO stay invalid: turning a crash into silent acceptance would
+# be a loosened schema, which is the one outcome worse than the crash.
+
+MALFORMED_LIST_VALUES = (
+    [["task-x"]],
+    [{}],
+    [{"id": "task-x"}],
+    [7],
+    [None],
+    [[]],
+    {"0": "task-x"},
+    7,
+)
+
+MALFORMED_SCALAR_VALUES = (
+    ["v0-1"],
+    [["v0-1"]],
+    {"id": "v0-1"},
+    {},
+    [],
+    7,
+)
+
+
+def _with_release(key, value):
+    releases = _releases()
+    releases[0][key] = value
+    return _project(releases=releases)
+
+
+def _with_feature(key, value):
+    return _project(features=[_feature(**{key: value})])
+
+
+def _with_task(key, value):
+    return _project(buildTasks=[_build_task(**{key: value})])
+
+
+def _with_milestone(key, value):
+    return _project(milestones=[_milestone(**{key: value})])
+
+
+def _with_arch_stage(key, value):
+    return _project(architectureStages=[_arch_stage(**{key: value})])
+
+
+def _with_lesson_entry(key, value):
+    return _project(lessonMap={"day-01": _lesson_entry(**{key: value})})
+
+
+def _with_build_step(key, value):
+    return _project(buildSteps=[_build_step(**{key: value})])
+
+
+# (label, fixture builder, singular stem that must appear in some diagnostic).
+# The stem is singular because a malformed *entry* is reported by the resolver
+# ("featureId 7 does not resolve") while a malformed *container* is reported by
+# the type check ("featureIds must be a list"); the stem matches both.
+LIST_REFERENCE_PATHS = (
+    ("release.featureIds", lambda v: _with_release("featureIds", v), "featureId"),
+    ("release.buildTaskIds", lambda v: _with_release("buildTaskIds", v), "buildTaskId"),
+    ("buildTask.featureIds", lambda v: _with_task("featureIds", v), "featureId"),
+    ("buildTask.relevantLessonIds", lambda v: _with_task("relevantLessonIds", v), "relevantLessonId"),
+    ("milestone.releaseIds", lambda v: _with_milestone("releaseIds", v), "releaseId"),
+    ("lessonMap.featureIds", lambda v: _with_lesson_entry("featureIds", v), "featureId"),
+    ("lessonMap.buildTaskIds", lambda v: _with_lesson_entry("buildTaskIds", v), "buildTaskId"),
+    ("lessonMap.alsoUsedIn", lambda v: _with_lesson_entry("alsoUsedIn", v), "alsoUsedIn"),
+    (
+        "buildStep.knowledgePrereqLessonIds",
+        lambda v: _with_build_step("knowledgePrereqLessonIds", v),
+        "knowledgePrereqLessonId",
+    ),
+    (
+        "buildStep.artifactPrereqTaskIds",
+        lambda v: _with_build_step("artifactPrereqTaskIds", v),
+        "artifactPrereqTaskId",
+    ),
+)
+
+SCALAR_REFERENCE_PATHS = (
+    ("feature.introducedInReleaseId", lambda v: _with_feature("introducedInReleaseId", v), "introducedInReleaseId"),
+    ("buildTask.releaseId", lambda v: _with_task("releaseId", v), "releaseId"),
+    ("architectureStage.releaseId", lambda v: _with_arch_stage("releaseId", v), "releaseId"),
+    ("lessonMap.releaseId", lambda v: _with_lesson_entry("releaseId", v), "releaseId"),
+    ("buildStep.taskId", lambda v: _with_build_step("taskId", v), "taskId"),
+)
+
+
+class MalformedInputTotalityTests(unittest.TestCase):
+    def _assert_diagnostics(self, project, stem):
+        try:
+            errors = validate_project(project)
+        except Exception as exception:
+            self.fail(f"validate_project raised {type(exception).__name__}: {exception}")
+        self.assertIsInstance(errors, list)
+        for error in errors:
+            self.assertIsInstance(error, str)
+            self.assertTrue(error.startswith("ERROR "), error)
+        self.assertTrue(errors, "malformed input must stay invalid, not become valid")
+        self.assertTrue(any(stem in error for error in errors), errors)
+        return errors
+
+    def test_malformed_reference_lists_report_instead_of_raising(self):
+        for label, build, stem in LIST_REFERENCE_PATHS:
+            for value in MALFORMED_LIST_VALUES:
+                with self.subTest(path=label, value=value):
+                    self._assert_diagnostics(build(value), stem)
+
+    def test_malformed_reference_scalars_report_instead_of_raising(self):
+        for label, build, stem in SCALAR_REFERENCE_PATHS:
+            for value in MALFORMED_SCALAR_VALUES:
+                with self.subTest(path=label, value=value):
+                    self._assert_diagnostics(build(value), stem)
+
+    def test_duplicate_unhashable_out_of_scope_items_report(self):
+        """The duplicate scan built a set from authored values."""
+        project = _project()
+        project["product"]["outOfScope"] = [["tax"], ["tax"]]
+        self._assert_diagnostics(project, "outOfScope")
+
+    def test_non_string_enum_values_report(self):
+        releases = _releases()
+        releases[0]["status"] = ["planned"]
+        self._assert_diagnostics(_project(releases=releases), "status")
+        self._assert_diagnostics(_with_lesson_entry("applicationType", {"direct": 1}), "applicationType")
+
+    def test_capstone_guard_survives_a_non_list_build_task_ids(self):
+        """R-CAPSTONE-GUARD formatted the offending value with list()."""
+        project = _project(lessonMap={"day-33": _lesson_entry(buildTaskIds=7)})
+        self._assert_diagnostics(project, "buildTaskId")
+
+    def test_theory_entry_reference_lists_are_still_type_checked(self):
+        """A theory entry need not carry references, but a malformed one must not
+        pass: the shared coverage and capstone logic below reads these keys for
+        every applicationType, not just direct/future."""
+        for key in ("featureIds", "buildTaskIds"):
+            for value in ([{}], 7, [["x"]], {"a": "x"}):
+                with self.subTest(key=key, value=value):
+                    project = _project(lessonMap={"day-01": {
+                        "applicationType": "theory",
+                        "context": "Pure language foundation.",
+                        key: value,
+                    }})
+                    self._assert_diagnostics(project, key[:-1])
+
+    def test_step_release_order_lookup_survives_a_malformed_task_release(self):
+        project = _project(
+            buildTasks=[_build_task(releaseId=["v0-1"])],
+            buildSteps=[_build_step()],
+        )
+        self._assert_diagnostics(project, "releaseId")
+
+    def test_prereq_release_order_lookup_survives_a_malformed_task_release(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-later", releaseId=["v0-4"])],
+            buildSteps=[_build_step(artifactPrereqTaskIds=["task-later"])],
+        )
+        releases = _releases()
+        releases[3]["buildTaskIds"] = ["task-later"]
+        project["releases"] = releases
+        self._assert_diagnostics(project, "releaseId")
+
+    def test_lesson_feature_coverage_survives_a_malformed_task_feature_list(self):
+        project = _project(buildTasks=[_build_task(featureIds=[["feat-x"]])])
+        self._assert_diagnostics(project, "featureId")
+
+    def test_also_used_in_survives_a_non_list_build_task_ids(self):
+        project = _project(
+            buildTasks=[_build_task(), _build_task(tid="task-y")],
+            lessonMap={"day-01": _lesson_entry(buildTaskIds=7, alsoUsedIn=["task-y"])},
+        )
+        releases = _releases()
+        releases[0]["buildTaskIds"] = ["task-x", "task-y"]
+        project["releases"] = releases
+        self._assert_diagnostics(project, "buildTaskId")
+
+    def test_non_list_build_tasks_reports_instead_of_raising(self):
+        """`build_tasks or []` guarded only the falsy case, so a truthy non-list
+        (7, True, 1.5) still reached `for task in 7` in the lessonMap and
+        buildSteps id indexes."""
+        for value in (7, True, 1.5, "task-x", {"task-x": {}}):
+            with self.subTest(value=value):
+                self._assert_diagnostics(_project(buildTasks=value), "buildTasks")
+                self._assert_diagnostics(
+                    _project(buildTasks=value, buildSteps=[_build_step()]), "buildTasks"
+                )
+
+    def test_hardening_adds_no_diagnostics_to_valid_data(self):
+        self.assertEqual(validate_project(_project()), [])
+        self.assertEqual(validate_project(_project(buildSteps=[_build_step()])), [])
+        self.assertEqual(validate_project(_project(lessonMap={"day-02": {
+            "applicationType": "theory",
+            "context": "Pure language foundation, no feature.",
+        }})), [])
 
 
 class CliTests(unittest.TestCase):

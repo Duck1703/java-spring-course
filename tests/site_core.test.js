@@ -147,7 +147,7 @@ test("sanitizeState returns fresh defaults on invalid input", () => {
   const fresh = core.sanitizeState(null, new Set(), new Set(), new Set());
   assert.equal(fresh.theme, "system");
   assert.deepEqual(fresh.completed, []);
-  assert.deepEqual(fresh.projectProgress, { buildTasks: [] });
+  assert.deepEqual(fresh.projectProgress, { buildTasks: [], legacyCompleted: [] });
 });
 
 test("sanitizeState migrates a v1 state forward, preserving course progress", () => {
@@ -158,11 +158,11 @@ test("sanitizeState migrates a v1 state forward, preserving course progress", ()
     new Set(["day-01-practice-01"]),
     new Set(["task-real"]),
   );
-  assert.equal(core.STATE_VERSION, 2);
+  assert.equal(core.STATE_VERSION, 3);
   assert.equal(migrated.version, core.STATE_VERSION);
   assert.deepEqual(migrated.completed, ["day-01"]);
   assert.equal(migrated.theme, "dark");
-  assert.deepEqual(migrated.projectProgress, { buildTasks: [] });
+  assert.deepEqual(migrated.projectProgress, { buildTasks: [], legacyCompleted: [] });
 });
 
 test("sanitizeState drops unknown build task ids and defaults missing project progress", () => {
@@ -171,12 +171,69 @@ test("sanitizeState drops unknown build task ids and defaults missing project pr
     new Set(), new Set(), new Set(), new Set(["task-a", "task-b"]),
   );
   assert.deepEqual(cleaned.projectProgress.buildTasks, ["task-a", "task-b"]);
+  // "ghost" is no longer known to the artifact, so it becomes history rather
+  // than vanishing: a v2 state whose task was retired keeps the evidence.
+  assert.deepEqual(cleaned.projectProgress.legacyCompleted, ["ghost"]);
 
-  // A 4-arg caller (no validBuildTaskIds) still gets a well-formed empty track.
+  // A 4-arg caller (no validBuildTaskIds) still gets a well-formed track; with
+  // nothing valid to match, every id is retired.
   const legacy = core.sanitizeState(
     { projectProgress: { buildTasks: ["task-a"] } }, new Set(), new Set(), new Set(),
   );
-  assert.deepEqual(legacy.projectProgress, { buildTasks: [] });
+  assert.deepEqual(legacy.projectProgress, { buildTasks: [], legacyCompleted: ["task-a"] });
+});
+
+test("migrateProjectProgress partitions ids into current and retired without synthesizing", () => {
+  const known = new Set(["task-a", "task-b"]);
+  const migrated = core.migrateProjectProgress(
+    { buildTasks: ["task-a", "task-retired", "task-a"] },
+    known,
+  );
+  assert.deepEqual(migrated.buildTasks, ["task-a"]);
+  assert.deepEqual(migrated.legacyCompleted, ["task-retired"]);
+  // A split task's successors are never auto-completed: only the retired id is
+  // recorded, and task-b (a hypothetical successor) stays untouched.
+  assert.equal(migrated.buildTasks.includes("task-b"), false);
+});
+
+test("migrateProjectProgress is total on malformed input and never returns a shared shape", () => {
+  const empty = { buildTasks: [], legacyCompleted: [] };
+  for (const input of [null, undefined, [], "x", 7, {}, { buildTasks: "nope" }]) {
+    assert.deepEqual(core.migrateProjectProgress(input, new Set(["task-a"])), empty);
+  }
+  // Non-string and empty-string entries are discarded, not coerced.
+  assert.deepEqual(
+    core.migrateProjectProgress({ buildTasks: [1, "", null, "task-a"] }, new Set(["task-a"])),
+    { buildTasks: ["task-a"], legacyCompleted: [] },
+  );
+  // Called with no id set at all, everything is retired rather than dropped.
+  assert.deepEqual(
+    core.migrateProjectProgress({ buildTasks: ["task-a"] }),
+    { buildTasks: [], legacyCompleted: ["task-a"] },
+  );
+});
+
+test("migrateProjectProgress carries an existing legacyCompleted forward and never overlaps", () => {
+  const migrated = core.migrateProjectProgress(
+    { buildTasks: ["task-a"], legacyCompleted: ["task-gone", "task-gone", "task-a"] },
+    new Set(["task-a"]),
+  );
+  // A previously-retired id that the artifact has since RE-introduced returns to
+  // buildTasks; the two lists are a partition, so nothing appears in both.
+  assert.deepEqual(migrated.buildTasks, ["task-a"]);
+  assert.deepEqual(migrated.legacyCompleted, ["task-gone"]);
+  const overlap = migrated.buildTasks.filter((id) => migrated.legacyCompleted.includes(id));
+  assert.deepEqual(overlap, []);
+});
+
+test("RENAME_MAP is empty at this wave, so the migration is a deliberate no-op for renames", () => {
+  // The machinery ships and is tested while it has no entries: the first wave
+  // that renames a task id meets already-working code. RENAME_MAP is frozen, so
+  // the rename branch cannot be exercised from here — the wave that adds the
+  // first entry must add a test alongside it asserting the old id's completion
+  // survives, which only holds because the rename is applied BEFORE the
+  // valid-id filter.
+  assert.deepEqual(core.RENAME_MAP, {});
 });
 
 test("calculateReleaseProgress counts only required tasks for the release", () => {
