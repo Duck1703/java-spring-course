@@ -141,10 +141,17 @@
       "order": 9,
       "status": "planned",
       "problem": "Dashboard aggregation is recomputed on every request, recurring transactions are not generated automatically, there is no external FX data, and the system lacks tests, observability, and a reproducible environment.",
-      "goal": "Bring Spendwise close to a production backend: Redis dashboard cache with invalidation, recurring scheduler, external exchange-rate API, testing, OpenAPI, logging, monitoring, and Docker.",
+      "goal": "Bring Spendwise close to a production backend: reference-data caching (Redis optional) with correct invalidation, recurring scheduler, external exchange-rate API, testing, OpenAPI, logging, monitoring, and Docker.",
       "featureIds": ["feat-cache", "feat-scheduler", "feat-exchange-rate", "feat-observability", "feat-recurring", "feat-testing", "feat-deployment"],
       "learningDependencies": ["Cache", "Redis", "Cache invalidation", "Async", "Scheduler", "External API", "RestClient/WebClient", "Retry", "Circuit Breaker (if syllabus supports)", "Unit Testing", "Integration Testing", "Testcontainers", "Actuator", "Micrometer", "Docker"],
-      "acceptanceCriteria": ["Dashboard aggregation is cached in Redis with correct invalidation", "Recurring scheduler runs periodically without creating duplicates", "External exchange rate fetched via RestClient/WebClient with retry/failure handling", "Unit and integration tests (Testcontainers) pass", "Health check and metrics exposed (Actuator/Micrometer)", "Application runs in a Dockerized environment"],
+      "acceptanceCriteria": [
+        "Reference/category data is cached with correct invalidation (dashboard figures are never cached - R11; the Redis backend is an optional swap)",
+        "Recurring scheduler runs periodically without creating duplicates",
+        "External exchange rate fetched via RestClient/WebClient with retry/failure handling",
+        "Unit and integration tests (Testcontainers) pass",
+        "Health check and metrics exposed (Actuator/Micrometer)",
+        "Application runs in a Dockerized environment"
+      ],
       "buildTaskIds": ["task-reference-data-cache", "task-scheduled-reconciliation", "task-recurring-scheduler", "task-exchange-rate-client", "task-invariant-test-suite", "task-slice-test-suite", "task-integration-test-suite", "task-production-packaging", "task-redis-cache-backend"]
     },
     {
@@ -298,7 +305,7 @@
     {
       "id": "feat-cache",
       "name": "Dashboard Cache",
-      "description": "Redis-backed caching of expensive dashboard aggregation with correct cache invalidation.",
+      "description": "Caching of reference/category reads with correct invalidation (ConcurrentMapCacheManager base per ADR-010; Redis an optional backend swap) - dashboard figures and all money values stay uncached (R11).",
       "domainEntities": ["Report"],
       "introducedInReleaseId": "v0-9"
     },
@@ -880,7 +887,7 @@
         "the service returns a read model/DTO, never an entity or VO across HTTP (R16, R17)"
       ],
       "acceptanceCriteria": [
-        "a budget's spent equals a hand-computed SUM over the same period (blueprint §9 invariant 5)",
+        "a budget's spent equals a hand-computed SUM over the same period (plan §9 flow 5)",
         "remaining/percentage/status are consistent with limit and spent at scale 2 with one explicit rounding at division",
         "creating, editing or deleting transactions after a budget read is reflected on the next read without any cache/refresh action",
         "a user's budget read returns 404 for another user's budget id and never leaks another user's figures (R24)",
@@ -910,7 +917,7 @@
         "the schema arrives as a new versioned Flyway migration and ddl-auto: validate boots against it",
         "deactivating a template is a flag change on the template - it never deletes or edits generated transactions"
       ],
-      "relevantLessonIds": ["day-07", "day-12", "day-19", "day-21"],
+      "relevantLessonIds": ["day-07", "day-19", "day-21"],
       "required": true
     },
     {
@@ -922,7 +929,7 @@
       "goal": "A RecurringGenerationService that materializes due occurrences as real Transactions through TransactionCreationService.create(CreateTransactionCommand), advances the template's nextDueDate only after the row exists, and is idempotent per period - the same recurring period never generates twice.",
       "constraints": [
         "every generated Transaction goes through TransactionCreationService.create(CreateTransactionCommand) and carries a sourceRef - never a direct repository insert (R20)",
-        "sourceRef for a generated occurrence is deterministic (template id + occurrence due date shape), so re-running generation for the same period cannot create a second row",
+        "sourceRef for a generated occurrence is deterministic (template id + occurrence due date shape), so re-running generation for the same period is a no-op by construction: the pre-check finds the existing row and creates nothing. The hard race guard (UNIQUE (user_id, source_ref)) arrives in V0.8's V7 migration - until then re-runs are safe only because generation is single-writer (ADR-007: the pre-check is the friendly path, the constraint is the arbiter)",
         "the template's nextDueDate advances only inside the same transaction that created the occurrence - a crash between the two leaves either both or neither (R8/R21 atomicity discipline)",
         "generation creates INCOME/EXPENSE rows with positive amounts and typed direction (R7) and updates balances only through the projection rules (R8)",
         "generation is a plain service method callable from tests and, later, from the V0.9 scheduler (task-recurring-scheduler) - this task wires no scheduling of its own",
@@ -931,7 +938,7 @@
       ],
       "acceptanceCriteria": [
         "a due monthly template generates exactly one transaction with a deterministic sourceRef and advances nextDueDate by one frequency step",
-        "calling generation twice for the same period produces no second transaction (blueprint §9 invariant 8)",
+        "calling generation twice for the same period produces no second transaction (plan §9 flow 8)",
         "a failed creation leaves the template's nextDueDate unchanged - no phantom advancement",
         "a generated row is indistinguishable in kind from a manual row created through the same canonical path (same invariants, same projections)"
       ],
@@ -946,7 +953,7 @@
       "problem": "Users categorize every import and manual entry by hand; Spendwise needs persisted rules (condition -> action, ordered) before any engine can apply them, and the rule structure must stay inside the actual domain rather than becoming a generic workflow engine.",
       "goal": "A CategorizationRule entity (priority, one condition predicate over transaction description/category shape, one target category action, enabled flag) persisted by a new Flyway migration - the Strategy-ready substrate for the V0.7 engine and the V0.8 import pipeline.",
       "constraints": [
-        "a rule is condition + action + priority + enabled - no generic workflow/expression language, no scriptable DSL: this stays Spendwise's own domain (blueprint §15 V0.7 scope)",
+        "a rule is condition + action + priority + enabled - no generic workflow/expression language, no scriptable DSL: this stays Spendwise's own domain (master plan: no complex DSL; blueprint §5 V0.7 scope, D10/R-DEP-2)",
         "rules are ordered by an explicit priority integer; ties resolve deterministically by a stable secondary key (e.g. id), never by database return order",
         "priority is unique per user so ordering is total and reproducible",
         "persisted via a new versioned Flyway migration (R26) with user_id from the start (R25)",
@@ -968,9 +975,9 @@
       "releaseId": "v0-7",
       "featureIds": ["feat-rule"],
       "problem": "Rules exist as rows but nothing applies them, so categorization stays manual; a naive application that mutates financial truth directly, or that runs in nondeterministic order, would make Spendwise's results irreproducible.",
-      "goal": "A RuleEngine service that evaluates a user's enabled rules in priority order against a transaction's description (and category shape), applies the first (or all configured) matching rules by setting the target category, and is deterministic and side-effect-bounded.",
+      "goal": "A RuleEngine service that evaluates a user's enabled rules in priority order against a transaction's description (and category shape), applies the first (highest-priority) matching rule by setting the target category, and is deterministic and side-effect-bounded.",
       "constraints": [
-        "rules apply in priority order, deterministically (blueprint §9 invariant 9) - same input, same rule order, same outcome every time",
+        "rules apply in priority order, deterministically (plan §9 flow 9) - same input, same rule order, same outcome every time",
         "the engine reads rules and transactions through repositories/services only; it calls no other domain subsystem - read-only consumer discipline (blueprint R-DEP-4)",
         "application happens inside the transaction-creation flow's own transactional scope, not as an after-commit surprise; it never dispatches events or async work (R19, ADR-006)",
         "a rule application changes ONLY the category of the transaction being created - it never edits amounts, dates, balances or other transactions (R6/R7 boundary)",
@@ -992,10 +999,10 @@
       "title": "Dashboard read model (month/category aggregates)",
       "releaseId": "v0-7",
       "featureIds": ["feat-dashboard"],
-      "problem": "Spendwise has per-category statistics from V0.2 but no single read model that answers 'how am I doing this month' across accounts, categories and budgets - and the V0.9 cache task needs an expensive, well-defined read to be worth caching.",
-      "goal": "A DashboardReadService producing a month-scoped aggregate read model (total income/expense, per-category breakdown, per-account balances view, budget statuses) assembled from the ledger via aggregation queries, exposed as one read endpoint.",
+      "problem": "Spendwise has per-category statistics from V0.2 but no single read model that answers 'how am I doing this month' across accounts, categories and budgets. Every figure recomputes from the ledger at request time (R11) - exactly why the numbers stay trustworthy, and exactly why a well-defined read model is worth building. No cache belongs to this task; V0.9's optional cache holds reference data, never the dashboard (R11).",
+      "goal": "A DashboardReadService producing a month-scoped aggregate read model (total income/expense, per-category breakdown, per-account balances view, budget statuses) assembled from the ledger via aggregation queries and derived at request time, exposed as one read endpoint - R11 keeps every figure uncached.",
       "constraints": [
-        "every figure is derived from Transaction rows at read time and never stored (R6, R10) - the read model is a response record, not a persisted cache",
+        "every aggregate figure is derived at read time and never stored (R6, R10); the per-account balance view reads the stored R8 projection rather than recomputing it - the read model is a response record, not a persisted cache",
         "sums are BigDecimal via reduce(BigDecimal.ZERO, BigDecimal::add) over the grouping - never summingDouble, never double/float (R1)",
         "GROUP BY-style aggregation queries live in repositories (@Query) or stream groupingBy over loaded rows - groupingBy is fine for grouping, the sum half stays BigDecimal (day-10/day-21)",
         "no money value is cached at this layer - caching arrives only in V0.9 behind @Cacheable and still never holds money (R11)",
@@ -1004,7 +1011,7 @@
         "this task implements no caching and no scheduler - V0.9 consumes it later"
       ],
       "acceptanceCriteria": [
-        "the dashboard's month totals equal a hand-computed SUM over the same transactions (blueprint §9 'Done when')",
+        "the dashboard's month totals equal a hand-computed SUM over the same transactions (blueprint §5 V0.7 Done-when)",
         "per-category breakdown covers exactly the categories with transactions in the period, with no phantom zero rows",
         "another user's data never appears in the response, verified with two seeded users",
         "the response is a record assembled at request time; no dashboard figure is persisted or cached by this task"
@@ -1018,13 +1025,13 @@
       "releaseId": "v0-7",
       "featureIds": ["feat-dashboard", "feat-statistics"],
       "problem": "V0.2's aggregation answers 'how much per category this month' but not 'how is spending moving month over month' or 'where does most money go' - the analytical layer that makes the V0.7 dashboard genuinely useful.",
-      "goal": "An advanced statistics service computing multi-month trends, month-over-month deltas and top-N categories by spend, via aggregation queries over the ledger, exposed as read endpoints on the existing statistics surface.",
+      "goal": "An advanced statistics service computing multi-month trends, month-over-month deltas and top-N categories by spend, via aggregation queries over the ledger, exposed as read methods on the existing statistics service, verified through tests - no new HTTP surface in this task.",
       "constraints": [
         "every aggregation is BigDecimal end-to-end - reduce(BigDecimal.ZERO, BigDecimal::add) for sums, explicit scale + RoundingMode for any average/division (R1, R5)",
         "grouping via Collectors.groupingBy (day-10) or @Query GROUP BY (day-21) is fine for the grouping half; the value half never uses summingDouble (R1)",
         "all reads are derived at request time from the ledger (R6, R10) and scoped to the requesting user (R24)",
         "read paths are readOnly = true (R18); responses are records (R16)",
-        "no caching in this task - R11's boundary holds until V0.9 wires the (still non-authoritative) cache",
+        "no caching in this task - R11's boundary holds permanently; V0.9's cache is optional, non-authoritative, and still never holds money",
         "do not parallelize these aggregations - the volumes are small and day-12's parallel idioms buy nothing here (and are outright forbidden on the V0.8 import path)"
       ],
       "acceptanceCriteria": ["a 3-month trend for one category equals a hand-computed per-month SUM sequence", "top-N categories by expense for a month are returned in descending spend order with exact BigDecimal totals", "a user with no transactions in a month receives an empty/zero trend entry rather than an error", "no aggregation result is stored or cached by this task"],
@@ -1041,6 +1048,7 @@
       "constraints": [
         "the parse loop is sequential and processes rows in source-file order - parallelStream() and .parallel() are forbidden anywhere on the import path (R22 second clause): row identity later in this release is order-derived for the fallback tier",
         "reading uses sequential Files.lines consumption (day-11/day-12), charset declared explicitly (day-11 path-traversal/charset teaching)",
+        "quoted-comma handling and BOM trimming go beyond the lessons: day-12's parseLine is a naive line.split(\",\", -1) with no quoted-field awareness (RFC 4180 parsing is not taught) - treat them as a disclosed extension of the day-12 base, implemented inside this parser, not a drop-in CSV library",
         "the parser produces an immutable record per row with the raw string fields and NO decision-making about validity, duplicates or persistence - it parses, nothing else (R13 layering)",
         "each parsed row exposes whether a stable source-provided reference exists (the sourceTxnId column presence), because that selects identity tier in task-duplicate-detection",
         "no repository, no @Transactional, no service call inside parsing (R19 discipline: file I/O stays outside transactions)",
@@ -1056,7 +1064,7 @@
       "releaseId": "v0-8",
       "featureIds": ["feat-import"],
       "problem": "An import that fails halfway must leave a visible, queryable record of what happened per row - but if the batch model leaks into transaction identity, a re-upload generates fresh keys and duplicate detection silently dies (the defect the planning reconciliation proved in detail).",
-      "goal": "ImportBatch and ImportRow entities persisted by a new Flyway migration, carrying user_id, file name, per-row status OK/DUPLICATE/FAILED with row number and reason - explicitly history and reporting data whose PKs are never identity inputs.",
+      "goal": "ImportBatch and ImportRow entities persisted by a new Flyway migration, carrying user_id, file name, the import source identifier (source_key, the Level-1 sourceKey for row identity), per-row status OK/DUPLICATE/FAILED with row number and reason - explicitly history and reporting data whose PKs are never identity inputs.",
       "constraints": [
         "ImportBatch and ImportRow are import history and reporting ONLY - their primary keys never participate in row identity (R22, D10.1); batchId and rowNo exist for the error list and summary display",
         "every row status is exactly one of OK / DUPLICATE / FAILED (R22 terminal-state rule)",
@@ -1088,7 +1096,8 @@
         "a row that is decided duplicate records DUPLICATE, creates no transaction, applies no rule, and touches no balance projection",
         "a CSV negative amount for an EXPENSE becomes type EXPENSE + positive amount - never a negative stored amount (R7)",
         "the caller loop consumes the parser sequentially and passes rows to the per-row transactional processor in file order (R22 second clause)",
-        "no external calls or async dispatch inside any row transaction (R19)"
+        "no external calls or async dispatch inside any row transaction (R19)",
+        "the row's OK/DUPLICATE/FAILED record is written outside the row's rolled-back creation transaction - by the caller loop after the per-row call returns, or in its own short transaction (day-20 REQUIRES_NEW) - so a failed row still reaches its terminal state (R22)"
       ],
       "acceptanceCriteria": [
         "a 100-row file with 3 malformed rows yields a COMPLETED_WITH_ERRORS batch, 97 committed transactions and 3 FAILED rows carrying row numbers and reasons (blueprint §5 V0.8 done-when)",
@@ -1107,7 +1116,7 @@
       "problem": "Re-uploading the same statement must add zero transactions - but a batch PK as identity dies on re-upload, and a bare content fingerprint collapses two byte-identical LEGITIMATE rows into one, silently losing a real transaction. The identity has to be a stable source reference when the file provides one, and otherwise content plus the row's occurrence position among its own duplicates.",
       "goal": "A RowIdentityService computing sourceRef per the frozen two-tier model: Level 1 IMPORT:SRC:<sourceKey>:<accountId>:<normalize(sourceTxnId)> when the row carries a stable source reference; Level 2 IMPORT:<baseFingerprint>|OCC:<occurrenceIndex> with the occurrence counter keyed by base fingerprint via Map.merge, walked in source-file order.",
       "constraints": [
-        "Level 1 (preferred, order-independent): sourceRef = IMPORT:SRC: + sourceKey + : + accountId + : + normalize(sourceTxnId) - normalize is trim, collapse internal whitespace to single space, uppercase",
+        "Level 1 (preferred, order-independent): sourceRef = IMPORT:SRC: + sourceKey + : + accountId + : + normalize(sourceTxnId), where sourceKey is the import source identifier recorded on the ImportBatch (one per import pipeline/source, set when the batch is created) - normalize is trim, collapse internal whitespace to single space, uppercase",
         "Level 2 (fallback): baseFingerprint = accountId | occurredOn | direction | amount(scale 2, toPlainString) | normalize(description), joined with | which normalize cannot emit; occurrenceIndex is the 1-based occurrence of the SAME baseFingerprint within the current statement counted in source-file order; sourceRef = IMPORT: + baseFingerprint + |OCC: + occurrenceIndex",
         "the occurrence counter is a plain HashMap merged with counts.merge(baseFingerprint, 1, Integer::sum) (day08-blk-27) - incremented as the file is walked sequentially, never in parallel (R22 second clause)",
         "amount uses toPlainString() at DDL scale so 100.5 and 100.50 yield one identity; occurredOn is the DATE, never an ingestion timestamp",
@@ -1166,7 +1175,7 @@
         "another user's batch id returns 404 and never leaks row data",
         "the report is a pure read: fetching it never changes batch or row state"
       ],
-      "relevantLessonIds": ["day-16", "day-23", "day-26"],
+      "relevantLessonIds": ["day-16", "day-23"],
       "required": true
     },
     {
@@ -1182,7 +1191,7 @@
         "amounts serialize at scale 2 via the existing Money formatting - no double conversion, no scientific notation (R1)",
         "CSV fields are escaped per day-26's CSV teaching (quoting fields containing commas/quotes/newlines); charset declared explicitly (day-11)",
         "the export streams per-user scoped rows (R24) and is readOnly = true (R18)",
-        "the download response follows day-26's Content-Disposition/download teaching; the endpoint returns the file, not a ResponseEntity-wrapped entity (R17)"
+        "the download response follows day-26's Content-Disposition/download teaching; the service returns the file bytes and never a ResponseEntity (R17), and no entity crosses the HTTP boundary (R16)"
       ],
       "acceptanceCriteria": [
         "exporting a user with transactions containing commas, quotes and Vietnamese diacritics in descriptions produces a file that re-parses to the same field values",
@@ -1247,9 +1256,9 @@
       "releaseId": "v0-9",
       "featureIds": ["feat-scheduler"],
       "problem": "Account balances are a stored projection (R8), and projections drift when bugs or manual edits intervene - Spendwise has no mechanism that notices, so a drifted balance silently lies until a user complains.",
-      "goal": "A bounded @Scheduled job (fixedDelay with explicit zone, day-25/day-27 teaching) that periodically recomputes each account's balance from the transaction ledger and records/logs any drift - read-only detection with a defined outcome, never silent mutation.",
+      "goal": "A bounded @Scheduled job (fixedDelay per day-25/day-27 teaching; if the schedule is ever expressed as cron, declare zone explicitly per day-25 blk-32) that periodically recomputes each account's balance from the transaction ledger and records/logs any drift - read-only detection with a defined outcome, never silent mutation.",
       "constraints": [
-        "the job runs on a bounded schedule: @EnableScheduling + @Scheduled(fixedDelay = ...) with an explicit zone (day-25 blk-37: the default is the JVM timezone) - never an uncontrolled loop",
+        "the job runs on a bounded schedule: @EnableScheduling + @Scheduled(fixedDelay = ...) (day-25 blk-37) - never an uncontrolled loop; zone is a cron-only attribute (day-25 blk-32), so declare it explicitly only if the schedule ever becomes cron",
         "single-threaded scheduler awareness: the job must not overlap itself or starve other scheduled work (day-25 blk-33 / day-27 blk-28 caveat - fixedDelay prevents overlap for consecutive runs of one method)",
         "the reconciliation READS transactions and balances and RECORDS drift - it never mutates a balance directly, because balances change only through transaction rows (R21: balances are never mutated without corresponding transactions)",
         "the invariant it checks is the V0.5 projection rule: balance == openingBalance + signed sum of the account's transactions (R6, R8)",
@@ -1260,7 +1269,7 @@
         "on a seeded consistent ledger the job runs and reports zero drift",
         "a test that manually drifts one balance (repository-level, outside the canonical path) causes the next run to detect and report exactly that account",
         "the job never edits a balance, transaction or budget row - verified by asserting no write occurs on a drift run",
-        "two consecutive runs cannot overlap (fixedDelay semantics asserted in configuration)"
+        "two consecutive runs cannot overlap (fixedDelay semantics, day-27 blk-28: consecutive runs of one method on one scheduler)"
       ],
       "relevantLessonIds": ["day-25", "day-27", "day-20"],
       "required": true
@@ -1274,12 +1283,17 @@
       "goal": "@EnableScheduling wiring that invokes the V0.7 generation service on a bounded fixedDelay schedule, relying on its deterministic sourceRef idempotency so a re-run for the same period creates nothing.",
       "constraints": [
         "the scheduler CALLS RecurringGenerationService - no generation logic is re-implemented here; this task is wiring only (blueprint V0.9: 'recurring scheduler wiring')",
-        "the schedule is bounded: @Scheduled(fixedDelay = ...) with an explicit zone; no cron the learner cannot explain; no uncontrolled loop",
-        "idempotency comes from the V0.7 deterministic sourceRef: a scheduler that fires twice in the same period creates exactly one transaction per occurrence (blueprint invariant 8)",
+        "the schedule is bounded: @Scheduled(fixedDelay = ...); no cron the learner cannot explain; no uncontrolled loop (day-25 blk-32: explicit zone is a cron-only discipline)",
+        "idempotency comes from the V0.7 deterministic sourceRef: a scheduler that fires twice in the same period creates exactly one transaction per occurrence (plan §9 flow 8)",
         "the scheduler must not overlap itself (fixedDelay, day-27 blk-28's caveat: the guarantee holds for consecutive runs of one method on one scheduler; multi-instance deployment would need a distributed lock and is out of scope)",
         "no external calls inside the generation transaction (R19); the scheduling method itself performs no I/O beyond invoking the service"
       ],
-      "acceptanceCriteria": ["with the scheduler active, a due monthly template generates its transaction without any manual invocation", "firing the scheduled method twice back-to-back for the same period produces exactly one transaction per occurrence", "the schedule is declared with fixedDelay and an explicit zone in configuration", "deactivating the template stops generation on the next tick"],
+      "acceptanceCriteria": [
+        "with the scheduler active, a due monthly template generates its transaction without any manual invocation",
+        "firing the scheduled method twice back-to-back for the same period produces exactly one transaction per occurrence",
+        "the schedule is declared with fixedDelay in configuration, and the single-scheduler non-overlap caveat (day-27 blk-28) is documented",
+        "deactivating the template stops generation on the next tick"
+      ],
       "relevantLessonIds": ["day-25", "day-27"],
       "required": true
     },
@@ -1336,10 +1350,15 @@
         "@WebMvcTest per controller with MockMvc and @MockBean service doubles (day-28 blk-6/7/8) - asserting status codes, ownership 404s, and record-based response shapes (R16)",
         "@DataJpaTest per repository with TestEntityManager (day-28 blk-9/10) - asserting the @Query semantics, user-scoped list queries (R24) and the UNIQUE (user_id, source_ref) constraint behavior at the query level",
         "slices load no full application context: each test names exactly its layer and must not silently boot @SpringBootTest",
-        "Flyway migrations seed the schema in @DataJpaTest (ddl-auto stays validate; @AutoConfigureTestDatabase(replace = NONE) where the taught approach requires)",
+        "slices use the taught @DataJpaTest defaults (day-28 blk-9/10: auto-configured in-memory database); any test that needs the real migrated schema belongs to the day-29 Testcontainers suite (task-integration-test-suite)",
         "no percentage coverage gate - slices are regression guards, not metrics (day-28 blk-32)"
       ],
-      "acceptanceCriteria": ["every V0.4+ controller has a @WebMvcTest class covering its owned endpoints including the foreign-owner 404", "every repository with a custom @Query has a @DataJpaTest class proving its semantics on seeded rows", "a @DataJpaTest proves a scoped list query returns only the owner's rows", "the slice suites pass without a full @SpringBootTest context ever loading"],
+      "acceptanceCriteria": [
+        "each V0.4 controller in this task's scope - Account, Transaction, Category - has a @WebMvcTest class covering its owned endpoints including the foreign-owner 404",
+        "every repository with a custom @Query has a @DataJpaTest class proving its semantics on seeded rows",
+        "a @DataJpaTest proves a scoped list query returns only the owner's rows",
+        "the slice suites pass without a full @SpringBootTest context ever loading"
+      ],
       "relevantLessonIds": ["day-28", "day-21"],
       "required": true
     },
@@ -1381,7 +1400,7 @@
         "Dockerfile with the layered-jar technique (day-30 blk-11/12) and docker-compose.yml for app + postgres (day-30 blk-13/14); SPRING_DATASOURCE_* comes from compose environment, secrets via environment placeholders - never committed values",
         "the async side effect is the taught fire-and-forget shape: bounded executor, @Async dispatch after commit (day-27 after-commit ordering), AsyncUncaughtExceptionHandler configured (day-25) - no 202 contract (ADR-012)",
         "no Kubernetes, no microservices, no message broker - the packaging is one compose file (R26: nothing after day-30's techniques)",
-        "JaCoCo report generation and reading (day-30 blk-7) belongs to the build here - report only, no percentage gate"
+        "JaCoCo report generation and reading (day-30 lab table: report generated and opened at target/site/jacoco/index.html; day-30 blk-7 records the threshold configuration as a knowledge gap) belongs to the build here - report only, no percentage gate"
       ],
       "acceptanceCriteria": [
         "/v3/api-docs and the springdoc UI describe the real endpoints, and a request's log lines all share one traceId",
@@ -1403,10 +1422,10 @@
       "constraints": [
         "this is a backend swap behind the SAME @Cacheable/@CacheEvict annotations (ADR-010: ConcurrentMapCacheManager stays the final base; Redis is optional) - no annotation changes, no new cache names beyond the existing ones",
         "TTLs are explicit per cache (day-25 blk-6 entryTtl teaching); TTI is noted as Redis 6.2+ only where the lesson says so",
-        "JDK serialization discipline per day-25 blk-8: cached types are serializable and stable, or the swap documents why a type is excluded",
+        "JDK serialization discipline per day-25 blk-26: cached types are serializable and stable, or the swap documents why a type is excluded",
         "NO money value, balance or report total becomes cacheable because Redis exists (R11 unchanged)",
         "the swap lives in an optional profile/dependency; the default profile stays ConcurrentMapCacheManager and every test that passes without Redis must pass with it",
-        "the stampede caveat day-25 blk-9 teaches is stated where a hot key is identified; no new locking machinery is invented"
+        "the stampede caveat day-25 blk-27 teaches is stated where a hot key is identified; no new locking machinery is invented"
       ],
       "acceptanceCriteria": [
         "with the Redis profile active and Redis running, the same cache-hit and eviction tests from task-reference-data-cache pass unchanged",
@@ -1425,7 +1444,7 @@
       "problem": "Twenty-six invariants and nine releases of features now stand on the ledger, and 'it works on my examples' is not stabilization - V1.0 exists to prove the whole money path holds on a substantial seeded history, with the reconciliation job reporting zero drift as the closing evidence.",
       "goal": "A hardening pass that seeds a multi-month, multi-account, multi-feature history (transactions, budgets, recurring generations, an import), runs every reconciliation and invariant check the project owns, and fixes what the run exposes - ending with the scheduled reconciliation reporting zero drift and the full test pyramid green.",
       "constraints": [
-        "seed history through legitimate paths only: canonical TransactionCreationService for manual rows, the import pipeline for imported rows, the generation service for recurring - never raw inserts of financial truth (R20)",
+        "seed history through legitimate paths only: canonical TransactionCreationService for manual rows, the import pipeline for imported rows, the generation service for recurring - never raw inserts of financial truth (deliberately stricter than R20's test allowance, so the closing proof exercises the canonical paths themselves)",
         "the closing proof is the V0.9 reconciliation job reporting zero drift over the seeded history (blueprint V1.0 done-when), plus the invariant suite and integration suite green",
         "every fix found by the run is a data/bug fix through the normal paths - no new architecture, no new rule, no new capability is introduced here (blueprint V1.0: none new)",
         "projection edits (the seeded drift probe) stay repository-level in tests only, as in task-scheduled-reconciliation - never in production code",
@@ -1488,13 +1507,13 @@
       "releaseId": "v1-0",
       "featureIds": ["feat-deployment"],
       "problem": "The final defense asks 'why' questions - why compareTo, why per-row atomicity, why no 202, why 404 not 403 - and answering them from memory under pressure fails where answering them FROM CODE succeeds; the audit turns the Constitution from something followed into something the learner can defend.",
-      "goal": "A systematic self-audit: for every defense-question area (the Phase 2 §12 matrix), locate the code, the test and the rule id that answer it, and record the answer as a pointer trio (code path, proving test, rule). Gaps found are closed by tests or documentation, never by new architecture.",
+      "goal": "A systematic self-audit: for every defense-question area (the Phase 2 §19 defense matrix), locate the code, the test and the rule id that answer it, and record the answer as a pointer trio (code path, proving test, rule). Gaps found are closed by tests or documentation, never by new architecture.",
       "constraints": [
         "every answer is a pointer trio - code path, proving test, Constitution rule id - verified to exist, not a paraphrase from memory",
-        "the audit covers at minimum: money model (R1/R2/R5), truth and projections (R6/R7/R8), canonical path and identity (R20/R22), transfer model (R21), ownership (R24/R25), schema discipline (R3/R26), cache/async/scheduler boundaries (R11/R19), AI advisory boundary (ADR-016)",
+        "the audit covers at minimum: money model (R1/R2/R5, ADR-001), truth and projections (R6/R7/R8), canonical path and identity (R20/R22, ADR-007), transfer model (R21, ADR-013), ownership (R24/R25), schema discipline (R3/R26), the time model (ADR-002: Instant/LocalDate) and the period key (ADR-005), the repository seam (ADR-008), cache/async/scheduler boundaries (R11/R19), token-issuance timing (§6, R-DAY33, ADR-008), testing tiers (ADR-014), and the AI advisory boundary (ADR-016)",
         "a question whose answer lacks a proving test gets one (extending an existing suite); a question whose answer lacks code gets an honest 'not built - out of scope' entry, never a retrofit",
         "no new capability, dependency or rule is introduced to make an answer easier (blueprint V1.0: none new)",
-        "the audit document lives in the learner repo (docs/defense-audit.md shape) and is the last deliverable before the demo"
+        "the audit document lives in the learner repo (docs/defense-audit.md shape) and is the final readiness deliverable, following the demo rehearsal"
       ],
       "acceptanceCriteria": [
         "every named area has a verified trio: the code path exists, the cited test passes, the rule id matches the suite's display names",
@@ -1511,13 +1530,13 @@
       "releaseId": "v1-0",
       "featureIds": ["feat-ai-category"],
       "problem": "Users categorize manually when no rule matches, and an LLM could suggest one - but an AI that writes categories directly would make a non-deterministic external system a writer of financial truth, which the whole architecture exists to prevent.",
-      "goal": "An OPTIONAL advisory endpoint in an ai package that sends a transaction description to an LLM via WebClient (day-26/day-29 teaching) and returns a suggested category for the user to confirm - the suggestion is never persisted, and an accepted suggestion creates the transaction through the canonical path exactly as a manual one.",
+      "goal": "An OPTIONAL advisory endpoint in an ai package that sends a transaction description to an LLM via WebClient (day-26/day-29 teaching) and returns a suggested category for the user to confirm - the suggestion is never persisted, and an accepted suggestion creates the transaction through the canonical path exactly as a manual one. Route the provider call behind a small interface so the ai package depends on an abstraction - the Strategy shape day-05 teaches.",
       "constraints": [
         "AI is advisory ONLY (ADR-016): it suggests, the user confirms, and nothing about the suggestion touches the ledger until an explicit user acceptance",
         "the feature ships flag-OFF by default (a disabled property); enabling it requires explicit configuration, and every test passes with the flag off",
         "an accepted suggestion flows through TransactionCreationService.create(CreateTransactionCommand) with the same sourceRef discipline as a manual create - the audit trail cannot distinguish it from a manual create, by design",
         "the LLM call happens outside any transaction (R19), has a bounded timeout and retry like task-exchange-rate-client, and degrades to 'no suggestion' on failure - never a fabricated category and never an error page",
-        "the AI never mutates financial records autonomously: no transaction, budget, balance or rule row is created or edited by the AI path itself (R6, R10)",
+        "the AI never mutates financial records autonomously: no transaction, budget, balance or rule row is created or edited by the AI path itself (R6, R8, R10; D17: never edits or deletes anything)",
         "the suggestion does not bypass server validation: an accepted suggestion still passes the same validation as a manual create (R7 invariants hold)",
         "the package is com.spendwise.ai, advisory-only, with no write authority to any repository of financial truth (R13, blueprint arch-v1-0)"
       ],
@@ -1538,8 +1557,8 @@
       "problem": "The dashboard computes exact monthly figures, but users want them explained - and an LLM allowed to query the database or compute business numbers would put a non-deterministic system inside the truth path; narration must be strictly downstream of computation.",
       "goal": "An OPTIONAL advisory endpoint that feeds the ALREADY-computed monthly aggregates (from the dashboard/statistics services) to an LLM and returns a natural-language explanation of those numbers - the LLM sees numbers in its prompt, never the database, and its output is display-only text.",
       "constraints": [
-        "the LLM does not query the DB and does not compute business numbers: the prompt contains the backend's own aggregates, and every figure in the narration traces to one of them (blueprint V1.0 criterion: 'LLM does not query DB or compute business numbers')",
-        "the insight is display-only: it creates no transaction, no budget edit, no rule, no data of any kind (R6, R10)",
+        "the LLM does not query the DB and does not compute business numbers: the prompt contains the backend's own aggregates, and every figure in the narration traces to one of them (D17, restated by the release criterion: 'LLM does not query DB or compute business numbers')",
+        "the insight is display-only: it creates no transaction, no budget edit, no rule, no data of any kind (R6, R8, R10; D17: never edits or deletes anything)",
         "the computation upstream stays deterministic: DashboardReadService/AdvancedStatisticsService produce the figures exactly as before - the AI path adds narration, never an alternative computation (R10)",
         "the feature ships flag-OFF by default (ADR-016); the LLM call happens outside any transaction with bounded timeout/retry and degrades to 'no insight' (R19)",
         "user scoping applies: the insight narrates only the requesting user's aggregates, fetched through the same owned read services (R24)",
@@ -2786,7 +2805,7 @@
       "knowledgePrereqLessonIds": ["day-21"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-user-migration"],
       "filesTouched": ["src/main/resources/db/migration/V3__budget.sql"],
-      "doneWhen": "a new V3__budget.sql creates the budget table with NUMERIC(19,2) limit, VARCHAR(7) period, user_id, and a composite UNIQUE (user_id, category_id, period); the app boots with ddl-auto: validate",
+      "doneWhen": "a new V3__budget.sql creates the budget table with the two-column Money shape per D3 (NUMERIC(19,2) limit + VARCHAR(3) currency), VARCHAR(7) period, user_id, and a composite UNIQUE (user_id, category_id, period); a BudgetUniqueConstraintTest proves the composite UNIQUE rejects a second (user_id, category_id, period) insert, and the app boots with ddl-auto: validate",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R3", "R25", "R26"],
       "commonMistake": "Editing V1__init.sql instead of adding V3 - applied migrations are immutable (R26). Composite UNIQUE is not in the corpus; spell the two-column-style DDL out fully.",
@@ -2833,7 +2852,7 @@
       "doneWhen": "spent = reduce(BigDecimal.ZERO, BigDecimal::add) over the period's EXPENSE rows of the category; remaining/percentage/status derived with ONE explicit scale+RoundingMode at division; nothing is written",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=BudgetCalculationTest' test",
       "architectureRules": ["R1", "R5", "R7", "R10", "R18"],
-      "commonMistake": "Reaching for Collectors.summingDouble or double intermediate values - R1 forbids it even when the collector signature begs for it (day-10 teaches the trap).",
+      "commonMistake": "Reaching for Collectors.summingDouble or double intermediate values - R1 forbids it even when the collector signature begs for it (day-10 is where summingDouble is demonstrated - the counter-example you must be able to explain).",
       "estimatedMinutes": 50
     },
     {
@@ -2887,7 +2906,7 @@
       "knowledgePrereqLessonIds": ["day-16", "day-21", "day-23"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-ownership-checks", "task-bean-validation"],
       "filesTouched": ["src/main/resources/db/migration/V4__recurring.sql", "src/main/java/com/spendwise/recurring/RecurringTransactionRepository.java", "src/main/java/com/spendwise/recurring/RecurringTransactionService.java", "src/main/java/com/spendwise/recurring/RecurringTransactionController.java", "src/test/java/com/spendwise/recurring/RecurringTransactionOwnershipTest.java"],
-      "doneWhen": "V4__recurring.sql creates the table (DATE columns, user_id); CRUD endpoints work; another user's template id returns 404; deactivate flips the flag without touching transactions",
+      "doneWhen": "V4__recurring.sql creates the table (DATE columns, user_id, and the Money amount as NUMERIC(19,2) + VARCHAR(3) per D3); CRUD endpoints work; another user's template id returns 404; deactivate flips the flag without touching transactions",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringTransactionOwnershipTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R16", "R17", "R24", "R26"],
       "estimatedMinutes": 55
@@ -2901,7 +2920,7 @@
       "knowledgePrereqLessonIds": ["day-28"],
       "artifactPrereqTaskIds": ["task-recurring-model", "task-transaction-service"],
       "filesTouched": ["src/test/java/com/spendwise/recurring/RecurringGenerationTest.java"],
-      "doneWhen": "a test generates twice for the same due period through RecurringGenerationService and asserts exactly one transaction and unchanged nextDueDate-on-failure exist and fail for the right reason",
+      "doneWhen": "a test generates twice for the same due period through RecurringGenerationService and asserts exactly one transaction exists - failing for the right reason (the unchanged-nextDueDate-on-failure assertion belongs to step-recurring-generation-03)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringGenerationTest' test",
       "architectureRules": ["R6", "R20"],
       "estimatedMinutes": 35
@@ -2962,7 +2981,7 @@
       "doneWhen": "CategorizationRule is an @Entity with integer priority, condition payload, target category reference, enabled flag and user_id; RuleCondition models the Spendwise-specific predicate (description contains/equals) - no expression DSL",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CategorizationRuleTest' test",
       "architectureRules": ["R13", "R14", "R25"],
-      "commonMistake": "Designing a generic expression/workflow language - the blueprint keeps this inside Spendwise's actual domain: condition + action + priority.",
+      "commonMistake": "Designing a generic expression/workflow language - the master plan keeps this inside Spendwise's actual domain: condition + action + priority, no complex DSL.",
       "estimatedMinutes": 45
     },
     {
@@ -2990,7 +3009,7 @@
       "filesTouched": ["src/test/java/com/spendwise/rule/RuleEngineTest.java"],
       "doneWhen": "tests assert priority-1 wins among three matching rules, outcome is identical across repeated runs, no-match keeps the manual category, and disabled rules are skipped - all failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RuleEngineTest' test",
-      "architectureRules": ["R6", "R7"],
+      "architectureRules": ["R6", "R7", "R8"],
       "estimatedMinutes": 40
     },
     {
@@ -3048,7 +3067,7 @@
       "filesTouched": ["src/main/java/com/spendwise/dashboard/DashboardReadService.java", "src/main/java/com/spendwise/dashboard/DashboardMonthResponse.java", "src/main/java/com/spendwise/dashboard/CategoryBreakdownItem.java"],
       "doneWhen": "the service derives month income/expense (BigDecimal reduce), per-category breakdown via groupingBy or @Query GROUP BY, account balance views and budget statuses - all at request time, all user-scoped, nothing persisted",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=DashboardReadServiceTest' test",
-      "architectureRules": ["R1", "R10", "R11", "R18"],
+      "architectureRules": ["R1", "R10", "R11", "R18", "R24"],
       "estimatedMinutes": 55
     },
     {
@@ -3121,7 +3140,8 @@
       "doneWhen": "CsvStatementParser reads via Files.lines with an explicit charset, skips the header, handles quoted commas, and returns List<ParsedStatementRow> in file order with the source-reference flag set where present",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CsvStatementParserTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R13", "R14", "R19", "R22"],
-      "estimatedMinutes": 55
+      "estimatedMinutes": 55,
+      "commonMistake": "Parsing with parallelStream because day-12 benchmarked it - R22's second clause forbids it on the import path: occurrence indices are order-derived, and this step's verifyCommand exercises the parse loop that must stay sequential."
     },
     {
       "id": "step-import-batch-model-01",
@@ -3132,7 +3152,7 @@
       "knowledgePrereqLessonIds": ["day-19", "day-21"],
       "artifactPrereqTaskIds": ["task-jpa-entities", "task-flyway-baseline"],
       "filesTouched": ["src/main/resources/db/migration/V6__import_batch.sql", "src/main/java/com/spendwise/imports/ImportBatch.java", "src/main/java/com/spendwise/imports/ImportRow.java", "src/main/java/com/spendwise/imports/ImportRowStatus.java"],
-      "doneWhen": "V6__import_batch.sql creates import_batches and import_rows (user_id, file name, status enum OK/DUPLICATE/FAILED, row_number, reason) and the entities persist with ddl-auto: validate",
+      "doneWhen": "V6__import_batch.sql creates import_batches and import_rows (user_id, file name, source_key, status enum OK/DUPLICATE/FAILED, row_number, reason) and the entities map cleanly under ddl-auto: validate (the save/read round-trip is proven by ImportBatchHistoryTest in the next step)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test",
       "architectureRules": ["R22", "R25", "R26"],
       "estimatedMinutes": 50
@@ -3191,8 +3211,8 @@
       "artifactPrereqTaskIds": [],
       "filesTouched": ["src/test/java/com/spendwise/imports/ImportNormalizationTest.java"],
       "doneWhen": "a test imports a bank-negative EXPENSE row and asserts stored amount is positive with direction EXPENSE; a review asserts no repository.save(Transaction) outside TransactionCreationService in the imports package",
-      "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportNormalizationTest' test; Select-String -Path 'src\\main\\java\\com\\spendwise\\imports\\*.java' -Pattern 'transactionRepository.save' -Quiet",
-      "architectureRules": ["R6", "R7", "R20"],
+      "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportNormalizationTest' test; if (Select-String -Path 'src\\main\\java\\com\\spendwise\\imports\\*.java' -Pattern 'transactionRepository.save' -Quiet) { Write-Host 'import bypasses the canonical path (R20)'; exit 1 }",
+      "architectureRules": ["R6", "R7", "R20", "R22"],
       "mentorHint": "The Select-String probe should return False (no direct save); if it returns True, the import path grew a bypass that R20 forbids.",
       "estimatedMinutes": 40
     },
@@ -3237,7 +3257,7 @@
       "doneWhen": "V7__transaction_source_ref.sql adds source_ref VARCHAR to transactions with an explicitly spelled two-column UNIQUE (user_id, source_ref); a test inserts the same (user, sourceRef) twice and asserts the second insert fails at the constraint",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SourceRefConstraintTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R22", "R26"],
-      "mentorHint": "Model the DDL on day-21's single-column UNIQUE and extend it: CONSTRAINT uq_txn_source_ref UNIQUE (user_id, source_ref) inside the CREATE TABLE.",
+      "mentorHint": "Model the constraint on day-21's single-column UNIQUE and extend it to two columns: ALTER TABLE transactions ADD CONSTRAINT uq_txn_source_ref UNIQUE (user_id, source_ref). V7 alters the table V1__init.sql already created (R26: applied migrations are never edited), so the constraint cannot go inside a CREATE TABLE.",
       "estimatedMinutes": 50
     },
     {
@@ -3294,7 +3314,7 @@
       "filesTouched": ["src/main/java/com/spendwise/imports/ImportReportController.java", "src/main/java/com/spendwise/imports/ImportReportService.java", "src/main/java/com/spendwise/imports/ImportBatchSummaryResponse.java", "src/test/java/com/spendwise/imports/ImportReportOwnershipTest.java"],
       "doneWhen": "GET /api/imports/{batchId} returns counts that sum to the row count plus per-row status/rowNumber/reason as a record; another user's batchId returns 404; the read is readOnly",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportReportOwnershipTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R16", "R17", "R18", "R24"],
+      "architectureRules": ["R16", "R17", "R18", "R22", "R24"],
       "estimatedMinutes": 45
     },
     {
@@ -3334,7 +3354,7 @@
       "knowledgePrereqLessonIds": ["day-10", "day-11", "day-26"],
       "artifactPrereqTaskIds": [],
       "filesTouched": ["src/main/java/com/spendwise/imports/CsvExportService.java", "src/main/java/com/spendwise/imports/CsvExportController.java"],
-      "doneWhen": "GET /api/transactions/export streams UTF-8 CSV with quoted fields, Content-Disposition per day-26 download teaching, readOnly transaction, and only the requesting user's rows",
+      "doneWhen": "GET /api/transactions/export streams UTF-8 CSV with quoted fields, Content-Disposition per day-26 download teaching (the ResponseEntity is owned by the controller; R17 bars the service from returning one), readOnly transaction, and only the requesting user's rows",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CsvExportTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R1", "R17", "R18", "R24"],
       "commonMistake": "Reusing the import identity fields in the export or claiming the export is dedup-relevant - export carries no sourceRef semantics and is pure read-side reporting.",
@@ -3417,13 +3437,13 @@
       "taskId": "task-scheduled-reconciliation",
       "order": 2,
       "title": "Implement the bounded @Scheduled reconciliation job",
-      "intent": "The projection invariant gets a watchdog: bounded fixedDelay with explicit zone, readOnly detection, drift recorded - never repaired silently.",
+      "intent": "The projection invariant gets a watchdog: bounded fixedDelay, readOnly detection, drift recorded - never repaired silently.",
       "knowledgePrereqLessonIds": ["day-25", "day-27"],
       "artifactPrereqTaskIds": [],
       "filesTouched": ["src/main/java/com/spendwise/account/SchedulingConfig.java", "src/main/java/com/spendwise/account/BalanceReconciliationJob.java"],
-      "doneWhen": "@EnableScheduling with @Scheduled(fixedDelay = ...) and explicit zone on BalanceReconciliationJob; the job recomputes balances from transactions (readOnly), records/logs drift per account, and never mutates a balance",
+      "doneWhen": "@EnableScheduling with @Scheduled(fixedDelay = ...) on BalanceReconciliationJob (zone is declared explicitly only if the schedule is ever cron - day-25 blk-32); the job recomputes balances from transactions (readOnly), records/logs drift per account, and never mutates a balance",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R18", "R19", "R21"],
+      "architectureRules": ["R6", "R8", "R18", "R19", "R21"],
       "commonMistake": "'Fixing' a drifted balance in the job - balances change only through transaction rows (R21); the job detects and reports, repair is a human/transaction decision.",
       "estimatedMinutes": 50
     },
@@ -3438,19 +3458,19 @@
       "filesTouched": ["src/test/java/com/spendwise/recurring/RecurringSchedulerTest.java"],
       "doneWhen": "tests assert the scheduled entry point invokes RecurringGenerationService and firing it twice for the same period yields exactly one transaction per occurrence - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test",
-      "architectureRules": ["R20", "R22"],
+      "architectureRules": ["R19", "R20"],
       "estimatedMinutes": 35
     },
     {
       "id": "step-recurring-scheduler-02",
       "taskId": "task-recurring-scheduler",
       "order": 2,
-      "title": "Wire @Scheduled generation with bounded fixedDelay and explicit zone",
+      "title": "Wire @Scheduled generation with bounded fixedDelay",
       "intent": "Rent appears without opening the app - on a schedule the learner can explain, idempotent by construction rather than by luck.",
       "knowledgePrereqLessonIds": ["day-25", "day-27"],
       "artifactPrereqTaskIds": ["task-scheduled-reconciliation"],
       "filesTouched": ["src/main/java/com/spendwise/recurring/RecurringScheduler.java"],
-      "doneWhen": "RecurringScheduler declares @Scheduled(fixedDelay = ...) with explicit zone, calls RecurringGenerationService, performs no I/O of its own, and documents the single-scheduler non-overlap caveat (day-27 blk-28)",
+      "doneWhen": "RecurringScheduler declares @Scheduled(fixedDelay = ...) (no zone: fixedDelay takes none - zone is cron-only per day-25 blk-32), calls RecurringGenerationService, performs no I/O of its own, and documents the single-scheduler non-overlap caveat (day-27 blk-28)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R18", "R19", "R20"],
       "mentorHint": "Reuse the SchedulingConfig from task-scheduled-reconciliation - one scheduler, two bounded jobs; do not create a second task scheduler pool.",
@@ -3550,9 +3570,9 @@
       "knowledgePrereqLessonIds": ["day-20", "day-21", "day-28"],
       "artifactPrereqTaskIds": ["task-spring-data-repositories", "task-flyway-baseline"],
       "filesTouched": ["src/test/java/com/spendwise/account/TransactionRepositorySliceTest.java", "src/test/java/com/spendwise/account/AccountRepositorySliceTest.java", "src/test/java/com/spendwise/imports/TransactionSourceRefSliceTest.java"],
-      "doneWhen": "@DataJpaTest classes with TestEntityManager prove custom @Query semantics, user-scoped lists return only the owner's rows, and the UNIQUE (user_id, source_ref) constraint rejects a second identical insert; Flyway seeds the schema (replace = NONE where taught)",
-      "verifyCommand": ".\\mvnw.cmd '-Dtest=TransactionRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=TransactionSourceRefSliceTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R24", "R26"],
+      "doneWhen": "@DataJpaTest classes with TestEntityManager prove custom @Query semantics, user-scoped lists return only the owner's rows, and the UNIQUE (user_id, source_ref) constraint rejects a second identical insert; the slice runs on the taught @DataJpaTest defaults (day-28 blk-9), so the constraint proof inserts both rows itself",
+      "verifyCommand": ".\\mvnw.cmd '-Dtest=TransactionRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=AccountRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=TransactionSourceRefSliceTest' test; .\\mvnw.cmd test",
+      "architectureRules": ["R24", "R25", "R26"],
       "estimatedMinutes": 60
     },
     {
@@ -3564,7 +3584,7 @@
       "knowledgePrereqLessonIds": ["day-29", "day-30"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-spring-bootstrap"],
       "filesTouched": ["pom.xml", "src/test/java/com/spendwise/IntegrationTestBase.java"],
-      "doneWhen": "pom.xml carries the Testcontainers junit-jupiter and postgresql modules (Boot-managed versions); IntegrationTestBase boots @SpringBootTest against a postgres:16-alpine container via @DynamicPropertySource with Flyway migrations applied and ddl-auto: validate clean",
+      "doneWhen": "pom.xml carries the Testcontainers junit-jupiter and postgresql modules (Boot-managed versions); IntegrationTestBase boots @SpringBootTest against a postgres:16-alpine container via @DynamicPropertySource with Flyway migrations applied and ddl-auto: validate clean, and carries one smoke @Test (schema exposes the transactions table) so the Surefire run proves the base rather than failing on no tests",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=IntegrationTestBase' test",
       "architectureRules": ["R26"],
       "estimatedMinutes": 55
@@ -3593,10 +3613,10 @@
       "knowledgePrereqLessonIds": ["day-29", "day-30"],
       "artifactPrereqTaskIds": ["task-account-endpoints", "task-transaction-endpoints"],
       "filesTouched": ["pom.xml", "src/main/java/com/spendwise/shared/OpenApiConfig.java", "src/main/java/com/spendwise/shared/DatabaseHealthIndicator.java", "src/main/resources/application.properties"],
-      "doneWhen": "springdoc dependency added (Boot-managed); /v3/api-docs describes the real endpoints; spring-boot-starter-actuator exposes /actuator/health reporting UP with database status via the taught HealthIndicator mechanism",
-      "verifyCommand": ".\\mvnw.cmd test; .\\mvnw.cmd spring-boot:run",
+      "doneWhen": "springdoc-openapi-starter-webmvc-ui added with its explicit version (day-29 blk-3: 2.6.0 - not Boot-managed); /v3/api-docs describes the real endpoints; spring-boot-starter-actuator exposes /actuator/health reporting UP with database status via the taught HealthIndicator mechanism",
+      "verifyCommand": ".\\mvnw.cmd test",
       "architectureRules": ["R17", "R26"],
-      "mentorHint": "Verify the two endpoints while the app runs: the springdoc UI on /swagger-ui.html and /actuator/health showing db UP - then stop the app.",
+      "mentorHint": "Verify the two endpoints while the app runs (start it with .\\mvnw.cmd spring-boot:run): the springdoc UI on /swagger-ui.html and /actuator/health showing db UP - then stop the app.",
       "estimatedMinutes": 55
     },
     {
@@ -3679,10 +3699,10 @@
       "knowledgePrereqLessonIds": ["day-25", "day-28"],
       "artifactPrereqTaskIds": [],
       "filesTouched": ["src/test/java/com/spendwise/category/RedisCacheSwapTest.java"],
-      "doneWhen": "with the Redis profile active and Redis available, the cache-hit/eviction tests pass unchanged; TTL expiry is observable; a test asserts no cache entry in either backend carries a money amount, balance or report total",
+      "doneWhen": "with the Redis profile active and Redis available, the cache-hit/eviction tests pass unchanged - RedisCacheSwapTest itself re-runs the cache-hit and eviction assertions from CategoryCacheTest against the Redis backend, so the single command exercises both backends; TTL expiry is observable; a test asserts no cache entry in either backend carries a money amount, balance or report total",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RedisCacheSwapTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R11", "R26"],
-      "commonMistake": "JDK-serializing a record that will change shape next release - day-25 blk-8's trap; keep cached types serializable and stable, or exclude them and say why.",
+      "commonMistake": "JDK-serializing a record that will change shape next release - day-25 blk-26's trap; keep cached types serializable and stable, or exclude them and say why.",
       "estimatedMinutes": 50
     },
     {
@@ -3692,7 +3712,7 @@
       "title": "Build the multi-feature seeded-history fixture through legitimate paths",
       "intent": "The closing proof needs a history worth proving things on: months of data born through the canonical path, the import pipeline and the generation service - nothing raw-inserted.",
       "knowledgePrereqLessonIds": ["day-28", "day-29"],
-      "artifactPrereqTaskIds": ["task-transaction-service", "task-integration-test-suite", "task-recurring-generation"],
+      "artifactPrereqTaskIds": ["task-transaction-service", "task-integration-test-suite", "task-recurring-generation", "task-budget-model", "task-import-row-transaction"],
       "filesTouched": ["src/test/java/com/spendwise/SeedHistoryFixture.java", "src/test/java/com/spendwise/HardeningReconciliationTest.java"],
       "doneWhen": "a fixture seeds multi-month transactions across at least two accounts, budgets, recurring generations and one import batch - all through canonical paths - and a failing test asserts the reconciliation job reports zero drift over it",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=HardeningReconciliationTest' test",
@@ -3723,7 +3743,7 @@
       "artifactPrereqTaskIds": ["task-production-packaging"],
       "filesTouched": ["README.md"],
       "doneWhen": "the run section carries the exact clone/configure/compose-up sequence; following it on a clean checkout ends with the app's health check green; the toolchain and pin-decision references match what the repo records",
-      "verifyCommand": "if (-not (Test-Path 'README.md')) { Write-Host 'README.md missing'; exit 1 }; $c = Get-Content 'README.md' -Raw; if ($c -notmatch 'docker compose up') { Write-Host 'run section incomplete'; exit 1 }; Write-Host 'README run section present'",
+      "verifyCommand": "if (-not (Test-Path 'README.md')) { Write-Host 'README.md missing'; exit 1 }; $c = Get-Content 'README.md' -Raw; if ($c -notmatch 'docker compose up') { Write-Host 'run section incomplete'; exit 1 }; foreach ($k in 'SPRING_DATASOURCE','compose') { if ($c -notmatch $k) { Write-Host \"README lacks: $k\"; exit 1 } }; Write-Host 'README run section present'",
       "architectureRules": ["R26"],
       "estimatedMinutes": 50
     },
@@ -3737,7 +3757,7 @@
       "artifactPrereqTaskIds": [],
       "filesTouched": ["README.md", "docs/architecture-notes.md"],
       "doneWhen": "the README narrates V0.1→V1.0, lists the Constitution invariants matching the rule suite's display names, records the key decisions (canonical path, per-row atomicity, no-202, 404-not-403, AI advisory), and describes import identity WITH the fallback-tier reordering limitation",
-      "verifyCommand": "Select-String -Path 'README.md' -Pattern 'parallelStream|UNIQUE \\(user_id, source_ref\\)|reorder' -Quiet",
+      "verifyCommand": "if (-not (Select-String -Path 'README.md' -Pattern 'parallelStream|UNIQUE \\(user_id, source_ref\\)|reorder' -Quiet)) { Write-Host 'README lacks the import-identity narrative'; exit 1 }",
       "architectureRules": ["R22"],
       "estimatedMinutes": 55
     },
@@ -3751,7 +3771,7 @@
       "artifactPrereqTaskIds": ["task-production-packaging", "task-portfolio-readme"],
       "filesTouched": ["docs/demo-script.md"],
       "doneWhen": "docs/demo-script.md walks: setup, account/category creation, transactions, import with a deliberate duplicate and malformed row, report, budgets, dashboard, idempotent re-import, health/docs, and a forced-failure rollback segment - each segment citing its rule ids and fitting a 10-15 minute window",
-      "verifyCommand": "if (-not (Test-Path 'docs\\demo-script.md')) { Write-Host 'demo script missing'; exit 1 }; Write-Host 'demo script present'",
+      "verifyCommand": "if (-not (Test-Path 'docs\\demo-script.md')) { Write-Host 'demo script missing'; exit 1 }; $c = Get-Content 'docs\\demo-script.md' -Raw; foreach ($k in 'DUPLICATE','rollback','R20','dashboard') { if ($c -notmatch $k) { Write-Host \"demo script lacks segment: $k\"; exit 1 } }; Write-Host 'demo script present'",
       "architectureRules": ["R20", "R22", "R24"],
       "estimatedMinutes": 60
     },
@@ -3765,7 +3785,7 @@
       "artifactPrereqTaskIds": [],
       "filesTouched": ["docs/demo-script.md"],
       "doneWhen": "the script executes start to finish against docker compose up with no unscripted fixups; the re-import segment visibly reports DUPLICATE rows; the failure segment shows unchanged balances; timing notes recorded in the script",
-      "verifyCommand": "docker compose ps; Select-String -Path 'docs\\demo-script.md' -Pattern 'timing|DUPLICATE|rollback' -Quiet",
+      "verifyCommand": "docker compose ps; if (-not (Select-String -Path 'docs\\demo-script.md' -Pattern 'timing|DUPLICATE|rollback' -Quiet)) { Write-Host 'script lacks rehearsal evidence'; exit 1 }",
       "architectureRules": ["R21", "R22"],
       "estimatedMinutes": 45
     },
@@ -3779,7 +3799,7 @@
       "artifactPrereqTaskIds": ["task-invariant-test-suite", "task-integration-test-suite"],
       "filesTouched": ["docs/defense-audit.md"],
       "doneWhen": "docs/defense-audit.md covers money model, truth/projections, canonical path/identity, transfer model, ownership, schema discipline, cache/async/scheduler boundaries and the AI boundary - each row a verified trio (code path exists, cited test passes, rule id matches suite display names)",
-      "verifyCommand": "if (-not (Test-Path 'docs\\defense-audit.md')) { Write-Host 'audit missing'; exit 1 }; Write-Host 'defense audit present'",
+      "verifyCommand": "if (-not (Test-Path 'docs\\defense-audit.md')) { Write-Host 'audit missing'; exit 1 }; $c = Get-Content 'docs\\defense-audit.md' -Raw; foreach ($k in 'R20','R22','R24','ADR-016') { if ($c -notmatch $k) { Write-Host \"audit lacks area: $k\"; exit 1 } }; Write-Host 'defense audit present'",
       "architectureRules": ["R20", "R22", "R24"],
       "estimatedMinutes": 65
     },
@@ -3808,7 +3828,7 @@
       "filesTouched": ["src/main/resources/application.properties", "src/test/java/com/spendwise/ai/CategorySuggestionTest.java"],
       "doneWhen": "spendwise.ai.enabled defaults to false; tests assert the flag-off state exposes no suggestion endpoint and the flag-on state returns a suggestion without persisting anything - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CategorySuggestionTest' test",
-      "architectureRules": ["R6", "R19"],
+      "architectureRules": ["R6", "R19", "R20"],
       "estimatedMinutes": 45
     },
     {
@@ -3949,8 +3969,8 @@
       "id": "arch-v0-8",
       "releaseId": "v0-8",
       "title": "CSV import pipeline",
-      "layers": ["Upload CSV", "Import API", "ImportBatch", "Parser", "Validation", "Deduplication", "Persistence", "Async Job (optional)"],
-      "diagram": "Upload CSV -> Import API -> ImportBatch -> Parser -> Validate -> Dedup -> JPA -> PostgreSQL (async optional: 202 -> job -> batch status)",
+      "layers": ["Upload CSV", "Import API", "ImportBatch", "Parser", "Validation", "Deduplication", "Persistence", "Async side effect (optional, no HTTP contract)"],
+      "diagram": "Upload CSV -> Import API -> ImportBatch -> Parser -> Validate -> Dedup -> JPA -> PostgreSQL (optional async side effect dispatches after commit; the import endpoint stays synchronous - ADR-012)",
       "changesFromPrev": "Added an ImportBatch-driven parse/validate/dedup pipeline and optional async processing.",
       "rationale": "Ingest real statement data idempotently without corrupting state."
     },
@@ -3960,7 +3980,7 @@
       "title": "Production backend",
       "layers": ["Client", "Spring Boot", "PostgreSQL", "Redis", "Scheduler", "External FX API", "Actuator/Metrics", "Docker"],
       "diagram": "Client -> Spring Boot [PostgreSQL | Redis cache | Scheduler | External FX API] + Actuator/Metrics (Docker)",
-      "changesFromPrev": "Added Redis dashboard cache, recurring scheduler, external FX integration, tests, monitoring, and Docker.",
+      "changesFromPrev": "Added reference-data caching (Redis optional), recurring scheduler, external FX integration, tests, monitoring, and Docker.",
       "rationale": "Make the application performant, observable, and reproducible like a production backend."
     },
     {
@@ -4167,7 +4187,7 @@
       "buildTaskIds": [],
       "projectProblem": "Spendwise recomputes expensive dashboard/spending aggregations on every request; large imports should not block the request thread, and recurring transactions need periodic processing.",
       "context": "Spendwise's dashboard recomputes spending aggregates on every request, which is costly. Caching backed by Redis, plus async and scheduled processing, is how those hot reads and background jobs get optimized.",
-      "application": "Used in Spendwise V0.9 to cache dashboard/category aggregations in Redis with TTL and eviction on writes; the @Async and @Scheduled concepts introduced here back async imports (V0.8) and the recurring-transaction scheduler (V0.9)."
+      "application": "Used in Spendwise V0.9 to cache reference/category reads with eviction on writes (task-reference-data-cache; the Redis backend is an optional swap) - dashboard figures and money values are never cached (R11). The @Async and @Scheduled concepts introduced here back async imports (V0.8) and the recurring-transaction scheduler (V0.9)."
     },
     "day-26": {
       "applicationType": "direct",
@@ -4180,16 +4200,16 @@
     },
     "day-27": {
       "applicationType": "direct",
-      "context": "This is a generic e-commerce practice assignment (product listing, orders, payment gateway) that consolidates the Unit 9 techniques on a non-Spendwise domain, so it maps to no Spendwise feature.",
+      "context": "A generic e-commerce practice assignment (product listing, orders, payment gateway) that consolidates the Unit 9 techniques on a non-Spendwise domain - but its @Scheduled/@Async semantics are exactly what Spendwise's recurring generation needs, so this lesson maps directly to V0.7.",
       "releaseId": "v0-7",
       "featureIds": ["feat-recurring"],
       "buildTaskIds": ["task-recurring-generation"],
       "projectProblem": "Spendwise's recurring transactions must be generated by a bounded scheduled job whose writes land after the generating transaction commits and which cannot duplicate financial truth when re-run - the @Scheduled/@Async semantics this assignment applies with citations.",
-      "application": "Used directly in Spendwise V0.7: task-recurring-generation (and the V0.9 scheduler wiring) runs on bounded @Scheduled fixedDelay with an explicit zone, dispatches async work only after commit, and relies on fixedDelay non-overlap for consecutive runs of one method - day-25 introduces the annotations, this lesson applies them."
+      "application": "Used directly in Spendwise V0.7: task-recurring-generation (and the V0.9 scheduler wiring) runs on bounded @Scheduled fixedDelay (the corpus teaches explicit zone for cron only - day-25 blk-32; extending it to fixedDelay is a Spendwise decision this project does not make), dispatches async work only after commit, and relies on fixedDelay non-overlap for consecutive runs of one method - day-25 introduces the annotations, this lesson applies them."
     },
     "day-28": {
       "applicationType": "direct",
-      "context": "Foundational testing tooling (JUnit 5, Spring Boot slice and integration tests) that will safeguard Spendwise's financial correctness later, but is a general engineering practice rather than a distinct Spendwise feature.",
+      "context": "Foundational testing tooling (JUnit 5, Spring Boot slice and integration tests) that will safeguard Spendwise's financial correctness, consolidated in V0.9 as the feat-testing feature (task-invariant-test-suite and task-slice-test-suite).",
       "releaseId": "v0-9",
       "featureIds": ["feat-testing"],
       "buildTaskIds": ["task-invariant-test-suite", "task-slice-test-suite"],
