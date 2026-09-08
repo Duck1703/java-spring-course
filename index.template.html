@@ -1268,7 +1268,9 @@
     .build-task-toggle[aria-pressed="true"] { color: #fff; border-color: var(--project-ink); background: var(--project-ink); }
     .build-task-title { display: flex; flex-wrap: wrap; gap: .375rem; align-items: baseline; font-weight: 700; }
     .build-task-meta { margin-top: .25rem; color: var(--muted); font-size: .8125rem; line-height: 1.5; }
-    .build-task--done .build-task-title > span:first-child { text-decoration: line-through; text-decoration-thickness: .08em; color: var(--muted); }
+    .build-task-title-link { color: inherit; text-decoration: none; }
+    .build-task-title-link:hover { text-decoration: underline; }
+    .build-task--done .build-task-title > :first-child { text-decoration: line-through; text-decoration-thickness: .08em; color: var(--muted); }
     .task-kind { color: var(--muted); font-family: var(--mono); font-size: .6875rem; font-weight: 700; text-transform: uppercase; }
 
     .project-overview-grid { margin-bottom: 1.5rem; }
@@ -1464,6 +1466,128 @@
     .roadmap-milestone-head h2 { margin: 0; font-size: 1.0625rem; }
     .roadmap-milestone-head p { margin: .25rem 0 0; color: var(--muted); font-size: .875rem; }
 
+    /* ---- P3: Task Detail + all-task browse ------------------------------ */
+    .task-hero { margin-bottom: 1.25rem; }
+    .task-hero h1 { margin: .25rem 0 .5rem; font-size: clamp(1.75rem, 3vw, 2.25rem); }
+    .task-hero p { max-width: 50rem; color: var(--muted); }
+    .task-hero-problem strong, .task-hero-goal strong { color: var(--ink); }
+    .task-position, .task-kind, .task-done-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: .125rem .5rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: .6875rem;
+      font-weight: 700;
+    }
+    .task-done-badge { border-color: var(--project); color: var(--project-ink); background: var(--project-soft); }
+    .task-estimate { margin: .5rem 0 0; color: var(--muted); font-size: .875rem; }
+    .task-feature-row { margin-top: .5rem; font-size: .875rem; color: var(--muted); }
+    .task-feature-label { font-weight: 700; color: var(--ink); }
+
+    .task-prereq-block { margin-top: .75rem; }
+    .task-prereq-label { font-weight: 700; font-size: .8125rem; }
+    .task-prereq-list { margin: .375rem 0 0; padding-left: 1.15rem; color: var(--muted); font-size: .875rem; }
+    .task-prereq-list li { margin: .3125rem 0; }
+    .prereq-state { margin-left: .375rem; font-size: .75rem; font-style: italic; }
+    .prereq-state--done { color: var(--project-ink); }
+    .prereq-state--open { color: var(--muted); }
+
+    .task-steps-note { margin: .25rem 0 .875rem; color: var(--muted); font-size: .875rem; }
+    .task-step-list { display: grid; gap: .875rem; }
+    .task-step { padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .task-step-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+    .task-step-head h3 { margin: 0; font-size: 1rem; }
+    .task-step-order { color: var(--project-ink); font-family: var(--mono); font-size: .75rem; font-weight: 800; }
+    .task-step-minutes { color: var(--muted); font-size: .75rem; }
+    .task-step-row { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: .375rem .75rem; margin-top: .75rem; }
+    .task-step-label { color: var(--muted); font-family: var(--mono); font-size: .6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding-top: .1875rem; }
+    .task-step-text { margin: 0; font-size: .9063rem; line-height: 1.55; }
+    /* doneWhen is the exit condition — visually set apart from intent copy
+       by border + background, not colour alone. */
+    .task-step-row--done { padding: .625rem .75rem; border: 1px solid var(--project); border-radius: var(--radius-sm); background: var(--project-soft); }
+    .task-step-row--done .task-step-text { color: var(--ink); }
+    .task-file-list { margin: 0; padding-left: 1.15rem; font-family: var(--mono); font-size: .8125rem; color: var(--muted); }
+    .task-file-path { margin: .25rem 0; overflow-wrap: anywhere; }
+    .task-verify { margin: 0; }
+    .task-verify pre { margin: .375rem 0 0; padding: .75rem .875rem; border-radius: var(--radius-sm); color: var(--code-ink); background: var(--code-bg); overflow-x: auto; }
+    .task-rule-row { display: flex; flex-wrap: wrap; gap: .375rem; align-items: baseline; }
+    .task-rule-chip {
+      padding: .125rem .5rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: var(--project-ink);
+      font-family: var(--mono);
+      font-size: .6875rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .task-rule-chip:hover { border-color: var(--project); background: var(--project-soft); }
+    .task-rule-note { color: var(--muted); font-size: .75rem; font-style: italic; }
+    .task-mistake { margin: .75rem 0 0; }
+    .task-hint { margin: .75rem 0 0; }
+
+    .task-prompt-intro { max-width: 50rem; color: var(--muted); font-size: .9063rem; }
+    .task-prompt-scope { display: flex; flex-wrap: wrap; gap: .375rem; margin: .75rem 0 0; }
+    .task-prompt-step-picker { display: flex; align-items: center; gap: .5rem; margin: .625rem 0 0; font-size: .875rem; font-weight: 700; }
+    /* Author display beats the UA [hidden] rule — the row would otherwise
+       render (and stay focusable) in task scope where its change handler
+       no-ops. Same pattern as .disclosure-panel[hidden] / .import-preview[hidden]. */
+    .task-prompt-step-picker[hidden] { display: none; }
+    .task-prompt-step-picker select { padding: .3125rem .5rem; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); max-width: 100%; }
+    .task-prompt-output {
+      max-height: 26rem;
+      margin: .875rem 0 0;
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      overflow: auto;
+      color: var(--code-ink);
+      background: var(--code-bg);
+      white-space: pre-wrap;
+      font-size: .8125rem;
+      line-height: 1.55;
+    }
+    .task-prompt-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .875rem; }
+
+    .task-footer .task-complete-toggle { margin-top: .5rem; }
+    .task-prevnext { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1rem; }
+    .task-prevnext-link {
+      display: grid;
+      gap: .125rem;
+      padding: .75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+    }
+    .task-prevnext-link:hover { border-color: var(--project); background: var(--project-soft); }
+    .task-prevnext-link--next { text-align: right; }
+    .task-prevnext-dir { color: var(--muted); font-size: .75rem; font-weight: 700; }
+    .task-prevnext-title { font-weight: 700; font-size: .9063rem; }
+    .task-prevnext-link:only-child { grid-column: 1 / -1; }
+
+    .task-browse-group { margin-top: 1.25rem; }
+    .task-browse-group-head { margin-bottom: .5rem; }
+    .task-browse-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .task-browse-item { border-bottom: 1px solid var(--line); }
+    .task-browse-link {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .375rem 1rem;
+      padding: .5rem .25rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .task-browse-link:hover { background: var(--project-soft); }
+    .task-browse-link:hover .task-browse-title { color: var(--project-ink); text-decoration: underline; text-underline-offset: .18em; }
+    .task-browse-item--done .task-browse-title { text-decoration: line-through; text-decoration-thickness: .08em; color: var(--muted); }
+    .task-browse-meta { display: inline-flex; gap: .5rem; align-items: baseline; }
+    .task-browse-summary { margin: 0 0 .25rem; color: var(--muted); font-size: .875rem; }
+    .next-build-task-title { display: block; }
+    .next-build-task-title h2 { margin: .25rem 0 0; font-size: 1.125rem; }
+
     /* This block must stay last: it overrides base rules for several
        selectors (.dash-progress-card, .project-*-grid, .release-columns,
        .roadmap-release, .curriculum-row) that are declared further down
@@ -1487,6 +1611,11 @@
       .map-row { grid-template-columns: 1fr; }
       .map-filter-release { margin-left: 0; width: 100%; }
       .architecture-compare { grid-template-columns: 1fr; }
+      /* P3 task view: labels stack above their content when there is no
+         room for a side-by-side definition list. */
+      .task-step-row { grid-template-columns: 1fr; gap: .125rem; }
+      .task-prevnext { grid-template-columns: 1fr; }
+      .task-prevnext-link--next { text-align: left; }
     }
     /* Must stay last for the same reason as the block above: the
        unconditional #toast-region rule (declared earlier, ~line 504) sets
@@ -1548,6 +1677,17 @@
       if (releaseMatch) return { view: "release", releaseId: decodeURIComponent(releaseMatch[1]) };
       const lessonMatch = raw.match(/^lesson\/(.+)$/);
       if (lessonMatch) return { view: "lesson", lessonId: decodeURIComponent(lessonMatch[1]) };
+      /* Task Detail (P3). decodeURIComponent is guarded: a malformed escape
+         sequence (e.g. #/task/%) would otherwise throw a URIError that
+         routeRender has no catch for, crashing the whole SPA. Falling back
+         to the raw segment is deterministic — it matches no task id, so the
+         renderer shows its not-found state instead of an exception. */
+      const taskMatch = raw.match(/^task\/(.+)$/);
+      if (taskMatch) {
+        let taskId = taskMatch[1];
+        try { taskId = decodeURIComponent(taskMatch[1]); } catch (e) { taskId = taskMatch[1]; }
+        return { view: "task", taskId };
+      }
       return { view: "dashboard" };
     }
 
@@ -1711,6 +1851,176 @@
       return groups;
     }
 
+    // ---- P3: Task Detail / Build Step support ---------------------------
+    // Canonical task ordering: releases by `order`, then each release's
+    // buildTaskIds in authored order (the same authority the Build Tasks
+    // Workspace already uses). Tasks missing from every release's list, and
+    // releases in the artifact but not in the map, do not exist here — this
+    // stays total on malformed input and never invents ordering.
+    function orderAllTasks(releases, buildTasks) {
+      const taskById = {};
+      (buildTasks || []).forEach(function(task) { taskById[task.id] = task; });
+      const ordered = [];
+      const seen = {};
+      (releases || [])
+        .slice()
+        .sort(function(a, b) { return Number(a.order || 0) - Number(b.order || 0); })
+        .forEach(function(release) {
+          (release.buildTaskIds || []).forEach(function(id) {
+            if (seen[id]) return;
+            const task = taskById[id];
+            if (task) { ordered.push(task); seen[id] = true; }
+          });
+        });
+      return ordered;
+    }
+
+    // Steps for one task, sorted by `order` — the raw JSON order is never an
+    // authority (validators guarantee 1..n contiguous, not array position).
+    // Non-mutating: filters/sort operate on a fresh array.
+    function stepsForTask(buildSteps, taskId) {
+      return (buildSteps || [])
+        .filter(function(step) { return step.taskId === taskId; })
+        .slice()
+        .sort(function(a, b) { return Number(a.order || 0) - Number(b.order || 0); });
+    }
+
+    // Task Detail header estimated time. Honest derivation: a total exists
+    // only when EVERY step carries estimatedMinutes — summing the subset
+    // would silently understate work. Returns null when not derivable.
+    function estimateTaskMinutes(steps) {
+      if (!Array.isArray(steps) || !steps.length) return null;
+      let total = 0;
+      for (const step of steps) {
+        const n = Number(step.estimatedMinutes);
+        if (!step.estimatedMinutes || !Number.isFinite(n) || n < 0) return null;
+        total += n;
+      }
+      return total;
+    }
+
+    // ---- P3: Mentor prompt builder (Phase 2 plan §14) --------------------
+    // Pure: reads only its arguments, returns a string. No state, DOM,
+    // clipboard or network. One builder serves both scopes — task-level when
+    // `step` is null, step-level when a step is passed (the step is then
+    // quoted prominently; the sibling steps stay listed so the mentor still
+    // sees where the learner is in the sequence).
+    const MENTOR_CONVENTION_CLAUSE =
+      "Prefer the established Spendwise convention over your own preference, even where your preference is defensible.";
+    const MENTOR_STOP_CLAUSE = [
+      "If completing this task requires deviating from the architecture above, do not deviate. Stop and output:",
+      "ARCHITECTURE_CHANGE_REQUIRED",
+      "Rule: <rule id or ADR>",
+      "Why it blocks: <one sentence>",
+      "Proposed change: <one sentence>",
+      "Cheapest alternative that keeps the rule: <one sentence>",
+    ].join("\n");
+
+    function buildMentorPrompt(context) {
+      const ctx = context || {};
+      const task = ctx.task;
+      const step = ctx.step || null;
+      const steps = Array.isArray(ctx.steps) ? ctx.steps : [];
+      const release = ctx.release || null;
+      const lessons = Array.isArray(ctx.lessons) ? ctx.lessons : []; // {id, title, done}
+      const prereqTasks = Array.isArray(ctx.prereqTasks) ? ctx.prereqTasks : []; // {id, title, done}
+      const features = Array.isArray(ctx.features) ? ctx.features : []; // names
+      if (!task) return "";
+
+      const lines = [];
+      lines.push("Ban la mentor lap trinh cho mot nguoi hoc dang theo hoc phan Java & Spring Boot 40 bai co dinh, va dang xay du project thuc hanh Spendwise (Personal Expense & Budget Tracker). Vai tro cua ban la huong dan theo chuong trinh hoc, khong phai kien truc tu do.");
+      lines.push("");
+      lines.push("## Bối cảnh dự án Spendwise");
+      lines.push("- Project: Spendwise — root package com.spendwise (package-by-feature).");
+      if (release) {
+        lines.push("- Release hien tai trong prompt nay: " + release.version + " — " + release.title + " (trang thai ke hoach: " + release.status + ").");
+      }
+      if (features.length) {
+        lines.push("- Feature lien quan: " + features.join(", ") + ".");
+      }
+      lines.push("");
+      lines.push("## Task hiện tại");
+      lines.push("- Task id: " + task.id);
+      lines.push("- Title: " + task.title);
+      if (task.problem) lines.push("- Problem: " + task.problem);
+      if (task.goal) lines.push("- Goal: " + task.goal);
+      if ((task.acceptanceCriteria || []).length) {
+        lines.push("- Acceptance criteria (cau truc nguyen van, dinh nghia hoan thanh cua ca task):");
+        task.acceptanceCriteria.forEach(function(c) { lines.push("  + " + c); });
+      }
+      if ((task.constraints || []).length) {
+        lines.push("- Constraints bat buoc:");
+        task.constraints.forEach(function(c) { lines.push("  + " + c); });
+      }
+      lines.push("");
+      if (step) {
+        lines.push("## Bước đang làm (focus)");
+        lines.push("- Step " + step.order + ": " + step.title + " (id: " + step.id + ")");
+        if (step.intent) lines.push("- Intent: " + step.intent);
+        if (step.doneWhen) lines.push("- Done when: " + step.doneWhen);
+        if (step.verifyCommand) lines.push("- Verify command: " + step.verifyCommand);
+        if (step.commonMistake) lines.push("- Common mistake can canh bao: " + step.commonMistake);
+        if (step.mentorHint) lines.push("- Mentor hint (duoc phep goi y, khong duoc viet hoan thien ho code ho): " + step.mentorHint);
+        lines.push("");
+      }
+      if (steps.length) {
+        lines.push("## Các bước của task (theo thứ tự)");
+        steps.forEach(function(s) {
+          let line = "- Bước " + s.order + ": " + s.title;
+          if (s.doneWhen) line += " — done when: " + s.doneWhen;
+          if (s.verifyCommand) line += " | verify: " + s.verifyCommand;
+          lines.push(line);
+        });
+        lines.push("");
+      }
+      if (lessons.length) {
+        lines.push("## Kiến thức đã học (boundary)");
+        // The boundary is the task's declared knowledge list (relevantLessonIds)
+        // — never a subset derived from the self-reported checklist, which the
+        // Repository-truth clause below calls unreliable in both directions.
+        // Completion state is surfaced as informational context only.
+        const allNames = lessons.map(function(l) { return l.title + " (" + l.id + ")"; });
+        lines.push("- Bai hoc lien quan: " + allNames.join("; ") + ".");
+        const doneNames = lessons.filter(function(l) { return l.done; })
+          .map(function(l) { return l.title + " (" + l.id + ")"; });
+        if (doneNames.length) {
+          lines.push("- Da danh dau hoan thanh (tu bao cao cua nguoi hoc, co the sai): " + doneNames.join("; ") + ".");
+        } else {
+          lines.push("(Trang thai hoan thanh bai hoc chua duoc danh dau.)");
+        }
+        lines.push("- CHI duong dan bang kien thuc cua cac bai hoc da liet ke o tren. KHONG su dung ky thuat tu bai hoc sau trong chuong trinh (vi du @Embeddable, MapStruct, event bus, Redis) neu khong duoc liet ke — day la yeu cau ve boundary, khong phai khuyen nghi kien truc.");
+        lines.push("");
+      }
+      if (prereqTasks.length) {
+        lines.push("## Artifact prerequisites trong repo nguoi hoc");
+        prereqTasks.forEach(function(p) {
+          lines.push("- " + p.title + " (" + p.id + ")" + (p.done ? " — da hoan thanh" : " — chua duoc danh dau hoan thanh"));
+        });
+        lines.push("");
+      }
+      if ((ctx.ruleIds || []).length) {
+        lines.push("## Architecture rules in force");
+        lines.push("- Rules: " + ctx.ruleIds.join(", ") + " (Constitution R1-R26 trong Architecture view; chi dinh danh, khong dich lai, khong di done).");
+        lines.push("");
+      }
+      lines.push("## Toolchain");
+      lines.push("- Java 17, Maven + Maven Wrapper, PostgreSQL 16, root package com.spendwise.");
+      lines.push("- Spring Boot: CHUA co exact pin — day la quyet dang mo (SPRING_BOOT_EXACT_PIN_PENDING). KHONG de xuat hoac chap nhan bat ky phien ban nao; neu buoc do can pin thi huong dan nguoi hoc giai quyet pin truoc khi start.");
+      lines.push("");
+      lines.push("## Repository truth");
+      lines.push("- Ban KHONG truy cap duoc repository cuc bo cua nguoi hoc. Checklist tren website chi la tu bao cao cua nguoi hoc va co the sai theo ca hai chieu — hay yeu cau nguoi hoc dan code/loi chinh xac cua ho vao cuoc tro chuyen truoc khi chan doan.");
+      lines.push("");
+      lines.push("## Hop dong day hoc (teaching contract)");
+      lines.push("- Huong dan theo buoc tiep theo ve mat ly do (reasoning), khong viet ho ca task.");
+      lines.push("- Khong dump ca lop/ca project hoan chinh; khong dua ra solution code day du.");
+      lines.push("- Chi ro bai hoc/kiem thuc nao ap dung cho buoc hien tai.");
+      lines.push("- Neu nguoi hoc cung cap loi, giu ho tu chan doan truoc, roi moi goi y huong kiem tra.");
+      lines.push("- Khong refactor code khong lien quan, khong them dependency, khong doi build, khong tao package moi.");
+      lines.push("- " + MENTOR_CONVENTION_CLAUSE);
+      lines.push("- " + MENTOR_STOP_CLAUSE);
+      return lines.join("\n");
+    }
+
     const STATE_VERSION = 3;
 
     // Case A of the progress-migration contract: build-task ids RENAMED between
@@ -1846,6 +2156,8 @@
       calculateReleaseProgress, calculateFeatureProgress,
       deriveMapRows, filterMapRows, deriveDomainEntities,
       orderArchitectureStages, groupReleasesByMilestone,
+      orderAllTasks, stepsForTask, estimateTaskMinutes,
+      buildMentorPrompt, MENTOR_CONVENTION_CLAUSE, MENTOR_STOP_CLAUSE,
     });
     /* COURSE_CORE_END */
 
@@ -1954,7 +2266,7 @@
            entirely; the sub-nav then shows the precise position. */
         var navView = view === 'release' ? 'roadmap'
           : view === 'lesson' ? 'dashboard'
-          : view === 'map' || view === 'architecture' ? 'project'
+          : view === 'task' || view === 'map' || view === 'architecture' ? 'project'
           : view;
         document.querySelectorAll('.primary-nav [data-view]').forEach(function(link) {
           link.removeAttribute('aria-current');
@@ -2102,7 +2414,12 @@
         item.appendChild(toggle);
         var body = el('div');
         var title = el('div', 'build-task-title');
-        title.appendChild(el('span', null, task.title));
+        // The title is a link to the task's detail page (P3) — the toggle
+        // button beside it keeps its exact role, so completion semantics and
+        // every toggle-count assertion are unchanged.
+        var titleLink = el('a', 'build-task-title-link', task.title);
+        titleLink.href = '#/task/' + task.id;
+        title.appendChild(titleLink);
         title.appendChild(el('span', 'task-kind', task.required === false ? 'optional' : 'required'));
         body.appendChild(title);
         if (task.problem) body.appendChild(el('div', 'build-task-meta', task.problem));
@@ -2180,6 +2497,562 @@
         var list = el('div', 'build-task-list');
         tasks.forEach(function(task) { list.appendChild(createExpandableBuildTaskItem(task)); });
         container.appendChild(list);
+      }
+
+      /* ---- P3: Task Detail + task browse ------------------------------- */
+      // Resolved prerequisite rows for a task or step. Returns plain rows so
+      // the same builder serves both the page renderer and the prompt.
+      function resolvePrereqLessons(lessonIds) {
+        return (lessonIds || [])
+          .map(function(id) {
+            var lesson = lessonsById.get(id);
+            return lesson ? { id: id, title: lesson.title || id, done: state.completed.indexOf(id) !== -1 } : null;
+          })
+          .filter(Boolean);
+      }
+
+      function resolvePrereqTasks(taskIds) {
+        return (taskIds || [])
+          .map(function(id) {
+            var task = buildTasksById.get(id);
+            if (!task) return null;
+            return {
+              id: id,
+              title: task.title || id,
+              done: projectCompletedTaskIds().indexOf(id) !== -1,
+              required: task.required !== false,
+            };
+          })
+          .filter(Boolean);
+      }
+
+      // Build Tasks Workspace + Task Detail + roadmap ordering all read one
+      // canonical task sequence (release order, then release.buildTaskIds).
+      // Computed once per render pass from the immutable embedded data; no
+      // sort is ever applied to the source arrays themselves.
+      function canonicalOrderedTasks() {
+        return CourseCore.orderAllTasks((projectData && projectData.releases) || [], (projectData && projectData.buildTasks) || []);
+      }
+
+      function stepsByTaskId(taskId) {
+        return CourseCore.stepsForTask((projectData && projectData.buildSteps) || [], taskId);
+      }
+
+      function appendPrereqLessonList(container, lessons) {
+        if (!lessons.length) return;
+        var wrap = el('div', 'task-prereq-block');
+        wrap.appendChild(el('div', 'task-prereq-label', 'Kiến thức cần có'));
+        var list = el('ul', 'task-prereq-list');
+        lessons.forEach(function(entry) {
+          var li = el('li');
+          var a = el('a', 'text-link', entry.title);
+          a.href = '#/lesson/' + entry.id;
+          li.appendChild(a);
+          li.appendChild(el('span', entry.done ? 'prereq-state prereq-state--done' : 'prereq-state prereq-state--open',
+            entry.done ? 'đã học' : 'chưa đánh dấu hoàn thành'));
+          list.appendChild(li);
+        });
+        wrap.appendChild(list);
+        container.appendChild(wrap);
+      }
+
+      function appendPrereqTaskList(container, tasks) {
+        if (!tasks.length) return;
+        var wrap = el('div', 'task-prereq-block');
+        wrap.appendChild(el('div', 'task-prereq-label', 'Artifact cần có trước'));
+        var list = el('ul', 'task-prereq-list');
+        tasks.forEach(function(entry) {
+          var li = el('li');
+          var a = el('a', 'text-link', entry.title);
+          a.href = '#/task/' + entry.id;
+          li.appendChild(a);
+          li.appendChild(el('span', entry.done ? 'prereq-state prereq-state--done' : 'prereq-state prereq-state--open',
+            (entry.done ? 'đã hoàn thành' : 'chưa hoàn thành') + (entry.required === false ? ' · optional' : '')));
+          list.appendChild(li);
+        });
+        wrap.appendChild(list);
+        container.appendChild(wrap);
+      }
+
+      // One step card. Every authored field gets a labelled slot; optional
+      // fields absent from the data simply render no block (never an empty
+      // heading, never "[]"/"undefined"). Labels stay English technical
+      // terms where the data names them (doneWhen, verifyCommand, …) so the
+      // learner can map the UI back to the artifact fields.
+      function createStepCard(step) {
+        var card = el('article', 'task-step');
+        card.setAttribute('data-step-id', step.id);
+
+        var head = el('div', 'task-step-head');
+        head.appendChild(el('span', 'task-step-order', 'Bước ' + step.order));
+        head.appendChild(el('h3', 'task-step-title', step.title));
+        if (step.estimatedMinutes) {
+          head.appendChild(el('span', 'task-step-minutes', '~' + step.estimatedMinutes + ' phút'));
+        }
+        card.appendChild(head);
+
+        if (step.intent) {
+          var intent = el('div', 'task-step-row');
+          intent.appendChild(el('span', 'task-step-label', 'Intent'));
+          intent.appendChild(el('p', 'task-step-text', step.intent));
+          card.appendChild(intent);
+        }
+
+        var stepLessons = resolvePrereqLessons(step.knowledgePrereqLessonIds);
+        var stepPrereqTasks = resolvePrereqTasks(step.artifactPrereqTaskIds);
+        if (stepLessons.length || stepPrereqTasks.length) {
+          var prereqs = el('div', 'task-step-row');
+          prereqs.appendChild(el('span', 'task-step-label', 'Prerequisites'));
+          var prereqBody = el('div', 'task-step-prereqs');
+          appendPrereqLessonList(prereqBody, stepLessons);
+          appendPrereqTaskList(prereqBody, stepPrereqTasks);
+          prereqs.appendChild(prereqBody);
+          card.appendChild(prereqs);
+        }
+
+        if ((step.filesTouched || []).length) {
+          var files = el('div', 'task-step-row');
+          files.appendChild(el('span', 'task-step-label', 'Files'));
+          var fileList = el('ul', 'task-file-list');
+          step.filesTouched.forEach(function(path) {
+            fileList.appendChild(el('li', 'task-file-path', path));
+          });
+          files.appendChild(fileList);
+          card.appendChild(files);
+        }
+
+        // doneWhen is the step's exit condition — the one field a learner
+        // must not miss, so it gets its own emphasized block.
+        if (step.doneWhen) {
+          var done = el('div', 'task-step-row task-step-row--done');
+          done.appendChild(el('span', 'task-step-label', 'Done when'));
+          done.appendChild(el('p', 'task-step-text', step.doneWhen));
+          card.appendChild(done);
+        }
+
+        if (step.verifyCommand) {
+          var verify = el('div', 'task-step-row');
+          verify.appendChild(el('span', 'task-step-label', 'Verify'));
+          var fig = el('figure', 'task-verify');
+          var figcap = el('figcaption');
+          figcap.appendChild(el('span', null, 'verifyCommand — PowerShell'));
+          var copyBtn = el('button', 'copy-btn');
+          copyBtn.innerHTML = icon('copy') + '<span>Sao chép lệnh</span>';
+          copyBtn.type = 'button';
+          copyBtn.setAttribute('data-action', 'copy-verify-command');
+          copyBtn.setAttribute('data-command', step.verifyCommand);
+          copyBtn.setAttribute('aria-label', 'Sao chép lệnh kiểm tra vào clipboard');
+          copyBtn.addEventListener('click', function() {
+            copyText(step.verifyCommand).then(function() { showToast('Đã sao chép lệnh'); },
+              function() { showToast('Không thể sao chép tự động — hãy chọn lệnh và sao chép thủ công.'); });
+          });
+          figcap.appendChild(copyBtn);
+          fig.appendChild(figcap);
+          var pre = el('pre');
+          pre.appendChild(el('code', null, step.verifyCommand));
+          fig.appendChild(pre);
+          verify.appendChild(fig);
+          card.appendChild(verify);
+        }
+
+        if ((step.architectureRules || []).length) {
+          var rules = el('div', 'task-step-row');
+          rules.appendChild(el('span', 'task-step-label', 'Architecture rules'));
+          var ruleRow = el('div', 'task-rule-row');
+          step.architectureRules.forEach(function(ruleId) {
+            var chip = el('a', 'task-rule-chip', ruleId);
+            chip.href = '#/architecture';
+            chip.setAttribute('aria-label', 'Architecture rule ' + ruleId + ' — xem định nghĩa trong Architecture view');
+            ruleRow.appendChild(chip);
+          });
+          ruleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong Architecture view'));
+          rules.appendChild(ruleRow);
+          card.appendChild(rules);
+        }
+
+        if (step.commonMistake) {
+          var mistake = el('aside', 'callout task-mistake');
+          mistake.setAttribute('role', 'note');
+          var mistakeIcon = el('span', 'callout-icon');
+          mistakeIcon.setAttribute('aria-hidden', 'true');
+          mistakeIcon.innerHTML = icon('alert-triangle');
+          mistake.appendChild(mistakeIcon);
+          var mistakeBody = el('div', 'callout-body');
+          var mistakeHead = el('div', 'callout-head');
+          mistakeHead.appendChild(el('strong', 'callout-label', 'Lỗi thường gặp: '));
+          mistakeBody.appendChild(mistakeHead);
+          mistakeBody.appendChild(document.createTextNode(step.commonMistake));
+          mistake.appendChild(mistakeBody);
+          card.appendChild(mistake);
+        }
+
+        if (step.mentorHint) {
+          var hint = el('aside', 'callout task-hint');
+          hint.setAttribute('role', 'note');
+          var hintIcon = el('span', 'callout-icon');
+          hintIcon.setAttribute('aria-hidden', 'true');
+          hintIcon.innerHTML = icon('lightbulb');
+          hint.appendChild(hintIcon);
+          var hintBody = el('div', 'callout-body');
+          var hintHead = el('div', 'callout-head');
+          hintHead.appendChild(el('strong', 'callout-label', 'Mentor hint: '));
+          hintBody.appendChild(hintHead);
+          hintBody.appendChild(document.createTextNode(step.mentorHint));
+          hint.appendChild(hintBody);
+          card.appendChild(hint);
+        }
+
+        return card;
+      }
+
+      // Mentor Prompt section: one builder (CourseCore.buildMentorPrompt),
+      // two scopes. `step` null → task-level prompt. The generated text is
+      // shown in a scrollable <pre> (learner can read before copying) and is
+      // copied through the shared copyText/showToast path.
+      function createMentorPromptSection(task, steps, release, taskLessonRows, taskPrereqRows, ruleIds) {
+        var section = el('section', 'project-panel release-section');
+        section.setAttribute('aria-labelledby', 'task-mentor-prompt-title');
+        section.appendChild(el('h2', null, 'Mentor Prompt')).id = 'task-mentor-prompt-title';
+        section.appendChild(el('p', 'task-prompt-intro',
+          'Sao chép prompt này dán vào AI mentor bạn đang dùng — nó kèm đúng ngữ cảnh task, boundary kiến thức đã học và các architecture rule đang có hiệu lực. Không có lệnh gọi API nào ở đây; trang chỉ tạo văn bản.'));
+
+        var promptPre = el('pre', 'task-prompt-output');
+        promptPre.setAttribute('aria-label', 'Nội dung mentor prompt');
+        var promptCode = el('code');
+        promptPre.appendChild(promptCode);
+
+        function renderPrompt(scope, step) {
+          var text = CourseCore.buildMentorPrompt({
+            task: task,
+            step: step || null,
+            steps: steps,
+            release: release,
+            lessons: taskLessonRows,
+            prereqTasks: taskPrereqRows,
+            features: (task.featureIds || []).map(function(id) {
+              var f = featuresById.get(id);
+              return f ? f.name : null;
+            }).filter(Boolean),
+            ruleIds: ruleIds,
+          });
+          promptCode.textContent = text;
+          taskButtons.forEach(function(btn) {
+            btn.setAttribute('aria-pressed', btn.getAttribute('data-prompt-scope') === scope ? 'true' : 'false');
+          });
+        }
+
+        // Step scope needs a way to choose the step. A <select> keeps the
+        // implementation small and works with keyboard out of the box; the
+        // "bước đang chọn" is ephemeral UI state — it never touches progress.
+        var stepPickerRow = el('div', 'task-prompt-step-picker');
+        var pickerLabel = el('label', null, 'Bước');
+        pickerLabel.setAttribute('for', 'task-step-picker');
+        var picker = el('select');
+        picker.id = 'task-step-picker';
+        steps.forEach(function(s) {
+          var opt = el('option', null, 'Bước ' + s.order + ' — ' + s.title);
+          opt.value = s.id;
+          picker.appendChild(opt);
+        });
+        pickerLabel.appendChild(picker);
+        stepPickerRow.appendChild(pickerLabel);
+        // Live update while the learner is already in step scope.
+        picker.addEventListener('change', function() {
+          if (stepPickerRow.hidden) return;
+          var selected = steps.find(function(s) { return s.id === picker.value; }) || null;
+          renderPrompt('step', selected);
+        });
+
+        var taskButtons = [];
+        var scopeRow = el('div', 'task-prompt-scope');
+        scopeRow.setAttribute('role', 'group');
+        scopeRow.setAttribute('aria-label', 'Chọn phạm vi prompt');
+        [{ key: 'task', label: 'Prompt cho cả task' },
+         { key: 'step', label: 'Prompt cho bước đang chọn' }].forEach(function(item) {
+          var btn = el('button', 'map-filter-btn', item.label);
+          btn.type = 'button';
+          btn.setAttribute('data-prompt-scope', item.key);
+          btn.setAttribute('aria-pressed', item.key === 'task' ? 'true' : 'false');
+          // One listener per button: renders the matching scope and shows
+          // the step picker only for step scope. The picker defaults to the
+          // first step, so step scope always has a concrete step to quote.
+          btn.addEventListener('click', function() {
+            if (item.key === 'step') {
+              var selected = steps.find(function(s) { return s.id === picker.value; }) || null;
+              stepPickerRow.hidden = false;
+              renderPrompt('step', selected);
+            } else {
+              stepPickerRow.hidden = true;
+              renderPrompt('task', null);
+            }
+          });
+          taskButtons.push(btn);
+          scopeRow.appendChild(btn);
+        });
+        section.appendChild(scopeRow);
+        section.appendChild(stepPickerRow);
+        stepPickerRow.hidden = true;
+
+        section.appendChild(promptPre);
+        renderPrompt('task', null);
+
+        var actions = el('div', 'task-prompt-actions');
+        var copyBtn = el('button', 'btn btn--primary task-prompt-copy');
+        copyBtn.innerHTML = icon('copy') + '<span>Sao chép mentor prompt</span>';
+        copyBtn.type = 'button';
+        copyBtn.setAttribute('data-action', 'copy-mentor-prompt');
+        copyBtn.addEventListener('click', function() {
+          copyText(promptCode.textContent).then(function() { showToast('Đã sao chép mentor prompt'); },
+            function() { showToast('Không thể sao chép tự động — hãy chọn văn bản và sao chép thủ công.'); });
+        });
+        actions.appendChild(copyBtn);
+        section.appendChild(actions);
+        return section;
+      }
+
+      // Task Detail (P3). Answers, in order: what am I building → why →
+      // what should I know → what artifacts first → constraints → ordered
+      // steps → whole-task acceptance → mentor prompt → completion → next.
+      function renderTaskDetail(container, taskId) {
+        if (!projectData) { renderProjectEmpty(container); return; }
+        var task = buildTasksById.get(taskId);
+        renderProjectSubNav(container, 'project');
+        if (!task) {
+          var notFound = el('section', 'project-not-found');
+          notFound.appendChild(el('h1', null, 'Không tìm thấy build task'));
+          notFound.appendChild(el('p', null, 'Build task “' + taskId + '” không tồn tại trong project data.'));
+          var backToTasks = el('a', 'text-link', '← Về danh sách build task');
+          backToTasks.href = '#/project';
+          notFound.appendChild(backToTasks);
+          container.appendChild(notFound);
+          return;
+        }
+
+        var release = releasesById.get(task.releaseId);
+        var releaseTasks = release ? (release.buildTaskIds || []) : [];
+        var positionInRelease = releaseTasks.indexOf(task.id);
+        var orderedTasks = canonicalOrderedTasks();
+        var globalIndex = orderedTasks.findIndex(function(t) { return t.id === task.id; });
+        var steps = stepsByTaskId(task.id);
+        var done = projectCompletedTaskIds().indexOf(task.id) !== -1;
+
+        var detail = el('div');
+        detail.setAttribute('data-task-detail', task.id);
+
+        // ---- header / orientation
+        var hero = el('header', 'task-hero');
+        var heroLine = el('div', 'project-release-line');
+        if (release) {
+          var releaseLink = el('a', 'text-link', releaseDisplay(release));
+          releaseLink.href = '#/release/' + release.id;
+          heroLine.appendChild(releaseLink);
+          if (positionInRelease !== -1) {
+            heroLine.appendChild(el('span', 'task-position', 'Task ' + (positionInRelease + 1) + '/' + releaseTasks.length + ' của release'));
+          }
+        }
+        heroLine.appendChild(el('span', 'task-kind', task.required === false ? 'optional' : 'required'));
+        if (done) heroLine.appendChild(el('span', 'task-done-badge', 'Đã hoàn thành'));
+        hero.appendChild(heroLine);
+        hero.appendChild(el('h1', 'task-title', task.title));
+        var taskEstimate = CourseCore.estimateTaskMinutes(steps);
+        if (taskEstimate != null) {
+          hero.appendChild(el('p', 'task-estimate', 'Ước lượng: ~' + taskEstimate + ' phút cho ' + steps.length + ' bước (tổng estimatedMinutes của mọi bước).'));
+        }
+        if (task.problem) {
+          var problem = el('p', 'task-hero-problem');
+          problem.appendChild(el('strong', null, 'Vấn đề: '));
+          problem.appendChild(document.createTextNode(task.problem));
+          hero.appendChild(problem);
+        }
+        if (task.goal) {
+          var goalP = el('p', 'task-hero-goal');
+          goalP.appendChild(el('strong', null, 'Goal: '));
+          goalP.appendChild(document.createTextNode(task.goal));
+          hero.appendChild(goalP);
+        }
+        if ((task.featureIds || []).length) {
+          var features = (task.featureIds || []).map(function(id) {
+            var f = featuresById.get(id);
+            return f ? f.name : null;
+          }).filter(Boolean);
+          if (features.length) {
+            var featRow = el('div', 'task-feature-row');
+            featRow.appendChild(el('span', 'task-feature-label', 'Features: '));
+            featRow.appendChild(document.createTextNode(features.join(', ')));
+            hero.appendChild(featRow);
+          }
+        }
+        detail.appendChild(hero);
+
+        // ---- prerequisites (knowledge + artifact). Artifact prereqs are
+        // collected straight from the task's steps (union, first-sighting
+        // order) so a prereq id resolves even if it sits outside release
+        // ordering; self is excluded.
+        var taskLessons = resolvePrereqLessons(task.relevantLessonIds);
+        var prereqTaskIdSet = {};
+        steps.forEach(function(s) {
+          (s.artifactPrereqTaskIds || []).forEach(function(id) {
+            if (id !== task.id) prereqTaskIdSet[id] = true;
+          });
+        });
+        var taskPrereqTasks = resolvePrereqTasks(Object.keys(prereqTaskIdSet));
+        var prereqsSection = el('section', 'project-panel release-section');
+        prereqsSection.appendChild(el('h2', null, 'Trước khi bắt tay'));
+        if (taskLessons.length || taskPrereqTasks.length) {
+          appendPrereqLessonList(prereqsSection, taskLessons);
+          appendPrereqTaskList(prereqsSection, taskPrereqTasks);
+        } else {
+          prereqsSection.appendChild(el('p', null, 'Task này không khai báo kiến thức hoặc artifact prerequisite riêng.'));
+        }
+        detail.appendChild(prereqsSection);
+
+        // ---- constraints (what must stay true) — before the steps, per
+        // the learner-flow contract; never buried under step content.
+        var constraintsSection = null;
+        if ((task.constraints || []).length) {
+          constraintsSection = el('section', 'project-panel release-section');
+          constraintsSection.appendChild(el('h2', null, 'Constraints — điều phải luôn đúng'));
+          var cList = el('ul', 'criteria-list');
+          task.constraints.forEach(function(c) { cList.appendChild(el('li', null, c)); });
+          constraintsSection.appendChild(cList);
+          detail.appendChild(constraintsSection);
+        }
+
+        // ---- build steps (ordered by `order`, display-only — no step
+        // completion state exists and none is invented here)
+        var stepsSection = el('section', 'project-panel release-section');
+        stepsSection.setAttribute('aria-labelledby', 'task-steps-title');
+        stepsSection.appendChild(el('h2', null, 'Build Steps')).id = 'task-steps-title';
+        if (!steps.length) {
+          stepsSection.appendChild(el('p', null, 'Task này chưa có build step nào được soạn.'));
+        } else {
+          stepsSection.appendChild(el('p', 'task-steps-note',
+            steps.length + ' bước, làm theo thứ tự. Mỗi bước có "Done when" — tiêu chí bước đó xong; hoàn thành cả task là mục Acceptance Criteria bên dưới.'));
+          var stepList = el('div', 'task-step-list');
+          steps.forEach(function(step) {
+            stepList.appendChild(createStepCard(step));
+          });
+          stepsSection.appendChild(stepList);
+        }
+        detail.appendChild(stepsSection);
+
+        // ---- whole-task acceptance criteria (distinct block from step
+        // doneWhen: this is "task hoàn thành", that is "bước hoàn thành")
+        if ((task.acceptanceCriteria || []).length) {
+          var acSection = el('section', 'project-panel release-section');
+          acSection.appendChild(el('h2', null, 'Acceptance Criteria — hoàn thành cả task'));
+          var acList = el('ul', 'criteria-list');
+          task.acceptanceCriteria.forEach(function(c) { acList.appendChild(el('li', null, c)); });
+          acSection.appendChild(acList);
+          detail.appendChild(acSection);
+        }
+
+        // ---- mentor prompt
+        var ruleIds = [];
+        steps.forEach(function(s) { (s.architectureRules || []).forEach(function(r) { if (ruleIds.indexOf(r) === -1) ruleIds.push(r); }); });
+        detail.appendChild(createMentorPromptSection(task, steps, release, taskLessons, taskPrereqTasks, ruleIds));
+
+        // ---- completion + prev/next
+        var footer = el('section', 'project-panel release-section task-footer');
+        footer.appendChild(el('h2', null, 'Hoàn thành task'));
+        footer.appendChild(el('p', null, 'Đánh dấu hoàn thành khi mọi bước đã qua và các Acceptance Criteria đạt — danh sách này dùng chung Build Tasks Workspace và Release Detail, không tách bộ lưu trạng thái mới.'));
+        var toggle = el('button', 'btn btn--primary task-complete-toggle');
+        toggle.type = 'button';
+        toggle.setAttribute('data-action', 'toggle-build-task');
+        toggle.setAttribute('data-task-id', task.id);
+        toggle.setAttribute('aria-pressed', done ? 'true' : 'false');
+        toggle.innerHTML = icon('check') + '<span>' + (done ? 'Đã hoàn thành — nhấn để mở lại' : 'Đánh dấu task hoàn thành') + '</span>';
+        // Same contract as the workspace toggle: shared toggleBuildTask state,
+        // toast feedback, full re-render so the hero badge follows.
+        toggle.addEventListener('click', function() {
+          var completed = toggleBuildTask(task.id);
+          toggle.setAttribute('aria-pressed', completed ? 'true' : 'false');
+          toggle.innerHTML = icon('check') + '<span>' + (completed ? 'Đã hoàn thành — nhấn để mở lại' : 'Đánh dấu task hoàn thành') + '</span>';
+          showToast(completed ? 'Đã hoàn thành build task' : 'Đã mở lại build task');
+          routeRender();
+        });
+        footer.appendChild(toggle);
+        if (globalIndex !== -1) {
+          var prevNext = el('nav', 'task-prevnext');
+          prevNext.setAttribute('aria-label', 'Chuyển task liền kề');
+          if (globalIndex > 0) {
+            var prevTask = orderedTasks[globalIndex - 1];
+            var prevLink = el('a', 'text-link task-prevnext-link');
+            prevLink.href = '#/task/' + prevTask.id;
+            prevLink.appendChild(el('span', 'task-prevnext-dir', '← Task trước'));
+            prevLink.appendChild(el('span', 'task-prevnext-title',
+              prevTask.title + (prevTask.required === false ? ' (optional)' : '')));
+            prevNext.appendChild(prevLink);
+          }
+          if (globalIndex < orderedTasks.length - 1) {
+            var nextTask = orderedTasks[globalIndex + 1];
+            var nextLink = el('a', 'text-link task-prevnext-link task-prevnext-link--next');
+            nextLink.href = '#/task/' + nextTask.id;
+            nextLink.appendChild(el('span', 'task-prevnext-dir', 'Task sau →'));
+            nextLink.appendChild(el('span', 'task-prevnext-title',
+              nextTask.title + (nextTask.required === false ? ' (optional)' : '')));
+            prevNext.appendChild(nextLink);
+          }
+          footer.appendChild(prevNext);
+        }
+        detail.appendChild(footer);
+
+        container.appendChild(detail);
+      }
+
+      // All-task browse surface (P3): every authored task, grouped by
+      // release in release order. Compact rows — the task definition itself
+      // belongs to Task Detail, this surface is for orientation/navigation.
+      function appendAllTaskBrowse(container) {
+        var releases = (projectData.releases || [])
+          .slice()
+          .sort(function(a, b) { return Number(a.order || 0) - Number(b.order || 0); });
+        var completed = projectCompletedTaskIds();
+        var total = 0;
+        var doneRequired = 0;
+        var section = el('section', 'project-panel release-section');
+        section.setAttribute('aria-labelledby', 'task-browse-title');
+        section.appendChild(el('h2', null, 'Tất cả build task')).id = 'task-browse-title';
+        section.appendChild(el('p', 'task-steps-note',
+          (projectData.buildTasks || []).length + ' task theo ' + releases.length + ' release. Nhấn vào tên task để mở trang chi tiết; tiến độ đặt tên từ trạng thái build của bạn, độc lập với tiến độ học bài.'));
+        releases.forEach(function(release) {
+          var taskIds = release.buildTaskIds || [];
+          if (!taskIds.length) return;
+          var group = el('div', 'task-browse-group');
+          var head = el('div', 'task-browse-group-head');
+          var relLink = el('a', 'text-link', release.version + ' — ' + release.title);
+          relLink.href = '#/release/' + release.id;
+          head.appendChild(relLink);
+          group.appendChild(head);
+          var list = el('ul', 'task-browse-list');
+          taskIds.forEach(function(id) {
+            var task = buildTasksById.get(id);
+            if (!task) return;
+            total++;
+            var isDone = completed.indexOf(id) !== -1;
+            if (isDone && task.required !== false) doneRequired++;
+            var li = el('li', 'task-browse-item' + (isDone ? ' task-browse-item--done' : ''));
+            var row = el('a', 'task-browse-link');
+            row.href = '#/task/' + id;
+            row.appendChild(el('span', 'task-browse-title', task.title));
+            var meta = el('span', 'task-browse-meta');
+            meta.appendChild(el('span', 'task-kind', task.required === false ? 'optional' : 'required'));
+            if (isDone) meta.appendChild(el('span', 'prereq-state prereq-state--done', 'hoàn thành'));
+            row.appendChild(meta);
+            li.appendChild(row);
+            list.appendChild(li);
+          });
+          group.appendChild(list);
+          section.appendChild(group);
+        });
+        if (total) {
+          var requiredTotal = ((projectData.buildTasks || []).filter(function(t) { return t.required !== false; })).length;
+          section.insertBefore(
+            el('p', 'task-browse-summary', 'Tiến độ required: ' + doneRequired + '/' + requiredTotal + ' task hoàn thành (task optional không tính vào mốc này).'),
+            section.children[1]
+          );
+        }
+        container.appendChild(section);
       }
 
       // Project-scoped sub-navigation shown under the workspace header on
@@ -2300,6 +3173,7 @@
         else if (route.view === 'project') renderProjectOverview(view);
         else if (route.view === 'roadmap') renderRoadmap(view);
         else if (route.view === 'release') renderReleaseDetail(view, route.releaseId);
+        else if (route.view === 'task') renderTaskDetail(view, route.taskId);
         else if (route.view === 'map') renderCourseProjectMap(view);
         else if (route.view === 'architecture') renderArchitecture(view);
         else renderDashboard(view);
@@ -2486,15 +3360,16 @@
         }
         if (nextTask) {
           /* "Learn →" is a link, so "Build →" must be one too: the two lines
-             are read as a symmetric pair of next actions, and a dead-end
-             label forces the learner back through the workspace to find the
-             task. It points at the release the task belongs to, where the
-             task's constraints, acceptance criteria and relevant lessons
-             live — a different destination from the header's workspace link. */
+             are read as a symmetric pair of next actions. P3 gives every task
+             a detail page (constraints, steps, acceptance criteria, mentor
+             prompt), so the link goes straight there instead of through the
+             release — one hop fewer, same destination available via the task
+             page's own release link. */
           var taskP = el('p');
           taskP.appendChild(el('strong', null, 'Build → '));
-          var taskLink = el('a', 'text-link', nextTask.title);
-          taskLink.href = '#/release/' + release.id;
+          var taskLink = el('a', 'text-link dashboard-next-task-link');
+          taskLink.href = '#/task/' + nextTask.id;
+          taskLink.textContent = nextTask.title;
           taskP.appendChild(taskLink);
           steps.appendChild(taskP);
         } else {
@@ -3367,7 +4242,10 @@
         var next = el('section', 'project-panel');
         next.appendChild(el('div', 'project-section-label', 'Next Build Task'));
         if (nextTask) {
-          next.appendChild(el('h2', null, nextTask.title));
+          var nextTitleLink = el('a', 'text-link next-build-task-title');
+          nextTitleLink.href = '#/task/' + nextTask.id;
+          nextTitleLink.appendChild(el('h2', null, nextTask.title));
+          next.appendChild(nextTitleLink);
           next.appendChild(el('p', null, nextTask.goal));
         } else {
           next.appendChild(el('p', null, 'Không còn required task đang mở trong release hiện tại.'));
@@ -3440,6 +4318,10 @@
           workspace.appendChild(el('p', null, 'Release hiện tại chưa có build task để theo dõi.'));
         }
         container.appendChild(workspace);
+
+        // Full task catalogue (P3) — every authored task grouped by release,
+        // each row linking to its Task Detail page.
+        appendAllTaskBrowse(container);
       }
 
       function createRoadmapReleaseLink(release) {
@@ -5266,7 +6148,8 @@
           var dashNextTask = CourseCore.selectNextBuildTask(dashRelease, buildTasksById, projectCompletedTaskIds());
           var learnLinkOk = nextPanelLinks.some(function(a) { return /^#\/lesson\//.test(a.getAttribute("href")); });
           var buildLinkOk = nextPanelLinks.some(function(a) {
-            return a.getAttribute("href") === "#/release/" + dashRelease.id && a.textContent === dashNextTask.title;
+            /* P3: the link goes straight to the task's detail page. */
+            return a.getAttribute("href") === "#/task/" + dashNextTask.id && a.textContent === dashNextTask.title;
           });
           assert("dashboard Next panel exposes both the next lesson and the next build task as real links",
             !!dashNextTask && learnLinkOk && buildLinkOk);
@@ -5292,6 +6175,107 @@
           });
           assert("capstone-window lessons day-31..day-36 render no build-task CTA",
             capstoneWindowOk);
+
+          /* 59 — P3 route surface. Every authored task id must resolve to a
+             rendered Task Detail, and hostile hashes must degrade to a
+             deterministic not-found (never a thrown URIError from
+             decodeURIComponent, which would blank the whole SPA). */
+          var routeOk = true;
+          (projectData.buildTasks || []).forEach(function(t) {
+            location.hash = "#/task/" + t.id;
+            routeRender();
+            var detail = document.getElementById("route-view").querySelector('[data-task-detail="' + t.id + '"]');
+            var stepCards = document.getElementById("route-view").querySelectorAll(".task-step").length;
+            var expectedSteps = (projectData.buildSteps || []).filter(function(s) { return s.taskId === t.id; }).length;
+            if (!detail || stepCards !== expectedSteps) {
+              routeOk = false;
+              return;
+            }
+            var promptPre = detail.querySelector(".task-prompt-output");
+            if (!promptPre || !promptPre.textContent.trim().length || /undefined|\[object Object\]/.test(promptPre.textContent)) {
+              routeOk = false;
+            }
+          });
+          assert("P3: every task id renders Task Detail with its step cards and a non-empty mentor prompt",
+            routeOk);
+
+          /* 60 — P3 invalid routes. Malformed escapes and unknown ids must
+             land on the not-found panel, not crash. */
+          var notFoundOk = ["#/task/%", "#/task/not-a-real-task", "#/task/%E0%A4%A"].every(function(hash) {
+            location.hash = hash;
+            routeRender();
+            return !!document.getElementById("route-view").querySelector(".project-not-found");
+          });
+          assert("P3: invalid task hashes render the not-found panel instead of crashing",
+            notFoundOk);
+
+          /* 61 — P3 mentor prompt carries the ten §14 fields with the two
+             contract clauses verbatim, and never suggests a Boot version. */
+          location.hash = "#/task/task-money-vo";
+          routeRender();
+          var promptText = document.getElementById("route-view").querySelector(".task-prompt-output").textContent;
+          var promptFieldsOk = [
+            "## Bối cảnh dự án", "## Task hiện tại", "## Các bước của task",
+            "## Toolchain", "## Repository truth", "## Hop dong day hoc",
+            "SPRING_BOOT_EXACT_PIN_PENDING", "ARCHITECTURE_CHANGE_REQUIRED",
+            "Prefer the established Spendwise convention over your own preference",
+            "Khong refactor code khong lien quan, khong them dependency, khong doi build, khong tao package moi",
+          ].every(function(marker) { return promptText.indexOf(marker) !== -1; });
+          assert("P3: rendered mentor prompt contains the §14 sections and contract clauses",
+            promptFieldsOk && promptText.indexOf(CourseCore.MENTOR_STOP_CLAUSE) !== -1 && !/Spring Boot\s+v?[0-9]+\.[0-9]/.test(promptText));
+
+          /* 62 — P3 browse surface + progress independence. The catalogue on
+             Project Mode lists every authored task exactly once, each row
+             linking to #/task/<id>; marking a task complete changes the
+             project track, not lesson completion. */
+          location.hash = "#/project";
+          routeRender();
+          var browseLinks = Array.prototype.slice.call(
+            document.getElementById("route-view").querySelectorAll('.task-browse-list a[href^="#/task/"]'));
+          var browseIds = browseLinks.map(function(a) { return a.getAttribute("href").slice("#/task/".length); });
+          var authoredIds = (projectData.buildTasks || []).map(function(t) { return t.id; });
+          var browseOk = browseIds.length === authoredIds.length &&
+            authoredIds.every(function(id) { return browseIds.indexOf(id) !== -1; }) &&
+            new Set(browseIds).size === browseIds.length;
+          assert("P3: all-task browse lists every authored task exactly once with #/task links",
+            browseOk);
+
+          /* 63 — P3 toggle on Task Detail shares the single completion state
+             with the workspace and never touches lesson completion. */
+          var beforeLessons = state.completed.length;
+          var probeTaskId = (projectData.buildTasks || [])[0].id;
+          var probeDoneBefore = projectCompletedTaskIds().indexOf(probeTaskId) !== -1;
+          location.hash = "#/task/" + probeTaskId;
+          routeRender();
+          var detailToggle = document.getElementById("route-view").querySelector('.task-complete-toggle[data-task-id="' + probeTaskId + '"]');
+          var toggleWorks = false;
+          if (detailToggle) {
+            detailToggle.click();
+            var probeDoneAfter = projectCompletedTaskIds().indexOf(probeTaskId) !== -1;
+            toggleWorks = probeDoneAfter !== probeDoneBefore && state.completed.length === beforeLessons;
+            detailToggle.click(); // restore
+          }
+          assert("P3: task-detail completion toggle flips project state only, lesson completion untouched",
+            toggleWorks);
+
+          /* 64 — P3 picker visibility. The row's class sets display:flex, and
+             author display beats the UA [hidden] rule; without the
+             .task-prompt-step-picker[hidden] companion the select stays
+             visible and focusable in task scope while its handler no-ops. */
+          var pickerRow = document.getElementById("route-view").querySelector(".task-prompt-step-picker");
+          var pickerOk = false;
+          if (pickerRow) {
+            var pickerHiddenInitially = getComputedStyle(pickerRow).display === "none" && pickerRow.hidden;
+            var stepScopeBtn = document.getElementById("route-view").querySelector('[data-prompt-scope="step"]');
+            var taskScopeBtn = document.getElementById("route-view").querySelector('[data-prompt-scope="task"]');
+            stepScopeBtn.click();
+            var pickerShownInStepScope = getComputedStyle(pickerRow).display !== "none" && !pickerRow.hidden;
+            taskScopeBtn.click();
+            var pickerHiddenBackInTaskScope = getComputedStyle(pickerRow).display === "none" && pickerRow.hidden;
+            pickerOk = pickerHiddenInitially && pickerShownInStepScope && pickerHiddenBackInTaskScope;
+          }
+          assert("P3: mentor-prompt step picker is hidden in task scope and visible only in step scope (computed style, not just the hidden attribute)",
+            pickerOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {

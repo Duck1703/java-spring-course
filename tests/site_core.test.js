@@ -459,3 +459,178 @@ test("safeExternalUrl allows only absolute http(s)/mailto", () => {
   assert.equal(core.safeExternalUrl('not a url'), null);
   assert.equal(core.safeExternalUrl(null), null);
 });
+
+// ---- P3: Task Detail / mentor prompt --------------------------------------
+
+test("parseRoute resolves task routes with a guarded decode", () => {
+  assert.deepEqual(core.parseRoute("#/task/task-money-vo"), { view: "task", taskId: "task-money-vo" });
+  assert.deepEqual(core.parseRoute("#task/day-01"), { view: "task", taskId: "day-01" });
+  // Encoded id decodes to the real task id.
+  assert.deepEqual(core.parseRoute("#/task/task%2Dmoney%2Dvo"), { view: "task", taskId: "task-money-vo" });
+  // A decodable escape that matches no task still parses as a task route —
+  // the not-found decision belongs to the renderer, not the parser.
+  assert.deepEqual(core.parseRoute("#/task/%20"), { view: "task", taskId: " " });
+  // A MALFORMED escape must not throw a URIError: fall back to the raw segment.
+  assert.deepEqual(core.parseRoute("#/task/%"), { view: "task", taskId: "%" });
+  assert.deepEqual(core.parseRoute("#/task/%E0%A4%A"), { view: "task", taskId: "%E0%A4%A" });
+  // No segment → not a task route at all.
+  assert.deepEqual(core.parseRoute("#/task/"), { view: "dashboard" });
+  // Extra segments stay part of the id (deterministic not-found downstream).
+  assert.deepEqual(core.parseRoute("#/task/task-money-vo/extra"), { view: "task", taskId: "task-money-vo/extra" });
+});
+
+test("orderAllTasks orders by release order then release.buildTaskIds, deduping and skipping unknown ids", () => {
+  const releases = [
+    { id: "r2", order: 2, buildTaskIds: ["t3", "t2", "t-ghost"] },
+    { id: "r1", order: 1, buildTaskIds: ["t1", "t3"] }, // t3 duplicates across releases
+  ];
+  const buildTasks = [
+    { id: "t3", releaseId: "r2" },
+    { id: "t2", releaseId: "r2" },
+    { id: "t1", releaseId: "r1" },
+    { id: "t-orphan" }, // in no release list → never ordered
+  ];
+  const releasesCopy = JSON.parse(JSON.stringify(releases));
+  const ordered = core.orderAllTasks(releases, buildTasks);
+  assert.deepEqual(ordered.map((t) => t.id), ["t1", "t3", "t2"]);
+  assert.deepEqual(releases, releasesCopy); // inputs never mutated
+  assert.deepEqual(core.orderAllTasks([], buildTasks), []);
+  assert.deepEqual(core.orderAllTasks(releases, []), []);
+});
+
+test("stepsForTask filters by taskId and sorts by order without mutating the source", () => {
+  const buildSteps = [
+    { id: "s-b", taskId: "t1", order: 2 },
+    { id: "s-a", taskId: "t1", order: 1 },
+    { id: "s-other", taskId: "t2", order: 1 },
+    { id: "s-c", taskId: "t1", order: 3 },
+  ];
+  const steps = core.stepsForTask(buildSteps, "t1");
+  assert.deepEqual(steps.map((s) => s.id), ["s-a", "s-b", "s-c"]);
+  // Source array order untouched (raw JSON order is never an authority).
+  assert.deepEqual(buildSteps.map((s) => s.id), ["s-b", "s-a", "s-other", "s-c"]);
+  assert.deepEqual(core.stepsForTask([], "t1"), []);
+  assert.deepEqual(core.stepsForTask(null, "t1"), []);
+});
+
+test("estimateTaskMinutes sums only when EVERY step has a finite non-negative estimatedMinutes", () => {
+  assert.equal(core.estimateTaskMinutes([{ estimatedMinutes: 20 }, { estimatedMinutes: 45 }]), 65);
+  assert.equal(core.estimateTaskMinutes([{ estimatedMinutes: 20 }, {}]), null); // partial sum would understate
+  assert.equal(core.estimateTaskMinutes([{ estimatedMinutes: -5 }]), null);
+  assert.equal(core.estimateTaskMinutes([]), null);
+  assert.equal(core.estimateTaskMinutes(null), null);
+});
+
+test("buildMentorPrompt emits all ten Phase-2 §14 fields for a task-level prompt", () => {
+  const task = {
+    id: "task-money-vo",
+    title: "Money Value Object",
+    problem: "Số tiền lưu bằng double sẽ mất chính xác.",
+    goal: "Tạo Money VO bất biến.",
+    acceptanceCriteria: ["MoneyTest pass với các case làm tròn", "Không dùng double cho tiền"],
+    constraints: ["Không thêm dependency mới"],
+    featureIds: ["feat-money"],
+  };
+  const release = { id: "v0-1", version: "V0.1", title: "Domain foundation", status: "planned" };
+  const steps = [
+    { id: "s1", taskId: "task-money-vo", order: 1, title: "Viết MoneyTest trước", doneWhen: "Test compile", verifyCommand: "mvn test" },
+    { id: "s2", taskId: "task-money-vo", order: 2, title: "Cài Money", doneWhen: "Test pass", verifyCommand: "mvn test" },
+  ];
+  const lessons = [
+    { id: "day-01", title: "JVM & Data Types", done: true },
+    { id: "day-02", title: "Kiểm thử", done: false },
+  ];
+  const prereqTasks = [{ id: "task-0", title: "Scaffold repo", done: true }];
+  const ctx = {
+    task, release, steps, lessons, prereqTasks,
+    features: ["Money Value Object"],
+    ruleIds: ["R3", "R7"],
+  };
+  const ctxCopy = JSON.parse(JSON.stringify(ctx));
+  const text = core.buildMentorPrompt(ctx);
+
+  // 1. Role line
+  assert.ok(text.includes("mentor lap trinh"), "role line present");
+  assert.ok(text.includes("Spendwise"), "project named in role");
+  // 2. Current task section with verbatim AC
+  assert.ok(text.includes("## Task hiện tại"));
+  assert.ok(text.includes("- Task id: task-money-vo"));
+  assert.ok(text.includes("MoneyTest pass với các case làm tròn"), "AC quoted verbatim");
+  assert.ok(text.includes("Không thêm dependency mới"), "constraints quoted verbatim");
+  // 3. Steps in order with doneWhen + verify
+  assert.ok(text.includes("## Các bước của task (theo thứ tự)"));
+  assert.ok(text.includes("- Bước 1: Viết MoneyTest trước — done when: Test compile | verify: mvn test"));
+  assert.ok(text.includes("- Bước 2: Cài Money"));
+  // 4. Knowledge boundary + the boundary instruction line
+  assert.ok(text.includes("## Kiến thức đã học (boundary)"));
+  assert.ok(text.includes("JVM & Data Types (day-01)"));
+  // Regression (adversarial review): the boundary is the task's DECLARED
+  // knowledge list — a not-yet-ticked relevant lesson must stay listed even
+  // when another lesson is marked done, or the boundary clause would forbid
+  // knowledge the task page itself lists as relevant.
+  assert.ok(text.includes("Kiểm thử (day-02)"), "not-done relevant lesson stays in the boundary");
+  assert.ok(text.includes("KHONG su dung ky thuat tu bai hoc sau"));
+  // 5. Artifact prerequisites
+  assert.ok(text.includes("## Artifact prerequisites trong repo nguoi hoc"));
+  assert.ok(text.includes("Scaffold repo (task-0)"));
+  // 6. Architecture rules — ids only, never invented text
+  assert.ok(text.includes("## Architecture rules in force"));
+  assert.ok(text.includes("R3, R7"));
+  // 7. Toolchain: Java 17 pinned, Boot pin explicitly PENDING, no invented version
+  assert.ok(text.includes("## Toolchain"));
+  assert.ok(text.includes("Java 17"));
+  assert.ok(text.includes("SPRING_BOOT_EXACT_PIN_PENDING"));
+  // A version suggestion would look like "Spring Boot 3.x" — "Spring Boot 40
+  // bai" (the lesson count in the role line) must not trip this.
+  assert.ok(!/Spring Boot\s+v?[0-9]+\.[0-9]/.test(text), "no Spring Boot version is ever suggested");
+  // 8. Repository truth
+  assert.ok(text.includes("## Repository truth"));
+  // 9+10. Teaching contract with convention + stop clause verbatim
+  assert.ok(text.includes(core.MENTOR_CONVENTION_CLAUSE));
+  assert.equal(core.MENTOR_CONVENTION_CLAUSE, "Prefer the established Spendwise convention over your own preference, even where your preference is defensible.");
+  // The whole stop clause must appear verbatim (§14 field 9), not just fragments.
+  assert.ok(text.includes(core.MENTOR_STOP_CLAUSE));
+  // Field 10 non-goals line is mandatory — the test title promises all ten fields.
+  assert.ok(text.includes("Khong refactor code khong lien quan, khong them dependency, khong doi build, khong tao package moi"), "non-goals line present");
+  // Field 2 release sub-line renders because the fixture supplies a release.
+  assert.ok(text.includes("Release hien tai trong prompt nay: V0.1 — Domain foundation"), "release sub-line present");
+  // Never leaks template artifacts
+  assert.ok(!text.includes("undefined"));
+  assert.ok(!text.includes("[object Object]"));
+  // Purity: input object untouched
+  assert.deepEqual(ctx, ctxCopy);
+});
+
+test("buildMentorPrompt step scope quotes the focused step without dropping sibling steps", () => {
+  const task = { id: "task-money-vo", title: "Money VO", acceptanceCriteria: ["AC1"], constraints: [], featureIds: [] };
+  const steps = [
+    { id: "s1", taskId: "task-money-vo", order: 1, title: "Viết test trước", intent: "TDD", doneWhen: "Test compile", verifyCommand: "mvn test" },
+    { id: "s2", taskId: "task-money-vo", order: 2, title: "Cài Money", doneWhen: "Test pass" },
+  ];
+  const text = core.buildMentorPrompt({ task, step: steps[0], steps });
+  assert.ok(text.includes("## Bước đang làm (focus)"));
+  assert.ok(text.includes("- Step 1: Viết test trước (id: s1)"));
+  assert.ok(text.includes("- Intent: TDD"));
+  // Siblings still listed so the mentor sees the sequence.
+  assert.ok(text.includes("- Bước 2: Cài Money"));
+  assert.ok(!text.includes("undefined"));
+  // Task-level prompt omits the focus section entirely.
+  const taskText = core.buildMentorPrompt({ task, steps });
+  assert.ok(!taskText.includes("## Bước đang làm (focus)"));
+  // Empty optional sections never render as empty headings.
+  const minimal = core.buildMentorPrompt({ task: { id: "t", title: "T" } });
+  assert.ok(minimal.includes("- Task id: t"));
+  assert.ok(!minimal.includes("undefined"));
+  // Total on hostile input: no task → empty string, never a throw.
+  assert.equal(core.buildMentorPrompt({}), "");
+  assert.equal(core.buildMentorPrompt(null), "");
+});
+
+test("built stylesheet pairs the step-picker display:flex with a [hidden] override", () => {
+  // Author display beats the UA [hidden] rule. The picker must carry its own
+  // .task-prompt-step-picker[hidden] companion or it stays visible (and
+  // keyboard-focusable) in task scope where its change handler no-ops.
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  assert.ok(/\.task-prompt-step-picker\s*\{[^}]*display:\s*flex/.test(html), "base rule sets display:flex");
+  assert.ok(/\.task-prompt-step-picker\[hidden\]\s*\{[^}]*display:\s*none/.test(html), "companion [hidden] rule present");
+});
