@@ -2059,7 +2059,7 @@
         text: "A transfer is one @Transactional unit that creates a linked TRANSFER_OUT and TRANSFER_IN sharing one transferRef and updates both balance projections. Balances are never mutated without corresponding transaction rows. There is no Transfer aggregate.",
         cite: "Blueprint §3; ADR-003" },
       { id: "R22", group: "writes", title: "Import: batch không atomic, từng row atomic; identity hai tầng",
-        text: "An import batch is not atomic; each row is. Every batch reaches a terminal state and every row is exactly one of OK / DUPLICATE / FAILED. A row's identity is its row identity: a source-provided reference where one exists (IMPORT:SRC:<sourceKey>:<accountId>:<sourceTxnId>), otherwise the base content fingerprint plus its 1-based occurrence index within the statement (IMPORT:<baseFingerprint>|OCC:<n>) — never its ImportBatch PK. batchId and rowNo are reporting data only and never participate in identity. The import parse loop is sequential, in source-file order: occurrenceIndex is order-derived, so parallelStream()/.parallel() anywhere in the import path makes identity nondeterministic — an ARCHITECTURE_CHANGE_REQUIRED.",
+        text: "An import batch is not atomic; each row is. Every batch reaches a terminal state and every row is exactly one of OK / DUPLICATE / FAILED. A row's identity is its row identity: a source-provided reference where one exists (IMPORT:SRC:<sourceKey>:<accountId>:<normalize(sourceTxnId)>), otherwise the base content fingerprint (accountId | occurredOn | direction | amount at scale 2 | normalize(description)) plus its 1-based occurrence index within the statement (IMPORT:<baseFingerprint>|OCC:<n>) — never its ImportBatch PK. Two legitimate rows with identical business fields stay two transactions (OCC:1, OCC:2), and re-importing the same statement in the same logical order is deterministic; arbitrary reordering, filtering or reconstruction of a source without a reference is NOT guaranteed, and this is statement-scoped dedup, not universal bank-file deduplication. batchId and rowNo are reporting data only and never participate in identity. The import parse loop is sequential, in source-file order: occurrenceIndex is order-derived, so parallelStream()/.parallel() anywhere in the import path makes identity nondeterministic — an ARCHITECTURE_CHANGE_REQUIRED.",
         note: "Mệnh đề tuần tự ở câu cuối là mệnh đề thứ hai của R22 (thêm 2026-09-05 cùng mô hình fallback của D10.1), không phải rule mới: tập luật vẫn là 26 và mọi token architectureRules được validate theo ^R\\d{1,2}$ nên không thể tồn tại id như R22a.",
         cite: "Blueprint §3; ADR-007; D10.1" },
       { id: "R23", group: "ownership", title: "JWT chỉ mang identity",
@@ -2073,7 +2073,7 @@
         cite: "Blueprint §3" },
       { id: "R26", group: "schema", title: "Migration sở hữu schema; toolchain đóng băng",
         text: "Migrations own the schema; ddl-auto: validate from the V0.5 baseline task onward; applied migrations are never edited. The toolchain (Blueprint §8) is pinned; no release after V0.6 may require a technique not taught by Day 30.",
-        note: "Ngoại lệ duy nhất mà Blueprint công nhận: JwtEncoder canonical ở day-33 — đây chính là lý do mục §7 của Blueprint tồn tại. Ngoài ngoại lệ đó, không release nào sau V0.6 đòi hỏi kỹ thuật chưa dạy tới Day 30.",
+        note: "Ngoại lệ duy nhất mà Blueprint công nhận: JwtEncoder canonical ở day-33 — đây chính là lý do mục §7 của Blueprint tồn tại. Ngoài ngoại lệ đó, không release nào sau V0.6 đòi hỏi kỹ thuật chưa dạy tới Day 30. Về toolchain: Java 17, Maven + Wrapper, PostgreSQL 16 đã pin; version Spring Boot chính xác vẫn SPRING_BOOT_EXACT_PIN_PENDING (ADR-017, §8.1) — chưa chốt, không được tự chọn.",
         cite: "Blueprint §3; ADR-013; ADR-017" },
     ];
     const CONSTITUTION_GROUPS = [
@@ -2138,7 +2138,7 @@
       { q: "Why hand-write repositories before JpaRepository?", a: "R13", why: "the interface is stable, the implementation is swapped at V0.5 — that swap is the lesson (ADR-005). R13 bounds the layering this sits in." },
       { q: "Why is token issuance after the capstone?", a: "R23", why: "day-24 teaches the flow and owns a TokenIssuer seam; day-33 teaches NimbusJwtEncoder. No unsafe temporary signer is written in between (ADR-008). R23 bounds what the token may carry." },
       { q: "Why is refresh-token rotation optional?", a: "R23", why: "day-24 puts rotation in the CHƯA CHỐT (not settled, not graded) group; logout revocation is required (ADR-008). R23 bounds the token model this sits in." },
-      { q: "Why is there no coverage percentage?", a: "R26", why: "70%/90% are 0-hit in the corpus, and day-30 disowns its own 75% (ADR-014: report-not-gate). R26 fixes the testing tiers where taught." },
+      { q: "Why is there no coverage percentage?", a: "R26", why: "70%/90% are 0-hit in the corpus, and day-30 disowns its own 75% (ADR-014: report-not-gate). Testing tiers are owned by ADR-014; R26 only bounds the knowledge timing, it does not fix the tiers." },
     ];
 
     /* P4: the evolution WHY narrative. Each entry is grounded in the
@@ -2147,13 +2147,13 @@
        ten releases (Blueprint §5 Evolution Contract). */
     const EVOLUTION_NARRATIVE = [
       { releaseId: "v0-1", why: "Mọi layer sau này kế thừa cách biểu diễn tiền từ V0.1, nên biểu diễn đúng phải đến trước: domain thuần Java với invariant đóng gói (R1–R5, R7, R9) được thiết lập trước khi bất kỳ framework, DB hay transport nào tồn tại. Nếu để Spring hoặc JPA quyết định shape của Money, invariant sẽ bị lan ra cấu hình." },
-      { releaseId: "v0-2", why: "Domain đúng nhưng chưa dùng được: V0.2 thêm service, repository abstraction và aggregation xung quanh domain mà không đổi domain — cấu trúc phân lớp (R13, R14) thành hình thái thực thi ở đây và đường tạo Transaction duy nhất (R20) ra đời từ service đầu tiên, in-memory trước, để test được hành vi trước khi có persistence." },
+      { releaseId: "v0-2", why: "Domain đúng nhưng chưa dùng được: V0.2 thêm service, repository abstraction và aggregation xung quanh domain; Transaction chỉ nhận thêm sourceRef để đường tạo duy nhất (R20) có provenance từ service đầu tiên. Cấu trúc phân lớp (R13, R14) thành hình thái thực thi ở đây, in-memory trước, để test được hành vi trước khi có persistence." },
       { releaseId: "v0-3", why: "V0.3 không viết lại gì: Spring IoC/DI chỉ thay đổi cách bean được tạo và cấu hình, domain được tái sử dụng nguyên vẹn. Đây là bằng chứng rằng chọn cấu trúc đúng ở V0.1–V0.2 khiến việc vào container rẻ." },
       { releaseId: "v0-4", why: "Cần bề mặt HTTP nhưng không để HTTP đụng vào domain: V0.4 thêm controller/DTO/validation/global exception handler, và R16/R17 chốt rằng entity không vượt qua boundary và service không trả ResponseEntity." },
       { releaseId: "v0-5", why: "Dữ liệu phải sống qua restart và transfer phải atomic: V0.5 thay in-memory repo bằng JPA trên PostgreSQL, JPA annotations được thêm tại chỗ vào class sẵn có (R15), balance trở thành projection có @Version (R8), transfer là một @Transactional ghép cặp (R21), và ddl-auto: validate bắt đầu từ đây (R26)." },
       { releaseId: "v0-6", why: "API đang mở: V0.6 thêm JWT authentication và ownership ở backend — JWT chỉ mang identity (R23), SecurityContextHolder được đọc ở đúng một chỗ với 404 không 403 (R24), mọi bảng user-owned có user_id ngay từ migration (R25). Bảo vệ không thể dựa vào frontend." },
       { releaseId: "v0-7", why: "CRUD chưa phải sản phẩm tài chính: V0.7 thêm budget, recurring, rule engine dưới dạng domain services — và là nơi R10/R11 (derive khi đọc, không cache tiền) và R12 (period VARCHAR(7)) trở nên tải trọng thật. V0.7–V1.0 nằm ngoài 40 bài của khoá: đây là phần tự học/OJT gợi ý." },
-      { releaseId: "v0-8", why: "Người dùng mang dữ liệu thật vào: V0.8 thêm pipeline parse/validate/dedup theo ImportBatch, nơi R22 tồn tại — batch không atomic nhưng từng row atomic, identity hai tầng (source ref, else fingerprint+occurrence) làm re-import deterministic, và vòng parse chạy tuần tự theo thứ tự file nguồn." },
+      { releaseId: "v0-8", why: "Người dùng mang dữ liệu thật vào: V0.8 thêm pipeline parse/validate/dedup theo ImportBatch, nơi R22 tồn tại — batch không atomic nhưng từng row atomic, identity hai tầng (source ref, else fingerprint+occurrence) làm re-import cùng một file, cùng thứ tự nguồn trở nên deterministic; còn file bị đảo thứ tự/không có source ref thì không bảo đảm — đây không phải dedup ngân hàng phổ quát — và vòng parse chạy tuần tự theo thứ tự file nguồn." },
       { releaseId: "v0-9", why: "Từ backend chạy được đến backend production: V0.9 thêm reference-data cache (Redis optional, cùng annotations — R11 vẫn cấm cache tiền), scheduler cho recurring, FX client chỉ hiển thị (R4), tests, OpenAPI, logging, monitoring và Docker." },
       { releaseId: "v1-0", why: "Ổn định và AI không được đụng vào business rules: V1.0 thêm advisory AI (category suggestion, monthly insight) nằm trên lõi ổn định — AI chỉ mang tính tư vấn, gợi ý được chấp nhận thì đi qua đường ghi thông thường (R20), không query DB trực tiếp, không tính tiền (R1), không tự ý override rule." },
     ];
@@ -5070,7 +5070,7 @@
         courseBoundary.appendChild(courseH3);
         var courseList = el('ul', 'criteria-list');
         [
-          'V0.1–V0.6: thuộc 40 bài chính thức của khoá (Day 01–30) — phần bắt buộc.',
+          'V0.1–V0.6: thuộc 40 bài chính thức của khoá (Day 01–30) — phần bắt buộc; ngoại lệ duy nhất: task TokenIssuer canonical của V0.6 thực hiện sau Day 36 (Blueprint §7).',
           'V0.7–V1.0: ngoài 40 bài — phần tự học/OJT gợi ý; Day 39–64 là cửa sổ thực hành gợi ý, không bắt buộc.',
           'Day 31–36 là cửa sổ capstone chính thức của khoá — không bị dự án Spendwise chiếm dụng.',
           'Learning Progress (bài học đã học) và Project Progress (build task đã xong) là hai tiến độ độc lập — học xong một bài không tự hoàn thành task nào, và ngược lại.',

@@ -709,3 +709,44 @@ test("built stylesheet pairs .lesson-list display:grid with a [hidden] override 
   assert.ok(/\.lesson-list\s*\{[^}]*display:\s*grid/.test(html), "base rule sets display:grid");
   assert.ok(/\.lesson-list\[hidden\]\s*\{[^}]*display:\s*none/.test(html), "companion [hidden] rule present");
 });
+
+// ---- P4 QA: content-fidelity pins (2026-09-09 audit) -----------------------
+
+test("R22 text carries the full two-tier identity contract, not a condensed overclaim", () => {
+  const rules = new Map(core.ARCHITECTURE_CONSTITUTION.map((r) => [r.id, r]));
+  const r22 = rules.get("R22").text;
+  // Preferred tier normalizes the source txn id (Blueprint §3 / D10.1 pseudocode).
+  assert.ok(r22.includes("normalize(sourceTxnId)"), "preferred tier normalizes sourceTxnId");
+  // Fingerprint fields are enumerated (accountId | occurredOn | direction | amount | description).
+  assert.ok(r22.includes("occurredOn") && r22.includes("direction"), "fingerprint fields enumerated");
+  // Determinism is same-order qualified, and the limitation + non-goal are stated.
+  assert.ok(r22.includes("same logical order"), "determinism is same-order qualified");
+  assert.ok(r22.includes("NOT guaranteed"), "reordering limitation stated");
+  assert.ok(r22.includes("not universal bank-file deduplication"), "non-goal stated");
+});
+
+test("R26 note discloses the unresolved Spring Boot pin instead of claiming a full freeze", () => {
+  const rules = new Map(core.ARCHITECTURE_CONSTITUTION.map((r) => [r.id, r]));
+  const note = rules.get("R26").note || "";
+  assert.ok(note.includes("SPRING_BOOT_EXACT_PIN_PENDING"), "Boot pin disclosed in the reader note");
+  assert.ok(note.includes("ADR-017"), "pin authority named");
+});
+
+test("defense row 15 attributes testing tiers to ADR-014, not to R26", () => {
+  const row = core.DEFENSE_MATRIX[14];
+  assert.equal(row.q, "Why is there no coverage percentage?");
+  assert.ok(row.why.includes("ADR-014"), "ADR-014 named as the tier owner");
+  assert.ok(row.why.includes("does not fix the tiers"), "R26's role bounded to knowledge timing");
+});
+
+test("evolution and course-boundary narratives carry required qualifications", () => {
+  const template = fs.readFileSync(path.join(__dirname, "..", "index.template.html"), "utf8");
+  // V0.2 changes Transaction only to add sourceRef; unchanged-domain belongs to V0.3.
+  assert.ok(template.includes("Transaction chỉ nhận thêm sourceRef"), "V0.2 narrative names its domain-model change");
+  assert.ok(!template.includes("xung quanh domain mà không đổi domain"), "V0.2 narrative does not claim an unchanged domain");
+  // V0.1-V0.6 is "mandatory" except the one post-Day-36 TokenIssuer execution.
+  assert.ok(template.includes("thực hiện sau Day 36"), "boundary names the post-Day-36 TokenIssuer exception");
+  // V0.8 re-import determinism holds only for the same logical statement ordering.
+  assert.ok(template.includes("cùng thứ tự nguồn trở nên deterministic"), "V0.8 narrative qualifies same-order determinism");
+  assert.ok(template.includes("không phải dedup ngân hàng phổ quát"), "V0.8 narrative disclaims universal dedup");
+});
