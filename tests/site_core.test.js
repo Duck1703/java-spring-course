@@ -634,3 +634,78 @@ test("built stylesheet pairs the step-picker display:flex with a [hidden] overri
   assert.ok(/\.task-prompt-step-picker\s*\{[^}]*display:\s*flex/.test(html), "base rule sets display:flex");
   assert.ok(/\.task-prompt-step-picker\[hidden\]\s*\{[^}]*display:\s*none/.test(html), "companion [hidden] rule present");
 });
+
+// ---- P4: Architecture Constitution + defense matrix + rule traceability ----
+
+test("CourseCore exports the P4 constitution data with exactly R1-R26, no duplicates, non-empty canonical text", () => {
+  const rules = core.ARCHITECTURE_CONSTITUTION;
+  assert.equal(rules.length, 26);
+  const ids = rules.map((r) => r.id);
+  assert.deepEqual(ids, Array.from({ length: 26 }, (_, i) => `R${i + 1}`));
+  for (const rule of rules) {
+    assert.ok(rule.text && rule.text.length > 20, `${rule.id} carries canonical text`);
+    assert.ok(rule.group, `${rule.id} has a group`);
+    assert.ok(rule.title, `${rule.id} has a title`);
+  }
+  const groupKeys = new Set(core.CONSTITUTION_GROUPS.map((g) => g.key));
+  assert.equal(core.CONSTITUTION_GROUPS.length, 7);
+  for (const rule of rules) assert.ok(groupKeys.has(rule.group), `${rule.id} group is one of the 7`);
+  // ids() mirrors the data
+  assert.deepEqual(core.constitutionRuleIds(), ids);
+});
+
+test("every buildSteps architectureRules token resolves to a defined Constitution rule (0 dangling)", () => {
+  const fs2 = fs;
+  const project = JSON.parse(
+    fs2.readFileSync(path.join(__dirname, "..", "content", "spendwise-project.json"), "utf8")
+  );
+  const steps = project.buildSteps || [];
+  assert.equal(steps.length, 161);
+  // 306 total refs across 161 steps, tokens only R1..R26
+  let refs = 0;
+  const tokens = new Set();
+  for (const step of steps) {
+    for (const token of step.architectureRules || []) {
+      refs += 1;
+      tokens.add(token);
+      assert.match(token, /^R\d{1,2}$/);
+    }
+  }
+  assert.equal(refs, 306);
+  assert.equal(tokens.size, 26);
+  // resolveRuleTokens reports dangles by suffixing :DANGLING
+  const resolved = core.resolveRuleTokens(steps);
+  assert.equal(resolved.filter((t) => t.endsWith(":DANGLING")).length, 0, "0 dangling rule references");
+  assert.deepEqual(resolved, Array.from(tokens));
+  // sanity: resolveRuleTokens flags a fabricated token
+  const probe = core.resolveRuleTokens([{ architectureRules: ["R27"] }]);
+  assert.ok(probe.includes("R27:DANGLING"));
+});
+
+test("defense matrix has 15 rows and every answer anchor resolves to a Constitution rule", () => {
+  const matrix = core.DEFENSE_MATRIX;
+  assert.equal(matrix.length, 15);
+  const defined = new Set(core.constitutionRuleIds());
+  matrix.forEach((row, i) => {
+    assert.ok(row.q, `row ${i + 1} has a question`);
+    assert.ok(defined.has(row.a), `row ${i + 1} anchor ${row.a} is a defined rule`);
+    assert.ok(row.why, `row ${i + 1} has an evidence note`);
+  });
+});
+
+test("evolution narrative covers exactly the ten authored releases in order", () => {
+  const project = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "content", "spendwise-project.json"), "utf8")
+  );
+  const narrative = core.EVOLUTION_NARRATIVE;
+  assert.equal(narrative.length, 10);
+  const releaseIds = project.releases.map((r) => r.id);
+  assert.deepEqual(narrative.map((n) => n.releaseId), releaseIds);
+  for (const entry of narrative) assert.ok(entry.why && entry.why.length > 40, `${entry.releaseId} has a WHY paragraph`);
+});
+
+test("built stylesheet pairs .lesson-list display:grid with a [hidden] override (P4 sidebar-collapse fix)", () => {
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  assert.ok(/\.lesson-list\s*\{[^}]*display:\s*grid/.test(html), "base rule sets display:grid");
+  assert.ok(/\.lesson-list\[hidden\]\s*\{[^}]*display:\s*none/.test(html), "companion [hidden] rule present");
+});

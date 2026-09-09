@@ -356,6 +356,11 @@
     .module-toggle .chevron { flex-shrink: 0; transition: transform .15s ease; color: var(--muted); }
     .module-toggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
     .lesson-list { list-style: none; margin: .125rem 0 .5rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .0625rem; }
+    /* Author display beats the UA [hidden] rule (same mechanism as the
+       .task-prompt-step-picker defect fixed in P3): sidebar collapse sets
+       list.hidden = true, but without this companion the unit's lesson list
+       would stay rendered (and keyboard-focusable) as an empty grid. */
+    .lesson-list[hidden] { display: none; }
     .lesson-link {
       display: flex;
       align-items: center;
@@ -1454,10 +1459,69 @@
     }
     .architecture-target-note { color: var(--muted); font-size: .8125rem; font-style: italic; }
     .architecture-stage-controls { display: flex; flex-wrap: wrap; gap: .375rem 1rem; margin-top: .875rem; padding-top: .75rem; border-top: 1px solid var(--line); font-size: .875rem; }
+    /* In-page jumps to a stage (evolution narrative back-links, etc.) must
+       not hide the stage heading under the sticky header. */
+    .architecture-stage { scroll-margin-top: 4.5rem; }
     .architecture-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: .75rem; }
     .architecture-compare-col pre { margin: .375rem 0 0; padding: .875rem 1rem; border-radius: var(--radius-sm); color: var(--code-ink); background: var(--code-bg); white-space: pre-wrap; }
     .architecture-compare-label { color: var(--muted); font-family: var(--mono); font-size: .6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
     .architecture-compare-changes { margin-top: .625rem; color: var(--muted); font-size: .875rem; }
+
+    /* ---- P4: Architecture Constitution + defense readiness -------------- */
+    .constitution-group { margin-top: 1.25rem; }
+    .constitution-group:first-of-type { margin-top: 0; }
+    .constitution-rule {
+      padding: .75rem .875rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      scroll-margin-top: 4.5rem; /* in-page #Rn jumps must not hide the rule under the sticky header */
+    }
+    .constitution-rule:focus { outline: 2px solid var(--project); outline-offset: 2px; }
+    .constitution-rule-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem .625rem; }
+    .constitution-rule-id { font-family: var(--mono); font-weight: 800; color: var(--project-ink); font-size: .8125rem; }
+    .constitution-rule-title { font-weight: 700; font-size: .875rem; }
+    .constitution-rule-cite { color: var(--muted); font-size: .75rem; }
+    .constitution-rule-text { margin: .375rem 0 0; font-size: .875rem; }
+    .constitution-rule-text + .constitution-note { margin-top: .5rem; }
+    .constitution-note {
+      margin: .375rem 0 0;
+      padding: .5rem .625rem;
+      border-left: 3px solid var(--project);
+      background: var(--project-soft);
+      border-radius: var(--radius-sm);
+      color: var(--ink);
+      font-size: .8125rem;
+    }
+    .constitution-note-label { display: block; font-weight: 800; font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: .125rem; }
+    .defense-table-wrap { overflow-x: auto; margin-top: .75rem; border: 1px solid var(--line); border-radius: var(--radius-md); }
+    .defense-table { width: 100%; border-collapse: collapse; font-size: .8125rem; background: var(--surface); }
+    .defense-table caption { text-align: left; padding: .625rem .75rem 0; color: var(--muted); font-size: .75rem; }
+    .defense-table th, .defense-table td { padding: .5625rem .75rem; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .defense-table thead th { border-top: none; background: var(--project-soft); color: var(--ink); font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; }
+    .defense-table td:first-child { font-family: var(--mono); font-weight: 800; color: var(--muted); white-space: nowrap; }
+    .defense-table td:last-child { color: var(--muted); }
+    .defense-anchored {
+      display: inline-block; /* padding makes the ~24px touch target real */
+      padding: .25rem .375rem;
+      margin: -.25rem -.375rem; /* keep visual layout unchanged */
+      color: var(--project-ink);
+      font-weight: 700;
+      font-family: var(--mono);
+      font-size: .75rem;
+      text-decoration: none;
+    }
+    .defense-why { margin-top: .1875rem; color: var(--muted); font-size: .75rem; }
+    .evolution-item { margin-top: .875rem; padding-top: .75rem; border-top: 1px dashed var(--line); }
+    .evolution-item:first-of-type { margin-top: .25rem; padding-top: 0; border-top: none; }
+    .evolution-item .text-link { display: inline-block; margin-top: .25rem; }
+    .evolution-narrative { margin: .25rem 0 .25rem; color: var(--ink); font-size: .875rem; }
+    .boundary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: .75rem; }
+    .boundary-grid ul { margin: .375rem 0 0; padding-left: 1.15rem; color: var(--muted); font-size: .8125rem; }
+    .boundary-grid li { margin: .1875rem 0; }
+    @media (max-width: 48rem) {
+      .boundary-grid { grid-template-columns: 1fr; }
+    }
 
     /* ---- P1: Roadmap milestone grouping ---------------------------------- */
     .roadmap-milestone-group { margin-top: 1.75rem; }
@@ -1916,6 +1980,184 @@
       "Cheapest alternative that keeps the rule: <one sentence>",
     ].join("\n");
 
+    /* ============================================================
+       P4: Architecture Constitution (canonical R1-R26) + defense matrix.
+       The 26 texts below are the reader-facing projection of the
+       Architecture Constitution defined in
+       docs/report/2026-09-05-spendwise-architecture-blueprint.md §3 —
+       the Blueprint stays the source of authority; this block renders it
+       for learners and adds NO new rule. `text` is the canonical rule
+       wording (condensed, semantic-preserving); `note` is Vietnamese UI
+       framing that always points back to the canonical sources and is
+       rendered visually distinct from `text`.
+       Keys are validated by node tests + in-page self-tests: exactly 26,
+       ids R1..R26, no duplicates, every ^R\d{1,2}$ token used by
+       buildSteps.architectureRules resolves here.
+       ============================================================ */
+    const ARCHITECTURE_CONSTITUTION = [
+      { id: "R1", group: "money", title: "Money là BigDecimal scale 2",
+        text: "Money is BigDecimal with scale 2 from input to storage to output. double/float never touch money — including to satisfy a collector signature. Scale 2 is the Spendwise V1.0 precision convention, not a universal ISO-4217 claim.",
+        cite: "Blueprint §3; ADR-001" },
+      { id: "R2", group: "money", title: "So sánh tiền bằng compareTo",
+        text: "Monetary comparison is compareTo(...) == 0. BigDecimal.equals is never used for monetary equality.",
+        cite: "Blueprint §3; ADR-001" },
+      { id: "R3", group: "money", title: "Khai báo scale/precision trong DDL",
+        text: "Money scale and precision are declared in migration DDL (NUMERIC(19,2)), not in @Column.",
+        cite: "Blueprint §3; ADR-001" },
+      { id: "R4", group: "money", title: "Cộng trừ khác tiền tệ phải ném lỗi",
+        text: "Cross-currency arithmetic throws. FX is display-only conversion in the report layer and never produces a ledger entry.",
+        cite: "Blueprint §3; ADR-001" },
+      { id: "R5", group: "money", title: "Chuẩn hoá scale 2 HALF_UP; chia phải khai báo rõ",
+        text: "Construction normalizes to scale 2 HALF_UP; division requires an explicit scale + RoundingMode at the call site; multiplication rounds once at the end of the expression.",
+        cite: "Blueprint §3" },
+      { id: "R6", group: "truth", title: "Transaction là nguồn sự thật duy nhất",
+        text: "Transaction rows are the sole source of financial truth.",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R7", group: "truth", title: "amount luôn dương; hướng là type",
+        text: "Transaction.amount is always positive. Direction is Transaction.type, and the signed effect is exactly: INCOME +, EXPENSE −, TRANSFER_IN +, TRANSFER_OUT −.",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R8", group: "truth", title: "balance là projection có @Version",
+        text: "Account.balance is a stored projection, written only inside the transaction that writes the Transaction row, guarded by @Version, permanently subject to balance == openingBalance + Σ signedEffect(t).",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R9", group: "truth", title: "openingBalance bất biến",
+        text: "Account.openingBalance is immutable after account creation.",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R10", group: "truth", title: "Chỉ tiêu ngân sách/report luôn derive khi đọc",
+        text: "Budget.spent / remaining / percentage / status and every report and dashboard figure are derived at read time and never stored.",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R11", group: "truth", title: "Không cache tiền",
+        text: "No money value, balance, budget figure or report total is ever cached.",
+        cite: "Blueprint §3; ADR-010/ADR-011" },
+      { id: "R12", group: "time", title: "Instant cho sự kiện, LocalDate cho ngày kinh doanh",
+        text: "System events are Instant/TIMESTAMPTZ; economic dates are LocalDate/DATE; period keys are YearMonth-shaped VARCHAR(7). Bare LocalDateTime is forbidden in persisted state. This rests on Hibernate 6, not on Jakarta Persistence 3.1.",
+        cite: "Blueprint §3; ADR-002" },
+      { id: "R13", group: "structure", title: "Package theo feature trong com.spendwise",
+        text: "Package by feature under com.spendwise; layered inside the feature: controller → service → repository, service → domain. The import package is imports.",
+        cite: "Blueprint §3" },
+      { id: "R14", group: "structure", title: "Domain chỉ được import whitelist",
+        text: "A domain class MAY import the JDK, com.spendwise.shared, and jakarta.persistence mapping annotations. It MUST NOT import Spring MVC, Spring Security, Spring service/application types, repository implementations, or any infrastructure client.",
+        cite: "Blueprint §3; ADR-004; D20" },
+      { id: "R15", group: "structure", title: "Một class cho mỗi concept",
+        text: "One class per concept. No domain/entity twin, no mapper between them. JPA annotations are added to the existing class at V0.5. After V0.5 the domain is not framework-pure, by design.",
+        cite: "Blueprint §3; ADR-004" },
+      { id: "R16", group: "structure", title: "Entity/VO không vượt qua HTTP boundary",
+        text: "No entity and no VO crosses the HTTP boundary. Request and response records only.",
+        cite: "Blueprint §3" },
+      { id: "R17", group: "structure", title: "Service không trả ResponseEntity",
+        text: "Services never return ResponseEntity; controllers never contain business logic; @RestControllerAdvice is the single error-translation point.",
+        cite: "Blueprint §3" },
+      { id: "R18", group: "writes", title: "@Transactional chỉ ở public service method",
+        text: "@Transactional on public service methods only — never a controller, repository, private or final method. Read paths are readOnly = true.",
+        cite: "Blueprint §3" },
+      { id: "R19", group: "writes", title: "Không I/O bên trong transaction",
+        text: "No external call, file I/O or @Async dispatch inside a transaction.",
+        cite: "Blueprint §3; ADR-012" },
+      { id: "R20", group: "writes", title: "Một đường tạo Transaction duy nhất",
+        text: "In production code, every Transaction is created by TransactionCreationService.create(command) — manual, recurring and imported alike — and carries a sourceRef. Tests MAY seed history via fixture builders or the repository, but MUST NOT bypass the canonical use case when the behaviour under test is transaction creation itself.",
+        cite: "Blueprint §3; plan §13" },
+      { id: "R21", group: "writes", title: "Transfer là một @Transactional ghép cặp",
+        text: "A transfer is one @Transactional unit that creates a linked TRANSFER_OUT and TRANSFER_IN sharing one transferRef and updates both balance projections. Balances are never mutated without corresponding transaction rows. There is no Transfer aggregate.",
+        cite: "Blueprint §3; ADR-003" },
+      { id: "R22", group: "writes", title: "Import: batch không atomic, từng row atomic; identity hai tầng",
+        text: "An import batch is not atomic; each row is. Every batch reaches a terminal state and every row is exactly one of OK / DUPLICATE / FAILED. A row's identity is its row identity: a source-provided reference where one exists (IMPORT:SRC:<sourceKey>:<accountId>:<sourceTxnId>), otherwise the base content fingerprint plus its 1-based occurrence index within the statement (IMPORT:<baseFingerprint>|OCC:<n>) — never its ImportBatch PK. batchId and rowNo are reporting data only and never participate in identity. The import parse loop is sequential, in source-file order: occurrenceIndex is order-derived, so parallelStream()/.parallel() anywhere in the import path makes identity nondeterministic — an ARCHITECTURE_CHANGE_REQUIRED.",
+        note: "Mệnh đề tuần tự ở câu cuối là mệnh đề thứ hai của R22 (thêm 2026-09-05 cùng mô hình fallback của D10.1), không phải rule mới: tập luật vẫn là 26 và mọi token architectureRules được validate theo ^R\\d{1,2}$ nên không thể tồn tại id như R22a.",
+        cite: "Blueprint §3; ADR-007; D10.1" },
+      { id: "R23", group: "ownership", title: "JWT chỉ mang identity",
+        text: "The JWT carries identity only — no authorization data that the server does not re-verify.",
+        cite: "Blueprint §3; ADR-008" },
+      { id: "R24", group: "ownership", title: "Đọc SecurityContextHolder ở đúng một class; 404 không 403",
+        text: "SecurityContextHolder is read in exactly one class. Ownership is enforced in the service layer by reloading with the owner id and by scoping every list query. A record owned by someone else returns 404, never 403.",
+        cite: "Blueprint §3; ADR-009" },
+      { id: "R25", group: "ownership", title: "Mọi bảng user-owned có user_id + query scope",
+        text: "Every user-owned table has a user_id column and scoped queries from the migration that creates it.",
+        cite: "Blueprint §3" },
+      { id: "R26", group: "schema", title: "Migration sở hữu schema; toolchain đóng băng",
+        text: "Migrations own the schema; ddl-auto: validate from the V0.5 baseline task onward; applied migrations are never edited. The toolchain (Blueprint §8) is pinned; no release after V0.6 may require a technique not taught by Day 30.",
+        note: "Ngoại lệ duy nhất mà Blueprint công nhận: JwtEncoder canonical ở day-33 — đây chính là lý do mục §7 của Blueprint tồn tại. Ngoài ngoại lệ đó, không release nào sau V0.6 đòi hỏi kỹ thuật chưa dạy tới Day 30.",
+        cite: "Blueprint §3; ADR-013; ADR-017" },
+    ];
+    const CONSTITUTION_GROUPS = [
+      { key: "money", label: "Tiền và số (Money and numbers)" },
+      { key: "truth", label: "Sự thật (Truth)" },
+      { key: "time", label: "Thời gian (Time)" },
+      { key: "structure", label: "Cấu trúc (Structure)" },
+      { key: "writes", label: "Ghi dữ liệu (Writes)" },
+      { key: "ownership", label: "Sở hữu dữ liệu (Ownership)" },
+      { key: "schema", label: "Schema, toolchain và tri thức (Schema, toolchain & knowledge)" },
+    ];
+    const CONSTITUTION_BY_ID = ARCHITECTURE_CONSTITUTION.reduce(function(acc, rule) {
+      acc[rule.id] = rule; return acc;
+    }, Object.create(null));
+    function constitutionRuleIds() {
+      return ARCHITECTURE_CONSTITUTION.map(function(rule) { return rule.id; });
+    }
+    /* Every architectureRules token used by buildSteps must resolve to a
+       defined rule; used by node tests and the in-page self-test. Totality:
+       any non-array input yields an empty report, and entries are guarded
+       for shape — a malformed value can never throw here. */
+    function resolveRuleTokens(steps) {
+      const tokens = [];
+      if (!Array.isArray(steps)) return tokens;
+      steps.forEach(function(step) {
+        if (!step || typeof step !== 'object') return;
+        const rules = step.architectureRules;
+        if (!Array.isArray(rules)) return;
+        rules.forEach(function(token) {
+          if (typeof token !== 'string') return;
+          if (tokens.indexOf(token) === -1) tokens.push(token);
+          if (!Object.prototype.hasOwnProperty.call(CONSTITUTION_BY_ID, token)) {
+            tokens.push(token + ':DANGLING');
+          }
+        });
+      });
+      return tokens;
+    }
+
+    /* P4 defense matrix: the 15 questions of plan §19 (question + anchor).
+       The question column is verbatim §19; the anchor column names the
+       Constitution rule whose canonical text carries the argument — where
+       §19 cited a stale ADR number that contradicts Blueprint §4's own ADR
+       set, this matrix cites the Blueprint numbering (5 rows reconciled,
+       see the P4 report). Rows 12-15 anchor to rules that bound the topic
+       rather than carry the full argument (plan §19 anchors them to ADRs;
+       ADR ids are named in each row's evidence note). Rendered read-only
+       for defence preparation: nothing is scripted to memorise, stored,
+       graded or persisted. */
+    const DEFENSE_MATRIX = [
+      { q: "Why BigDecimal and not double?", a: "R1", why: "day-10's 3 summingDouble hits are the counter-example the learner must be able to explain." },
+      { q: "Why scale 2 everywhere?", a: "R1", why: "the Spendwise V1.0 precision convention (ADR-001) — not a claim about world currencies." },
+      { q: "Why compareTo and never equals?", a: "R2", why: "BigDecimal(\"1.0\").equals(BigDecimal(\"1.00\")) is false." },
+      { q: "Why is amount always positive?", a: "R7", why: "direction is typed (Transaction.type), sign is derived from the signed-effect model." },
+      { q: "Why no Transfer aggregate?", a: "R21", why: "one @Transactional + a shared transferRef (taught by day-20) is expressible without a new aggregate concept; ADR-003 records the decision." },
+      { q: "Why a stored balance and a recomputable one?", a: "R8", why: "balance = openingBalance + Σ signedEffect is the invariant; the projection is the cache; reconciliation proves they agree." },
+      { q: "Why Instant for timestamps and LocalDate for business dates?", a: "R12", why: "justified by Spring Boot 3.x + Hibernate 6 behaviour, not by a JPA 3.1 portability claim (ADR-002)." },
+      { q: "Why VARCHAR(7) for a period and not two ints?", a: "R12", why: "YearMonth-shaped, sorts lexicographically, one column to index (ADR-002)." },
+      { q: "Why is sourceRef unique per user?", a: "R20", why: "it is the idempotency key for recurring generation and import (plan §13; ADR-007)." },
+      { q: "Why one canonical creation path?", a: "R20", why: "every write goes through TransactionCreationService.create(CreateTransactionCommand) so invariants cannot be bypassed — production code only; tests may seed fixtures, except when the thing under test is creation." },
+      { q: "Why may domain classes carry JPA annotations?", a: "R14", why: "business-centric JPA entities (ADR-004): domain may import jakarta.persistence; it may not import Spring MVC, Spring Security, service types, repository implementations or infrastructure clients." },
+      { q: "Why hand-write repositories before JpaRepository?", a: "R13", why: "the interface is stable, the implementation is swapped at V0.5 — that swap is the lesson (ADR-005). R13 bounds the layering this sits in." },
+      { q: "Why is token issuance after the capstone?", a: "R23", why: "day-24 teaches the flow and owns a TokenIssuer seam; day-33 teaches NimbusJwtEncoder. No unsafe temporary signer is written in between (ADR-008). R23 bounds what the token may carry." },
+      { q: "Why is refresh-token rotation optional?", a: "R23", why: "day-24 puts rotation in the CHƯA CHỐT (not settled, not graded) group; logout revocation is required (ADR-008). R23 bounds the token model this sits in." },
+      { q: "Why is there no coverage percentage?", a: "R26", why: "70%/90% are 0-hit in the corpus, and day-30 disowns its own 75% (ADR-014: report-not-gate). R26 fixes the testing tiers where taught." },
+    ];
+
+    /* P4: the evolution WHY narrative. Each entry is grounded in the
+       artifact's own release problem/goal + architectureStages fields —
+       no stage is invented; this is ordering + motivation over the frozen
+       ten releases (Blueprint §5 Evolution Contract). */
+    const EVOLUTION_NARRATIVE = [
+      { releaseId: "v0-1", why: "Mọi layer sau này kế thừa cách biểu diễn tiền từ V0.1, nên biểu diễn đúng phải đến trước: domain thuần Java với invariant đóng gói (R1–R5, R7, R9) được thiết lập trước khi bất kỳ framework, DB hay transport nào tồn tại. Nếu để Spring hoặc JPA quyết định shape của Money, invariant sẽ bị lan ra cấu hình." },
+      { releaseId: "v0-2", why: "Domain đúng nhưng chưa dùng được: V0.2 thêm service, repository abstraction và aggregation xung quanh domain mà không đổi domain — cấu trúc phân lớp (R13, R14) thành hình thái thực thi ở đây và đường tạo Transaction duy nhất (R20) ra đời từ service đầu tiên, in-memory trước, để test được hành vi trước khi có persistence." },
+      { releaseId: "v0-3", why: "V0.3 không viết lại gì: Spring IoC/DI chỉ thay đổi cách bean được tạo và cấu hình, domain được tái sử dụng nguyên vẹn. Đây là bằng chứng rằng chọn cấu trúc đúng ở V0.1–V0.2 khiến việc vào container rẻ." },
+      { releaseId: "v0-4", why: "Cần bề mặt HTTP nhưng không để HTTP đụng vào domain: V0.4 thêm controller/DTO/validation/global exception handler, và R16/R17 chốt rằng entity không vượt qua boundary và service không trả ResponseEntity." },
+      { releaseId: "v0-5", why: "Dữ liệu phải sống qua restart và transfer phải atomic: V0.5 thay in-memory repo bằng JPA trên PostgreSQL, JPA annotations được thêm tại chỗ vào class sẵn có (R15), balance trở thành projection có @Version (R8), transfer là một @Transactional ghép cặp (R21), và ddl-auto: validate bắt đầu từ đây (R26)." },
+      { releaseId: "v0-6", why: "API đang mở: V0.6 thêm JWT authentication và ownership ở backend — JWT chỉ mang identity (R23), SecurityContextHolder được đọc ở đúng một chỗ với 404 không 403 (R24), mọi bảng user-owned có user_id ngay từ migration (R25). Bảo vệ không thể dựa vào frontend." },
+      { releaseId: "v0-7", why: "CRUD chưa phải sản phẩm tài chính: V0.7 thêm budget, recurring, rule engine dưới dạng domain services — và là nơi R10/R11 (derive khi đọc, không cache tiền) và R12 (period VARCHAR(7)) trở nên tải trọng thật. V0.7–V1.0 nằm ngoài 40 bài của khoá: đây là phần tự học/OJT gợi ý." },
+      { releaseId: "v0-8", why: "Người dùng mang dữ liệu thật vào: V0.8 thêm pipeline parse/validate/dedup theo ImportBatch, nơi R22 tồn tại — batch không atomic nhưng từng row atomic, identity hai tầng (source ref, else fingerprint+occurrence) làm re-import deterministic, và vòng parse chạy tuần tự theo thứ tự file nguồn." },
+      { releaseId: "v0-9", why: "Từ backend chạy được đến backend production: V0.9 thêm reference-data cache (Redis optional, cùng annotations — R11 vẫn cấm cache tiền), scheduler cho recurring, FX client chỉ hiển thị (R4), tests, OpenAPI, logging, monitoring và Docker." },
+      { releaseId: "v1-0", why: "Ổn định và AI không được đụng vào business rules: V1.0 thêm advisory AI (category suggestion, monthly insight) nằm trên lõi ổn định — AI chỉ mang tính tư vấn, gợi ý được chấp nhận thì đi qua đường ghi thông thường (R20), không query DB trực tiếp, không tính tiền (R1), không tự ý override rule." },
+    ];
+
     function buildMentorPrompt(context) {
       const ctx = context || {};
       const task = ctx.task;
@@ -2158,6 +2400,8 @@
       orderArchitectureStages, groupReleasesByMilestone,
       orderAllTasks, stepsForTask, estimateTaskMinutes,
       buildMentorPrompt, MENTOR_CONVENTION_CLAUSE, MENTOR_STOP_CLAUSE,
+      ARCHITECTURE_CONSTITUTION, CONSTITUTION_GROUPS, constitutionRuleIds,
+      resolveRuleTokens, DEFENSE_MATRIX, EVOLUTION_NARRATIVE,
     });
     /* COURSE_CORE_END */
 
@@ -4667,6 +4911,65 @@
         });
         container.appendChild(stageNav);
 
+        /* ---- P4: Architecture Constitution (canonical R1–R26) ------------ */
+        /* The rules are grouped and ordered exactly as Blueprint §3 groups
+           them; the heading + intro state which artifact is authoritative so
+           the canonical text and this UI projection stay clearly separated.
+           Each rule carries a plain id (R1…R26): inside this view the
+           hashchange handler treats it as an in-page anchor (same mechanism
+           as the stage pills), which is how the defense matrix links to
+           them. Rule chips
+           on Build task pages live in a different view, so they link to the
+           #/architecture route, not a bare #Rn — a cross-view #Rn hash falls
+           through parseRoute to the dashboard. */
+        var constitution = el('section', 'project-panel release-section');
+        constitution.id = 'constitution';
+        constitution.appendChild(el('div', 'project-section-label', 'Architecture Constitution'));
+        var constitutionH2 = el('h2', null, 'Bộ 26 luật kiến trúc (R1–R26)');
+        constitutionH2.id = 'constitution-heading';
+        constitution.appendChild(constitutionH2);
+        constitution.appendChild(el('p', null,
+          '26 luật dưới đây là bản chiếu đọc (reader-facing projection) của Architecture Constitution ' +
+          'định nghĩa trong Architecture Blueprint (docs/report/2026-09-05-spendwise-architecture-blueprint.md §3). ' +
+          'Blueprint là nguồn chuẩn; trang này không thêm, bớt hay giải thích lại luật nào. ' +
+          'Đoạn tiếng Anh là phần nghĩa canonical của luật; khung ghi chú tiếng Việt chỉ là phần diễn giải cho người đọc.'));
+        constitution.appendChild(el('p', 'architecture-target-note',
+          'Mọi token architectureRules trong 161 build step của dự án phải trỏ về một trong 26 luật này. ' +
+          'Trên trang Build task, chip R1…R26 của mỗi step liên kết tới view này — đây là nơi tra nghĩa của luật.'));
+        var constitutionGroupsData = CourseCore.CONSTITUTION_GROUPS || [];
+        var constitutionData = CourseCore.ARCHITECTURE_CONSTITUTION || [];
+        var product = projectData.product;
+        constitutionGroupsData.forEach(function(group) {
+          var rulesInGroup = constitutionData.filter(function(rule) { return rule.group === group.key; });
+          if (!rulesInGroup.length) return;
+          var groupSection = el('div', 'constitution-group');
+          var groupHeading = el('h3', null, group.label);
+          groupHeading.id = 'constitution-group-' + group.key;
+          groupSection.appendChild(groupHeading);
+          rulesInGroup.forEach(function(rule) {
+            var ruleCard = el('article', 'constitution-rule');
+            ruleCard.id = rule.id;
+            ruleCard.setAttribute('data-rule-id', rule.id);
+            var head = el('div', 'constitution-rule-head');
+            head.appendChild(el('span', 'constitution-rule-id', rule.id));
+            head.appendChild(el('span', 'constitution-rule-title', rule.title));
+            if (rule.cite) head.appendChild(el('span', 'constitution-rule-cite', '— ' + rule.cite));
+            ruleCard.appendChild(head);
+            var ruleText = el('p', 'constitution-rule-text', rule.text);
+            ruleText.lang = 'en'; /* canonical English inside the vi document (WCAG 3.1.2) */
+            ruleCard.appendChild(ruleText);
+            if (rule.note) {
+              var note = el('p', 'constitution-note');
+              note.appendChild(el('span', 'constitution-note-label', 'Diễn giải cho người đọc'));
+              note.appendChild(document.createTextNode(rule.note));
+              ruleCard.appendChild(note);
+            }
+            groupSection.appendChild(ruleCard);
+          });
+          constitution.appendChild(groupSection);
+        });
+        container.appendChild(constitution);
+
         pairs.forEach(function(pair, index) {
           var release = pair.release;
           var stage = pair.stage;
@@ -4699,6 +5002,136 @@
           block.appendChild(controls);
           container.appendChild(block);
         });
+
+        /* ---- P4: evolution narrative (WHY at each stage) ------------------ */
+        /* One WHY line per release, each grounded in the artifact's own
+           release problem/goal + stage rationale — no stage is invented and
+           none is removed; this is ordering + motivation over the frozen
+           ten stages rendered above. */
+        var narrative = el('section', 'project-panel release-section');
+        narrative.id = 'evolution-why';
+        narrative.appendChild(el('div', 'project-section-label', 'Evolution — WHY từng stage'));
+        var narrativeH2 = el('h2', null, 'Vì sao kiến trúc mở rộng theo đúng thứ tự này');
+        narrativeH2.id = 'evolution-why-heading';
+        narrative.appendChild(narrativeH2);
+        narrative.appendChild(el('p', 'architecture-target-note',
+          'Mỗi đoạn dưới đây gắn với một release đã liệt kê ở trên (V0.1 → V1.0) và chỉ tóm lược lý do ' +
+          'theo đúng problem/goal của release đó trong dữ liệu dự án — không stage nào được bịa thêm.'));
+        (CourseCore.EVOLUTION_NARRATIVE || []).forEach(function(entry) {
+          var release = releasesById.get(entry.releaseId);
+          if (!release) return;
+          var item = el('div', 'evolution-item');
+          item.appendChild(el('h3', 'project-section-label', release.version + ' · ' + release.title));
+          var whyNarrative = el('p', 'evolution-narrative', entry.why);
+          item.appendChild(whyNarrative);
+          var back = el('a', 'text-link', 'Xem stage ' + release.version);
+          back.href = '#architecture-stage-' + release.id;
+          item.appendChild(back);
+          narrative.appendChild(item);
+        });
+        container.appendChild(narrative);
+
+        /* ---- P4: boundaries (IN/OUT of scope) ------------------------------ */
+        var boundaries = el('section', 'project-panel release-section');
+        boundaries.id = 'boundaries';
+        boundaries.appendChild(el('div', 'project-section-label', 'Project Boundaries'));
+        var boundariesH2 = el('h2', null, 'Phạm vi: cái gì thuộc dự án, cái gì không');
+        boundariesH2.id = 'boundaries-heading';
+        boundaries.appendChild(boundariesH2);
+        boundaries.appendChild(el('p', 'architecture-target-note',
+          'Hai ranh giới độc lập với nhau: ranh giới sản phẩm (feature nào thuộc Spendwise V1.0) và ' +
+          'ranh giới khoá học (release nào thuộc 40 bài chính thức, release nào thuộc phần tự học/OJT gợi ý).'));
+        var boundaryGrid = el('div', 'boundary-grid');
+        var inScope = el('div', 'project-panel');
+        inScope.appendChild(el('h3', null, 'IN SCOPE — sản phẩm'));
+        inScope.appendChild(el('p', 'architecture-target-note', 'Mọi feature thuộc 10 release V0.1–V1.0 của Spendwise (31 features trong kế hoạch).'));
+        var inList = el('ul');
+        (projectData.features || []).slice(0, 12).forEach(function(feature) {
+          inList.appendChild(el('li', null, feature.name || feature.id));
+        });
+        if ((projectData.features || []).length > 12) {
+          inList.appendChild(el('li', null, '… và ' + (projectData.features.length - 12) + ' feature còn lại (xem từng release ở phía trên).'));
+        }
+        inScope.appendChild(inList);
+        var outScope = el('div', 'project-panel');
+        outScope.appendChild(el('h3', null, 'OUT OF SCOPE — sản phẩm'));
+        outScope.appendChild(el('p', 'architecture-target-note', 'Danh sách outOfScope của chính dự án (product.outOfScope) — không mở rộng trừ khi có quyết định thay đổi kiến trúc.'));
+        var outList = el('ul');
+        (product.outOfScope || []).forEach(function(item) { outList.appendChild(el('li', null, item)); });
+        outScope.appendChild(outList);
+        boundaryGrid.appendChild(inScope);
+        boundaryGrid.appendChild(outScope);
+        boundaries.appendChild(boundaryGrid);
+
+        var courseBoundary = el('div', 'project-panel');
+        courseBoundary.style.marginTop = '1rem';
+        var courseH3 = el('h3', null, 'Ranh giới khoá học ↔ dự án');
+        courseH3.id = 'course-project-boundary';
+        courseBoundary.appendChild(courseH3);
+        var courseList = el('ul', 'criteria-list');
+        [
+          'V0.1–V0.6: thuộc 40 bài chính thức của khoá (Day 01–30) — phần bắt buộc.',
+          'V0.7–V1.0: ngoài 40 bài — phần tự học/OJT gợi ý; Day 39–64 là cửa sổ thực hành gợi ý, không bắt buộc.',
+          'Day 31–36 là cửa sổ capstone chính thức của khoá — không bị dự án Spendwise chiếm dụng.',
+          'Learning Progress (bài học đã học) và Project Progress (build task đã xong) là hai tiến độ độc lập — học xong một bài không tự hoàn thành task nào, và ngược lại.',
+        ].forEach(function(line) { courseList.appendChild(el('li', null, line)); });
+        courseBoundary.appendChild(courseList);
+        boundaries.appendChild(courseBoundary);
+        container.appendChild(boundaries);
+
+        /* ---- P4: defense matrix (15 rows, plan §19) ------------------------ */
+        var defense = el('section', 'project-panel release-section');
+        defense.id = 'defense-matrix';
+        defense.appendChild(el('div', 'project-section-label', 'Defense Readiness'));
+        var defenseH2 = el('h2', null, '15 câu bảo vệ kiến trúc');
+        defenseH2.id = 'defense-matrix-heading';
+        defense.appendChild(defenseH2);
+        defense.appendChild(el('p', 'architecture-target-note',
+          'Mỗi dòng là một câu hỏi bảo vệ (defence question) kèm chỗ neo đáp án: rule hoặc ADR mà người học ' +
+          'phải tự lập luận được. Cột dẫn chiếu nêu bằng chứng và ranh giới của câu trả lời, không phải ' +
+          'bài luận mẫu để học thuộc; không chấm điểm, không lưu trạng thái. Kiểm tra chính mình bằng cách ' +
+          'đọc lại luật được neo và tự dựng lập luận đầy đủ.'));
+        var matrixWrap = el('div', 'defense-table-wrap');
+        var table = el('table', 'defense-table');
+        var caption = el('caption', null,
+          'Defense matrix — 15 câu hỏi, mỗi câu neo vào một rule/ADR của Architecture Constitution.');
+        table.appendChild(caption);
+        var thead = el('thead');
+        var headRow = el('tr');
+        ['#', 'Câu hỏi', 'Neo đáp án'].forEach(function(label, cellIndex) {
+          var th = el('th', null, label);
+          th.setAttribute('scope', 'col');
+          headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+        var tbody = el('tbody');
+        (CourseCore.DEFENSE_MATRIX || []).forEach(function(row, rowIndex) {
+          var tr = el('tr');
+          var numTd = el('td', null, String(rowIndex + 1));
+          tr.appendChild(numTd);
+          var qTd = el('td', null, row.q);
+          qTd.lang = 'en';
+          tr.appendChild(qTd);
+          var aTd = el('td');
+          if (CONSTITUTION_BY_ID[row.a]) {
+            var anchor = el('a', 'defense-anchored', row.a);
+            anchor.href = '#' + row.a;
+            anchor.setAttribute('aria-label', 'Câu ' + (rowIndex + 1) + ' neo vào luật ' + row.a + ' — jump tới định nghĩa');
+            aTd.appendChild(anchor);
+          } else {
+            aTd.appendChild(el('span', 'defense-anchored', row.a));
+          }
+          var whyEl = el('div', 'defense-why', row.why);
+          whyEl.lang = 'en';
+          aTd.appendChild(whyEl);
+          tr.appendChild(aTd);
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        matrixWrap.appendChild(table);
+        defense.appendChild(matrixWrap);
+        container.appendChild(defense);
       }
 
       /* ---- resources view (Site Task 6) ---------------------------------- */
@@ -5932,7 +6365,7 @@
           var currentArchBlock = document.getElementById("architecture-stage-" + currentArchRelease.id);
           var currentNoteOk = !!currentArchBlock &&
             currentArchBlock.querySelector(".architecture-target-note").textContent.indexOf("Current Build Target") !== -1;
-          var targetNotes = archView.querySelectorAll(".architecture-target-note");
+          var targetNotes = archView.querySelectorAll(".architecture-stage .architecture-target-note");
           var honestWordingOk = targetNotes.length === archPairs.length &&
             Array.prototype.every.call(targetNotes, function(note) {
               var lower = note.textContent.toLowerCase();
@@ -6276,6 +6709,81 @@
           }
           assert("P3: mentor-prompt step picker is hidden in task scope and visible only in step scope (computed style, not just the hidden attribute)",
             pickerOk);
+
+          /* 65 — P4: the Constitution renders exactly R1–R26, once each,
+             grouped under the seven Blueprint §3 groups, and every rule
+             carries its canonical text. */
+          location.hash = "#/architecture";
+          routeRender();
+          var p4View = document.getElementById("route-view");
+          var ruleCards = p4View.querySelectorAll(".constitution-rule");
+          var ruleIds = Array.prototype.map.call(ruleCards, function(card) { return card.getAttribute("data-rule-id"); });
+          var expectedIds = CourseCore.constitutionRuleIds();
+          var noDup = new Set(ruleIds).size === ruleIds.length;
+          var groups = p4View.querySelectorAll(".constitution-group h3");
+          assert("P4: Architecture view renders exactly R1-R26 (26 rule cards, no dup ids, matching CourseCore data, 7 groups)",
+            ruleIds.length === 26 && noDup &&
+            JSON.stringify(ruleIds) === JSON.stringify(expectedIds) &&
+            groups.length === (CourseCore.CONSTITUTION_GROUPS || []).length);
+
+          /* 66 — P4: every ^R\d{1,2}$ token used by buildSteps resolves to a
+             defined rule and to a rendered rule card (0 dangling). Node
+             tests assert the full token↔rule matrix; here we assert
+             resolution against the rendered cards. */
+          var dangling = (CourseCore.resolveRuleTokens(projectData.buildSteps || []) || []).filter(function(t) { return /:DANGLING$/.test(t); });
+          assert("P4: every buildSteps architectureRules token resolves to a defined Constitution rule (0 dangling)",
+            dangling.length === 0 && ruleCards.length === 26);
+
+          /* 67 — P4: defense matrix renders 15 rows, each anchored to a rule
+             that exists; anchors are real links to the rule cards. */
+          var defenseRows = p4View.querySelectorAll(".defense-table tbody tr");
+          var defenseAnchors = Array.prototype.slice.call(p4View.querySelectorAll(".defense-table a.defense-anchored"));
+          var defenseAnchorsOk = defenseAnchors.length === 15 && defenseAnchors.every(function(a) {
+            return /^#R\d{1,2}$/.test(a.getAttribute("href")) && document.getElementById(a.getAttribute("href").slice(1));
+          });
+          assert("P4: defense matrix renders 15 rows, every answer anchor links to an existing rule card",
+            defenseRows.length === 15 && defenseAnchorsOk);
+
+          /* 68 — P4: boundaries panel shows the artifact's own outOfScope
+             list, the course↔project boundary section, and the evolution
+             narrative covers exactly the ten releases. */
+          var outItems = p4View.querySelectorAll("#boundaries .boundary-grid div:nth-child(2) li");
+          var whyItems = p4View.querySelectorAll("#evolution-why .evolution-item");
+          var boundaryOk = outItems.length === (projectData.product.outOfScope || []).length &&
+            whyItems.length === (projectData.releases || []).length &&
+            !!document.getElementById("course-project-boundary");
+          assert("P4: boundaries (21 out-of-scope items), course-project boundary section and 10-release evolution narrative all render",
+            boundaryOk);
+
+          /* 69 — P4: rule cards are in-page anchor targets: jumping to a rule
+             id does not re-render the view (the hashchange skip), and the
+             target element exists. */
+          var anchorTarget = document.getElementById("R22");
+          var anchorOk = !!anchorTarget && anchorTarget.classList.contains("constitution-rule") &&
+            anchorTarget.textContent.indexOf("each row is") !== -1;
+          assert("P4: R22 is a stable in-page anchor target for task rule chips (#R22 exists and is the import-identity rule)",
+            anchorOk);
+
+          /* 70 — P4 regression: the collapsed-unit `.lesson-list` stays
+             display:none when hidden (author display:grid beats the UA
+             [hidden] rule without the P4 companion rule). */
+          var firstUnitToggle = document.querySelector('.module-toggle[data-unit-id]');
+          var lessonListOk = false;
+          if (firstUnitToggle) {
+            location.hash = "#/dashboard";
+            routeRender();
+            firstUnitToggle = document.querySelector('.module-toggle[data-unit-id]');
+            var unitId = firstUnitToggle.getAttribute("data-unit-id");
+            var listEl = document.getElementById("lessons-" + unitId);
+            var listVisibleBefore = listEl && getComputedStyle(listEl).display !== "none";
+            firstUnitToggle.click();
+            var listHiddenAfter = listEl && listEl.hidden && getComputedStyle(listEl).display === "none";
+            firstUnitToggle.click();
+            var listVisibleAgain = listEl && !listEl.hidden && getComputedStyle(listEl).display !== "none";
+            lessonListOk = listVisibleBefore && listHiddenAfter && listVisibleAgain;
+          }
+          assert("P4: collapsed unit lesson list is truly display:none ([hidden] beats the author display:grid via the companion rule)",
+            lessonListOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {
