@@ -929,7 +929,7 @@
       "goal": "A RecurringGenerationService that materializes due occurrences as real Transactions through TransactionCreationService.create(CreateTransactionCommand), advances the template's nextDueDate only after the row exists, and is idempotent per period - the same recurring period never generates twice.",
       "constraints": [
         "every generated Transaction goes through TransactionCreationService.create(CreateTransactionCommand) and carries a sourceRef - never a direct repository insert (R20)",
-        "sourceRef for a generated occurrence is deterministic (template id + occurrence due date shape), so re-running generation for the same period is a no-op by construction: the pre-check finds the existing row and creates nothing. The hard race guard (UNIQUE (user_id, source_ref)) arrives in V0.8's V7 migration - until then re-runs are safe only because generation is single-writer (ADR-007: the pre-check is the friendly path, the constraint is the arbiter)",
+        "sourceRef for a generated occurrence is deterministic (template id + occurrence due date shape), so re-running generation for the same period is a no-op by construction: the pre-check finds the existing row and creates nothing. The hard race guard (UNIQUE (user_id, source_ref)) arrives in V0.8's V9 migration - until then re-runs are safe only because generation is single-writer (ADR-007: the pre-check is the friendly path, the constraint is the arbiter)",
         "the template's nextDueDate advances only inside the same transaction that created the occurrence - a crash between the two leaves either both or neither (R8/R21 atomicity discipline)",
         "generation creates INCOME/EXPENSE rows with positive amounts and typed direction (R7) and updates balances only through the projection rules (R8)",
         "generation is a plain service method callable from tests and, later, from the V0.9 scheduler (task-recurring-scheduler) - this task wires no scheduling of its own",
@@ -1942,7 +1942,7 @@
       "filesTouched": ["src/main/java/com/spendwise/statistics/StatisticsService.java", "src/test/java/com/spendwise/statistics/StatisticsServiceTest.java"],
       "doneWhen": "groupingBy Category returns the expected buckets for a seeded history",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=StatisticsServiceTest' test",
-      "architectureRules": ["R13"],
+      "architectureRules": ["R1", "R13"],
       "estimatedMinutes": 30
     },
     {
@@ -2156,7 +2156,7 @@
       "filesTouched": ["src/main/java/com/spendwise/account/TransactionController.java", "src/main/java/com/spendwise/account/CreateTransactionRequest.java", "src/main/java/com/spendwise/account/TransactionResponse.java"],
       "doneWhen": "POST (create) and GET (list/filter) routes delegate to the service layer",
       "verifyCommand": ".\\mvnw.cmd -q compile",
-      "architectureRules": ["R13", "R17"],
+      "architectureRules": ["R13", "R16", "R17"],
       "estimatedMinutes": 45
     },
     {
@@ -2435,10 +2435,10 @@
       "intent": "The stored projection becomes real: persisted, version-guarded, and written only where transaction rows are written.",
       "knowledgePrereqLessonIds": ["day-20"],
       "artifactPrereqTaskIds": ["task-jpa-entities"],
-      "filesTouched": ["src/main/java/com/spendwise/account/Account.java"],
-      "doneWhen": "Account carries @Version and balance is a persisted column; a concurrent-update test detects the optimistic-lock conflict as taught at day-20 (jakarta OptimisticLockException; Spring may surface it as ObjectOptimisticLockingFailureException)",
+      "filesTouched": ["src/main/resources/db/migration/V2__balance_projection.sql", "src/main/java/com/spendwise/account/Account.java"],
+      "doneWhen": "Account carries @Version and balance is a persisted column - the version and balance columns arrive in the new V2__balance_projection.sql migration (V1__init.sql predates the projection and applied migrations are never edited); a concurrent-update test detects the optimistic-lock conflict as taught at day-20 (jakarta OptimisticLockException; Spring may surface it as ObjectOptimisticLockingFailureException)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=AccountJpaTest' test",
-      "architectureRules": ["R8"],
+      "architectureRules": ["R3", "R8", "R26"],
       "estimatedMinutes": 40
     },
     {
@@ -2463,10 +2463,10 @@
       "intent": "The transfer IS the pair: one transactional unit, shared transferRef, both projections updated - no Transfer aggregate.",
       "knowledgePrereqLessonIds": ["day-20"],
       "artifactPrereqTaskIds": ["task-balance-projection", "task-spring-data-repositories"],
-      "filesTouched": ["src/main/java/com/spendwise/account/TransferService.java", "src/test/java/com/spendwise/account/TransferServiceTest.java"],
-      "doneWhen": "one public @Transactional method creates both rows through TransactionCreationService.create (R20), sharing a transferRef, and updates both balances; no Transfer class exists",
+      "filesTouched": ["src/main/resources/db/migration/V3__transfer_ref.sql", "src/main/java/com/spendwise/account/TransferService.java", "src/test/java/com/spendwise/account/TransferServiceTest.java"],
+      "doneWhen": "the new V3__transfer_ref.sql migration adds the transfer_ref VARCHAR column to transactions (the transfer pair postdates V1__init.sql and applied migrations are never edited); one public @Transactional method creates both rows through TransactionCreationService.create (R20), sharing a transferRef, and updates both balances; no Transfer class exists",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=TransferServiceTest' test",
-      "architectureRules": ["R8", "R18", "R20", "R21"],
+      "architectureRules": ["R8", "R18", "R20", "R21", "R26"],
       "commonMistake": "Inventing a Transfer aggregate 'for clarity' - the linked pair with a shared transferRef is the model; the aggregate duplicates the ledger.",
       "estimatedMinutes": 50
     },
@@ -2523,7 +2523,7 @@
       "filesTouched": ["src/main/java/com/spendwise/auth/AppUserService.java", "src/main/java/com/spendwise/auth/AppUser.java", "src/main/java/com/spendwise/auth/UserRepository.java", "pom.xml", "src/test/java/com/spendwise/auth/AppUserServiceTest.java"],
       "doneWhen": "register persists the user via UserRepository and stores a delegating-encoder hash — after adding spring-boot-starter-security, spring-boot-starter-oauth2-resource-server, spring-boot-starter-oauth2-jose and spring-security-test to pom.xml as setup with no explicit versions (inherited from the parent-POM pin) — and a test asserts the stored value is not the raw password and matches(raw, encoded) is true",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=AppUserServiceTest' test",
-      "architectureRules": ["R23"],
+      "architectureRules": [],
       "estimatedMinutes": 35
     },
     {
@@ -2537,7 +2537,7 @@
       "filesTouched": ["src/main/java/com/spendwise/auth/SecurityConfig.java", "src/test/java/com/spendwise/auth/SecurityConfigTest.java"],
       "doneWhen": "SessionCreationPolicy.STATELESS is set and the filter chain rejects unauthenticated requests to protected routes with 401",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SecurityConfigTest' test",
-      "architectureRules": ["R23"],
+      "architectureRules": [],
       "estimatedMinutes": 40
     },
     {
@@ -2558,11 +2558,11 @@
       "id": "step-user-migration-01",
       "taskId": "task-user-migration",
       "order": 1,
-      "title": "Author V2__user_identity.sql creating the users table and adding user_id + FK to every owned table",
+      "title": "Author V4__user_identity.sql creating the users table and adding user_id + FK to every owned table",
       "intent": "Ownership needs an owner column on every user-owned table, added as a new migration - V1 is immutable history.",
       "knowledgePrereqLessonIds": ["day-21", "day-22"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-auth-foundation"],
-      "filesTouched": ["src/main/resources/db/migration/V2__user_identity.sql", "src/test/java/com/spendwise/account/SchemaValidationTest.java"],
+      "filesTouched": ["src/main/resources/db/migration/V4__user_identity.sql", "src/test/java/com/spendwise/account/SchemaValidationTest.java"],
       "doneWhen": "the migration applies cleanly, creating the users table the V1 baseline deliberately deferred and adding user_id (with FK to users) to accounts, transactions and any other owned table",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test",
       "architectureRules": ["R25", "R26"],
@@ -2707,7 +2707,7 @@
       "filesTouched": ["src/main/java/com/spendwise/auth/NimbusTokenIssuer.java", "src/test/java/com/spendwise/auth/NimbusTokenIssuerTest.java"],
       "doneWhen": "the configured secret is >= 32 bytes UTF-8 and a test proves a shorter one throws at encode time",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=NimbusTokenIssuerTest' test",
-      "architectureRules": ["R23"],
+      "architectureRules": [],
       "estimatedMinutes": 30
     },
     {
@@ -2749,7 +2749,7 @@
       "filesTouched": ["src/main/java/com/spendwise/auth/RefreshTokenService.java", "src/test/java/com/spendwise/auth/RefreshTokenServiceTest.java"],
       "doneWhen": "presenting an already-rotated refresh token is detected and rejected",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RefreshTokenServiceTest' test",
-      "architectureRules": ["R23"],
+      "architectureRules": [],
       "estimatedMinutes": 35
     },
     {
@@ -2777,7 +2777,7 @@
       "filesTouched": ["src/test/java/com/spendwise/budget/BudgetTest.java"],
       "doneWhen": "tests assert a positive-limit constructor, rejection of non-positive limits, rejection of a second budget for the same user+category+period, and absence of spent/remaining fields exist and fail for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=BudgetTest' test",
-      "architectureRules": ["R1", "R10", "R26"],
+      "architectureRules": ["R1", "R10"],
       "commonMistake": "Adding a 'spent' field 'for now' - it is R10's exact prohibition, and task-budget-calculation exists to derive it.",
       "estimatedMinutes": 30
     },
@@ -2804,11 +2804,11 @@
       "intent": "Schema changes arrive as new migrations, never edits - and the (user, category, period) uniqueness is a database guarantee, not application politeness.",
       "knowledgePrereqLessonIds": ["day-21"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-user-migration"],
-      "filesTouched": ["src/main/resources/db/migration/V3__budget.sql"],
-      "doneWhen": "a new V3__budget.sql creates the budget table with the two-column Money shape per D3 (NUMERIC(19,2) limit + VARCHAR(3) currency), VARCHAR(7) period, user_id, and a composite UNIQUE (user_id, category_id, period); a BudgetUniqueConstraintTest proves the composite UNIQUE rejects a second (user_id, category_id, period) insert, and the app boots with ddl-auto: validate",
+      "filesTouched": ["src/main/resources/db/migration/V5__budget.sql"],
+      "doneWhen": "a new V5__budget.sql creates the budget table with the two-column Money shape per D3 (NUMERIC(19,2) limit + VARCHAR(3) currency), VARCHAR(7) period, user_id, and a composite UNIQUE (user_id, category_id, period); a BudgetUniqueConstraintTest proves the composite UNIQUE rejects a second (user_id, category_id, period) insert, and the app boots with ddl-auto: validate",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R3", "R25", "R26"],
-      "commonMistake": "Editing V1__init.sql instead of adding V3 - applied migrations are immutable (R26). Composite UNIQUE is not in the corpus; spell the two-column-style DDL out fully.",
+      "architectureRules": ["R3", "R12", "R25", "R26"],
+      "commonMistake": "Editing V1__init.sql instead of adding V5__budget - applied migrations are immutable (R26). Composite UNIQUE is not in the corpus; spell the two-column-style DDL out fully.",
       "estimatedMinutes": 40
     },
     {
@@ -2905,10 +2905,10 @@
       "intent": "Templates must be creatable, listable and deactivatable through the owned API before any engine consumes them.",
       "knowledgePrereqLessonIds": ["day-16", "day-21", "day-23"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-ownership-checks", "task-bean-validation"],
-      "filesTouched": ["src/main/resources/db/migration/V4__recurring.sql", "src/main/java/com/spendwise/recurring/RecurringTransactionRepository.java", "src/main/java/com/spendwise/recurring/RecurringTransactionService.java", "src/main/java/com/spendwise/recurring/RecurringTransactionController.java", "src/test/java/com/spendwise/recurring/RecurringTransactionOwnershipTest.java"],
-      "doneWhen": "V4__recurring.sql creates the table (DATE columns, user_id, and the Money amount as NUMERIC(19,2) + VARCHAR(3) per D3); CRUD endpoints work; another user's template id returns 404; deactivate flips the flag without touching transactions",
+      "filesTouched": ["src/main/resources/db/migration/V6__recurring.sql", "src/main/java/com/spendwise/recurring/RecurringTransactionRepository.java", "src/main/java/com/spendwise/recurring/RecurringTransactionService.java", "src/main/java/com/spendwise/recurring/RecurringTransactionController.java", "src/test/java/com/spendwise/recurring/RecurringTransactionOwnershipTest.java"],
+      "doneWhen": "V6__recurring.sql creates the table (DATE columns, user_id, and the Money amount as NUMERIC(19,2) + VARCHAR(3) per D3); CRUD endpoints work; another user's template id returns 404; deactivate flips the flag without touching transactions",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringTransactionOwnershipTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R16", "R17", "R24", "R26"],
+      "architectureRules": ["R3", "R12", "R16", "R17", "R24", "R26"],
       "estimatedMinutes": 55
     },
     {
@@ -2952,7 +2952,7 @@
       "filesTouched": ["src/test/java/com/spendwise/recurring/RecurringGenerationFailureTest.java"],
       "doneWhen": "a forced failure mid-generation leaves nextDueDate unchanged; generating a full month by repeated calls produces the right number of rows with distinct sourceRefs; full suite passes",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringGenerationFailureTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R8", "R21"],
+      "architectureRules": ["R8", "R20"],
       "estimatedMinutes": 45
     },
     {
@@ -2992,10 +2992,10 @@
       "intent": "Rules must be persisted with a total order guaranteed by the schema, and manageable through the owned API.",
       "knowledgePrereqLessonIds": ["day-16", "day-21", "day-23"],
       "artifactPrereqTaskIds": ["task-flyway-baseline", "task-ownership-checks", "task-bean-validation"],
-      "filesTouched": ["src/main/resources/db/migration/V5__rules.sql", "src/main/java/com/spendwise/rule/CategorizationRuleRepository.java", "src/main/java/com/spendwise/rule/CategorizationRuleService.java", "src/main/java/com/spendwise/rule/CategorizationRuleController.java", "src/test/java/com/spendwise/rule/CategorizationRuleOwnershipTest.java"],
-      "doneWhen": "V5__rules.sql creates the rule table with UNIQUE (user_id, priority); CRUD works; ordering by priority is stable across restarts; another user's rule returns 404",
+      "filesTouched": ["src/main/resources/db/migration/V7__rules.sql", "src/main/java/com/spendwise/rule/CategorizationRuleRepository.java", "src/main/java/com/spendwise/rule/CategorizationRuleService.java", "src/main/java/com/spendwise/rule/CategorizationRuleController.java", "src/test/java/com/spendwise/rule/CategorizationRuleOwnershipTest.java"],
+      "doneWhen": "V7__rules.sql creates the rule table with UNIQUE (user_id, priority); CRUD works; ordering by priority is stable across restarts; another user's rule returns 404",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CategorizationRuleOwnershipTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R16", "R17", "R24", "R26"],
+      "architectureRules": ["R16", "R17", "R24", "R25", "R26"],
       "estimatedMinutes": 55
     },
     {
@@ -3151,10 +3151,10 @@
       "intent": "History first: the batch and row records that will hold every outcome must exist before any processor can write them.",
       "knowledgePrereqLessonIds": ["day-19", "day-21"],
       "artifactPrereqTaskIds": ["task-jpa-entities", "task-flyway-baseline"],
-      "filesTouched": ["src/main/resources/db/migration/V6__import_batch.sql", "src/main/java/com/spendwise/imports/ImportBatch.java", "src/main/java/com/spendwise/imports/ImportRow.java", "src/main/java/com/spendwise/imports/ImportRowStatus.java"],
-      "doneWhen": "V6__import_batch.sql creates import_batches and import_rows (user_id, file name, source_key, status enum OK/DUPLICATE/FAILED, row_number, reason) and the entities map cleanly under ddl-auto: validate (the save/read round-trip is proven by ImportBatchHistoryTest in the next step)",
+      "filesTouched": ["src/main/resources/db/migration/V8__import_batch.sql", "src/main/java/com/spendwise/imports/ImportBatch.java", "src/main/java/com/spendwise/imports/ImportRow.java", "src/main/java/com/spendwise/imports/ImportRowStatus.java"],
+      "doneWhen": "V8__import_batch.sql creates import_batches and import_rows (user_id, file name, source_key, status enum OK/DUPLICATE/FAILED, row_number, reason) and the entities map cleanly under ddl-auto: validate (the save/read round-trip is proven by ImportBatchHistoryTest in the next step)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test",
-      "architectureRules": ["R22", "R25", "R26"],
+      "architectureRules": ["R13", "R22", "R25", "R26"],
       "estimatedMinutes": 50
     },
     {
@@ -3227,7 +3227,7 @@
       "filesTouched": ["src/test/java/com/spendwise/imports/RowIdentityServiceTest.java"],
       "doneWhen": "tests assert Level-1 sourceRef shape IMPORT:SRC:<sourceKey>:<accountId>:<normalize(sourceTxnId)>, Level-2 IMPORT:<baseFingerprint>|OCC:<n>, two identical rows yielding OCC:1/OCC:2, and 100.5 vs 100.50 collapsing to one identity - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RowIdentityServiceTest' test",
-      "architectureRules": ["R22"],
+      "architectureRules": ["R1", "R22"],
       "estimatedMinutes": 45
     },
     {
@@ -3241,7 +3241,7 @@
       "filesTouched": ["src/main/java/com/spendwise/imports/RowIdentityService.java", "src/main/java/com/spendwise/imports/SourceRefNormalizer.java"],
       "doneWhen": "normalize is trim-collapse-uppercase; baseFingerprint joins accountId|occurredOn|direction|amount(2, toPlainString)|normalize(description) with |; the counter is counts.merge(baseFingerprint, 1, Integer::sum) incremented in file order; Level 1 is preferred whenever the row carries a source reference",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RowIdentityServiceTest' test",
-      "architectureRules": ["R22"],
+      "architectureRules": ["R1", "R22"],
       "commonMistake": "Computing the occurrence counter in a parallel pass or caching it across files - the counter is per-statement, sequential, and reset for each import.",
       "estimatedMinutes": 60
     },
@@ -3253,11 +3253,11 @@
       "intent": "Composite UNIQUE is not in the corpus, so the two-column DDL must be written out - and the constraint, not the pre-check, is the race-safe arbiter under concurrent uploads.",
       "knowledgePrereqLessonIds": ["day-21"],
       "artifactPrereqTaskIds": [],
-      "filesTouched": ["src/main/resources/db/migration/V7__transaction_source_ref.sql", "src/test/java/com/spendwise/imports/SourceRefConstraintTest.java"],
-      "doneWhen": "V7__transaction_source_ref.sql adds source_ref VARCHAR to transactions with an explicitly spelled two-column UNIQUE (user_id, source_ref); a test inserts the same (user, sourceRef) twice and asserts the second insert fails at the constraint",
+      "filesTouched": ["src/main/resources/db/migration/V9__transaction_source_ref.sql", "src/test/java/com/spendwise/imports/SourceRefConstraintTest.java"],
+      "doneWhen": "V9__transaction_source_ref.sql adds the explicitly spelled two-column UNIQUE (user_id, source_ref) to transactions - the source_ref column itself has been persisted since V1__init.sql, so V9 alters that table instead of re-creating it; a test inserts the same (user, sourceRef) twice and asserts the second insert fails at the constraint",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=SourceRefConstraintTest' test; .\\mvnw.cmd test",
       "architectureRules": ["R22", "R26"],
-      "mentorHint": "Model the constraint on day-21's single-column UNIQUE and extend it to two columns: ALTER TABLE transactions ADD CONSTRAINT uq_txn_source_ref UNIQUE (user_id, source_ref). V7 alters the table V1__init.sql already created (R26: applied migrations are never edited), so the constraint cannot go inside a CREATE TABLE.",
+      "mentorHint": "Model the constraint on day-21's single-column UNIQUE and extend it to two columns: ALTER TABLE transactions ADD CONSTRAINT uq_txn_source_ref UNIQUE (user_id, source_ref). V9 alters the table V1__init.sql already created (R26: applied migrations are never edited), so the constraint cannot go inside a CREATE TABLE.",
       "estimatedMinutes": 50
     },
     {
@@ -3300,7 +3300,7 @@
       "filesTouched": ["src/main/java/com/spendwise/imports/ImportRowProcessor.java"],
       "doneWhen": "the processor passes the row through TransactionCreationService.create(...) whose flow already consults RuleEngine; no separate rule pass exists in the imports package; deleted-target rules skip without failing the row",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportRuleApplicationTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R19", "R20", "R22"],
+      "architectureRules": ["R20", "R22"],
       "estimatedMinutes": 35
     },
     {
@@ -3328,7 +3328,7 @@
       "filesTouched": ["src/test/java/com/spendwise/imports/ImportReportPurityTest.java"],
       "doneWhen": "a test fetches the same batch twice and asserts identical responses and no state change, and that the two-identical-rows scenario reports both rows OK with distinct row numbers",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportReportPurityTest' test",
-      "architectureRules": ["R6", "R18", "R22"],
+      "architectureRules": ["R22"],
       "estimatedMinutes": 30
     },
     {
@@ -3371,7 +3371,7 @@
       "filesTouched": ["src/main/java/com/spendwise/imports/AsyncImportConfig.java", "src/main/resources/application.properties", "src/test/java/com/spendwise/imports/AsyncImportConfigTest.java"],
       "doneWhen": "a ThreadPoolTaskExecutor bean with explicit core/max/queue capacity exists, an AsyncUncaughtExceptionHandler logs uncaught failures, and a config test pins both",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=AsyncImportConfigTest' test",
-      "architectureRules": ["R19"],
+      "architectureRules": [],
       "estimatedMinutes": 40
     },
     {
@@ -3385,7 +3385,7 @@
       "filesTouched": ["src/main/java/com/spendwise/imports/ImportNotification.java", "src/main/java/com/spendwise/imports/ImportService.java", "src/test/java/com/spendwise/imports/AsyncImportContractTest.java"],
       "doneWhen": "the import endpoint still returns 200 with the same summary; the @Async notification fires after the batch reaches terminal state; its forced failure is logged by the handler and changes no batch state; no @Async call exists inside any row transaction",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=AsyncImportContractTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R18", "R19", "R22"],
+      "architectureRules": ["R19", "R22"],
       "commonMistake": "Returning 202 or adding a job-status polling endpoint - ADR-012 deleted that contract; async here is a side effect only.",
       "estimatedMinutes": 45
     },
@@ -3400,7 +3400,7 @@
       "filesTouched": ["src/test/java/com/spendwise/category/CategoryCacheTest.java"],
       "doneWhen": "tests assert a second category read hits the cache (repository spy not re-invoked) and a create/rename/delete is visible on the next read - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CategoryCacheTest' test",
-      "architectureRules": ["R11", "R18"],
+      "architectureRules": ["R11"],
       "estimatedMinutes": 40
     },
     {
@@ -3414,7 +3414,7 @@
       "filesTouched": ["src/main/java/com/spendwise/category/CacheConfig.java", "src/main/java/com/spendwise/category/CategoryService.java"],
       "doneWhen": "CacheConfig enables caching with ConcurrentMapCacheManager; CategoryService reads are @Cacheable with explicit keys where day-25 blk-22's SimpleKeyGenerator pitfalls apply; write methods @CacheEvict; no money-bearing type is cached",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=CategoryCacheTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R11", "R16", "R18"],
+      "architectureRules": ["R11"],
       "commonMistake": "Caching the dashboard or statistics read 'while we're at it' - those carry money figures and R11 forbids it; the cache subject here is reference data only.",
       "estimatedMinutes": 45
     },
@@ -3429,7 +3429,7 @@
       "filesTouched": ["src/test/java/com/spendwise/account/BalanceReconciliationJobTest.java"],
       "doneWhen": "tests assert a consistent ledger reconciles clean, a manually drifted balance is detected and reported for exactly that account, and no write occurs during the run - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test",
-      "architectureRules": ["R6", "R8", "R21"],
+      "architectureRules": ["R6", "R8"],
       "estimatedMinutes": 40
     },
     {
@@ -3443,7 +3443,7 @@
       "filesTouched": ["src/main/java/com/spendwise/account/SchedulingConfig.java", "src/main/java/com/spendwise/account/BalanceReconciliationJob.java"],
       "doneWhen": "@EnableScheduling with @Scheduled(fixedDelay = ...) on BalanceReconciliationJob (zone is declared explicitly only if the schedule is ever cron - day-25 blk-32); the job recomputes balances from transactions (readOnly), records/logs drift per account, and never mutates a balance",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R6", "R8", "R18", "R19", "R21"],
+      "architectureRules": ["R6", "R8", "R18", "R19"],
       "commonMistake": "'Fixing' a drifted balance in the job - balances change only through transaction rows (R21); the job detects and reports, repair is a human/transaction decision.",
       "estimatedMinutes": 50
     },
@@ -3458,7 +3458,7 @@
       "filesTouched": ["src/test/java/com/spendwise/recurring/RecurringSchedulerTest.java"],
       "doneWhen": "tests assert the scheduled entry point invokes RecurringGenerationService and firing it twice for the same period yields exactly one transaction per occurrence - failing for the right reason",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test",
-      "architectureRules": ["R19", "R20"],
+      "architectureRules": ["R20"],
       "estimatedMinutes": 35
     },
     {
@@ -3472,7 +3472,7 @@
       "filesTouched": ["src/main/java/com/spendwise/recurring/RecurringScheduler.java"],
       "doneWhen": "RecurringScheduler declares @Scheduled(fixedDelay = ...) (no zone: fixedDelay takes none - zone is cron-only per day-25 blk-32), calls RecurringGenerationService, performs no I/O of its own, and documents the single-scheduler non-overlap caveat (day-27 blk-28)",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R18", "R19", "R20"],
+      "architectureRules": ["R20"],
       "mentorHint": "Reuse the SchedulingConfig from task-scheduled-reconciliation - one scheduler, two bounded jobs; do not create a second task scheduler pool.",
       "estimatedMinutes": 40
     },
@@ -3501,7 +3501,7 @@
       "filesTouched": ["src/main/java/com/spendwise/fx/ExchangeRateClient.java", "src/main/java/com/spendwise/fx/ExchangeRateResponse.java", "src/main/resources/application.properties"],
       "doneWhen": "WebClient with explicit timeout and bounded retry/backoff; API key and base URL from configuration placeholders; results mapped to records; no @Transactional method ever invokes the client",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=ExchangeRateClientTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R16", "R19"],
+      "architectureRules": ["R19"],
       "commonMistake": "Fetching rates inside the report service's @Transactional read - R19 forbids external calls in transactions; fetch outside, pass the value in.",
       "estimatedMinutes": 55
     },
@@ -3572,7 +3572,7 @@
       "filesTouched": ["src/test/java/com/spendwise/account/TransactionRepositorySliceTest.java", "src/test/java/com/spendwise/account/AccountRepositorySliceTest.java", "src/test/java/com/spendwise/imports/TransactionSourceRefSliceTest.java"],
       "doneWhen": "@DataJpaTest classes with TestEntityManager prove custom @Query semantics, user-scoped lists return only the owner's rows, and the UNIQUE (user_id, source_ref) constraint rejects a second identical insert; the slice runs on the taught @DataJpaTest defaults (day-28 blk-9), so the constraint proof inserts both rows itself",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=TransactionRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=AccountRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=TransactionSourceRefSliceTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R24", "R25", "R26"],
+      "architectureRules": ["R22", "R24", "R25"],
       "estimatedMinutes": 60
     },
     {
@@ -3615,7 +3615,7 @@
       "filesTouched": ["pom.xml", "src/main/java/com/spendwise/shared/OpenApiConfig.java", "src/main/java/com/spendwise/shared/DatabaseHealthIndicator.java", "src/main/resources/application.properties"],
       "doneWhen": "springdoc-openapi-starter-webmvc-ui added with its explicit version (day-29 blk-3: 2.6.0 - not Boot-managed); /v3/api-docs describes the real endpoints; spring-boot-starter-actuator exposes /actuator/health reporting UP with database status via the taught HealthIndicator mechanism",
       "verifyCommand": ".\\mvnw.cmd test",
-      "architectureRules": ["R17", "R26"],
+      "architectureRules": ["R26"],
       "mentorHint": "Verify the two endpoints while the app runs (start it with .\\mvnw.cmd spring-boot:run): the springdoc UI on /swagger-ui.html and /actuator/health showing db UP - then stop the app.",
       "estimatedMinutes": 55
     },
@@ -3630,7 +3630,7 @@
       "filesTouched": ["src/main/java/com/spendwise/shared/TraceIdFilter.java", "src/main/resources/application.properties", "src/test/java/com/spendwise/shared/TraceIdFilterTest.java"],
       "doneWhen": "a servlet filter puts a generated traceId into MDC per request and clears it after; the logging pattern includes %X{traceId}; a test proves two log lines from one request share the id",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=TraceIdFilterTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R13"],
+      "architectureRules": [],
       "estimatedMinutes": 45
     },
     {
@@ -3659,7 +3659,7 @@
       "filesTouched": ["src/main/java/com/spendwise/shared/AsyncConfig.java", "src/main/java/com/spendwise/imports/ImportNotification.java", "src/main/java/com/spendwise/imports/ImportService.java", "src/test/java/com/spendwise/imports/ImportNotificationTest.java"],
       "doneWhen": "bounded ThreadPoolTaskExecutor with explicit queue capacity; @Async notification dispatched after the batch is terminal (never inside a row transaction); AsyncUncaughtExceptionHandler logs failures without altering batch state; the endpoint still returns the synchronous 200 summary",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=ImportNotificationTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R18", "R19", "R22"],
+      "architectureRules": ["R19", "R22"],
       "estimatedMinutes": 55
     },
     {
@@ -3701,7 +3701,7 @@
       "filesTouched": ["src/test/java/com/spendwise/category/RedisCacheSwapTest.java"],
       "doneWhen": "with the Redis profile active and Redis available, the cache-hit/eviction tests pass unchanged - RedisCacheSwapTest itself re-runs the cache-hit and eviction assertions from CategoryCacheTest against the Redis backend, so the single command exercises both backends; TTL expiry is observable; a test asserts no cache entry in either backend carries a money amount, balance or report total",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=RedisCacheSwapTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R11", "R26"],
+      "architectureRules": ["R11"],
       "commonMistake": "JDK-serializing a record that will change shape next release - day-25 blk-26's trap; keep cached types serializable and stable, or exclude them and say why.",
       "estimatedMinutes": 50
     },
@@ -3716,7 +3716,7 @@
       "filesTouched": ["src/test/java/com/spendwise/SeedHistoryFixture.java", "src/test/java/com/spendwise/HardeningReconciliationTest.java"],
       "doneWhen": "a fixture seeds multi-month transactions across at least two accounts, budgets, recurring generations and one import batch - all through canonical paths - and a failing test asserts the reconciliation job reports zero drift over it",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=HardeningReconciliationTest' test",
-      "architectureRules": ["R20", "R22"],
+      "architectureRules": ["R20"],
       "estimatedMinutes": 60
     },
     {
@@ -3871,7 +3871,7 @@
       "filesTouched": ["src/main/java/com/spendwise/ai/MonthlyInsightService.java", "src/main/java/com/spendwise/ai/MonthlyInsightController.java", "src/main/java/com/spendwise/ai/MonthlyInsightResponse.java"],
       "doneWhen": "the service fetches the user's aggregates through the owned dashboard/statistics read services, passes them in the prompt to the LLM (bounded timeout/retry, outside transactions), and returns display-only narration; provider failure yields no-insight while the dashboard figures remain normally available",
       "verifyCommand": ".\\mvnw.cmd '-Dtest=MonthlyInsightTest' test; .\\mvnw.cmd test",
-      "architectureRules": ["R16", "R19", "R24"],
+      "architectureRules": ["R13", "R16", "R19", "R24"],
       "estimatedMinutes": 60
     }
   ],

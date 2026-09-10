@@ -661,7 +661,7 @@ test("every buildSteps architectureRules token resolves to a defined Constitutio
   );
   const steps = project.buildSteps || [];
   assert.equal(steps.length, 161);
-  // 306 total refs across 161 steps, tokens only R1..R26
+  // 295 total refs across 161 steps after the P4 source-guidance repair (was 306), tokens only R1..R26
   let refs = 0;
   const tokens = new Set();
   for (const step of steps) {
@@ -671,7 +671,7 @@ test("every buildSteps architectureRules token resolves to a defined Constitutio
       assert.match(token, /^R\d{1,2}$/);
     }
   }
-  assert.equal(refs, 306);
+  assert.equal(refs, 295);
   assert.equal(tokens.size, 26);
   // resolveRuleTokens reports dangles by suffixing :DANGLING
   const resolved = core.resolveRuleTokens(steps);
@@ -749,4 +749,78 @@ test("evolution and course-boundary narratives carry required qualifications", (
   // V0.8 re-import determinism holds only for the same logical statement ordering.
   assert.ok(template.includes("cùng thứ tự nguồn trở nên deterministic"), "V0.8 narrative qualifies same-order determinism");
   assert.ok(template.includes("không phải dedup ngân hàng phổ quát"), "V0.8 narrative disclaims universal dedup");
+});
+
+// ---- P4 source-guidance repair pins (2026-09-09) ---------------------------
+// Pins for the migration-ownership and rule-membership repairs in
+// content/spendwise-project.json. These are semantic pins for the CONFIRMED_FIX
+// set only - the full 161-step membership is audited, not hardcoded here.
+
+function repairedSteps() {
+  const project = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "..", "content", "spendwise-project.json"), "utf8")
+  );
+  return project.buildSteps || [];
+}
+
+test("source_ref timeline: column persists from V1__init; V9 adds only the UNIQUE constraint", () => {
+  const steps = new Map(repairedSteps().map((s) => [s.id, s]));
+  // The constraint migration is V9 and ALTERs, not CREATEs: source_ref has existed since V1__init.
+  const dw = steps.get("step-duplicate-detection-03").doneWhen;
+  assert.ok(dw.includes("V9__transaction_source_ref.sql"), "constraint migration is V9");
+  assert.ok(dw.includes("UNIQUE (user_id, source_ref)"), "two-column constraint named");
+  assert.ok(dw.includes("persisted since V1__init.sql"), "column timeline: source_ref exists from V1__init");
+  assert.ok(!dw.includes("adds source_ref VARCHAR"), "V9 does not claim first creation of the source_ref column");
+  const hint = steps.get("step-duplicate-detection-03").mentorHint;
+  assert.ok(hint.includes("V9 alters the table V1__init.sql already created"), "hint says V9 ALTERs the V1 table");
+  // Every other migration mention carries the renumbered names (V2/V3 inserted; old V2-V7 shifted to V4-V9).
+  const blob = JSON.stringify(repairedSteps());
+  assert.ok(blob.includes("V2__balance_projection.sql"), "M2 migration file exists");
+  assert.ok(blob.includes("V3__transfer_ref.sql"), "M1 migration file exists");
+  for (const gone of ["V2__user_identity", "V3__budget.sql", "V4__recurring.sql", "V5__rules.sql", "V6__import_batch", "V7__transaction_source_ref"]) {
+    assert.ok(!blob.includes(gone), `stale migration name absent: ${gone}`);
+  }
+});
+
+test("transfer_ref and @Version columns are owned by post-baseline migrations, not V1__init", () => {
+  const steps = new Map(repairedSteps().map((s) => [s.id, s]));
+  // M1: the transfer step owns V3__transfer_ref.sql (the transfer pair postdates the V1 baseline).
+  const at1 = steps.get("step-atomic-transfer-01");
+  assert.ok(at1.filesTouched.some((f) => f.includes("V3__transfer_ref.sql")), "atomic-transfer-01 owns V3__transfer_ref.sql");
+  assert.ok(at1.doneWhen.includes("postdates V1__init.sql"), "transfer_ref timeline stated");
+  assert.ok(at1.architectureRules.includes("R26"), "migration-creating step carries R26");
+  // M2: the balance-projection step owns V2__balance_projection.sql (version + balance columns).
+  const bp1 = steps.get("step-balance-projection-01");
+  assert.ok(bp1.filesTouched.some((f) => f.includes("V2__balance_projection.sql")), "balance-projection-01 owns V2__balance_projection.sql");
+  assert.ok(bp1.doneWhen.includes("V2__balance_projection.sql"), "version/balance column timeline stated");
+  assert.ok(bp1.architectureRules.includes("R26") && bp1.architectureRules.includes("R3"), "carries R26 + R3 (money DDL)");
+});
+
+test("rule-membership repairs: mis-tags removed, missing tags added", () => {
+  const steps = new Map(repairedSteps().map((s) => [s.id, s]));
+  const rules = (id) => steps.get(id).architectureRules;
+  // R23 narrowed to the 5 claim-shaping/issuing steps (QA mis-tags removed).
+  const r23 = repairedSteps().filter((s) => s.architectureRules.includes("R23")).map((s) => s.id).sort();
+  assert.deepEqual(r23, [
+    "step-auth-hardening-01",
+    "step-canonical-token-issuer-02",
+    "step-canonical-token-issuer-04",
+    "step-token-lifecycle-01",
+    "step-token-lifecycle-02",
+  ]);
+  // R21 is transfer semantics only: recurring-generation and reconciliation jobs lose it.
+  assert.ok(!rules("step-recurring-generation-03").includes("R21"), "R21 off recurring-generation-03");
+  assert.ok(!rules("step-scheduled-reconciliation-01").includes("R21"), "R21 off scheduled-reconciliation-01");
+  assert.ok(rules("step-recurring-generation-03").includes("R20"), "canonical path pinned on recurring-generation-03");
+  // Missing tags added.
+  assert.ok(rules("step-transaction-endpoints-01").includes("R16"), "R16 on transaction-endpoints-01");
+  assert.ok(rules("step-slice-test-suite-02").includes("R22"), "R22 on slice-test-suite-02");
+  // Over-tags removed.
+  assert.ok(!rules("step-hardening-reconciliation-01").includes("R22"), "R22 off hardening-reconciliation-01");
+  assert.ok(!rules("step-budget-model-01").includes("R26"), "R26 off budget-model-01 (domain-only step)");
+  assert.ok(!rules("step-slice-test-suite-02").includes("R26"), "R26 off slice-test-suite-02 (test-only step)");
+  assert.ok(!rules("step-redis-cache-backend-02").includes("R26"), "R26 off redis-cache-backend-02");
+  // Refuted adds stay refuted: R11/R24/R14 must not appear where they never belonged.
+  assert.ok(!rules("step-duplicate-detection-01").includes("R11"), "R11 not resurrected on duplicate-detection-01");
+  assert.ok(!rules("step-production-packaging-02").includes("R13"), "R13 off production-packaging-02");
 });
