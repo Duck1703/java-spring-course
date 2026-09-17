@@ -73,6 +73,112 @@ test("parseRoute recognizes every P0 project route", () => {
   assert.deepEqual(core.parseRoute("#/architecture"), { view: "architecture" });
 });
 
+test("parseRoute recognizes all four Guided Build routes, longest-segment-first, without shadowing any P0 route", () => {
+  assert.deepEqual(core.parseRoute("#/guided-build"), { view: "guided-build" });
+  assert.deepEqual(core.parseRoute("#/guided-build/v0-1"), { view: "guided-release", releaseId: "v0-1" });
+  assert.deepEqual(core.parseRoute("#/guided-build/v0-1/session-a"),
+    { view: "guided-session", releaseId: "v0-1", sessionId: "session-a" });
+  assert.deepEqual(core.parseRoute("#/guided-build/v0-1/session-a/step-1"),
+    { view: "guided-step", releaseId: "v0-1", sessionId: "session-a", stepId: "step-1" });
+  // Malformed percent-escapes must render the guided not-found state, not
+  // throw a URIError out of routeRender — same defensive decode as #/task.
+  assert.deepEqual(core.parseRoute("#/guided-build/%E0%A4%A"),
+    { view: "guided-release", releaseId: "%E0%A4%A" });
+  // Existing P0 routes are untouched by the new patterns.
+  assert.deepEqual(core.parseRoute("#/project"), { view: "project" });
+  assert.deepEqual(core.parseRoute("#/roadmap"), { view: "roadmap" });
+  assert.deepEqual(core.parseRoute("#/release/v0-1"), { view: "release", releaseId: "v0-1" });
+  assert.deepEqual(core.parseRoute("#/task/task-a"), { view: "task", taskId: "task-a" });
+  assert.deepEqual(core.parseRoute("#/map"), { view: "map" });
+  assert.deepEqual(core.parseRoute("#/architecture"), { view: "architecture" });
+});
+
+// ---- Guided Build fixtures -------------------------------------------------
+const guidedSessions = [
+  { id: "session-2", releaseId: "v0-1", buildTaskId: "task-a", order: 2, title: "S2", goal: "g" },
+  { id: "session-1", releaseId: "v0-1", buildTaskId: "task-a", order: 1, title: "S1", goal: "g" },
+  { id: "session-x", releaseId: "v0-2", buildTaskId: "task-b", order: 1, title: "SX", goal: "g" },
+];
+const guidedSteps = [
+  { id: "s1-step2", sessionId: "session-1", order: 2, type: "explanation", title: "1.2", goal: "g" },
+  { id: "s1-step1", sessionId: "session-1", order: 1, type: "setup", title: "1.1", goal: "g" },
+  { id: "s2-step1", sessionId: "session-2", order: 1, type: "checkpoint", title: "2.1", goal: "g" },
+  { id: "sx-step1", sessionId: "session-x", order: 1, type: "setup", title: "x.1", goal: "g" },
+];
+
+test("selectGuidedRelease / selectGuidedSession / selectGuidedStep enforce the cross-parent chain and return null on unknown ids", () => {
+  const releases = [{ releaseId: "v0-1", authoringStatus: "authored" }, { releaseId: "v0-2", authoringStatus: "planned" }];
+  assert.equal(core.selectGuidedRelease(releases, "v0-1").releaseId, "v0-1");
+  assert.equal(core.selectGuidedRelease(releases, "ghost"), null);
+
+  assert.equal(core.selectGuidedSession(guidedSessions, "session-1", "v0-1").id, "session-1");
+  // session-x belongs to v0-2, not v0-1 — requesting it under v0-1 must fail closed.
+  assert.equal(core.selectGuidedSession(guidedSessions, "session-x", "v0-1"), null);
+  assert.equal(core.selectGuidedSession(guidedSessions, "ghost", "v0-1"), null);
+
+  assert.equal(core.selectGuidedStep(guidedSteps, "s1-step1", "session-1").id, "s1-step1");
+  // s2-step1 belongs to session-2, not session-1 — cross-parent must fail closed.
+  assert.equal(core.selectGuidedStep(guidedSteps, "s2-step1", "session-1"), null);
+  assert.equal(core.selectGuidedStep(guidedSteps, "ghost", "session-1"), null);
+});
+
+test("deriveGuidedSessionsForRelease / deriveGuidedStepsForSession filter and order by the `order` field", () => {
+  assert.deepEqual(
+    core.deriveGuidedSessionsForRelease(guidedSessions, "v0-1").map((s) => s.id),
+    ["session-1", "session-2"],
+  );
+  assert.deepEqual(core.deriveGuidedSessionsForRelease(guidedSessions, "ghost"), []);
+  assert.deepEqual(
+    core.deriveGuidedStepsForSession(guidedSteps, "session-1").map((s) => s.id),
+    ["s1-step1", "s1-step2"],
+  );
+  assert.deepEqual(core.deriveGuidedStepsForSession(guidedSteps, "ghost"), []);
+});
+
+test("calculateGuidedSessionProgress / calculateGuidedReleaseProgress never read the canonical or course progress tracks", () => {
+  assert.deepEqual(
+    core.calculateGuidedSessionProgress(guidedSteps, ["s1-step1"], "session-1"),
+    { completed: 1, total: 2, percent: 50 },
+  );
+  // Zero authored steps reads as 0/0/0, not a divide-by-zero crash.
+  assert.deepEqual(
+    core.calculateGuidedSessionProgress([], [], "session-1"),
+    { completed: 0, total: 0, percent: 0 },
+  );
+  assert.deepEqual(
+    core.calculateGuidedReleaseProgress(guidedSessions, guidedSteps, ["s1-step1", "s2-step1"], "v0-1"),
+    { completed: 2, total: 3, percent: 67 },
+  );
+  // A completed id belonging to a sibling release's step must not count.
+  assert.deepEqual(
+    core.calculateGuidedReleaseProgress(guidedSessions, guidedSteps, ["sx-step1"], "v0-1"),
+    { completed: 0, total: 3, percent: 0 },
+  );
+});
+
+test("getPreviousGuidedStep / getNextGuidedStep walk session order then step order, and never cross a release boundary", () => {
+  assert.equal(core.getPreviousGuidedStep(guidedSessions, guidedSteps, "v0-1", "s1-step1"), null);
+  assert.equal(core.getNextGuidedStep(guidedSessions, guidedSteps, "v0-1", "s1-step1").id, "s1-step2");
+  // Crosses from session-1's last step into session-2's first step.
+  assert.equal(core.getNextGuidedStep(guidedSessions, guidedSteps, "v0-1", "s1-step2").id, "s2-step1");
+  // s2-step1 is the last step of v0-1 — next is null, never session-x (v0-2).
+  assert.equal(core.getNextGuidedStep(guidedSessions, guidedSteps, "v0-1", "s2-step1"), null);
+  assert.equal(core.getPreviousGuidedStep(guidedSessions, guidedSteps, "v0-1", "sx-step1"), null);
+  assert.equal(core.getNextGuidedStep(guidedSessions, guidedSteps, "v0-1", "ghost"), null);
+});
+
+test("firstIncompleteGuidedStep resumes at the first incomplete step, or the last step once all are done", () => {
+  assert.equal(core.firstIncompleteGuidedStep(guidedSessions, guidedSteps, [], "v0-1").id, "s1-step1");
+  assert.equal(
+    core.firstIncompleteGuidedStep(guidedSessions, guidedSteps, ["s1-step1"], "v0-1").id, "s1-step2",
+  );
+  assert.equal(
+    core.firstIncompleteGuidedStep(guidedSessions, guidedSteps, ["s1-step1", "s1-step2", "s2-step1"], "v0-1").id,
+    "s2-step1",
+  );
+  assert.equal(core.firstIncompleteGuidedStep(guidedSessions, guidedSteps, [], "no-such-release"), null);
+});
+
 test("selectCurrentRelease prefers building then the earliest planned release", () => {
   const releases = [
     { id: "v0-3", order: 3, status: "planned" },

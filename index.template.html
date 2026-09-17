@@ -1167,6 +1167,7 @@
     }
     .project-status--building { color: var(--project-ink); background: var(--project-soft); border-color: var(--project); }
     .project-status--released { color: var(--ok); background: var(--ok-soft); border-color: var(--ok); }
+    .project-status--authored { color: var(--ok); background: var(--ok-soft); border-color: var(--ok); }
     .project-progress {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -1737,6 +1738,25 @@
       if (raw === "roadmap") return { view: "roadmap" };
       if (raw === "map") return { view: "map" };
       if (raw === "architecture") return { view: "architecture" };
+      /* Guided Build (Wave 3). Four depths, longest first so a step route
+         never gets swallowed by the session pattern. Each segment is
+         decoded defensively (same guarded pattern as #/task/<id>) so a
+         malformed escape sequence renders the guided not-found state
+         instead of throwing a URIError out of routeRender. */
+      function decodeSeg(seg) { try { return decodeURIComponent(seg); } catch (e) { return seg; } }
+      const guidedStepMatch = raw.match(/^guided-build\/([^/]+)\/([^/]+)\/([^/]+)$/);
+      if (guidedStepMatch) {
+        return { view: "guided-step", releaseId: decodeSeg(guidedStepMatch[1]),
+          sessionId: decodeSeg(guidedStepMatch[2]), stepId: decodeSeg(guidedStepMatch[3]) };
+      }
+      const guidedSessionMatch = raw.match(/^guided-build\/([^/]+)\/([^/]+)$/);
+      if (guidedSessionMatch) {
+        return { view: "guided-session", releaseId: decodeSeg(guidedSessionMatch[1]),
+          sessionId: decodeSeg(guidedSessionMatch[2]) };
+      }
+      const guidedReleaseMatch = raw.match(/^guided-build\/([^/]+)$/);
+      if (guidedReleaseMatch) return { view: "guided-release", releaseId: decodeSeg(guidedReleaseMatch[1]) };
+      if (raw === "guided-build") return { view: "guided-build" };
       const releaseMatch = raw.match(/^release\/(.+)$/);
       if (releaseMatch) return { view: "release", releaseId: decodeURIComponent(releaseMatch[1]) };
       const lessonMatch = raw.match(/^lesson\/(.+)$/);
@@ -1961,6 +1981,108 @@
         total += n;
       }
       return total;
+    }
+
+    // ---- Wave 3: Guided Build selection/progress/ordering ---------------
+    // Pure helpers over courseData.guidedBuild. Sessions/steps are always
+    // DERIVED by filtering releaseId/sessionId + sorting by order — no
+    // sessionIds/stepIds list is ever read back off a release/session
+    // (guided data stays one-direction: step -> session -> release only).
+    function selectGuidedRelease(guidedReleases, releaseId) {
+      return (guidedReleases || []).find((r) => r.releaseId === releaseId) || null;
+    }
+
+    function deriveGuidedSessionsForRelease(guidedSessions, releaseId) {
+      return (guidedSessions || [])
+        .filter((s) => s.releaseId === releaseId)
+        .slice()
+        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+    }
+
+    // Cross-parent safety: a session only resolves when it also belongs to
+    // the requested release. `releaseId == null` skips that check (used by
+    // internal callers that already know the session is in scope).
+    function selectGuidedSession(guidedSessions, sessionId, releaseId) {
+      const session = (guidedSessions || []).find((s) => s.id === sessionId) || null;
+      if (!session) return null;
+      if (releaseId != null && session.releaseId !== releaseId) return null;
+      return session;
+    }
+
+    function deriveGuidedStepsForSession(guidedSteps, sessionId) {
+      return (guidedSteps || [])
+        .filter((s) => s.sessionId === sessionId)
+        .slice()
+        .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+    }
+
+    // Cross-parent safety: a step only resolves when it belongs to the
+    // requested session (mirrors selectGuidedSession above).
+    function selectGuidedStep(guidedSteps, stepId, sessionId) {
+      const step = (guidedSteps || []).find((s) => s.id === stepId) || null;
+      if (!step) return null;
+      if (sessionId != null && step.sessionId !== sessionId) return null;
+      return step;
+    }
+
+    function calculateGuidedSessionProgress(guidedSteps, completedStepIds, sessionId) {
+      const done = new Set(completedStepIds || []);
+      const steps = deriveGuidedStepsForSession(guidedSteps, sessionId);
+      const total = steps.length;
+      const completed = steps.filter((s) => done.has(s.id)).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+      return { completed, total, percent };
+    }
+
+    // Deliberately NOT canonical calculateReleaseProgress — a Guided release
+    // is done in STEPS, a canonical release is done in build TASKS; the two
+    // trackers must never read each other's counters.
+    function calculateGuidedReleaseProgress(guidedSessions, guidedSteps, completedStepIds, releaseId) {
+      const done = new Set(completedStepIds || []);
+      const sessionIds = new Set(deriveGuidedSessionsForRelease(guidedSessions, releaseId).map((s) => s.id));
+      const steps = (guidedSteps || []).filter((s) => sessionIds.has(s.sessionId));
+      const total = steps.length;
+      const completed = steps.filter((s) => done.has(s.id)).length;
+      const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+      return { completed, total, percent };
+    }
+
+    // Full ordered step sequence for one release: session.order then
+    // step.order — crosses session boundaries within the release, never
+    // crosses into another release (callers always scope by releaseId).
+    function orderedGuidedSteps(guidedSessions, guidedSteps, releaseId) {
+      const ordered = [];
+      deriveGuidedSessionsForRelease(guidedSessions, releaseId).forEach((session) => {
+        deriveGuidedStepsForSession(guidedSteps, session.id).forEach((step) => {
+          ordered.push({ step, session });
+        });
+      });
+      return ordered;
+    }
+
+    function getPreviousGuidedStep(guidedSessions, guidedSteps, releaseId, stepId) {
+      const seq = orderedGuidedSteps(guidedSessions, guidedSteps, releaseId);
+      const idx = seq.findIndex((entry) => entry.step.id === stepId);
+      if (idx <= 0) return null;
+      return seq[idx - 1].step;
+    }
+
+    function getNextGuidedStep(guidedSessions, guidedSteps, releaseId, stepId) {
+      const seq = orderedGuidedSteps(guidedSessions, guidedSteps, releaseId);
+      const idx = seq.findIndex((entry) => entry.step.id === stepId);
+      if (idx === -1 || idx >= seq.length - 1) return null;
+      return seq[idx + 1].step;
+    }
+
+    // Resume helper: first incomplete step in release order; if every step
+    // is complete, the last step; if the release has zero steps, null. A
+    // pure derived value — no separate "current step" is ever persisted.
+    function firstIncompleteGuidedStep(guidedSessions, guidedSteps, completedStepIds, releaseId) {
+      const done = new Set(completedStepIds || []);
+      const seq = orderedGuidedSteps(guidedSessions, guidedSteps, releaseId);
+      if (!seq.length) return null;
+      const nextUp = seq.find((entry) => !done.has(entry.step.id));
+      return (nextUp || seq[seq.length - 1]).step;
     }
 
     // ---- P3: Mentor prompt builder (Phase 2 plan §14) --------------------
@@ -2431,6 +2553,10 @@
       buildMentorPrompt, MENTOR_CONVENTION_CLAUSE, MENTOR_STOP_CLAUSE,
       ARCHITECTURE_CONSTITUTION, CONSTITUTION_GROUPS, constitutionRuleIds,
       resolveRuleTokens, DEFENSE_MATRIX, EVOLUTION_NARRATIVE,
+      selectGuidedRelease, deriveGuidedSessionsForRelease, selectGuidedSession,
+      deriveGuidedStepsForSession, selectGuidedStep,
+      calculateGuidedSessionProgress, calculateGuidedReleaseProgress,
+      getPreviousGuidedStep, getNextGuidedStep, firstIncompleteGuidedStep,
     });
     /* COURSE_CORE_END */
 
@@ -2459,12 +2585,14 @@
       var releasesById = new Map();
       var featuresById = new Map();
       var buildTasksById = new Map();
+      var buildStepsById = new Map();
       var archStageByReleaseId = new Map();
       var projectByLessonId = new Map();
       if (projectData) {
         (projectData.releases || []).forEach(function(r){ releasesById.set(r.id, r); });
         (projectData.features || []).forEach(function(f){ featuresById.set(f.id, f); });
         (projectData.buildTasks || []).forEach(function(t){ buildTasksById.set(t.id, t); });
+        (projectData.buildSteps || []).forEach(function(s){ buildStepsById.set(s.id, s); });
         (projectData.architectureStages || []).forEach(function(s){ archStageByReleaseId.set(s.releaseId, s); });
         var lessonMap = projectData.lessonMap || {};
         Object.keys(lessonMap).forEach(function(k){ projectByLessonId.set(k, lessonMap[k]); });
@@ -2473,9 +2601,11 @@
 
       /* ---- guided build data layer (Spendwise Guided Rebuild) --------- */
       // Same optional-artifact discipline as the project data layer above:
-      // the course renders fully without it. Wave 2 embeds the artifact and
-      // derives valid step ids for progress sanitization only — no guided
-      // route/UI reads guidedBuildData yet (that is Wave 3+).
+      // the course renders fully without it. Wave 3 adds the #/guided-build
+      // routes/renderers that read guidedBuildData below — always joined
+      // read-only against projectData (releasesById/buildTasksById/
+      // buildStepsById), never duplicating canonical content into new UI
+      // constants.
       var guidedBuildData = (courseData && courseData.guidedBuild) ? courseData.guidedBuild : null;
       var GUIDED_STEP_IDS = new Set(
         guidedBuildData ? guidedBuildData.guidedSteps.map(function(s){return s.id;}) : []
@@ -2523,6 +2653,26 @@
         return idx === -1;
       }
 
+      // Guided Build completion (Wave 3). Mutates ONLY
+      // state.guidedProgress.completedSteps — never state.completed, never
+      // state.projectProgress.buildTasks. The three progress trackers stay
+      // independent by construction: this function has no path that can
+      // reach the other two state branches.
+      function toggleGuidedStep(stepId) {
+        if (!GUIDED_STEP_IDS.has(stepId)) return false;
+        if (!state.guidedProgress || typeof state.guidedProgress !== 'object') {
+          state.guidedProgress = { completedSteps: [] };
+        }
+        if (!Array.isArray(state.guidedProgress.completedSteps)) {
+          state.guidedProgress.completedSteps = [];
+        }
+        var list = state.guidedProgress.completedSteps;
+        var idx = list.indexOf(stepId);
+        if (idx === -1) { list.push(stepId); } else { list.splice(idx, 1); }
+        saveState();
+        return idx === -1;
+      }
+
       /* ---- render helpers -------------------------------------------- */
       function updateProgress() {
         var p = CourseCore.calculateProgress(courseData.lessons, state.completed, null);
@@ -2546,10 +2696,13 @@
            Map and Architecture are likewise sub-views of the Project Track
            (they are only reachable from the project sub-nav), so they keep
            the "Dự án" tab lit instead of dropping the wayfinding cue
-           entirely; the sub-nav then shows the precise position. */
+           entirely; the sub-nav then shows the precise position. Guided
+           release/session/step are sub-views of the new Guided Build tab,
+           same treatment. */
         var navView = view === 'release' ? 'roadmap'
           : view === 'lesson' ? 'dashboard'
           : view === 'task' || view === 'map' || view === 'architecture' ? 'project'
+          : view === 'guided-release' || view === 'guided-session' || view === 'guided-step' ? 'guided-build'
           : view;
         document.querySelectorAll('.primary-nav [data-view]').forEach(function(link) {
           link.removeAttribute('aria-current');
@@ -3459,6 +3612,10 @@
         else if (route.view === 'task') renderTaskDetail(view, route.taskId);
         else if (route.view === 'map') renderCourseProjectMap(view);
         else if (route.view === 'architecture') renderArchitecture(view);
+        else if (route.view === 'guided-build') renderGuidedOverview(view);
+        else if (route.view === 'guided-release') renderGuidedRelease(view, route.releaseId);
+        else if (route.view === 'guided-session') renderGuidedSession(view, route.releaseId, route.sessionId);
+        else if (route.view === 'guided-step') renderGuidedStep(view, route.releaseId, route.sessionId, route.stepId);
         else renderDashboard(view);
         setAriaCurrent(route.lessonId || state.lastLessonId);
       }
@@ -4609,6 +4766,592 @@
         appendAllTaskBrowse(container);
       }
 
+      /* ---- Guided Build (Wave 3) --------------------------------------
+         A new learner-EXECUTION layer, separate from the Project Track's
+         canonical plan: same data model (guidedRelease -> guidedSession ->
+         guidedStep, one-direction refs only), rendered generically so
+         Wave 4 authoring needs zero further code changes here. Every
+         renderer guards `!guidedBuildData` the same way project renderers
+         guard `!projectData`, and every level enforces the cross-parent
+         chain (session must belong to the requested release, step must
+         belong to the requested session) via CourseCore.selectGuided*. */
+      var GUIDED_STEP_TYPE_LABELS = {
+        "orientation": "Định hướng", "setup": "Chuẩn bị",
+        "create-folder": "Tạo thư mục", "create-file": "Tạo file",
+        "code-with-me": "Code cùng nhau", "your-turn": "Đến lượt bạn",
+        "explanation": "Giải thích", "run": "Chạy thử",
+        "checkpoint": "Checkpoint", "debug": "Debug", "review": "Review",
+      };
+
+      function renderGuidedEmpty(container) {
+        var empty = el('section', 'project-empty');
+        empty.appendChild(el('h1', null, 'Guided Build chưa sẵn sàng'));
+        empty.appendChild(el('p', null, 'Nội dung hướng dẫn xây project chưa sẵn sàng. Learning Track và Project Track vẫn hoạt động bình thường.'));
+        container.appendChild(empty);
+      }
+
+      // Every unknown/cross-parent-invalid id at any Guided depth lands
+      // here: same message shape, same single link back to the overview —
+      // never a crash, never a silent redirect.
+      function renderGuidedNotFound(container, message) {
+        var notFound = el('section', 'project-not-found');
+        notFound.appendChild(el('h1', null, 'Không tìm thấy nội dung'));
+        notFound.appendChild(el('p', null, message));
+        var back = el('a', 'text-link', '← Về Guided Build');
+        back.href = '#/guided-build';
+        notFound.appendChild(back);
+        container.appendChild(notFound);
+      }
+
+      function createGuidedBreadcrumb(items) {
+        var crumb = el('nav', 'lesson-breadcrumb');
+        crumb.setAttribute('aria-label', 'Đường dẫn Guided Build');
+        items.forEach(function(item, i) {
+          if (i > 0) {
+            var sep = el('span', 'crumb-sep');
+            sep.setAttribute('aria-hidden', 'true');
+            sep.innerHTML = icon('chevron-right');
+            crumb.appendChild(sep);
+          }
+          if (item.href) {
+            var a = el('a', null, item.label);
+            a.href = item.href;
+            crumb.appendChild(a);
+          } else {
+            crumb.appendChild(el('span', 'crumb-current', item.label));
+          }
+        });
+        return crumb;
+      }
+
+      // One link row shared by the release/session/step list surfaces —
+      // same visual role as createRoadmapReleaseLink's timeline item, just
+      // generic over what "eyebrow / title / copy / state" mean at each
+      // depth so no new component class is needed.
+      function createGuidedListLink(href, eyebrow, title, copyText, stateNode) {
+        var link = el('a', 'roadmap-release');
+        link.href = href;
+        var copy = el('div');
+        if (eyebrow) copy.appendChild(el('div', 'roadmap-release-version', eyebrow));
+        copy.appendChild(el('div', 'roadmap-release-title', title));
+        if (copyText) copy.appendChild(el('div', 'roadmap-release-copy', copyText));
+        link.appendChild(copy);
+        var stateCol = el('div');
+        if (stateNode) stateCol.appendChild(stateNode);
+        link.appendChild(stateCol);
+        return link;
+      }
+
+      // Same honest-zero rule as createProjectProgress: a total of 0 reads
+      // as "nothing to do", not "0% hoàn thành" — shown as a note instead
+      // of an empty bar.
+      function createGuidedProgressBar(progress, label, zeroNote) {
+        var wrap = el('div', 'project-progress');
+        wrap.appendChild(el('span', 'project-progress-label', label));
+        if (!progress.total) {
+          wrap.appendChild(el('span', 'project-progress-note', zeroNote || 'Chưa có bước nào được biên soạn'));
+          return wrap;
+        }
+        wrap.appendChild(el('span', 'project-progress-count', progress.completed + '/' + progress.total + ' · ' + progress.percent + '%'));
+        var bar = el('progress');
+        bar.max = Math.max(progress.total, 1);
+        bar.value = progress.completed;
+        bar.setAttribute('aria-label', label + ': ' + progress.completed + '/' + progress.total + ', ' + progress.percent + '%');
+        bar.textContent = progress.percent + '%';
+        wrap.appendChild(bar);
+        return wrap;
+      }
+
+      // Reuses the lesson-prose callout look (CALLOUT_CLASS/CALLOUT_ICON)
+      // with a Guided-specific label, for whyThisMatters / whyNotYet.
+      function createGuidedCallout(variant, label, text) {
+        var callout = el('aside', 'callout ' + (CALLOUT_CLASS[variant] || 'callout--note'));
+        callout.setAttribute('role', 'note');
+        var ci = el('span', 'callout-icon');
+        ci.setAttribute('aria-hidden', 'true');
+        ci.innerHTML = icon(CALLOUT_ICON[variant] || 'info');
+        callout.appendChild(ci);
+        var body = el('div', 'callout-body');
+        var head = el('div', 'callout-head');
+        head.appendChild(el('strong', 'callout-label', label + ': '));
+        body.appendChild(head);
+        body.appendChild(document.createTextNode(text));
+        callout.appendChild(body);
+        return callout;
+      }
+
+      // Same figure/figcaption/copy-to-clipboard shape as the canonical
+      // verifyCommand block, reused for both authored codeBlocks and the
+      // run-panel command (code-with-me is rendered by this same path —
+      // codeBlocks are always shown, never gated behind a reveal).
+      function createGuidedCodeBlock(block) {
+        var fig = el('figure', 'task-verify');
+        var figcap = el('figcaption');
+        var labelText = block.language || 'code';
+        if (block.caption) labelText += ' — ' + block.caption;
+        figcap.appendChild(el('span', null, labelText));
+        var copyBtn = el('button', 'copy-btn');
+        copyBtn.innerHTML = icon('copy') + '<span>Sao chép mã</span>';
+        copyBtn.type = 'button';
+        copyBtn.addEventListener('click', function() {
+          copyText(block.code).then(function() { showToast('Đã sao chép mã'); },
+            function() { showToast('Không thể sao chép tự động — hãy chọn mã và sao chép thủ công.'); });
+        });
+        figcap.appendChild(copyBtn);
+        fig.appendChild(figcap);
+        var pre = el('pre');
+        pre.appendChild(el('code', null, block.code));
+        fig.appendChild(pre);
+        return fig;
+      }
+
+      // Compact, non-scrolling-page render of projectStateBefore/After and
+      // an authored expectedProjectTree — never invents files, just prints
+      // exactly what was authored (string as-is, object as indented JSON).
+      function createGuidedStatePre(value) {
+        var fig = el('figure', 'task-verify');
+        var pre = el('pre');
+        pre.appendChild(el('code', null, typeof value === 'string' ? value : JSON.stringify(value, null, 2)));
+        fig.appendChild(pre);
+        return fig;
+      }
+
+      function createGuidedReleaseCard(guidedRelease) {
+        var canonical = releasesById.get(guidedRelease.releaseId);
+        var stateCol = el('div');
+        appendStatusBadge(stateCol, guidedRelease.authoringStatus);
+        if (guidedRelease.authoringStatus === 'authored') {
+          var progress = CourseCore.calculateGuidedReleaseProgress(
+            guidedBuildData.guidedSessions, guidedBuildData.guidedSteps,
+            state.guidedProgress.completedSteps, guidedRelease.releaseId);
+          stateCol.appendChild(createGuidedProgressBar(progress, 'Tiến độ của bạn'));
+        } else {
+          stateCol.appendChild(el('p', 'project-progress-note', 'Chưa biên soạn'));
+        }
+        return createGuidedListLink(
+          '#/guided-build/' + guidedRelease.releaseId,
+          canonical ? canonical.version : null,
+          canonical ? canonical.title : guidedRelease.releaseId,
+          canonical ? canonical.problem : null,
+          stateCol
+        );
+      }
+
+      // Guided Build overview — explains the three-concept model (theory /
+      // project / architecture-roadmap), the example workspace paths, and
+      // lists all 10 canonical releases joined against their guided
+      // authoringStatus. All 10 are "Chưa biên soạn" today (Wave 3 ships
+      // zero authored content); the empty state is honest, never a fake
+      // "0% hoàn thành".
+      function renderGuidedOverview(container) {
+        if (!guidedBuildData) { renderGuidedEmpty(container); return; }
+        var header = renderProjectWorkspaceHeader(
+          container, 'Guided Build', 'Xây project theo từng bước',
+          'Bạn tự tay code lại Spendwise — không chỉ đọc lý thuyết, không chỉ xem kế hoạch.'
+        );
+        header.setAttribute('data-guided-overview', '');
+
+        var intro = el('section', 'project-panel release-section');
+        intro.appendChild(el('h2', null, 'Ba mảnh ghép của khoá học'));
+        var introList = el('ul', 'criteria-list');
+        introList.appendChild(el('li', null, 'HỌC LÝ THUYẾT (tab “Học”) — 40 bài học Java & Spring Boot theo thứ tự cố định.'));
+        introList.appendChild(el('li', null, 'XÂY PROJECT (trang này) — bạn tự tay code lại Spendwise, có hướng dẫn từng bước, theo tiến độ riêng của bạn.'));
+        introList.appendChild(el('li', null, 'HIỂU KIẾN TRÚC / ROADMAP (tab “Dự án”, “Lộ trình”) — bản kế hoạch chính thức: feature, build task, tiêu chí kỹ thuật, tiến trình 10 release.'));
+        intro.appendChild(introList);
+        var course = guidedBuildData.guidedCourse || {};
+        if (course.workspaceExample) {
+          intro.appendChild(el('p', null,
+            'Thư mục ví dụ để bạn tự code lại: ' + course.workspaceExample +
+            (course.referenceWorkspaceExample ? ' (repo tham khảo của giảng viên, chỉ để đối chiếu, không bắt buộc giống: ' + course.referenceWorkspaceExample + ')' : '') +
+            '. Đây là ví dụ, bạn có thể dùng đường dẫn khác.'));
+        }
+        container.appendChild(intro);
+
+        var releasesSection = el('section', 'project-panel release-section');
+        releasesSection.appendChild(el('h2', null, '10 release của Spendwise'));
+        var orderedGuided = (guidedBuildData.guidedReleases || []).slice().sort(function(a, b) {
+          var ca = releasesById.get(a.releaseId), cb = releasesById.get(b.releaseId);
+          return Number((ca && ca.order) || 0) - Number((cb && cb.order) || 0);
+        });
+        var list = el('div', 'roadmap-list');
+        orderedGuided.forEach(function(gr) { list.appendChild(createGuidedReleaseCard(gr)); });
+        releasesSection.appendChild(list);
+        container.appendChild(releasesSection);
+      }
+
+      function renderGuidedRelease(container, releaseId) {
+        if (!guidedBuildData) { renderGuidedEmpty(container); return; }
+        var guidedRelease = CourseCore.selectGuidedRelease(guidedBuildData.guidedReleases, releaseId);
+        if (!guidedRelease) {
+          renderGuidedNotFound(container, 'Release "' + releaseId + '" không tồn tại trong Guided Build.');
+          return;
+        }
+        var canonical = releasesById.get(releaseId);
+        container.appendChild(createGuidedBreadcrumb([
+          { label: 'Guided Build', href: '#/guided-build' },
+          { label: canonical ? canonical.version + ' — ' + canonical.title : releaseId },
+        ]));
+        renderProjectWorkspaceHeader(container, 'Guided Build',
+          canonical ? canonical.version + ' — ' + canonical.title : releaseId,
+          canonical ? canonical.goal : null);
+
+        var sessions = CourseCore.deriveGuidedSessionsForRelease(guidedBuildData.guidedSessions, releaseId);
+        if (guidedRelease.authoringStatus !== 'authored' || !sessions.length) {
+          var empty = el('section', 'project-panel release-section');
+          empty.appendChild(el('h2', null, 'Chưa biên soạn'));
+          empty.appendChild(el('p', null, 'Nội dung hướng dẫn từng bước cho release này chưa được biên soạn. Bạn vẫn có thể xem kế hoạch chính thức ở trang Dự án / Lộ trình.'));
+          var backLink = el('a', 'text-link', '← Về Guided Build');
+          backLink.href = '#/guided-build';
+          empty.appendChild(backLink);
+          container.appendChild(empty);
+          return;
+        }
+
+        var overallProgress = CourseCore.calculateGuidedReleaseProgress(
+          guidedBuildData.guidedSessions, guidedBuildData.guidedSteps,
+          state.guidedProgress.completedSteps, releaseId);
+        var progressSection = el('section', 'project-panel release-section');
+        progressSection.appendChild(createGuidedProgressBar(overallProgress, 'Tiến độ release'));
+        var resumeStep = CourseCore.firstIncompleteGuidedStep(
+          guidedBuildData.guidedSessions, guidedBuildData.guidedSteps,
+          state.guidedProgress.completedSteps, releaseId);
+        if (resumeStep) {
+          var resumeLink = el('a', 'btn btn--primary', overallProgress.completed ? 'Tiếp tục' : 'Bắt đầu');
+          resumeLink.href = '#/guided-build/' + releaseId + '/' + resumeStep.sessionId + '/' + resumeStep.id;
+          progressSection.appendChild(resumeLink);
+        }
+        container.appendChild(progressSection);
+
+        var sessionsSection = el('section', 'project-panel release-section');
+        sessionsSection.appendChild(el('h2', null, 'Sessions'));
+        var sList = el('div', 'roadmap-list');
+        sessions.forEach(function(session) {
+          var sProgress = CourseCore.calculateGuidedSessionProgress(
+            guidedBuildData.guidedSteps, state.guidedProgress.completedSteps, session.id);
+          sList.appendChild(createGuidedListLink(
+            '#/guided-build/' + releaseId + '/' + session.id,
+            'Session ' + session.order, session.title, session.goal,
+            createGuidedProgressBar(sProgress, 'Tiến độ')
+          ));
+        });
+        sessionsSection.appendChild(sList);
+        container.appendChild(sessionsSection);
+      }
+
+      function renderGuidedSession(container, releaseId, sessionId) {
+        if (!guidedBuildData) { renderGuidedEmpty(container); return; }
+        var guidedRelease = CourseCore.selectGuidedRelease(guidedBuildData.guidedReleases, releaseId);
+        var session = CourseCore.selectGuidedSession(guidedBuildData.guidedSessions, sessionId, releaseId);
+        if (!guidedRelease || !session) {
+          renderGuidedNotFound(container, 'Session "' + sessionId + '" không tồn tại trong release "' + releaseId + '".');
+          return;
+        }
+        var canonicalRelease = releasesById.get(releaseId);
+        container.appendChild(createGuidedBreadcrumb([
+          { label: 'Guided Build', href: '#/guided-build' },
+          { label: canonicalRelease ? canonicalRelease.version : releaseId, href: '#/guided-build/' + releaseId },
+          { label: session.title },
+        ]));
+        renderProjectWorkspaceHeader(container,
+          'Guided Build · ' + (canonicalRelease ? canonicalRelease.version : releaseId),
+          session.title, session.goal);
+
+        var buildTask = buildTasksById.get(session.buildTaskId);
+        if (buildTask) {
+          var taskP = el('p', null);
+          var taskLink = el('a', 'text-link', 'Build task tương ứng: ' + buildTask.title);
+          taskLink.href = '#/task/' + buildTask.id;
+          taskP.appendChild(taskLink);
+          container.appendChild(taskP);
+        }
+
+        var steps = CourseCore.deriveGuidedStepsForSession(guidedBuildData.guidedSteps, sessionId);
+        var progress = CourseCore.calculateGuidedSessionProgress(guidedBuildData.guidedSteps, state.guidedProgress.completedSteps, sessionId);
+        var progressSection = el('section', 'project-panel release-section');
+        progressSection.appendChild(createGuidedProgressBar(progress, 'Tiến độ session'));
+        container.appendChild(progressSection);
+
+        var stepsSection = el('section', 'project-panel release-section');
+        stepsSection.appendChild(el('h2', null, 'Các bước'));
+        if (!steps.length) {
+          stepsSection.appendChild(el('p', null, 'Session này chưa có bước nào được biên soạn.'));
+        } else {
+          var stepList = el('div', 'roadmap-list');
+          steps.forEach(function(step) {
+            var done = state.guidedProgress.completedSteps.indexOf(step.id) !== -1;
+            var stateNode = done ? el('span', 'task-done-badge', 'Đã hoàn thành') : null;
+            stepList.appendChild(createGuidedListLink(
+              '#/guided-build/' + releaseId + '/' + sessionId + '/' + step.id,
+              'Bước ' + step.order, step.title,
+              GUIDED_STEP_TYPE_LABELS[step.type] || step.type, stateNode
+            ));
+          });
+          stepsSection.appendChild(stepList);
+        }
+        container.appendChild(stepsSection);
+      }
+
+      // Generic step shell — works for all 11 STEP_TYPES with only small
+      // type-specific accents (the type badge, the "code-with-me" heading,
+      // the checkpoint join). Every optional field renders its own block
+      // only when authored; nothing is invented for absent fields.
+      function renderGuidedStep(container, releaseId, sessionId, stepId) {
+        if (!guidedBuildData) { renderGuidedEmpty(container); return; }
+        var guidedRelease = CourseCore.selectGuidedRelease(guidedBuildData.guidedReleases, releaseId);
+        var session = CourseCore.selectGuidedSession(guidedBuildData.guidedSessions, sessionId, releaseId);
+        var step = session ? CourseCore.selectGuidedStep(guidedBuildData.guidedSteps, stepId, sessionId) : null;
+        if (!guidedRelease || !session || !step) {
+          renderGuidedNotFound(container, 'Bước "' + stepId + '" không tồn tại trong session "' + sessionId + '".');
+          return;
+        }
+
+        var canonicalRelease = releasesById.get(releaseId);
+        container.appendChild(createGuidedBreadcrumb([
+          { label: 'Guided Build', href: '#/guided-build' },
+          { label: canonicalRelease ? canonicalRelease.version : releaseId, href: '#/guided-build/' + releaseId },
+          { label: session.title, href: '#/guided-build/' + releaseId + '/' + sessionId },
+          { label: step.title },
+        ]));
+
+        var header = renderProjectWorkspaceHeader(container,
+          'Bước ' + step.order, step.title, step.goal);
+        header.appendChild(el('span', 'project-status project-status--authored', GUIDED_STEP_TYPE_LABELS[step.type] || step.type));
+
+        if (step.whyThisMatters) {
+          container.appendChild(createGuidedCallout('note', 'Vì sao bước này quan trọng', step.whyThisMatters));
+        }
+
+        if ((step.theoryBridge || []).length) {
+          var bridgeSection = el('section', 'project-panel release-section');
+          bridgeSection.appendChild(el('h2', null, 'Liên kết lý thuyết'));
+          var bridgeList = el('ul', 'task-prereq-list');
+          step.theoryBridge.forEach(function(bridge) {
+            var lesson = lessonsById.get(bridge.lessonId);
+            var li = el('li');
+            var a = el('a', 'text-link', lesson ? lesson.title : bridge.lessonId);
+            a.href = '#/lesson/' + bridge.lessonId;
+            li.appendChild(a);
+            if (bridge.note) li.appendChild(el('div', 'build-task-meta', bridge.note));
+            bridgeList.appendChild(li);
+          });
+          bridgeSection.appendChild(bridgeList);
+          container.appendChild(bridgeSection);
+        }
+
+        if ((step.instructions || []).length) {
+          var instrSection = el('section', 'project-panel release-section');
+          instrSection.appendChild(el('h2', null, 'Hướng dẫn'));
+          var ol = el('ol', 'criteria-list');
+          step.instructions.forEach(function(text) { ol.appendChild(el('li', null, text)); });
+          instrSection.appendChild(ol);
+          container.appendChild(instrSection);
+        }
+
+        // codeBlocks always render unconditionally — this is also the
+        // code-with-me surface (visible immediately, never gated).
+        if ((step.codeBlocks || []).length) {
+          var codeSection = el('section', 'project-panel release-section');
+          codeSection.appendChild(el('h2', null, step.type === 'code-with-me' ? 'Code cùng nhau' : 'Mã ví dụ'));
+          step.codeBlocks.forEach(function(block) { codeSection.appendChild(createGuidedCodeBlock(block)); });
+          container.appendChild(codeSection);
+        }
+
+        // your-turn: goal/constraints/hints are shown directly, BEFORE any
+        // reveal below — the reveal is a separate, collapsed-by-default
+        // section, never inline here.
+        if (step.learnerAction) {
+          var yourTurn = el('section', 'project-panel release-section');
+          yourTurn.appendChild(el('h2', null, 'Đến lượt bạn'));
+          if (step.learnerAction.goal) yourTurn.appendChild(el('p', 'task-step-text', step.learnerAction.goal));
+          if ((step.learnerAction.constraints || []).length) {
+            yourTurn.appendChild(el('div', 'task-step-label', 'Ràng buộc'));
+            var cList = el('ul', 'criteria-list');
+            step.learnerAction.constraints.forEach(function(c) { cList.appendChild(el('li', null, c)); });
+            yourTurn.appendChild(cList);
+          }
+          if ((step.learnerAction.hints || []).length) {
+            yourTurn.appendChild(el('div', 'task-step-label', 'Gợi ý'));
+            var hList = el('ul', 'criteria-list');
+            step.learnerAction.hints.forEach(function(h) { hList.appendChild(el('li', null, h)); });
+            yourTurn.appendChild(hList);
+          }
+          container.appendChild(yourTurn);
+        }
+
+        // reveal — collapsed by default via the shared disclosure pattern;
+        // opening it is a pure UI toggle, it never marks the step complete.
+        if (step.reveal) {
+          var revealSection = el('section', 'project-panel release-section');
+          var panelId = 'guided-reveal-' + step.id;
+          var revealBtn = disclosureButton(step.reveal.label || 'Xem đáp án', panelId, 'chevron-down');
+          var revealPanel = el('div', null);
+          revealPanel.id = panelId;
+          revealPanel.hidden = true;
+          revealPanel.appendChild(el('p', null, step.reveal.content));
+          wireDisclosure(revealBtn, revealPanel);
+          revealSection.appendChild(revealBtn);
+          revealSection.appendChild(revealPanel);
+          container.appendChild(revealSection);
+        }
+
+        if (step.run) {
+          var runSection = el('section', 'project-panel release-section');
+          runSection.appendChild(el('h2', null, 'Chạy thử'));
+          if (step.run.cwd) runSection.appendChild(el('p', 'task-step-text', 'Thư mục: ' + step.run.cwd));
+          runSection.appendChild(createGuidedCodeBlock({ language: 'command', code: step.run.command }));
+          if (step.run.expectedResult) {
+            var runResult = el('div', 'task-step-row task-step-row--done');
+            runResult.appendChild(el('span', 'task-step-label', 'Kết quả mong đợi'));
+            runResult.appendChild(el('p', 'task-step-text', step.run.expectedResult));
+            runSection.appendChild(runResult);
+          }
+          if (step.run.explanation) runSection.appendChild(el('p', null, step.run.explanation));
+          container.appendChild(runSection);
+        }
+
+        // Canonical BuildStep join (secondary panel, distinct from the
+        // authored fields above). architectureRules render as the SAME
+        // unresolved chip-linking-to-#/architecture pattern createStepCard
+        // already uses — one convention for this field sitewide.
+        if (step.buildStepId) {
+          var buildStep = buildStepsById.get(step.buildStepId);
+          if (buildStep) {
+            var canonSection = el('section', 'project-panel release-section');
+            canonSection.appendChild(el('h2', null, 'Tiêu chí kỹ thuật (canonical)'));
+            if (buildStep.doneWhen) {
+              var cDone = el('div', 'task-step-row task-step-row--done');
+              cDone.appendChild(el('span', 'task-step-label', 'Done when'));
+              cDone.appendChild(el('p', 'task-step-text', buildStep.doneWhen));
+              canonSection.appendChild(cDone);
+            }
+            if (buildStep.verifyCommand) {
+              var cVerify = el('div', 'task-step-row');
+              cVerify.appendChild(el('span', 'task-step-label', 'Verify'));
+              cVerify.appendChild(createGuidedCodeBlock({ language: 'verifyCommand', code: buildStep.verifyCommand }));
+              canonSection.appendChild(cVerify);
+            }
+            if ((buildStep.architectureRules || []).length) {
+              var cRules = el('div', 'task-step-row');
+              cRules.appendChild(el('span', 'task-step-label', 'Architecture rules'));
+              var cRuleRow = el('div', 'task-rule-row');
+              buildStep.architectureRules.forEach(function(ruleId) {
+                var chip = el('a', 'task-rule-chip', ruleId);
+                chip.href = '#/architecture';
+                chip.setAttribute('aria-label', 'Architecture rule ' + ruleId + ' — xem định nghĩa trong Architecture view');
+                cRuleRow.appendChild(chip);
+              });
+              cRuleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong Architecture view'));
+              cRules.appendChild(cRuleRow);
+              canonSection.appendChild(cRules);
+            }
+            var parentTask = buildTasksById.get(buildStep.taskId);
+            var canonLink = el('a', 'text-link', 'Xem build task đầy đủ: ' + (parentTask ? parentTask.title : buildStep.taskId));
+            canonLink.href = '#/task/' + buildStep.taskId;
+            canonSection.appendChild(canonLink);
+            container.appendChild(canonSection);
+          }
+        }
+
+        if ((step.commonErrors || []).length) {
+          var errSection = el('section', 'release-section');
+          errSection.appendChild(el('h2', null, 'Lỗi thường gặp'));
+          step.commonErrors.forEach(function(err) {
+            errSection.appendChild(createGuidedCallout('warning', err.symptom, 'Nguyên nhân: ' + err.likelyCause + ' — Cách sửa: ' + err.fix));
+          });
+          container.appendChild(errSection);
+        }
+
+        if (step.projectStateBefore || step.projectStateAfter) {
+          var stateSection = el('section', 'project-panel release-section');
+          stateSection.appendChild(el('h2', null, 'Trạng thái project'));
+          if (step.projectStateBefore) {
+            stateSection.appendChild(el('div', 'task-step-label', 'Trước bước này'));
+            stateSection.appendChild(createGuidedStatePre(step.projectStateBefore));
+          }
+          if (step.projectStateAfter) {
+            stateSection.appendChild(el('div', 'task-step-label', 'Sau bước này'));
+            stateSection.appendChild(createGuidedStatePre(step.projectStateAfter));
+          }
+          container.appendChild(stateSection);
+        }
+
+        // Checkpoint-type steps join the session's one guidedCheckpoint
+        // record — visually prominent, never duplicating canonical
+        // doneWhen/verifyCommand (those stay in the join panel above).
+        if (step.type === 'checkpoint') {
+          var checkpoint = (guidedBuildData.guidedCheckpoints || []).find(function(c) { return c.sessionId === sessionId; });
+          if (checkpoint) {
+            var cpSection = el('section', 'project-panel release-section guided-checkpoint');
+            cpSection.appendChild(el('h2', null, 'Checkpoint — bạn đã xây được gì'));
+            cpSection.appendChild(el('p', 'task-step-text', checkpoint.whatYouBuilt));
+            if ((checkpoint.expectedFiles || []).length) {
+              cpSection.appendChild(el('div', 'task-step-label', 'File dự kiến'));
+              var fList = el('ul', 'task-file-list');
+              checkpoint.expectedFiles.forEach(function(p) { fList.appendChild(el('li', 'task-file-path', p)); });
+              cpSection.appendChild(fList);
+            }
+            if (checkpoint.expectedProjectTree) {
+              cpSection.appendChild(el('div', 'task-step-label', 'Cây thư mục dự kiến'));
+              cpSection.appendChild(createGuidedStatePre(checkpoint.expectedProjectTree));
+            }
+            if ((checkpoint.understanding || []).length) {
+              cpSection.appendChild(el('div', 'task-step-label', 'Bạn nên hiểu được'));
+              var uList = el('ul', 'criteria-list');
+              checkpoint.understanding.forEach(function(u) { uList.appendChild(el('li', null, u)); });
+              cpSection.appendChild(uList);
+            }
+            if (checkpoint.whyNotYet) {
+              cpSection.appendChild(createGuidedCallout('note', 'Nếu chưa xong', checkpoint.whyNotYet));
+            }
+            container.appendChild(cpSection);
+          }
+        }
+
+        // Completion toggle — mutates ONLY state.guidedProgress.completedSteps
+        // (see toggleGuidedStep). Same footer shape as the canonical build
+        // task's task-footer/task-complete-toggle: text + aria-pressed, not
+        // color alone; never auto-navigates.
+        var footer = el('section', 'project-panel release-section task-footer');
+        footer.appendChild(el('h2', null, 'Hoàn thành bước'));
+        var done = state.guidedProgress.completedSteps.indexOf(step.id) !== -1;
+        var toggleBtn = el('button', 'btn btn--primary task-complete-toggle');
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('data-action', 'toggle-guided-step');
+        toggleBtn.setAttribute('data-step-id', step.id);
+        toggleBtn.setAttribute('aria-pressed', done ? 'true' : 'false');
+        toggleBtn.innerHTML = icon('check') + '<span>' + (done ? 'Đã hoàn thành — nhấn để mở lại' : 'Đánh dấu bước đã hoàn thành') + '</span>';
+        toggleBtn.addEventListener('click', function() {
+          var completed = toggleGuidedStep(step.id);
+          toggleBtn.setAttribute('aria-pressed', completed ? 'true' : 'false');
+          toggleBtn.innerHTML = icon('check') + '<span>' + (completed ? 'Đã hoàn thành — nhấn để mở lại' : 'Đánh dấu bước đã hoàn thành') + '</span>';
+          showToast(completed ? 'Đã hoàn thành bước' : 'Đã mở lại bước');
+          routeRender();
+        });
+        footer.appendChild(toggleBtn);
+        container.appendChild(footer);
+
+        // Previous/next — session.order then step.order, may cross session
+        // boundaries within this release, never crosses into another
+        // release (getPrevious/NextGuidedStep are scoped by releaseId).
+        var prevStep = CourseCore.getPreviousGuidedStep(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, releaseId, step.id);
+        var nextStep = CourseCore.getNextGuidedStep(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, releaseId, step.id);
+        var nav = el('nav', 'task-prevnext');
+        nav.setAttribute('aria-label', 'Điều hướng bước');
+        if (prevStep) {
+          var prevLink = el('a', 'task-prevnext-link', '← ' + prevStep.title);
+          prevLink.href = '#/guided-build/' + releaseId + '/' + prevStep.sessionId + '/' + prevStep.id;
+          nav.appendChild(prevLink);
+        }
+        if (nextStep) {
+          var nextLink = el('a', 'task-prevnext-link task-prevnext-link--next', nextStep.title + ' →');
+          nextLink.href = '#/guided-build/' + releaseId + '/' + nextStep.sessionId + '/' + nextStep.id;
+          nav.appendChild(nextLink);
+        } else {
+          nav.appendChild(el('span', 'task-prevnext-link task-prevnext-link--next', 'Đây là bước cuối cùng của release này.'));
+        }
+        container.appendChild(nav);
+      }
+
       function createRoadmapReleaseLink(release) {
         var link = el('a', 'roadmap-release');
         link.href = '#/release/' + release.id;
@@ -5512,6 +6255,7 @@
         primaryNav.setAttribute('aria-label', 'Điều hướng chính');
         [
           { view: 'dashboard', href: '#/dashboard', label: 'Học' },
+          { view: 'guided-build', href: '#/guided-build', label: 'Xây project' },
           { view: 'project', href: '#/project', label: 'Dự án' },
           { view: 'roadmap', href: '#/roadmap', label: 'Lộ trình' },
           { view: 'resources', href: '#/resources', label: 'Tài nguyên' }
@@ -6194,17 +6938,18 @@
           assert("unknown guided step id is dropped by sanitizeState",
             droppedGuided.guidedProgress.completedSteps.length === 0);
 
-          /* 33 — primary navigation exposes exactly the four P0 destinations
-             as real anchors, and routeRender keeps aria-current in sync. */
+          /* 33 — primary navigation exposes exactly the five P0+Wave3
+             destinations as real anchors, and routeRender keeps aria-current
+             in sync. */
           location.hash = "#/project";
           routeRender();
           var primaryNav = document.querySelector(".primary-nav");
           var primaryLinks = primaryNav ? primaryNav.querySelectorAll("a[data-view]") : [];
           var activeProjectLink = primaryNav && primaryNav.querySelector('[data-view="project"][aria-current="page"]');
-          assert("primary navigation exposes four P0 routes and marks the active view",
-            primaryLinks.length === 4 && !!activeProjectLink &&
+          assert("primary navigation exposes five routes and marks the active view",
+            primaryLinks.length === 5 && !!activeProjectLink &&
             Array.prototype.every.call(primaryLinks, function(link) {
-              return /^#\/(dashboard|project|roadmap|resources)$/.test(link.getAttribute("href") || "");
+              return /^#\/(dashboard|guided-build|project|roadmap|resources)$/.test(link.getAttribute("href") || "");
             }));
 
           /* 34 — the dashboard derives V0.1 as current because no authored
@@ -6344,7 +7089,7 @@
           var navLinksForOverflow = Array.prototype.slice.call(
             document.querySelectorAll(".primary-nav [data-view]")
           );
-          var navLinksVisibleOk = navLinksForOverflow.length === 4 &&
+          var navLinksVisibleOk = navLinksForOverflow.length === 5 &&
             navLinksForOverflow.every(function(link) {
               var rect = link.getBoundingClientRect();
               return rect.width > 0 && rect.left >= -1 && rect.right <= window.innerWidth + 1;
@@ -6582,8 +7327,8 @@
             var onlyOneActive = subnav && subnav.querySelectorAll('[aria-current="page"]').length === 1;
             return !!active && onlyOneActive;
           });
-          var primaryNavStillFour = document.querySelectorAll(".primary-nav [data-view]").length === 4;
-          assert("project sub-nav marks the correct tab active on all 5 project views without growing the 4-item primary nav",
+          var primaryNavStillFour = document.querySelectorAll(".primary-nav [data-view]").length === 5;
+          assert("project sub-nav marks the correct tab active on all 5 project views without growing the 5-item primary nav",
             subnavOk && primaryNavStillFour);
 
           /* 53 — a release carrying no build tasks must say so honestly
@@ -6648,7 +7393,7 @@
             return active.length === 1 && active[0].getAttribute("data-view") === "project";
           });
           assert("Map and Architecture keep the Dự án primary-nav tab marked active instead of leaving the nav without a cue",
-            inheritedNavOk && document.querySelectorAll(".primary-nav [data-view]").length === 4);
+            inheritedNavOk && document.querySelectorAll(".primary-nav [data-view]").length === 5);
 
           /* 55 — Release Detail must render each release's ASCII diagram
              once, not twice: the Architecture Change comparison below the
@@ -6901,6 +7646,136 @@
           }
           assert("P4: collapsed unit lesson list is truly display:none ([hidden] beats the author display:grid via the companion rule)",
             lessonListOk);
+
+          /* 71 — Guided Build overview (production data). All 10 releases
+             render as cards, all honestly "Chưa biên soạn" (Wave 3 ships
+             zero authored content), and the nav tab lights up. */
+          location.hash = "#/guided-build";
+          routeRender();
+          var guidedOverviewRoot = document.getElementById("route-view");
+          var guidedCards = guidedOverviewRoot.querySelectorAll(".roadmap-list .roadmap-release");
+          var allPlannedNote = Array.prototype.every.call(guidedCards, function(card) {
+            return /Chưa biên soạn/.test(card.textContent);
+          });
+          var guidedNavActive = document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]');
+          assert("Guided Build overview renders all 10 releases, each honestly unauthored, with its nav tab active",
+            guidedCards.length === 10 && allPlannedNote && !!guidedNavActive);
+
+          /* 72 — #/guided-build/v0-1 (production data, planned release) must
+             render the same honest "Chưa biên soạn" state, not a crash or an
+             empty page, and must not display any V0.1 step content (there is
+             none authored yet). */
+          location.hash = "#/guided-build/v0-1";
+          routeRender();
+          var guidedReleaseRoot = document.getElementById("route-view");
+          assert("#/guided-build/v0-1 renders the unauthored-release state and shows no step content",
+            /Chưa biên soạn/.test(guidedReleaseRoot.textContent) &&
+            !guidedReleaseRoot.querySelector(".task-complete-toggle"));
+
+          /* 73 — unknown ids at every Guided depth render the shared
+             not-found state and never crash routeRender. */
+          var guidedNotFoundChecks = [
+            "#/guided-build/unknown-release",
+            "#/guided-build/v0-1/unknown-session",
+            "#/guided-build/v0-1/unknown-session/unknown-step",
+          ].map(function(hash) {
+            location.hash = hash;
+            routeRender();
+            var root = document.getElementById("route-view");
+            return !!root.querySelector(".project-not-found") &&
+              /Không tìm thấy nội dung/.test(root.textContent) &&
+              !!root.querySelector('.project-not-found a[href="#/guided-build"]');
+          });
+          assert("unknown release/session/step ids each render the guided not-found state with a link back to #/guided-build",
+            guidedNotFoundChecks.every(Boolean));
+
+          /* 74 — nav active state: guided-release/session/step sub-routes all
+             keep the "Xây project" tab lit, same inheritance rule as the
+             Project Track's map/architecture sub-views. */
+          assert("Guided Build sub-routes (release/session/step) keep the guided-build primary-nav tab active",
+            !!document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]'));
+
+          /* 75-83 — synthetic fixture covering every optional field on the
+             generic step renderer (theory bridge, code block, your-turn,
+             collapsed-by-default reveal, run cwd/command, common error,
+             checkpoint, completion toggle, previous/next) in one pass. Swaps
+             guidedBuildData + GUIDED_STEP_IDS for the duration of this block
+             only; both are restored in the finally clause below alongside
+             storage/state, exactly like every other synthetic-fixture check
+             in this harness. */
+          var realGuidedBuildData = guidedBuildData;
+          var realGuidedStepIds = GUIDED_STEP_IDS;
+          var syntheticSession = {
+            id: "selftest-session", releaseId: "v0-1", buildTaskId: null,
+            order: 1, title: "Selftest session", goal: "g",
+          };
+          var syntheticStep1 = {
+            id: "selftest-step-1", sessionId: "selftest-session", order: 1,
+            type: "explanation", title: "Bước 1", goal: "g",
+            theoryBridge: [{ lessonId: "day-01", note: "liên kết ghi chú" }],
+            codeBlocks: [{ language: "java", code: "class X {}" }],
+            learnerAction: { goal: "tự làm", constraints: ["ràng buộc x"], hints: ["gợi ý x"] },
+            reveal: { label: "Xem đáp án", content: "đáp án bí mật" },
+            run: { cwd: "spendwise", command: "mvn test", expectedResult: "BUILD SUCCESS" },
+            commonErrors: [{ symptom: "lỗi x", likelyCause: "nguyên nhân x", fix: "cách sửa x" }],
+          };
+          var syntheticStep2 = {
+            id: "selftest-step-2", sessionId: "selftest-session", order: 2,
+            type: "checkpoint", title: "Bước 2 — checkpoint", goal: "g",
+          };
+          guidedBuildData = {
+            guidedCourse: {},
+            guidedReleases: [{ releaseId: "v0-1", authoringStatus: "authored" }],
+            guidedSessions: [syntheticSession],
+            guidedSteps: [syntheticStep1, syntheticStep2],
+            guidedCheckpoints: [{
+              id: "selftest-cp", sessionId: "selftest-session",
+              whatYouBuilt: "bạn đã xây được X", expectedFiles: ["src/X.java"],
+              understanding: ["hiểu được Y"],
+            }],
+          };
+          GUIDED_STEP_IDS = new Set(["selftest-step-1", "selftest-step-2"]);
+
+          location.hash = "#/guided-build/v0-1/selftest-session/selftest-step-1";
+          routeRender();
+          var stepRoot = document.getElementById("route-view");
+          var revealPanel = stepRoot.querySelector('[id^="guided-reveal-"]');
+          assert("Guided step renders theory bridge, code block, your-turn, run panel and common error from authored fields",
+            !!stepRoot.querySelector('a[href="#/lesson/day-01"]') &&
+            /class X/.test(stepRoot.textContent) &&
+            /tự làm/.test(stepRoot.textContent) && /ràng buộc x/.test(stepRoot.textContent) &&
+            /mvn test/.test(stepRoot.textContent) && /BUILD SUCCESS/.test(stepRoot.textContent) &&
+            /lỗi x/.test(stepRoot.textContent));
+          assert("Guided step's reveal panel is collapsed by default (aria-expanded=false, panel hidden)",
+            !!revealPanel && revealPanel.hidden === true &&
+            stepRoot.querySelector(".disclosure-btn").getAttribute("aria-expanded") === "false");
+
+          var stepToggle = stepRoot.querySelector('.task-complete-toggle[data-step-id="selftest-step-1"]');
+          var pressedBefore = stepToggle && stepToggle.getAttribute("aria-pressed") === "false";
+          if (stepToggle) stepToggle.click();
+          var pressedAfterClick = stepToggle.getAttribute("aria-pressed") === "true";
+          var persistedInState = state.guidedProgress.completedSteps.indexOf("selftest-step-1") !== -1;
+          assert("Guided step completion toggle flips aria-pressed and persists into state.guidedProgress only",
+            pressedBefore && pressedAfterClick && persistedInState &&
+            state.completed.indexOf("selftest-step-1") === -1);
+
+          var nextLink = document.getElementById("route-view").querySelector(".task-prevnext-link--next");
+          assert("Guided step's next link advances to the session's next step",
+            !!nextLink && nextLink.getAttribute("href") === "#/guided-build/v0-1/selftest-session/selftest-step-2");
+
+          location.hash = "#/guided-build/v0-1/selftest-session/selftest-step-2";
+          routeRender();
+          var step2Root = document.getElementById("route-view");
+          assert("Guided checkpoint step joins its session's guidedCheckpoint record",
+            /bạn đã xây được X/.test(step2Root.textContent) &&
+            /src\/X\.java/.test(step2Root.textContent) &&
+            /hiểu được Y/.test(step2Root.textContent));
+          var prevLink = step2Root.querySelector(".task-prevnext-link");
+          assert("Guided step's previous link returns to the session's previous step",
+            !!prevLink && prevLink.getAttribute("href") === "#/guided-build/v0-1/selftest-session/selftest-step-1");
+
+          guidedBuildData = realGuidedBuildData;
+          GUIDED_STEP_IDS = realGuidedStepIds;
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {
@@ -6911,6 +7786,11 @@
             localStorage.removeItem = realRemoveItem;
             if (storageBackup != null) realSetItem(STORAGE_KEY, storageBackup);
           } catch (e) {}
+          /* Safety net: if the synthetic guidedBuildData swap (#75-83) threw
+             mid-block, restore production data here too so a crash in that
+             block can never leak fake guided content into the real app. */
+          if (typeof realGuidedBuildData !== "undefined") guidedBuildData = realGuidedBuildData;
+          if (typeof realGuidedStepIds !== "undefined") GUIDED_STEP_IDS = realGuidedStepIds;
           state = loadState() || CourseCore.defaultState();
           applyTheme(state.theme);
           renderSidebar();

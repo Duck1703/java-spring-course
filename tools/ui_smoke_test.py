@@ -465,6 +465,36 @@ def main() -> int:
                     proc = subprocess.run(shot_cmd, capture_output=True, text=True, timeout=90)
                     if proc.returncode != 0 or not shot.exists():
                         failures.append(f"{label}: screenshot failed ({proc.stderr[:200]})")
+
+            # Wave 3: exercise the 5 Guided Build routes directly (not just
+            # via the in-page self-test harness) on both viewports, so a
+            # route that crashes routeRender or renders a blank #route-view
+            # fails this gate even if the unrelated selftest counter above
+            # still happens to pass.
+            guided_routes = {
+                "guided-overview": ("#/guided-build", "roadmap-release"),
+                "guided-release": ("#/guided-build/v0-1", "Chưa biên soạn"),
+                "guided-not-found-release": ("#/guided-build/unknown-release", "Không tìm thấy nội dung"),
+                "guided-not-found-session": ("#/guided-build/v0-1/unknown-session", "Không tìm thấy nội dung"),
+                "guided-not-found-step": ("#/guided-build/v0-1/unknown-session/unknown-step", "Không tìm thấy nội dung"),
+            }
+            for viewport_name, extra in SCREENSHOT_ARGS.items():
+                for route_name, (hash_frag, marker) in guided_routes.items():
+                    url = f"{base_url}{hash_frag}"
+                    try:
+                        dom = run_browser(browser, [profile_arg] + extra, url)
+                    except Exception as exc:  # noqa: BLE001
+                        failures.append(f"{viewport_name}/{route_name}: failed to load ({exc})")
+                        continue
+                    route_view = re.search(r'id="route-view"[^>]*>(.*)', dom, re.S)
+                    body = route_view.group(1) if route_view else dom
+                    if marker not in body:
+                        failures.append(
+                            f"{viewport_name}/{route_name}: expected marker {marker!r} not found in #route-view"
+                        )
+            if not any(f.startswith(("desktop/guided-", "mobile/guided-")) for f in failures):
+                print("PASS guided-build routes render on desktop+mobile (5 routes x 2 viewports)")
+
         print(f"PASS screenshots={output_dir / 'desktop.png'},{output_dir / 'mobile.png'}"
               if not failures and not args.skip_screenshots else
               ("" if args.skip_screenshots or failures else ""))
