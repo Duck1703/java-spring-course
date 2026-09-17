@@ -112,15 +112,18 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
             authored = json.load(fh)
         self.assertEqual(self.model["guidedBuild"], authored)
 
+    AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4"}
+
     def test_guided_build_v0_1_authored_shape(self):
-        # V0.1 is authored content now; the other 9 releases stay planned with
-        # zero sessions until their own authoring work happens.
+        # V0.1-V0.4 are authored content now; the remaining 6 releases stay
+        # planned with zero sessions until their own authoring work happens.
         guided = self.model["guidedBuild"]
         self.assertEqual(len(guided["guidedReleases"]), 10)
         status_by_release = {r["releaseId"]: r["authoringStatus"] for r in guided["guidedReleases"]}
-        self.assertEqual(status_by_release["v0-1"], "authored")
+        for release_id in self.AUTHORED_RELEASE_IDS:
+            self.assertEqual(status_by_release[release_id], "authored", release_id)
         for release_id, status in status_by_release.items():
-            if release_id != "v0-1":
+            if release_id not in self.AUTHORED_RELEASE_IDS:
                 self.assertEqual(status, "planned", release_id)
 
         sessions = guided["guidedSessions"]
@@ -129,7 +132,7 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
         self.assertTrue(sessions)
         self.assertTrue(steps)
         self.assertTrue(checkpoints)
-        self.assertTrue(all(s["releaseId"] == "v0-1" for s in sessions))
+        self.assertTrue(all(s["releaseId"] in self.AUTHORED_RELEASE_IDS for s in sessions))
         self.assertEqual(len(checkpoints), len(sessions))
 
     def test_guided_build_v0_1_covers_every_required_canonical_build_step(self):
@@ -137,10 +140,15 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
         guided = self.model["guidedBuild"]
         required_task_ids = {
             t["id"] for t in project["buildTasks"]
-            if t.get("required") and t["releaseId"] == "v0-1"
+            if t.get("required") and t["releaseId"] in self.AUTHORED_RELEASE_IDS
         }
         covered_task_ids = {s["buildTaskId"] for s in guided["guidedSessions"]}
-        self.assertEqual(required_task_ids, covered_task_ids)
+        # Coverage must be a superset of required tasks, not an exact match:
+        # guided content is allowed to also cover an optional/deferred
+        # canonical task (e.g. task-config-profiles in V0.3) — matching
+        # tools/validate_guided_build.py's own completeness check, which is a
+        # subset test (`required_tasks - covered_tasks`), not equality.
+        self.assertLessEqual(required_task_ids, covered_task_ids)
 
         steps_by_task = {}
         for build_step in project["buildSteps"]:

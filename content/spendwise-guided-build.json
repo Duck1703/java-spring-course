@@ -13,15 +13,15 @@
     },
     {
       "releaseId": "v0-2",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v0-3",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v0-4",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v0-5",
@@ -96,6 +96,110 @@
       "order": 6,
       "title": "Hình thức hoá exception miền nghiệp vụ",
       "goal": "Mọi vi phạm bất biến trong Money/Account/Transaction ném ra một exception miền nghiệp vụ có tên rõ ràng thay vì IllegalArgumentException chung chung, và toàn bộ luồng hợp lệ được chứng minh không ném exception nào."
+    },
+    {
+      "id": "session-repository-interface",
+      "releaseId": "v0-2",
+      "buildTaskId": "task-repository-interface",
+      "order": 1,
+      "title": "Xây Repository<T, ID>: tách domain khỏi nơi lưu trữ",
+      "goal": "Có một interface generic Repository<T, ID> với save/find/findAll/delete, và chứng minh nó dùng được cho cả Account lẫn Transaction mà không lộ chi tiết lưu trữ ra ngoài."
+    },
+    {
+      "id": "session-inmemory-repository",
+      "releaseId": "v0-2",
+      "buildTaskId": "task-inmemory-repository",
+      "order": 2,
+      "title": "Cài InMemoryRepository: có chỗ lưu trước khi có database",
+      "goal": "Có một cài đặt Repository<T, ID> dựa trên Map, đủ để app chạy được và test được trước khi bất kỳ database nào tồn tại."
+    },
+    {
+      "id": "session-transaction-service",
+      "releaseId": "v0-2",
+      "buildTaskId": "task-transaction-service",
+      "order": 3,
+      "title": "Mở cửa duy nhất cho Transaction: TransactionCreationService",
+      "goal": "Có TransactionCreationService.create(command) là con đường tạo Transaction duy nhất trong code sản phẩm (R20), mỗi transaction tạo ra đều mang sourceRef, và một service đọc/lọc trên Repository interface."
+    },
+    {
+      "id": "session-statistics-aggregation",
+      "releaseId": "v0-2",
+      "buildTaskId": "task-statistics-aggregation",
+      "order": 4,
+      "title": "Thống kê chi tiêu bằng Stream/Collectors — không double",
+      "goal": "Có StatisticsService gom nhóm giao dịch theo category và cộng tổng thu/chi bằng BigDecimal, không chạm summingDouble hay bất kỳ double/float nào (R1)."
+    },
+    {
+      "id": "session-csv-read-write",
+      "releaseId": "v0-2",
+      "buildTaskId": "task-csv-read-write",
+      "order": 5,
+      "title": "Lưu và đọc lại giao dịch bằng CSV",
+      "goal": "Có CsvTransactionStore ghi danh sách giao dịch ra file CSV và đọc lại đúng nguyên vẹn, kể cả không mất một cent nào qua vòng ghi-đọc (R1/R2)."
+    },
+    {
+      "id": "session-spring-bootstrap",
+      "releaseId": "v0-3",
+      "buildTaskId": "task-spring-bootstrap",
+      "order": 1,
+      "title": "Đưa Spring Boot vào — không sửa domain",
+      "goal": "Có một ứng dụng Spring Boot khởi động được, phiên bản Boot được chốt qua một quyết định có bằng chứng (không đoán, không nhận mặc định từ start.spring.io), và domain/service V0.1-V0.2 giữ nguyên không sửa."
+    },
+    {
+      "id": "session-di-service-beans",
+      "releaseId": "v0-3",
+      "buildTaskId": "task-di-service-beans",
+      "order": 2,
+      "title": "Để container wire thay vì tự new",
+      "goal": "Service và repository được Spring quản lý làm bean, inject qua constructor, không còn chỗ nào tự new các collaborator đã managed."
+    },
+    {
+      "id": "session-account-endpoints",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-account-endpoints",
+      "order": 1,
+      "title": "REST endpoint đầu tiên: Account create/list/get",
+      "goal": "Có AccountController expose create/list/get-by-id qua HTTP, đúng status code (201+Location, 200, 404), controller không chứa business logic, không có route PUT/PATCH/DELETE."
+    },
+    {
+      "id": "session-category-endpoints",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-category-endpoints",
+      "order": 2,
+      "title": "Category: chỉ đọc, enum cố định",
+      "goal": "Có CategoryController expose route GET-only đọc trực tiếp từ enum Category cố định, và một kiểm chứng rằng không entity/VO nào của cả ba controller lọt qua HTTP boundary."
+    },
+    {
+      "id": "session-transaction-endpoints",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-transaction-endpoints",
+      "order": 3,
+      "title": "Transaction qua HTTP — vẫn một cửa duy nhất để tạo",
+      "goal": "Có TransactionController expose create/list/filter, và request tạo giao dịch qua HTTP đi đúng qua TransactionCreationService — R20 không dừng lại ở controller."
+    },
+    {
+      "id": "session-dto-mapping",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-dto-mapping",
+      "order": 4,
+      "title": "Tách mapping record<->domain ra khỏi controller",
+      "goal": "Có AccountMapper/TransactionMapper chuyển đổi record<->domain tường minh field-by-field, không dùng reflection, và một test pin đúng từng field."
+    },
+    {
+      "id": "session-bean-validation",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-bean-validation",
+      "order": 5,
+      "title": "Chặn input sai ngay ở biên giới HTTP",
+      "goal": "Request record mang ràng buộc jakarta.validation, @Valid ở controller khiến input sai bị từ chối với 400 trước khi chạm vào method controller, input đúng đi qua bình thường."
+    },
+    {
+      "id": "session-error-handling-advice",
+      "releaseId": "v0-4",
+      "buildTaskId": "task-error-handling-advice",
+      "order": 6,
+      "title": "Một nơi duy nhất dịch lỗi thành HTTP: @RestControllerAdvice",
+      "goal": "Có một @RestControllerAdvice dịch domain exception và lỗi validation thành ProblemDetail (RFC 7807) với đúng status code cho từng loại lỗi."
     }
   ],
   "guidedSteps": [
@@ -899,6 +1003,1016 @@
       "type": "checkpoint",
       "title": "Điểm dừng cuối: V0.1 hoàn thành",
       "goal": "Xác nhận toàn bộ domain foundation (Money, Account, Transaction, Category, exception hierarchy) hoạt động đúng và test xanh toàn bộ — đây là điểm hoàn thành của V0.1."
+    },
+    {
+      "id": "step-v02-repo-interface",
+      "sessionId": "session-repository-interface",
+      "order": 1,
+      "buildStepId": "step-repository-interface-01",
+      "type": "your-turn",
+      "title": "Định nghĩa interface Repository<T, ID>",
+      "goal": "Có interface Repository<T, ID> khai báo save(T entity), Optional<T> find(ID id), List<T> findAll(), và delete(ID id) — chưa có cài đặt nào cả.",
+      "whyThisMatters": "Đây là điểm đảo ngược phụ thuộc (dependency inversion) của toàn bộ project: từ giờ mọi service sẽ phụ thuộc vào Repository<T, ID> — một interface trừu tượng — chứ không phụ thuộc vào bất kỳ cách lưu trữ cụ thể nào (in-memory hôm nay, JPA/database sau này). Domain code (R14) chỉ được import kiểu JDK thuần và interface này, không được biết database là gì.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-07",
+          "note": "Generics <T, ID> cho phép một interface phục vụ nhiều kiểu entity khác nhau (Account, Transaction, ...) mà vẫn giữ type safety lúc biên dịch, thay vì dùng Object và ép kiểu thủ công."
+        },
+        {
+          "lessonId": "day-08",
+          "note": "Optional<T> cho find(ID id) — báo hiệu tường minh rằng không tìm thấy là một kết quả hợp lệ, không phải lỗi, thay vì trả về null."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Tạo src/main/java/com/spendwise/shared/Repository.java: một interface generic Repository<T, ID> với đúng 4 method save/find/findAll/delete.",
+        "constraints": [
+          "Interface phải parameterize trên <T, ID> — không hardcode cho riêng Account hay Transaction.",
+          "find(ID id) trả về Optional<T>, không trả về T trực tiếp (null là kết quả không hợp lệ ở đây).",
+          "findAll() trả về List<T>.",
+          "Không import bất kỳ thứ gì ngoài java.util.* — đây là domain-layer contract thuần (R14), chưa biết gì về Spring hay JPA."
+        ],
+        "hints": [
+          "Chữ ký gợi ý: T save(T entity); Optional<T> find(ID id); List<T> findAll(); void delete(ID id);"
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — interface biên dịch sạch dù chưa có class nào implement nó.",
+        "explanation": "Một interface không cần implementation để biên dịch; bước này chỉ xác nhận chữ ký generic của bạn hợp lệ."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Lỗi biên dịch 'unexpected type' quanh Optional<T>",
+          "likelyCause": "Quên import java.util.Optional, hoặc dùng Optional<ID> thay vì Optional<T> cho return type của find.",
+          "fix": "import java.util.Optional; và xác nhận find(ID id) trả về Optional<T> — kiểu entity, không phải kiểu id."
+        }
+      ],
+      "reveal": {
+        "label": "Xem chữ ký đầy đủ của Repository<T, ID>",
+        "content": "package com.spendwise.shared;\n\nimport java.util.List;\nimport java.util.Optional;\n\npublic interface Repository<T, ID> {\n    T save(T entity);\n    Optional<T> find(ID id);\n    List<T> findAll();\n    void delete(ID id);\n}\n"
+      }
+    },
+    {
+      "id": "step-v02-repo-contract-test",
+      "sessionId": "session-repository-interface",
+      "order": 2,
+      "buildStepId": "step-repository-interface-02",
+      "type": "your-turn",
+      "title": "Chứng minh interface phục vụ được cả Account lẫn Transaction",
+      "goal": "Có một test cấp độ contract cho thấy cả Account và Transaction đều thoả Repository<T, ID> mà không có kiểu lưu trữ nào lộ ra trong chữ ký.",
+      "whyThisMatters": "Generic dùng được cho một kiểu thì chưa chứng minh gì — dùng được cho hai kiểu độc lập (Account có ID kiểu khác Transaction) mới là bằng chứng thật cho việc tái sử dụng.",
+      "learnerAction": {
+        "goal": "Viết src/test/java/com/spendwise/shared/RepositoryContractTest.java: khai báo hai biến kiểu Repository<Account, String> và Repository<Transaction, String> (dùng anonymous class hoặc test double đơn giản đủ để biên dịch), xác nhận cả hai đều gán được đúng kiểu mà không cần ép kiểu (cast) hay dùng raw type Repository.",
+        "constraints": [
+          "Không dùng raw type Repository (không có <T, ID>) ở bất kỳ đâu trong test.",
+          "Không cần một cài đặt thật đầy đủ — mục tiêu là chứng minh interface generic hợp lệ cho hai kiểu khác nhau, không phải test hành vi lưu trữ (việc đó thuộc session sau)."
+        ],
+        "hints": [
+          "new Repository<Account, String>() { ... } (anonymous class) là đủ để test biên dịch và chạy được ở bước này."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=RepositoryContractTest' test",
+        "expectedResult": "BUILD SUCCESS — test biên dịch và pass, chứng minh Repository<Account, String> và Repository<Transaction, String> đều hợp lệ.",
+        "explanation": "Test này không kiểm tra hành vi lưu trữ (chưa có cài đặt thật) — nó kiểm tra rằng interface generic không ràng buộc cứng vào một entity nào."
+      },
+      "reveal": {
+        "label": "Xem cách viết contract test bằng anonymous class",
+        "content": "class RepositoryContractTest {\n    @Test\n    void repositoryInterfaceServesBothAccountAndTransaction() {\n        Repository<Account, String> accounts = new Repository<>() {\n            public Account save(Account e) { return e; }\n            public Optional<Account> find(String id) { return Optional.empty(); }\n            public List<Account> findAll() { return List.of(); }\n            public void delete(String id) { }\n        };\n        Repository<Transaction, String> transactions = new Repository<>() {\n            public Transaction save(Transaction e) { return e; }\n            public Optional<Transaction> find(String id) { return Optional.empty(); }\n            public List<Transaction> findAll() { return List.of(); }\n            public void delete(String id) { }\n        };\n        assertNotNull(accounts);\n        assertNotNull(transactions);\n    }\n}\n"
+      }
+    },
+    {
+      "id": "step-v02-repo-checkpoint",
+      "sessionId": "session-repository-interface",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: có một hợp đồng lưu trữ, chưa có cách lưu trữ",
+      "goal": "Xác nhận Repository<T, ID> là một interface generic sạch, chưa biết gì về cách lưu trữ thật, trước khi session sau viết cài đặt in-memory đầu tiên."
+    },
+    {
+      "id": "step-v02-inmemory-impl",
+      "sessionId": "session-inmemory-repository",
+      "order": 1,
+      "buildStepId": "step-inmemory-repository-01",
+      "type": "your-turn",
+      "title": "Cài InMemoryRepository dựa trên Map",
+      "goal": "Có class InMemoryRepository<T, ID> implement Repository<T, ID>, lưu dữ liệu trong một Map<ID, T>, biên dịch sạch với interface.",
+      "whyThisMatters": "Đây là cài đặt cụ thể đầu tiên đứng sau interface — nó chứng minh interface hôm trước thật sự dùng được, và nó là chỗ duy nhất trong project biết dữ liệu đang nằm ở đâu (R14: chi tiết lưu trữ không được rò lên các tầng trên).",
+      "theoryBridge": [
+        {
+          "lessonId": "day-08",
+          "note": "HashMap/ConcurrentHashMap và Collections Framework nói chung — chọn cấu trúc dữ liệu đúng cho một bảng tra cứu theo khoá."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Tạo src/main/java/com/spendwise/shared/InMemoryRepository.java: class generic InMemoryRepository<T, ID> implements Repository<T, ID>, dùng một Map<ID, T> nội bộ; cần một hàm lấy ID từ entity (ví dụ Function<T, ID> idExtractor truyền vào constructor) vì interface không tự biết entity nào có field ID gì.",
+        "constraints": [
+          "Phải implements Repository<T, ID> — không được tự tạo interface khác.",
+          "save() phải cả thêm-mới lẫn cập-nhật (ID đã tồn tại thì ghi đè).",
+          "delete() không ném lỗi nếu ID không tồn tại (xoá cái không có là no-op, không phải lỗi)."
+        ],
+        "hints": [
+          "Constructor nhận Function<T, ID> idExtractor: new InMemoryRepository<>(Account::id) — cách này tránh việc InMemoryRepository phải biết trước Account hay Transaction có field ID tên gì."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — InMemoryRepository biên dịch sạch và thoả mãn Repository<T, ID>.",
+        "explanation": "Chỉ cần biên dịch sạch ở bước này; hành vi lưu-tìm-xoá được test ở bước kế tiếp."
+      },
+      "reveal": {
+        "label": "Xem cách InMemoryRepository dùng idExtractor",
+        "content": "public class InMemoryRepository<T, ID> implements Repository<T, ID> {\n    private final Map<ID, T> store = new HashMap<>();\n    private final Function<T, ID> idExtractor;\n\n    public InMemoryRepository(Function<T, ID> idExtractor) {\n        this.idExtractor = idExtractor;\n    }\n\n    public T save(T entity) {\n        store.put(idExtractor.apply(entity), entity);\n        return entity;\n    }\n    public Optional<T> find(ID id) { return Optional.ofNullable(store.get(id)); }\n    public List<T> findAll() { return List.copyOf(store.values()); }\n    public void delete(ID id) { store.remove(id); }\n}\n"
+      }
+    },
+    {
+      "id": "step-v02-inmemory-search-test",
+      "sessionId": "session-inmemory-repository",
+      "order": 2,
+      "buildStepId": "step-inmemory-repository-02",
+      "type": "your-turn",
+      "title": "Test lưu-tìm-xoá và tìm kiếm lọc qua interface",
+      "goal": "Có InMemoryRepositoryTest xác nhận save/find/findAll/delete hoạt động đúng, và một tìm kiếm lọc (ví dụ theo điều kiện trên findAll()) trả về đúng kết quả — tất cả gọi qua kiểu Repository<T, ID>, không ép kiểu về InMemoryRepository.",
+      "whyThisMatters": "Test gọi qua interface, không qua class cụ thể, là cách chứng minh phần còn lại của app thật sự có thể chạy chỉ với Repository<T, ID> — đây chính là điều interface hứa hẹn từ session trước.",
+      "learnerAction": {
+        "goal": "Viết src/test/java/com/spendwise/shared/InMemoryRepositoryTest.java: khai báo biến kiểu Repository<Account, String> (không phải InMemoryRepository), test save rồi find trả lại đúng entity, findAll trả đủ số lượng đã lưu, delete rồi find trả Optional.empty(); thêm một test lọc findAll().stream().filter(...) theo một điều kiện trên Account.",
+        "constraints": [
+          "Biến khai báo kiểu Repository<Account, String>, không phải InMemoryRepository<Account, String> — test phải chứng minh interface đủ dùng.",
+          "Test lọc phải dùng Stream trên kết quả findAll(), không thêm method lọc riêng vào InMemoryRepository."
+        ],
+        "hints": [
+          "Repository<Account, String> accounts = new InMemoryRepository<>(Account::id); — khai báo kiểu interface, khởi tạo bằng cài đặt cụ thể."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=InMemoryRepositoryTest' test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test save/find/findAll/delete và test lọc đều pass.",
+        "explanation": "Chạy đúng class test vừa viết để xác nhận cài đặt in-memory hoạt động đúng qua interface."
+      },
+      "commonErrors": [
+        {
+          "symptom": "find() sau delete() vẫn trả về entity cũ",
+          "likelyCause": "delete(ID id) implement sai — xoá nhầm key hoặc không gọi store.remove thật sự.",
+          "fix": "Kiểm tra idExtractor.apply trả đúng ID đang dùng để delete, khớp với ID lúc save."
+        }
+      ]
+    },
+    {
+      "id": "step-v02-inmemory-checkpoint",
+      "sessionId": "session-inmemory-repository",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: app đã có chỗ lưu, chưa có nghiệp vụ",
+      "goal": "Xác nhận InMemoryRepository lưu-tìm-xoá đúng qua interface, trước khi session sau xây tầng service đầu tiên phía trên nó."
+    },
+    {
+      "id": "step-v02-creation-service",
+      "sessionId": "session-transaction-service",
+      "order": 1,
+      "buildStepId": "step-transaction-service-01",
+      "type": "code-with-me",
+      "title": "Mở cửa duy nhất: TransactionCreationService.create(command)",
+      "goal": "Có TransactionCreationService với method create(command) validate, dựng và lưu một Transaction — và từ hôm nay đây là con đường duy nhất trong code sản phẩm được phép tạo Transaction.",
+      "whyThisMatters": "R20 của project: mọi Transaction trong code sản phẩm phải đi qua đúng một cửa — TransactionCreationService.create(command). Lý do không phải giáo điều: sau này import CSV, giao dịch định kỳ (recurring), và API đều cần tạo Transaction theo đúng cùng một luật (validate, gán sourceRef, ...); nếu mỗi nơi tự gọi `new Transaction(...)` theo cách riêng, các luật đó trôi dần và không còn cách nào audit hay dedup đáng tin cậy. Test được phép seed dữ liệu lịch sử qua fixture trực tiếp, nhưng khi test chính hành vi tạo giao dịch thì phải đi qua service này, không được new Transaction thẳng.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-08",
+          "note": "Command object đơn giản (ví dụ record CreateTransactionCommand) truyền dữ liệu đầu vào cho service, tách khỏi entity Transaction thật sự được lưu."
+        },
+        {
+          "lessonId": "day-10",
+          "note": "Một service phụ thuộc vào Repository<T, ID> (không phải InMemoryRepository cụ thể) để có thể đổi cách lưu trữ sau này mà không sửa service."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/java/com/spendwise/account/TransactionCreationService.java, constructor nhận Repository<Transaction, String>.",
+        "Định nghĩa một command đơn giản mang dữ liệu đầu vào (account, type, amount, category) — có thể là một record ngay trong cùng file hoặc file riêng.",
+        "create(command) dựng một Transaction mới (dùng đúng constructor Transaction đã có từ V0.1), lưu qua repository.save(...), và trả về Transaction vừa tạo."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "public record CreateTransactionCommand(\n        Account account,\n        TransactionType type,\n        Money amount,\n        Category category) {\n}\n",
+          "caption": "Command dau vao cho create() - khong phai entity duoc luu"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — TransactionCreationService biên dịch sạch.",
+        "explanation": "Chỉ xác nhận biên dịch ở bước này; sourceRef và test hành vi tạo giao dịch đến ở hai bước kế tiếp."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Test hoặc code khác trong project gọi thẳng new Transaction(...) để tạo giao dịch nghiệp vụ",
+          "likelyCause": "Quên rằng từ giờ TransactionCreationService.create(command) là cửa duy nhất cho code sản phẩm — constructor Transaction vẫn public vì fixture/test cần dùng để seed dữ liệu, nhưng không phải để tạo giao dịch thật.",
+          "fix": "Đưa mọi chỗ tạo giao dịch nghiệp vụ (không phải seed test) qua create(command)."
+        }
+      ]
+    },
+    {
+      "id": "step-v02-source-ref",
+      "sessionId": "session-transaction-service",
+      "order": 2,
+      "buildStepId": "step-transaction-service-02",
+      "type": "your-turn",
+      "title": "Gán sourceRef cho mọi giao dịch được tạo",
+      "goal": "Mỗi Transaction do create(command) tạo ra đều có một sourceRef khác null, và một test pin lại giá trị đó.",
+      "whyThisMatters": "sourceRef là dấu vết xuất xứ: MANUAL:... hôm nay, IMPORT:.../RECURRING:... sau này — dedup và audit trail của cả project đứng trên field này. Gán nó ngay từ bước đầu tiên rẻ hơn nhiều so với chèn nó vào sau khi đã có hàng nghìn giao dịch không có nguồn gốc.",
+      "learnerAction": {
+        "goal": "Thêm field sourceRef (String) vào Transaction (hoặc gán nó bên trong TransactionCreationService.create nếu Transaction đã có field này); create(command) sinh một sourceRef dạng \"MANUAL:\" + một định danh duy nhất (ví dụ UUID) cho mỗi giao dịch tạo thủ công.",
+        "constraints": [
+          "sourceRef không bao giờ được null sau khi create(command) trả về.",
+          "Định dạng sourceRef phải có tiền tố loại nguồn, ví dụ MANUAL: — các loại IMPORT:/RECURRING: sẽ xuất hiện ở các release sau, chưa cần code cho chúng bây giờ."
+        ],
+        "hints": [
+          "java.util.UUID.randomUUID().toString() đủ để tạo một định danh duy nhất cho mỗi lần tạo thủ công."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionCreationServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — test xác nhận sourceRef khác null và có tiền tố MANUAL: pass.",
+        "explanation": "Test pin lại đúng hợp đồng sourceRef vừa thêm, tránh nó bị bỏ quên trong lần sửa code sau."
+      },
+      "reveal": {
+        "label": "Xem cách create(command) gán sourceRef",
+        "content": "public Transaction create(CreateTransactionCommand command) {\n    String sourceRef = \"MANUAL:\" + UUID.randomUUID();\n    Transaction transaction = new Transaction(\n            command.account(), command.type(), command.amount(), command.category(), sourceRef);\n    return repository.save(transaction);\n}\n"
+      }
+    },
+    {
+      "id": "step-v02-transaction-read-service",
+      "sessionId": "session-transaction-service",
+      "order": 3,
+      "buildStepId": "step-transaction-service-03",
+      "type": "your-turn",
+      "title": "Đọc và lọc giao dịch chỉ qua Repository interface",
+      "goal": "Có TransactionService cho list/filter/search giao dịch, mọi lời gọi đều đi qua Repository<Transaction, String>, không phụ thuộc InMemoryRepository cụ thể.",
+      "whyThisMatters": "R13: kiến trúc package-by-feature, các tầng chỉ gọi xuống tầng dưới qua interface. TransactionService là nửa đọc; nó không tạo giao dịch (đó là việc của TransactionCreationService) — tách rõ hai trách nhiệm giúp sau này thêm luật tạo mới (ví dụ giới hạn số lượng import) mà không đụng vào logic tìm kiếm.",
+      "learnerAction": {
+        "goal": "Tạo src/main/java/com/spendwise/account/TransactionService.java, constructor nhận Repository<Transaction, String>; thêm list() trả toàn bộ giao dịch và một method lọc theo tiêu chí (ví dụ theo Category hoặc khoảng thời gian) dùng Stream trên kết quả findAll().",
+        "constraints": [
+          "Constructor chỉ nhận Repository<Transaction, String>, không nhận InMemoryRepository.",
+          "Không thêm method tạo/ghi giao dịch vào class này — việc đó thuộc TransactionCreationService."
+        ],
+        "hints": [
+          "repository.findAll().stream().filter(t -> t.category() == target).toList() là đủ cho một bộ lọc theo category."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — test list và lọc theo tiêu chí đều pass.",
+        "explanation": "Xác nhận tầng đọc hoạt động đúng độc lập với tầng tạo giao dịch."
+      }
+    },
+    {
+      "id": "step-v02-transaction-service-checkpoint",
+      "sessionId": "session-transaction-service",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: một cửa để tạo, một tầng để đọc",
+      "goal": "Xác nhận TransactionCreationService là cửa duy nhất tạo giao dịch (mọi giao dịch có sourceRef), và TransactionService đọc/lọc chỉ qua Repository interface, trước khi session sau dùng dữ liệu này để tính thống kê."
+    },
+    {
+      "id": "step-v02-groupby-category",
+      "sessionId": "session-statistics-aggregation",
+      "order": 1,
+      "buildStepId": "step-statistics-01",
+      "type": "code-with-me",
+      "title": "Gom nhóm giao dịch theo category với Collectors.groupingBy",
+      "goal": "Có StatisticsService.byCategory(...) trả về Map<Category, List<Transaction>> đúng theo dữ liệu seed, dùng Stream + Collectors.groupingBy.",
+      "whyThisMatters": "groupingBy là công cụ đúng và an toàn cho nửa 'gom nhóm' của bài toán thống kê — nó không chạm vào phép cộng tiền, chỉ chia giao dịch vào các nhóm theo khoá. Vấn đề double chỉ xuất hiện ở bước cộng tổng kế tiếp.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-10",
+          "note": "Collectors.groupingBy(Transaction::category) là ví dụ groupingBy chuẩn từ bài học, áp dụng trực tiếp không cần chỉnh sửa."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/java/com/spendwise/statistics/StatisticsService.java, constructor nhận Repository<Transaction, String> (hoặc TransactionService — chọn một, giữ nhất quán).",
+        "Viết byCategory(): transactions.stream().collect(Collectors.groupingBy(Transaction::category)).",
+        "Viết StatisticsServiceTest seed vài giao dịch nhiều category khác nhau, xác nhận groupingBy trả đúng số lượng mỗi nhóm."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=StatisticsServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — test groupingBy trả đúng các nhóm theo category đã seed.",
+        "explanation": "Xác nhận nửa gom-nhóm đúng trước khi thêm phép cộng tiền ở bước sau."
+      }
+    },
+    {
+      "id": "step-v02-sum-bigdecimal",
+      "sessionId": "session-statistics-aggregation",
+      "order": 2,
+      "buildStepId": "step-statistics-02",
+      "type": "your-turn",
+      "title": "Cộng tổng tiền bằng BigDecimal reduce — không summingDouble",
+      "goal": "Có tổng thu/chi và tổng theo từng category, tính bằng .map(Transaction::amount).reduce(BigDecimal.ZERO, BigDecimal::add), khớp với giá trị tính tay.",
+      "whyThisMatters": "Collectors.summingDouble — collector nổi bật nhất trong demo groupingBy của bài học ngày 10 — chỉ nhận double, không biên dịch được với BigDecimal, và nếu bạn ép Money về double để dùng nó thì R1 (không double/float cho tiền) bị vi phạm ngay lập tức, âm thầm mất chính xác. .reduce(BigDecimal.ZERO, BigDecimal::add) là con đường được project chọn thay thế — vẫn là Stream/Collectors, chỉ đổi cách cộng.",
+      "learnerAction": {
+        "goal": "Thêm totalIncome(), totalExpense(), và totalByCategory(Category) vào StatisticsService, tất cả cộng tiền bằng stream .map(Transaction::amount).map(Money::amount).reduce(BigDecimal.ZERO, BigDecimal::add) (hoặc tương đương cộng trực tiếp trên Money nếu Money có reduce-friendly API).",
+        "constraints": [
+          "Không dùng Collectors.summingDouble hay bất kỳ collector nào yêu cầu double/float ở bất kỳ đâu trong class này.",
+          "Không ép Money hay BigDecimal về double tại bất kỳ bước trung gian nào, kể cả tạm thời để tính rồi ép ngược lại.",
+          "reduce phải dùng BigDecimal.ZERO làm identity — không dùng 0 (int) hay 0.0 (double)."
+        ],
+        "hints": [
+          "transactions.stream().map(t -> t.amount().amount()).reduce(BigDecimal.ZERO, BigDecimal::add) cộng đúng nếu Money.amount() trả về BigDecimal."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=StatisticsServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — tổng thu/chi và tổng theo category khớp giá trị tính tay.",
+        "explanation": "So khớp tổng tính bằng reduce với giá trị bạn tự cộng tay trong test, để chắc chắn không có sai số ẩn."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Không biên dịch được khi thử Collectors.summingDouble(t -> t.amount().amount().doubleValue())",
+          "likelyCause": "Đây chính là cái bẫy: summingDouble ép bạn gọi .doubleValue() trên BigDecimal để nó nhận, tức là đang chủ động vứt bỏ độ chính xác chỉ để dùng đúng collector quen thuộc từ bài học.",
+          "fix": "Bỏ summingDouble hoàn toàn, dùng .reduce(BigDecimal.ZERO, BigDecimal::add) — không có collector BigDecimal-native nào trong stdlib cho sum, reduce là cách đúng."
+        }
+      ],
+      "reveal": {
+        "label": "Xem cách tính tổng bằng reduce, tránh summingDouble",
+        "content": "public BigDecimal totalByCategory(Category category) {\n    return transactions.findAll().stream()\n            .filter(t -> t.category() == category)\n            .map(t -> t.amount().amount())\n            .reduce(BigDecimal.ZERO, BigDecimal::add);\n}\n"
+      }
+    },
+    {
+      "id": "step-v02-no-double-review",
+      "sessionId": "session-statistics-aggregation",
+      "order": 3,
+      "buildStepId": "step-statistics-03",
+      "type": "run",
+      "title": "Chứng minh statistics không chứa double/float ở đâu cả",
+      "goal": "Chạy một lệnh grep-kiểu-invariant xác nhận package statistics không có từ khoá double/float ở bất kỳ đâu, cùng lúc test vẫn xanh.",
+      "whyThisMatters": "Đây không phải một lời hứa suông — nó là một bất biến kiểm chứng được bằng máy (grep-able invariant, R1). Nếu ai đó (kể cả bạn ở tương lai) lỡ tay thêm double vào package này, lệnh này báo lỗi ngay, không cần đợi bug số tiền sai xuất hiện ở production.",
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (Get-ChildItem 'src/main/java/com/spendwise/statistics' -Recurse -Filter *.java | Select-String -Pattern '(^|[^.\\w])(double|float)([^.\\w]|$)') { exit 1 }; .\\mvnw.cmd '-Dtest=StatisticsServiceTest' test",
+        "expectedResult": "Không có dòng nào khớp pattern double/float trong package statistics, và StatisticsServiceTest vẫn pass — lệnh kết thúc mà không exit 1.",
+        "explanation": "Select-String tìm double/float như một từ độc lập (không khớp bên trong tên biến khác); nếu tìm thấy, script exit 1 trước cả khi chạy test — báo lỗi nhanh nhất có thể."
+      }
+    },
+    {
+      "id": "step-v02-statistics-checkpoint",
+      "sessionId": "session-statistics-aggregation",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: thống kê đúng, không một cent nào qua double",
+      "goal": "Xác nhận gom nhóm và cộng tổng đều đúng và BigDecimal-pure, trước khi session cuối lưu dữ liệu này xuống file CSV."
+    },
+    {
+      "id": "step-v02-csv-write",
+      "sessionId": "session-csv-read-write",
+      "order": 1,
+      "buildStepId": "step-csv-read-write-01",
+      "type": "code-with-me",
+      "title": "Ghi giao dịch ra CSV bằng NIO.2",
+      "goal": "Có CsvTransactionStore.write(...) ghi một danh sách giao dịch ra file CSV có header row, số tiền BigDecimal ghi dưới dạng chuỗi thuần (toPlainString(), không ký hiệu khoa học).",
+      "whyThisMatters": "Đây là bước đầu tiên dữ liệu sống sót được qua nhiều lần chạy — trước đây mọi thứ chỉ nằm trong Map ở bộ nhớ, tắt app là mất. amount().toPlainString() (không phải toString()) đảm bảo số tiền lớn không bị BigDecimal tự ý in dưới dạng khoa học (1E+3) — một chuỗi CSV không phải số Java, nó phải in đúng như con người đọc.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-11",
+          "note": "java.nio.file.Files.write(...) và Path — API File I/O hiện đại của Java (NIO.2), thay cho FileWriter/BufferedWriter kiểu cũ."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/java/com/spendwise/shared/CsvTransactionStore.java.",
+        "Viết write(Path file, List<Transaction> transactions): dòng đầu tiên là header (ví dụ accountId,type,amount,currency,category,sourceRef), mỗi dòng sau là một giao dịch.",
+        "Dùng Files.write(file, lines) với lines là List<String> đã build sẵn — không tự quản lý BufferedWriter thủ công."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — CsvTransactionStore biên dịch sạch.",
+        "explanation": "Xác nhận biên dịch; test ghi-thật và đọc-lại đến ở bước sau."
+      },
+      "commonErrors": [
+        {
+          "symptom": "File CSV chứa số dạng 1.0E+3 thay vì 1000.00",
+          "likelyCause": "Dùng amount.toString() thay vì amount.toPlainString() trên một BigDecimal có exponent lớn.",
+          "fix": "Luôn dùng toPlainString() khi ghi BigDecimal ra text/CSV."
+        }
+      ]
+    },
+    {
+      "id": "step-v02-csv-read",
+      "sessionId": "session-csv-read-write",
+      "order": 2,
+      "buildStepId": "step-csv-read-write-02",
+      "type": "your-turn",
+      "title": "Đọc lại CSV bằng try-with-resources",
+      "goal": "Có CsvTransactionStore.load(...) đọc file CSV vừa ghi và tái tạo lại đúng danh sách Transaction ban đầu; lỗi IO được xử lý rõ ràng, không bị nuốt (swallow) im lặng.",
+      "whyThisMatters": "try-with-resources đóng file chắc chắn kể cả khi có exception giữa chừng — rò tài nguyên (resource leak) từ việc quên đóng file là lỗi âm thầm, chỉ lộ ra sau hàng nghìn lần chạy. Dòng CSV hỏng (thiếu cột, sai định dạng số) phải làm load() thất bại rõ ràng, không được âm thầm bỏ qua dòng đó và trả về danh sách thiếu.",
+      "learnerAction": {
+        "goal": "Viết load(Path file) đọc từng dòng (bỏ header), parse lại thành Transaction, trả về List<Transaction>; dùng try-with-resources (BufferedReader hoặc Files.lines trong try) để đảm bảo file luôn được đóng.",
+        "constraints": [
+          "Phải dùng try-with-resources hoặc try/finally đảm bảo file được đóng dù có exception.",
+          "IOException hoặc dòng CSV sai định dạng phải được xử lý tường minh (ném lại một exception rõ nghĩa, hoặc log + rethrow) — không được catch rồi bỏ qua lặng lẽ (empty catch block).",
+          "Không dùng lại constructor Transaction bỏ qua sourceRef — dòng CSV phải mang đủ dữ liệu để tái tạo sourceRef gốc."
+        ],
+        "hints": [
+          "Files.lines(file) trả về Stream<String> phải được đóng — bọc nó trong try-with-resources vì Stream<String> từ Files.lines implements AutoCloseable, khác với List<String> từ Files.readAllLines."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=CsvTransactionStoreTest' test",
+        "expectedResult": "BUILD SUCCESS — test ghi-rồi-đọc-lại tái tạo đúng danh sách giao dịch ban đầu.",
+        "explanation": "Xác nhận vòng ghi-đọc hoạt động đúng trước khi pin chặt độ chính xác tiền tệ ở bước sau."
+      }
+    },
+    {
+      "id": "step-v02-csv-roundtrip-money",
+      "sessionId": "session-csv-read-write",
+      "order": 3,
+      "buildStepId": "step-csv-read-write-03",
+      "type": "your-turn",
+      "title": "Pin chặt: không mất một cent nào qua CSV",
+      "goal": "Có một test round-trip xác nhận amount so sánh bằng nhau (compareTo, không phải equals) sau khi ghi ra CSV rồi đọc lại.",
+      "whyThisMatters": "CSV là nơi đầu tiên tiền rời khỏi Java (BigDecimal) để thành text rồi quay lại — mọi lỗi làm tròn hay parse sai sẽ lộ diện chính xác ở vòng round-trip này. compareTo (R2) là phép so sánh đúng cho tiền vì nó bỏ qua khác biệt scale (10.5 CSV đọc về scale 1 vẫn phải coi là bằng 10.50 scale 2 nếu giá trị giống nhau) — equals() sẽ sai ở đây nếu quá trình parse không phục hồi đúng scale gốc.",
+      "learnerAction": {
+        "goal": "Trong CsvTransactionStoreTest, thêm một test: seed một danh sách Transaction có amount lẻ (ví dụ 10.01, 0.99, 1000.00), ghi ra một file tạm, đọc lại, rồi xác nhận mỗi amount đọc lại so sánh bằng (compareTo == 0, hoặc dùng Money.equals nếu nó đã dựa trên compareTo từ V0.1) với amount gốc.",
+        "constraints": [
+          "So sánh amount bắt buộc qua compareTo (trực tiếp hoặc gián tiếp qua Money.equals) — không dùng BigDecimal.equals hay so sánh chuỗi.",
+          "Dùng file tạm thật (java.nio.file.Files.createTempFile) cho vòng ghi-đọc, không mock file system."
+        ],
+        "hints": [
+          "Files.createTempFile(\"spendwise-csv-\", \".csv\") tạo file tạm, tự dọn dẹp không bắt buộc vì đây là test ngắn hạn, nhưng gọi Files.deleteIfExists ở cuối test là thói quen sạch."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=CsvTransactionStoreTest' test",
+        "expectedResult": "BUILD SUCCESS — test round-trip money-precision pass, không một cent nào lệch.",
+        "explanation": "Đây là bài kiểm chứng cuối cùng của V0.2: dữ liệu tiền tệ sống sót nguyên vẹn qua toàn bộ vòng đời ghi-đọc."
+      }
+    },
+    {
+      "id": "step-v02-csv-checkpoint",
+      "sessionId": "session-csv-read-write",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: V0.2 hoàn tất — app sống sót qua một lần tắt-mở",
+      "goal": "Xác nhận toàn bộ tầng application (repository, service, statistics, CSV) hoạt động đúng và tiền tệ không mất chính xác ở bất kỳ điểm nào, trước khi V0.3 đưa Spring Boot vào."
+    },
+    {
+      "id": "step-v03-boot-pin",
+      "sessionId": "session-spring-bootstrap",
+      "order": 1,
+      "buildStepId": "step-spring-bootstrap-01",
+      "type": "your-turn",
+      "title": "Chốt phiên bản Spring Boot bằng bằng chứng — chưa viết dòng code nào",
+      "goal": "Có docs/decisions/spring-boot-pin.md không rỗng, ghi lại phiên bản Spring Boot được chọn kèm bằng chứng cụ thể, và pom.xml chưa hề bị đổi ở bước này.",
+      "whyThisMatters": "Đây là một BLOCKED PREREQUISITE có chủ đích: cả hai dòng phiên bản ứng viên đều đã hết hỗ trợ OSS tại thời điểm viết content này, nên việc chốt phiên bản bị ràng buộc theo thời gian thực tế bên ngoài project — không ai được tự đoán một con số. Nhận mặc định của start.spring.io 'cho xong việc' chính là thứ constraint này tồn tại để ngăn: một phiên bản không rõ nguồn gốc lọt vào parent POM rồi bị đóng băng ở đó (R26: toolchain được pin, không đổi tuỳ tiện).",
+      "learnerAction": {
+        "goal": "Tự tra cứu và ghi một quyết định (docs/decisions/spring-boot-pin.md) chọn đúng một phiên bản Spring Boot cụ thể (ví dụ 3.5.x hoặc phiên bản GA mới nhất còn được hỗ trợ tại thời điểm bạn làm bài), dựa trên bằng chứng kiểm chứng được — không phải suy đoán.",
+        "constraints": [
+          "Không copy một số phiên bản từ trí nhớ hay đoán — phải tra ít nhất: trang release chính thức của Spring Boot trên GitHub (tag mới nhất còn được hỗ trợ), Maven Central (metadata phiên bản mới nhất của dòng đó), và trang system requirements của Spring Boot (yêu cầu Java tối thiểu/tối đa).",
+          "File quyết định phải nêu rõ: phiên bản được chọn, ngày tra cứu, và ít nhất hai nguồn bằng chứng cụ thể (không chỉ 'tôi nghĩ vậy').",
+          "pom.xml không được sửa ở bước này — bước này chỉ ghi quyết định, chưa áp dụng nó."
+        ],
+        "hints": [
+          "Nếu có hai dòng phiên bản còn khả dụng (ví dụ một dòng ổn định lâu năm và một dòng mới hơn), việc chọn dòng nào cũng cần lý do rõ ràng trong file quyết định — ví dụ tránh một breaking change lớn ở major version kế tiếp nếu nó xung đột với nội dung khoá học."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (-not (Test-Path 'docs/decisions/spring-boot-pin.md')) { Write-Host 'SPRING_BOOT_EXACT_PIN_PENDING - task stays blocked'; exit 1 }; if ((Get-Item 'docs/decisions/spring-boot-pin.md').Length -eq 0) { Write-Host 'SPRING_BOOT_EXACT_PIN_PENDING - task stays blocked'; exit 1 }; Write-Host 'pin resolved - recorded in docs/decisions/spring-boot-pin.md'",
+        "expectedResult": "\"pin resolved - recorded in docs/decisions/spring-boot-pin.md\" — file tồn tại và không rỗng.",
+        "explanation": "Verify command chỉ kiểm tra một quyết định ĐÃ được ghi lại, không kiểm tra nội dung quyết định đó đúng hay sai — trách nhiệm tra cứu bằng chứng thật vẫn ở người học."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Chọn đại một phiên bản quen thuộc từ dự án cũ mà không tra lại",
+          "likelyCause": "Phiên bản đó có thể đã hết hỗ trợ OSS ở thời điểm hiện tại — 'quen thuộc' không đồng nghĩa 'còn được hỗ trợ'.",
+          "fix": "Luôn tra lại trang release/Maven Central tại thời điểm làm bài, không tin vào trí nhớ hay dự án cũ."
+        }
+      ]
+    },
+    {
+      "id": "step-v03-boot-parent",
+      "sessionId": "session-spring-bootstrap",
+      "order": 2,
+      "buildStepId": "step-spring-bootstrap-02",
+      "type": "your-turn",
+      "title": "Đưa spring-boot-starter-parent vào pom.xml với đúng phiên bản đã chốt",
+      "goal": "pom.xml kế thừa spring-boot-starter-parent đúng phiên bản đã ghi ở bước trước, maven.compiler.release là 17, và không có gì khác bị đổi.",
+      "whyThisMatters": "Parent POM là nơi duy nhất phiên bản Spring Boot được ghi xuống — mọi dependency Spring khác trong project sau này kế thừa version từ đây qua dependency management, không tự khai version riêng lẻ. Đây là lúc quyết định ở bước trước biến thành cấu hình thật.",
+      "learnerAction": {
+        "goal": "Thêm khối <parent> vào pom.xml trỏ tới org.springframework.boot:spring-boot-starter-parent với đúng version đã ghi trong docs/decisions/spring-boot-pin.md; đặt <maven.compiler.release>17</maven.compiler.release> trong <properties>.",
+        "constraints": [
+          "Version trong <parent> phải khớp chính xác với version đã ghi ở bước trước — không đổi ý giữa chừng mà không cập nhật lại file quyết định.",
+          "Không thêm bất kỳ dependency Spring nào khác ở bước này — chỉ parent POM và Java release."
+        ],
+        "hints": [
+          ".\\mvnw.cmd -Dexpression=project.parent.version -DforceStdout help:evaluate in ra version parent hiện tại — dùng để tự kiểm tra trước khi chạy verify command."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test V0.1/V0.2 vẫn pass dù đã đổi parent POM.",
+        "explanation": "Đổi parent POM không được làm gãy bất kỳ test cũ nào — nếu có test fail, đó là dấu hiệu version parent ảnh hưởng đến dependency nào đó ngoài dự kiến."
+      }
+    },
+    {
+      "id": "step-v03-boot-app",
+      "sessionId": "session-spring-bootstrap",
+      "order": 3,
+      "buildStepId": "step-spring-bootstrap-03",
+      "type": "code-with-me",
+      "title": "Khởi động Spring context bằng @SpringBootApplication — domain không đổi một dòng",
+      "goal": "Có SpendwiseApp mang @SpringBootApplication, SpendwiseAppTest khởi động container qua SpringApplication.run và pass, và git diff xác nhận không có sửa đổi nào trong package account/shared (domain).",
+      "whyThisMatters": "Lời hứa của việc migrate sang Spring là 'tái sử dụng', không phải 'viết lại' — container chỉ bọc lấy domain đã có từ V0.1/V0.2, nó không được phép đòi domain đổi theo ý mình. Việc verify bằng git diff --stat trên đúng hai package domain (không phải \"tôi nghĩ là tôi không đụng vào\") là cách chứng minh lời hứa đó bằng máy, không bằng lời.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-13",
+          "note": "@SpringBootApplication và SpringApplication.run — điểm khởi động chuẩn của một ứng dụng Spring Boot."
+        },
+        {
+          "lessonId": "day-14",
+          "note": "Application context là nơi các bean sẽ sống — session sau (DI) mới thật sự đăng ký bean vào đây."
+        }
+      ],
+      "instructions": [
+        "Thêm dependency spring-boot-starter-web vào pom.xml — version không khai, kế thừa từ parent đã pin ở bước trước.",
+        "Tạo src/main/java/com/spendwise/SpendwiseApp.java: một class mang @SpringBootApplication với public static void main gọi SpringApplication.run(SpendwiseApp.class, args).",
+        "Viết src/test/java/com/spendwise/SpendwiseAppTest.java: một test đơn giản gọi SpringApplication.run(...) (hoặc dùng @SpringBootTest nếu đã quen) và xác nhận context khởi động không ném exception.",
+        "Trước khi coi bước này xong, chạy git diff --stat HEAD -- src/main/java/com/spendwise/account src/main/java/com/spendwise/shared — output phải rỗng."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q test",
+        "expectedResult": "BUILD SUCCESS — SpendwiseAppTest pass, context khởi động sạch.",
+        "explanation": "Đây là lần đầu tiên trong project một Spring ApplicationContext thật sự được khởi động, không phải object Java thuần được new tay."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Context khởi động lỗi vì không tìm thấy bean nào để inject vào một service",
+          "likelyCause": "Chưa có @Service/@Bean nào đăng ký — điều đó đúng ở bước này, vì DI thật sự mới đến ở session kế tiếp. Nếu SpendwiseAppTest không tự inject gì, lỗi này không nên xảy ra.",
+          "fix": "Giữ SpendwiseAppTest đơn giản: chỉ khởi động context, chưa autowire bất kỳ bean nghiệp vụ nào — việc đó thuộc session sau."
+        }
+      ]
+    },
+    {
+      "id": "step-v03-boot-checkpoint",
+      "sessionId": "session-spring-bootstrap",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: Spring context sống, domain không đổi",
+      "goal": "Xác nhận Spring Boot khởi động được với phiên bản đã pin có bằng chứng, và toàn bộ domain/service từ V0.1-V0.2 không bị sửa một dòng."
+    },
+    {
+      "id": "step-v03-di-beans",
+      "sessionId": "session-di-service-beans",
+      "order": 1,
+      "buildStepId": "step-di-service-beans-01",
+      "type": "your-turn",
+      "title": "Đăng ký service/repository làm bean, inject qua constructor",
+      "goal": "TransactionService và InMemoryRepository được quản lý bởi Spring container (@Service/@Bean), inject qua constructor; không còn chỗ nào trong app wiring tự gọi new InMemoryRepository trực tiếp.",
+      "whyThisMatters": "Container giờ làm việc mà trước đây bạn tự làm bằng tay (new rồi truyền tham số). Constructor injection (không phải field injection @Autowired trên field) giữ class test được dễ dàng — bạn vẫn new nó bằng tay trong unit test không cần Spring, chỉ có wiring lúc chạy thật là đổi.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-14",
+          "note": "@Service, @Bean, và constructor injection — cách Spring quản lý vòng đời và phụ thuộc giữa các object thay cho new thủ công."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Thêm @Service lên TransactionService (hoặc TransactionCreationService/TransactionService tuỳ cách bạn tổ chức); tạo một @Configuration class khai @Bean cho InMemoryRepository (vì nó là generic, không tự @Component được) rồi để Spring inject nó vào constructor của service.",
+        "constraints": [
+          "Không còn lời gọi new InMemoryRepository(...) nào trong code app (main), ngoại trừ đúng một nơi: bên trong class @Configuration nơi bean được khai báo, hoặc trong test.",
+          "Service phải nhận repository qua constructor, không qua field @Autowired trực tiếp."
+        ],
+        "hints": [
+          "@Configuration class với method @Bean public Repository<Transaction, String> transactionRepository() { return new InMemoryRepository<>(Transaction::id); } là cách hợp lệ để new xuất hiện đúng một lần, có kiểm soát."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test cũ vẫn pass sau khi chuyển sang bean-managed wiring.",
+        "explanation": "Migration đúng nghĩa là hành vi không đổi — nếu test nào fail, khả năng cao bean chưa được wire đúng scope hoặc đúng kiểu."
+      },
+      "commonErrors": [
+        {
+          "symptom": "NoSuchBeanDefinitionException khi context khởi động",
+          "likelyCause": "Repository<T, ID> là generic — Spring không tự @Component-scan được một interface generic thô, cần khai @Bean tường minh với kiểu cụ thể.",
+          "fix": "Khai @Bean method trả về đúng kiểu cụ thể (Repository<Transaction, String>), không dựa vào @Component-scan cho generic."
+        }
+      ]
+    },
+    {
+      "id": "step-v03-di-context-test",
+      "sessionId": "session-di-service-beans",
+      "order": 2,
+      "buildStepId": "step-di-service-beans-02",
+      "type": "your-turn",
+      "title": "Chứng minh container inject đúng và hành vi nghiệp vụ không đổi",
+      "goal": "Một test khởi động context thật (hoặc dùng AnnotationConfigApplicationContext như day-13 đã dạy), lấy TransactionService từ đó, và toàn bộ test nghiệp vụ cũ chạy y nguyên không sửa assertion nào.",
+      "whyThisMatters": "Đây là bằng chứng cho lời hứa 'migration không đổi hành vi' — không phải chỉ context khởi động được (session trước đã xong), mà bean lấy ra từ context phải hoạt động y hệt bean bạn tự new tay trước đây.",
+      "learnerAction": {
+        "goal": "Sửa hoặc bổ sung TransactionServiceTest: có ít nhất một test lấy TransactionService từ một Spring context thật (ApplicationContext.getBean(...) hoặc @SpringBootTest với @Autowired) thay vì new tay, rồi chạy lại đúng những assertion nghiệp vụ đã có từ V0.2 mà không sửa nội dung assertion.",
+        "constraints": [
+          "Không được sửa assertion nghiệp vụ đã có từ V0.2 để 'cho nó pass' — nếu assertion cũ fail khi lấy bean từ context, đó là bug thật trong wiring, phải sửa wiring chứ không sửa test."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — test lấy bean từ context pass, toàn bộ test nghiệp vụ cũ không đổi assertion vẫn xanh.",
+        "explanation": "Toàn bộ suite chạy lại để xác nhận migration DI không làm lệch bất kỳ hành vi nào đã được pin từ trước."
+      }
+    },
+    {
+      "id": "step-v03-di-checkpoint",
+      "sessionId": "session-di-service-beans",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: container wire, hành vi không đổi",
+      "goal": "Xác nhận service/repository đã là bean Spring, inject qua constructor, và hành vi nghiệp vụ giống hệt trước migration."
+    },
+    {
+      "id": "step-v04-account-controller",
+      "sessionId": "session-account-endpoints",
+      "order": 1,
+      "buildStepId": "step-account-endpoints-01",
+      "type": "code-with-me",
+      "title": "Viết AccountController + AccountService đầu tiên của project",
+      "goal": "Có AccountController với route POST/GET(list)/GET(by id), một AccountService mới đứng giữa controller và repository, và request/response là record CreateAccountRequest/AccountResponse — không method PUT/PATCH/DELETE nào tồn tại.",
+      "whyThisMatters": "Đây là route HTTP đầu tiên của toàn bộ project — mọi quyết định ở đây (dùng record thay vì entity, controller mỏng gọi xuống service) thiết lập khuôn mẫu mà category/transaction endpoint sẽ lặp lại. R16 (không entity/VO qua HTTP boundary) và R17 (controller không chứa business logic) bắt đầu được thực thi từ đúng bước này. update/delete bị bỏ ngoài có chủ đích: Account hiện tại có id/type/openingBalance bất biến và balance suy ra từ giao dịch — chưa có chính sách sửa/xoá nào được định nghĩa, và một REST API không bắt buộc phải có đủ CRUD cho mọi domain object.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-16",
+          "note": "@RestController, @PostMapping/@GetMapping, @PathVariable/@RequestParam, và ResponseEntity — bộ công cụ chuẩn Spring MVC để expose một resource qua HTTP."
+        }
+      ],
+      "instructions": [
+        "Thêm dependency spring-boot-starter-web vào pom.xml nếu chưa có (version kế thừa từ parent đã pin ở V0.3).",
+        "Tạo record CreateAccountRequest (name, type, openingBalance dạng String hoặc kiểu request-friendly) và record AccountResponse (id, name, type, balance) — không dùng lại class Account domain trực tiếp.",
+        "Tạo AccountService mới: constructor nhận Repository<Account, String>, có method create(request) và list()/getById(id) gọi xuống repository, trả về AccountResponse (mapping tạm thời inline ở bước này — session dto-mapping sau sẽ tách nó ra).",
+        "Tạo AccountController: POST /accounts gọi service.create, GET /accounts gọi service.list, GET /accounts/{id} gọi service.getById — controller chỉ gọi xuống service, không tự tính toán gì."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — controller, service, và hai record biên dịch sạch.",
+        "explanation": "Chỉ xác nhận biên dịch ở bước này; đúng status code và test controller đến ở bước kế tiếp."
+      },
+      "commonErrors": [
+        {
+          "symptom": "AccountController trả thẳng object Account (domain) từ GET /accounts/{id}",
+          "likelyCause": "Tiện tay return account thay vì map sang AccountResponse — vi phạm R16 ngay từ route đầu tiên của project.",
+          "fix": "Luôn trả AccountResponse, không bao giờ trả entity/VO domain trực tiếp từ controller."
+        }
+      ]
+    },
+    {
+      "id": "step-v04-account-status-codes",
+      "sessionId": "session-account-endpoints",
+      "order": 2,
+      "buildStepId": "step-account-endpoints-02",
+      "type": "your-turn",
+      "title": "Đúng status code: 201+Location, 200, 404",
+      "goal": "Một test JUnit gọi thẳng controller (không cần server thật chạy) xác nhận: create trả 201 kèm header Location, list và get-by-id trả 200, get một id không tồn tại trả 404.",
+      "whyThisMatters": "Status code là một phần hợp đồng API, không phải trang trí — một client thật sẽ rẽ nhánh logic theo đúng các mã này (201 nghĩa là 'đã tạo, đây là địa chỉ', 404 nghĩa là 'không có, đừng thử lại với cùng request').",
+      "learnerAction": {
+        "goal": "Viết AccountControllerTest: gọi trực tiếp method của AccountController (new AccountController(service) rồi gọi method, không cần @SpringBootTest/server thật) và assert trên ResponseEntity trả về: status 201 + header Location chứa path tới account vừa tạo cho create, status 200 cho list/get-by-id hợp lệ, status 404 cho get một id không tồn tại.",
+        "constraints": [
+          "Test gọi trực tiếp method Java của controller, không cần khởi động server HTTP thật (đó là việc của dry-run Phase L/M sau này, không phải của test này).",
+          "Controller method phải trả ResponseEntity<...> để test có thể assert status/header, không trả thẳng record."
+        ],
+        "hints": [
+          "ResponseEntity.status(HttpStatus.CREATED).location(URI.create(\"/accounts/\" + id)).body(response) là mẫu chuẩn cho response 201+Location.",
+          "ResponseEntity.notFound().build() cho trường hợp 404."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=AccountControllerTest' test",
+        "expectedResult": "BUILD SUCCESS — cả 4 tình huống status code đều pass.",
+        "explanation": "Test cấp độ JUnit thuần, không cần MockMvc hay server thật, đủ để pin đúng ResponseEntity mà controller trả về."
+      },
+      "reveal": {
+        "label": "Xem mẫu ResponseEntity cho create trả 201+Location",
+        "content": "@PostMapping\npublic ResponseEntity<AccountResponse> create(@RequestBody CreateAccountRequest request) {\n    AccountResponse created = service.create(request);\n    return ResponseEntity.status(HttpStatus.CREATED)\n            .location(URI.create(\"/accounts/\" + created.id()))\n            .body(created);\n}\n"
+      }
+    },
+    {
+      "id": "step-v04-account-checkpoint",
+      "sessionId": "session-account-endpoints",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: route HTTP đầu tiên sống, đúng status code",
+      "goal": "Xác nhận Account đã có route HTTP create/list/get đúng semantics, chưa có update/delete (có chủ đích), trước khi mẫu này lặp lại cho Category và Transaction."
+    },
+    {
+      "id": "step-v04-category-controller",
+      "sessionId": "session-category-endpoints",
+      "order": 1,
+      "buildStepId": "step-category-endpoints-01",
+      "type": "your-turn",
+      "title": "Expose Category chỉ-đọc qua GET",
+      "goal": "Có CategoryController với route GET list-categories (và get-by-value nếu hữu ích), đọc trực tiếp từ enum Category, không route POST/PUT/PATCH/DELETE nào tồn tại.",
+      "whyThisMatters": "Category vẫn là enum cố định trong Java ở V0.4 — không có bảng database, không có tạo/sửa/xoá tại runtime, và không có 'CategoryService giả vờ có CRUD' để trông giống hai controller kia. Route càng ít càng đúng khi domain thật sự chỉ cần đọc.",
+      "learnerAction": {
+        "goal": "Tạo record CategoryResponse (ví dụ value, displayName nếu có); tạo CategoryController với GET /categories trả về danh sách toàn bộ Category.values() map sang CategoryResponse.",
+        "constraints": [
+          "Không có route POST/PUT/PATCH/DELETE nào trong CategoryController.",
+          "Không tạo CategoryService với method create/update/delete giả — nếu cần một service mỏng để đọc, nó chỉ có method đọc.",
+          "Không trả trực tiếp enum Category từ controller — vẫn phải qua CategoryResponse record (R16)."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — CategoryController biên dịch sạch, chỉ có route GET.",
+        "explanation": "Xác nhận biên dịch; kiểm chứng boundary rule cho cả ba controller đến ở bước sau."
+      }
+    },
+    {
+      "id": "step-v04-boundary-check",
+      "sessionId": "session-category-endpoints",
+      "order": 2,
+      "buildStepId": "step-category-endpoints-02",
+      "type": "run",
+      "title": "Chứng minh không entity/VO nào lọt qua HTTP boundary ở cả ba controller",
+      "goal": "Một kiểm tra grep-kiểu-invariant xác nhận không có Service nào của project trả ResponseEntity (dấu hiệu logic HTTP lẫn vào tầng service), cùng lúc toàn bộ test suite vẫn xanh.",
+      "whyThisMatters": "R16/R17 không phải quy ước chỉ ghi trong tài liệu — verify command này biến nó thành một bất biến kiểm chứng được bằng máy: nếu ResponseEntity xuất hiện trong bất kỳ *Service.java nào, đó là dấu hiệu business logic hoặc quyết định HTTP đã rò xuống tầng service, đúng thứ R17 cấm.",
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (Get-ChildItem 'src/main/java' -Recurse -Filter '*Service.java' | Select-String -Pattern 'ResponseEntity') { exit 1 }; .\\mvnw.cmd test",
+        "expectedResult": "Không có *Service.java nào chứa ResponseEntity, toàn bộ test suite pass.",
+        "explanation": "Grep quét đúng theo tên file *Service.java — nếu ResponseEntity chỉ xuất hiện trong *Controller.java (đúng chỗ), lệnh này pass sạch."
+      }
+    },
+    {
+      "id": "step-v04-category-checkpoint",
+      "sessionId": "session-category-endpoints",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: hai resource đã đúng boundary, resource thứ ba còn lại",
+      "goal": "Xác nhận Category chỉ-đọc đúng như thiết kế, và cả Account lẫn Category đều không để entity/VO/ResponseEntity lộ sai chỗ, trước khi Transaction — resource phức tạp nhất — vào cuộc."
+    },
+    {
+      "id": "step-v04-transaction-controller",
+      "sessionId": "session-transaction-endpoints",
+      "order": 1,
+      "buildStepId": "step-transaction-endpoints-01",
+      "type": "your-turn",
+      "title": "Expose Transaction create/list/filter qua HTTP",
+      "goal": "Có TransactionController với route POST (create) và GET (list/filter), record CreateTransactionRequest/TransactionResponse, controller gọi xuống tầng service — chưa bắt buộc phải đi qua TransactionCreationService ở bước này (bước sau mới pin chặt điều đó).",
+      "whyThisMatters": "Route thứ ba lặp lại đúng khuôn mẫu Account/Category đã thiết lập: record vào, record ra, controller mỏng. Đây là resource phức tạp nhất vì nó vừa ghi (create) vừa đọc có lọc (filter theo category/khoảng thời gian).",
+      "learnerAction": {
+        "goal": "Tạo record CreateTransactionRequest và TransactionResponse; tạo TransactionController với POST /transactions gọi tầng service để tạo giao dịch, GET /transactions (có thể nhận query param lọc theo category) gọi TransactionService.list()/filter đã có từ V0.2.",
+        "constraints": [
+          "Route GET filter dùng @RequestParam, không dùng @PathVariable cho tiêu chí lọc tuỳ chọn.",
+          "Không trả trực tiếp entity Transaction — luôn qua TransactionResponse record."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — TransactionController biên dịch sạch với route create/list/filter.",
+        "explanation": "Xác nhận biên dịch; việc route create có thật sự đi qua TransactionCreationService hay không được pin ở bước kế tiếp."
+      }
+    },
+    {
+      "id": "step-v04-transaction-canonical-path",
+      "sessionId": "session-transaction-endpoints",
+      "order": 2,
+      "buildStepId": "step-transaction-endpoints-02",
+      "type": "your-turn",
+      "title": "HTTP cũng chỉ là một caller khác của cửa duy nhất — R20 không dừng ở controller",
+      "goal": "Một test xác nhận giao dịch tạo qua HTTP mang sourceRef được TransactionCreationService gán (không phải do controller tự bịa ra), nghĩa là route POST /transactions thật sự đi qua đúng con đường tạo canonical từ session V0.2.",
+      "whyThisMatters": "R20 được giới thiệu ở V0.2 như 'con đường tạo duy nhất' — nếu TransactionController tự dựng một Transaction bằng constructor thay vì gọi TransactionCreationService.create(command), quy tắc đó chỉ đúng trên giấy. HTTP là một caller mới, không phải một ngoại lệ.",
+      "learnerAction": {
+        "goal": "Sửa TransactionController.create để nó xây một CreateTransactionCommand từ request rồi gọi transactionCreationService.create(command) — không tự new Transaction hay tự gán sourceRef trong controller; thêm test xác nhận response trả về mang sourceRef có tiền tố MANUAL:.",
+        "constraints": [
+          "TransactionController không được import hay gọi trực tiếp constructor Transaction — mọi việc tạo phải qua TransactionCreationService.create(command).",
+          "sourceRef trong response phải đến từ chính TransactionCreationService, controller không tự sinh nó."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionControllerTest' test",
+        "expectedResult": "BUILD SUCCESS — test xác nhận sourceRef của giao dịch tạo qua HTTP có tiền tố MANUAL: và đến từ canonical path.",
+        "explanation": "Test này là bằng chứng R20 giữ nguyên hiệu lực qua một caller mới (HTTP), không chỉ qua lời gọi Java trực tiếp như ở V0.2."
+      }
+    },
+    {
+      "id": "step-v04-transaction-checkpoint",
+      "sessionId": "session-transaction-endpoints",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: cả ba resource đã có route HTTP, một cửa tạo giao dịch vẫn giữ nguyên",
+      "goal": "Xác nhận Account/Category/Transaction đều có route HTTP đúng semantics, và R20 (một cửa tạo giao dịch) vẫn đúng kể cả khi caller là HTTP, trước khi session sau dọn lại lớp mapping."
+    },
+    {
+      "id": "step-v04-mapper-extract",
+      "sessionId": "session-dto-mapping",
+      "order": 1,
+      "buildStepId": "step-dto-mapping-01",
+      "type": "code-with-me",
+      "title": "Tách mapping record<->domain ra khỏi controller/service thành AccountMapper/TransactionMapper",
+      "goal": "Có AccountMapper và TransactionMapper với method tường minh chuyển record sang domain và ngược lại, field-by-field, không dùng reflection; controller/service không còn tự lắp field thủ công rải rác.",
+      "whyThisMatters": "Ba session vừa rồi mapping đang nằm rải rác, viết tay ngay trong service — dễ đúng lúc đầu, dễ lệch khi có người sửa một bên mà quên bên kia. Gom việc này vào đúng một class Mapper cho mỗi resource khiến 'record này khớp domain kia thế nào' chỉ có một câu trả lời, ở một chỗ.",
+      "instructions": [
+        "Tạo AccountMapper với hai method: toResponse(Account) -> AccountResponse, và (nếu cần) fromRequest(CreateAccountRequest) -> dữ liệu dựng Account.",
+        "Tạo TransactionMapper tương tự cho Transaction/TransactionResponse/CreateTransactionRequest.",
+        "Sửa AccountController/AccountService và TransactionController/TransactionCreationService để gọi qua mapper thay vì tự new record/field thủ công."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "public final class AccountMapper {\n    private AccountMapper() { }\n\n    public static AccountResponse toResponse(Account account) {\n        return new AccountResponse(\n                account.id(), account.name(), account.type().name(),\n                account.balance().amount().toPlainString());\n    }\n}\n",
+          "caption": "Vi du mapper tuong minh - khong dung Reflection/ModelMapper"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — mapper biên dịch sạch, controller/service gọi qua mapper.",
+        "explanation": "Xác nhận việc tách mapper không làm gãy biên dịch; test pin đúng từng field đến ở bước sau."
+      }
+    },
+    {
+      "id": "step-v04-mapper-test",
+      "sessionId": "session-dto-mapping",
+      "order": 2,
+      "buildStepId": "step-dto-mapping-02",
+      "type": "your-turn",
+      "title": "Pin đúng từng field trong mapper bằng test",
+      "goal": "AccountMapperTest xác nhận mỗi field domain map đúng sang field response tương ứng cho một input tiêu biểu — một field đặt sai tên phải làm test fail rõ ràng.",
+      "whyThisMatters": "Mapping viết tay (field-by-field, không reflection) mạnh ở chỗ nó tường minh, nhưng cũng dễ gõ nhầm tên field mà trình biên dịch không bắt được nếu kiểu dữ liệu tình cờ khớp (ví dụ gán nhầm balance vào field openingBalance). Test cấp field là lưới an toàn duy nhất cho lớp lỗi này.",
+      "learnerAction": {
+        "goal": "Viết AccountMapperTest: dựng một Account cụ thể với giá trị khác biệt rõ ràng ở từng field (id, name, type, balance), gọi AccountMapper.toResponse, rồi assert từng field của AccountResponse khớp đúng — không assert nguyên object bằng equals (trừ khi record đã có equals tin cậy).",
+        "constraints": [
+          "Input test phải có giá trị khác biệt rõ ràng giữa các field (không dùng cùng một giá trị cho name và type) để một lỗi gán nhầm field chắc chắn bị phát hiện."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=AccountMapperTest' test",
+        "expectedResult": "BUILD SUCCESS — test pin đúng từng field pass.",
+        "explanation": "Test cấp field, không phải test tổng thể — nó bắt được đúng lớp lỗi mapping viết tay dễ mắc phải."
+      }
+    },
+    {
+      "id": "step-v04-mapping-checkpoint",
+      "sessionId": "session-dto-mapping",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: mapping có một nhà, không còn rải rác",
+      "goal": "Xác nhận toàn bộ chuyển đổi record<->domain đã dồn vào Mapper class tường minh, có test pin từng field, trước khi session sau thêm ràng buộc validation lên chính các record này."
+    },
+    {
+      "id": "step-v04-validation-annotations",
+      "sessionId": "session-bean-validation",
+      "order": 1,
+      "buildStepId": "step-bean-validation-01",
+      "type": "your-turn",
+      "title": "Gắn ràng buộc jakarta.validation lên request record",
+      "goal": "CreateAccountRequest và CreateTransactionRequest mang constraint (@NotNull/@NotBlank/@Min, hoặc một @Constraint tuỳ biến cho luật tiền dương scale-2) thể hiện đúng bất biến cần có ở biên giới HTTP.",
+      "whyThisMatters": "Boot 2.3 trở đi không còn tự kèm validation-starter — phải khai spring-boot-starter-validation tường minh. Ràng buộc khai trên chính record request (không phải domain) vì biên giới HTTP có luật riêng của nó (ví dụ 'amount phải là chuỗi số dương' trước khi nó kịp trở thành Money) — không phải mọi ràng buộc domain đều cần lặp lại y hệt ở đây, và ngược lại.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-17",
+          "note": "jakarta.validation.constraints (@NotNull, @NotBlank, @Min, ...) và cách khai constraint tuỳ biến bằng @Constraint khi built-in không đủ diễn tả luật nghiệp vụ."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Thêm dependency spring-boot-starter-validation vào pom.xml; gắn @NotBlank lên name, @NotNull lên type của CreateAccountRequest; gắn ràng buộc tương tự lên CreateTransactionRequest (account id không blank, amount là chuỗi số dương).",
+        "constraints": [
+          "Ràng buộc phải khai trên record request, không khai lại trên domain (domain đã tự bảo vệ bất biến của nó từ V0.1 rồi).",
+          "Nếu built-in constraint không diễn tả đủ luật 'số dương, scale 2' cho amount, viết một @Constraint tuỳ biến thay vì chấp nhận một ràng buộc yếu hơn ý định thật."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — annotation biên dịch sạch với dependency validation mới thêm.",
+        "explanation": "Chỉ xác nhận biên dịch; việc thật sự enforce @Valid ở controller đến ở bước kế tiếp."
+      }
+    },
+    {
+      "id": "step-v04-validation-enforce",
+      "sessionId": "session-bean-validation",
+      "order": 2,
+      "buildStepId": "step-bean-validation-02",
+      "type": "your-turn",
+      "title": "Bật @Valid ở controller, xác nhận input sai bị chặn với 400",
+      "goal": "TransactionController dùng @Valid trên @RequestBody, một request thiếu/sai field bị từ chối 400 trước khi vào tới thân method controller, request hợp lệ đi qua bình thường — kiểm chứng thêm bằng curl -i trên app đang chạy thật.",
+      "whyThisMatters": "Khai constraint mà không có @Valid chỉ là tài liệu, không phải luật được thực thi. day-17 dạy kiểm chứng API bằng curl -i để thấy đúng status/headers như một client thật thấy — không chỉ tin vào assertion trong test.",
+      "learnerAction": {
+        "goal": "Thêm @Valid vào tham số @RequestBody CreateTransactionRequest của TransactionController.create; viết TransactionControllerTest gửi một request thiếu field bắt buộc và assert status 400, cùng một request hợp lệ assert status 201 như bình thường.",
+        "constraints": [
+          "@Valid phải đặt ngay trên tham số @RequestBody, không validate thủ công bằng if/else trong thân method (đó chính là thứ Bean Validation thay thế).",
+          "Test 400 phải kiểm tra request thật sự KHÔNG chạm được vào logic tạo giao dịch (không có sourceRef nào được sinh ra cho request bị từ chối)."
+        ],
+        "hints": [
+          "Sau khi test JUnit pass, khởi động app thật (.\\mvnw.cmd spring-boot:run) và tự tay curl -i -X POST .../transactions với một body thiếu field để thấy 400 thật ngoài đời — đây là thói quen day-16/17 khuyến khích, không phải bước bắt buộc để verify command pass."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionControllerTest' test",
+        "expectedResult": "BUILD SUCCESS — request thiếu field trả 400, request hợp lệ trả 201.",
+        "explanation": "Test cấp JUnit là bằng chứng máy-kiểm-được; curl -i thủ công (gợi ý ở hints) chỉ để có cảm nhận trực quan, không thay thế test."
+      }
+    },
+    {
+      "id": "step-v04-validation-checkpoint",
+      "sessionId": "session-bean-validation",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: biên giới HTTP tự chặn input sai",
+      "goal": "Xác nhận input sai bị chặn 400 ngay tại biên giới, trước khi session cuối gom mọi loại lỗi (domain lẫn validation) về một định dạng phản hồi duy nhất."
+    },
+    {
+      "id": "step-v04-advice",
+      "sessionId": "session-error-handling-advice",
+      "order": 1,
+      "buildStepId": "step-error-handling-01",
+      "type": "code-with-me",
+      "title": "Một @RestControllerAdvice dịch mọi lỗi thành ProblemDetail",
+      "goal": "Có ApiExceptionHandler (@RestControllerAdvice) bắt DomainException/InvalidAmountException/CurrencyMismatchException và MethodArgumentNotValidException, mỗi loại trả về một ProblemDetail với status phù hợp.",
+      "whyThisMatters": "R17: services never return ResponseEntity, controllers never contain business logic, @RestControllerAdvice is the single error-translation point — trước bước này, mỗi controller có thể tự xử lý lỗi theo cách riêng, dẫn tới payload lỗi không nhất quán giữa các resource. Một điểm dịch lỗi duy nhất nghĩa là một client chỉ cần học đúng một hình dạng lỗi cho toàn bộ API.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-17",
+          "note": "@RestControllerAdvice, @ExceptionHandler, và ProblemDetail (RFC 7807) — cách Spring MVC tập trung xử lý lỗi thay vì try/catch rải rác trong từng controller."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/java/com/spendwise/shared/ApiExceptionHandler.java mang @RestControllerAdvice.",
+        "Viết @ExceptionHandler(InvalidAmountException.class) và @ExceptionHandler(CurrencyMismatchException.class) trả ProblemDetail với status 400 (Bad Request) — đây là lỗi input.",
+        "Viết @ExceptionHandler(DomainException.class) (bắt các domain lỗi còn lại chưa có handler cụ thể hơn) trả ProblemDetail với status 422 (Unprocessable Entity) hoặc 400 tuỳ bạn định nghĩa rõ trong code — chọn một, nhất quán.",
+        "Viết @ExceptionHandler(MethodArgumentNotValidException.class) (lỗi từ @Valid) trả ProblemDetail 400 kèm chi tiết field nào sai."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile",
+        "expectedResult": "BUILD SUCCESS — ApiExceptionHandler biên dịch sạch với đủ các @ExceptionHandler cần thiết.",
+        "explanation": "Xác nhận biên dịch; status per error-type được pin bằng test ở bước kế tiếp."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Một domain exception cụ thể (ví dụ InvalidAmountException) vẫn rơi vào handler chung DomainException với status khác ý muốn",
+          "likelyCause": "Spring chọn @ExceptionHandler theo kiểu cụ thể nhất khớp exception được ném — nếu handler cho lớp con không tồn tại hoặc bị đặt sai thứ tự đăng ký, nó có thể rơi vào handler của lớp cha.",
+          "fix": "Đảm bảo có @ExceptionHandler riêng cho từng lớp con cần status khác lớp cha; Spring tự chọn handler cụ thể nhất, không cần quan tâm thứ tự khai trong file."
+        }
+      ]
+    },
+    {
+      "id": "step-v04-advice-status-test",
+      "sessionId": "session-error-handling-advice",
+      "order": 2,
+      "buildStepId": "step-error-handling-02",
+      "type": "your-turn",
+      "title": "Pin đúng status cho từng loại lỗi bằng test",
+      "goal": "ApiExceptionHandlerTest xác nhận: lỗi validation trả 400, mỗi loại domain exception trả đúng status đã định nghĩa, và mọi response lỗi đều có cùng hình dạng ProblemDetail nhất quán.",
+      "whyThisMatters": "Đây là bài test cuối cùng của V0.4, nhìn từ góc một client thật: nó không quan tâm code Java bên trong ném exception gì, chỉ quan tâm status và payload nhận được có nhất quán và đúng nghĩa hay không.",
+      "learnerAction": {
+        "goal": "Viết ApiExceptionHandlerTest gọi trực tiếp các method @ExceptionHandler của ApiExceptionHandler (hoặc gọi qua controller nếu tiện hơn) với từng loại exception, assert status code đúng và ProblemDetail có field type/title/status/detail nhất quán giữa các loại lỗi.",
+        "constraints": [
+          "Test phải bao phủ ít nhất: InvalidAmountException, CurrencyMismatchException, DomainException (hoặc lớp con khác không có handler riêng), và MethodArgumentNotValidException.",
+          "Không assert status code bằng số nguyên trần (ví dụ 400) nếu HttpStatus.BAD_REQUEST khả dụng — dùng hằng số HttpStatus cho rõ nghĩa và tránh gõ nhầm."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test status-per-error-type pass, và toàn bộ suite V0.1-V0.4 vẫn xanh.",
+        "explanation": "Chạy full suite (không giới hạn -Dtest) vì đây là bài kiểm tra tổng kết của V0.4 — mọi thứ từ Money tới REST API phải cùng xanh một lúc."
+      }
+    },
+    {
+      "id": "step-v04-final-checkpoint",
+      "sessionId": "session-error-handling-advice",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: V0.4 hoàn tất — API sống, vẫn chưa có database",
+      "goal": "Xác nhận cả ba resource (Account/Category/Transaction) có route HTTP đúng semantics, lỗi được dịch nhất quán qua một @RestControllerAdvice duy nhất, trước khi V0.5 đưa Spring Data JPA và database thật vào."
     }
   ],
   "guidedCheckpoints": [
@@ -1018,6 +2132,233 @@
         "V0.1 kết thúc ở đây: object graph (Account, Transaction, Category) vẫn được bạn tự tay new lên bằng Java code thuần — chưa có ApplicationContext, chưa có @Component/@Service nào quản lý vòng đời chúng. V0.3 mới bắt đầu để Spring IoC Container đảm nhận việc đó.",
         "Chưa có database — mọi object chỉ sống trong bộ nhớ JVM, mất hết khi chương trình dừng. Persistence (JPA/PostgreSQL) thuộc các giai đoạn sau, xây trên đúng domain model bạn vừa hoàn thành.",
         "Chưa có REST API, chưa có CSV import/export — đây là các buildTask của các release sau, chưa mở khoá ở V0.1."
+      ]
+    },
+    {
+      "id": "checkpoint-repository-interface",
+      "sessionId": "session-repository-interface",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/Repository.java",
+        "src/test/java/com/spendwise/shared/RepositoryContractTest.java"
+      ],
+      "understanding": [
+        "Vì sao domain/service code nên phụ thuộc vào một interface (Repository<T, ID>) thay vì một cách lưu trữ cụ thể.",
+        "Cách generics <T, ID> cho phép một interface phục vụ nhiều kiểu entity mà vẫn giữ type safety."
+      ],
+      "whatYouBuilt": "Một interface Repository<T, ID> generic với save/find/findAll/delete, chứng minh dùng được cho cả Account lẫn Transaction.",
+      "whyNotYet": [
+        "Chưa có cài đặt thật nào — interface không lưu được gì cho tới khi InMemoryRepository xuất hiện ở session sau."
+      ]
+    },
+    {
+      "id": "checkpoint-inmemory-repository",
+      "sessionId": "session-inmemory-repository",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/InMemoryRepository.java",
+        "src/test/java/com/spendwise/shared/InMemoryRepositoryTest.java"
+      ],
+      "understanding": [
+        "Vì sao InMemoryRepository cần một idExtractor thay vì tự biết field ID của từng entity.",
+        "Vì sao test khai báo biến kiểu Repository<T, ID> thay vì InMemoryRepository chứng minh được điều gì đó quan trọng."
+      ],
+      "whatYouBuilt": "Một cài đặt Repository<T, ID> dựa trên Map, lưu-tìm-xoá đúng và test được hoàn toàn qua interface.",
+      "whyNotYet": [
+        "Dữ liệu vẫn chỉ sống trong bộ nhớ — tắt app là mất; CSV (session cuối V0.2) mới cho dữ liệu sống sót qua một lần chạy, và database thật còn ở V0.5+."
+      ]
+    },
+    {
+      "id": "checkpoint-transaction-service",
+      "sessionId": "session-transaction-service",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/TransactionCreationService.java",
+        "src/main/java/com/spendwise/account/TransactionService.java",
+        "src/test/java/com/spendwise/account/TransactionCreationServiceTest.java",
+        "src/test/java/com/spendwise/account/TransactionServiceTest.java"
+      ],
+      "understanding": [
+        "Vì sao R20 yêu cầu một cửa duy nhất (TransactionCreationService.create) cho mọi giao dịch tạo trong code sản phẩm.",
+        "Vì sao sourceRef phải được gán ngay từ giao dịch thủ công đầu tiên, không đợi đến khi có import/recurring.",
+        "Vì sao tầng đọc (TransactionService) và tầng tạo (TransactionCreationService) là hai class tách biệt."
+      ],
+      "whatYouBuilt": "Một cửa tạo giao dịch duy nhất gán sourceRef cho mọi bản ghi, và một tầng đọc/lọc độc lập chỉ phụ thuộc Repository interface.",
+      "whyNotYet": [
+        "sourceRef mới chỉ có tiền tố MANUAL: — IMPORT:/RECURRING: sẽ xuất hiện khi các tính năng đó được xây ở các release sau.",
+        "Chưa có thống kê nào trên dữ liệu này — session kế tiếp mới cộng và gom nhóm số liệu."
+      ]
+    },
+    {
+      "id": "checkpoint-statistics-aggregation",
+      "sessionId": "session-statistics-aggregation",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/statistics/StatisticsService.java",
+        "src/test/java/com/spendwise/statistics/StatisticsServiceTest.java"
+      ],
+      "understanding": [
+        "Vì sao Collectors.summingDouble không tương thích với BigDecimal, và .reduce(BigDecimal.ZERO, BigDecimal::add) là lựa chọn thay thế đúng (R1).",
+        "Vì sao một bất biến kiểm chứng bằng máy (grep-able) đáng tin hơn một quy ước chỉ ghi trong tài liệu."
+      ],
+      "whatYouBuilt": "Thống kê gom nhóm theo category và tổng thu/chi, hoàn toàn BigDecimal, không một double/float nào trong package statistics.",
+      "whyNotYet": [
+        "Số liệu vẫn tính trên dữ liệu in-memory — chưa lưu xuống file, tắt app là số liệu mất theo (session cuối V0.2 giải quyết phần lưu trữ)."
+      ]
+    },
+    {
+      "id": "checkpoint-csv-read-write",
+      "sessionId": "session-csv-read-write",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/CsvTransactionStore.java",
+        "src/test/java/com/spendwise/shared/CsvTransactionStoreTest.java"
+      ],
+      "understanding": [
+        "Vì sao amount.toPlainString() (không phải toString()) là bắt buộc khi ghi BigDecimal ra CSV.",
+        "Vì sao try-with-resources trên Files.lines() (một Stream<String>) không phải tuỳ chọn — nó là AutoCloseable.",
+        "Vì sao so sánh round-trip phải dùng compareTo, không dùng equals hay so sánh chuỗi."
+      ],
+      "whatYouBuilt": "V0.2 hoàn tất: Repository interface, cài đặt in-memory, tầng service với một cửa tạo giao dịch duy nhất, thống kê BigDecimal-pure, và lưu/đọc CSV không mất một cent nào qua vòng round-trip.",
+      "whyNotYet": [
+        "Chưa có Spring Boot, chưa có REST API, chưa có database thật — app vẫn chạy hoàn toàn trong bộ nhớ JVM của một lần thực thi, chỉ có file CSV là sống sót qua lần chạy tiếp theo. V0.3 mới đưa Spring context vào."
+      ],
+      "expectedProjectTree": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\\n    shared\\Repository.java\n    shared\\InMemoryRepository.java\n    shared\\CsvTransactionStore.java\n    account\\TransactionCreationService.java\n    account\\TransactionService.java\n    statistics\\StatisticsService.java\n  src\\test\\java\\com\\spendwise\\\n    shared\\RepositoryContractTest.java\n    shared\\InMemoryRepositoryTest.java\n    shared\\CsvTransactionStoreTest.java\n    account\\TransactionCreationServiceTest.java\n    account\\TransactionServiceTest.java\n    statistics\\StatisticsServiceTest.java"
+    },
+    {
+      "id": "checkpoint-spring-bootstrap",
+      "sessionId": "session-spring-bootstrap",
+      "expectedFiles": [
+        "docs/decisions/spring-boot-pin.md",
+        "pom.xml",
+        "src/main/java/com/spendwise/SpendwiseApp.java",
+        "src/test/java/com/spendwise/SpendwiseAppTest.java"
+      ],
+      "understanding": [
+        "Vì sao phiên bản Spring Boot phải được chốt bằng bằng chứng tra cứu được (GitHub release, Maven Central, system requirements), không phải đoán hay nhận mặc định.",
+        "Vì sao parent POM là nơi duy nhất phiên bản Spring Boot được ghi xuống.",
+        "Vì sao git diff --stat trên đúng hai package domain là bằng chứng máy-kiểm-được cho lời hứa 'không sửa domain', mạnh hơn một lời khẳng định suông."
+      ],
+      "whatYouBuilt": "Một ứng dụng Spring Boot khởi động được, phiên bản được pin có hồ sơ quyết định, domain/service V0.1-V0.2 không bị sửa một dòng.",
+      "whyNotYet": [
+        "CHƯA CÓ REST API NÀO — @SpringBootApplication chỉ khởi động một context Java thuần chạy rồi thoát (hoặc chạy nền), chưa có @RestController, chưa có route HTTP nào tồn tại. Route HTTP đầu tiên chỉ xuất hiện ở V0.4.",
+        "Service/repository vẫn đang new bằng tay bên trong test hoặc code khởi động thủ công — session kế tiếp mới để container thật sự wire chúng làm bean."
+      ]
+    },
+    {
+      "id": "checkpoint-di-service-beans",
+      "sessionId": "session-di-service-beans",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/TransactionService.java",
+        "src/main/java/com/spendwise/shared/InMemoryRepository.java",
+        "src/test/java/com/spendwise/account/TransactionServiceTest.java"
+      ],
+      "understanding": [
+        "Vì sao Repository<T, ID> — một interface generic — không thể @Component-scan trực tiếp và cần một @Bean method tường minh.",
+        "Vì sao constructor injection giữ class dễ test bằng tay (new trực tiếp trong unit test) ngay cả sau khi nó đã là bean Spring."
+      ],
+      "whatYouBuilt": "Service và repository được Spring container quản lý và inject qua constructor, hành vi nghiệp vụ giống hệt trước migration.",
+      "whyNotYet": [
+        "Vẫn chưa có REST API — bean đã sẵn sàng để một @RestController inject vào, nhưng chưa có controller nào tồn tại; đó là việc của V0.4."
+      ]
+    },
+    {
+      "id": "checkpoint-account-endpoints",
+      "sessionId": "session-account-endpoints",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/AccountController.java",
+        "src/main/java/com/spendwise/account/AccountService.java",
+        "src/main/java/com/spendwise/account/CreateAccountRequest.java",
+        "src/main/java/com/spendwise/account/AccountResponse.java",
+        "src/test/java/com/spendwise/account/AccountControllerTest.java"
+      ],
+      "understanding": [
+        "Vì sao update/delete bị bỏ ngoài phạm vi V0.4 một cách có chủ đích, không phải thiếu sót.",
+        "Vì sao ResponseEntity là kiểu trả về đúng cho controller khi cần kiểm soát status/header, thay vì trả thẳng record."
+      ],
+      "whatYouBuilt": "Route HTTP create/list/get-by-id đầu tiên của project, đúng status code, controller mỏng gọi xuống AccountService.",
+      "whyNotYet": [
+        "Category và Transaction chưa có route HTTP nào — Account là resource đầu tiên thiết lập khuôn mẫu, hai resource còn lại đến ở các session tiếp theo."
+      ]
+    },
+    {
+      "id": "checkpoint-category-endpoints",
+      "sessionId": "session-category-endpoints",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/category/CategoryController.java",
+        "src/main/java/com/spendwise/category/CategoryResponse.java",
+        "src/test/java/com/spendwise/category/CategoryControllerTest.java"
+      ],
+      "understanding": [
+        "Vì sao Category không cần và không nên có route ghi (POST/PUT/PATCH/DELETE) ở V0.4.",
+        "Vì sao kiểm tra 'không ResponseEntity trong *Service.java' là một cách grep-được để bảo vệ ranh giới controller/service."
+      ],
+      "whatYouBuilt": "Route GET-only cho Category, và bằng chứng máy-kiểm-được rằng cả Account lẫn Category đều không để entity/VO/ResponseEntity lộ sai tầng.",
+      "whyNotYet": [
+        "Transaction — resource phức tạp nhất, vừa ghi vừa đọc có lọc — vẫn chưa có route HTTP nào."
+      ]
+    },
+    {
+      "id": "checkpoint-transaction-endpoints",
+      "sessionId": "session-transaction-endpoints",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/TransactionController.java",
+        "src/main/java/com/spendwise/account/CreateTransactionRequest.java",
+        "src/main/java/com/spendwise/account/TransactionResponse.java",
+        "src/test/java/com/spendwise/account/TransactionControllerTest.java"
+      ],
+      "understanding": [
+        "Vì sao R20 (một cửa tạo giao dịch duy nhất) phải đúng cho mọi caller, kể cả HTTP — không chỉ cho lời gọi Java trực tiếp như ở V0.2.",
+        "Vì sao route GET filter dùng @RequestParam thay vì @PathVariable cho tiêu chí tuỳ chọn."
+      ],
+      "whatYouBuilt": "Cả ba resource (Account/Category/Transaction) đều có route HTTP đúng semantics; giao dịch tạo qua HTTP vẫn đi đúng qua TransactionCreationService và mang sourceRef.",
+      "whyNotYet": [
+        "Mapping record<->domain vẫn đang viết tay rải rác trong service/controller — session kế tiếp mới gom nó vào Mapper class tường minh."
+      ]
+    },
+    {
+      "id": "checkpoint-dto-mapping",
+      "sessionId": "session-dto-mapping",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/AccountMapper.java",
+        "src/main/java/com/spendwise/account/TransactionMapper.java",
+        "src/test/java/com/spendwise/account/AccountMapperTest.java"
+      ],
+      "understanding": [
+        "Vì sao mapping tường minh field-by-field (không reflection/ModelMapper) được chọn, và cái giá phải trả (phải tự viết, tự cập nhật khi thêm field) đổi lấy điều gì (lỗi gõ nhầm field lộ ra ngay lúc biên dịch/test, không âm thầm lúc runtime)."
+      ],
+      "whatYouBuilt": "AccountMapper/TransactionMapper tập trung toàn bộ chuyển đổi record<->domain, có test pin đúng từng field.",
+      "whyNotYet": [
+        "Request record chưa có ràng buộc validation nào — một request thiếu field vẫn lọt qua tới tận logic tạo, chỉ có thể fail ở tầng domain (muộn hơn mong muốn). Session sau thêm chặn sớm ở biên giới HTTP."
+      ]
+    },
+    {
+      "id": "checkpoint-bean-validation",
+      "sessionId": "session-bean-validation",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/CreateAccountRequest.java",
+        "src/main/java/com/spendwise/account/CreateTransactionRequest.java",
+        "src/test/java/com/spendwise/account/TransactionControllerTest.java"
+      ],
+      "understanding": [
+        "Vì sao spring-boot-starter-validation phải được khai tường minh (không tự có sẵn từ Boot 2.3 trở đi).",
+        "Vì sao ràng buộc validation nằm trên request record, không lặp lại y hệt trên domain — hai biên giới có luật riêng, dù có thể trùng nhau một phần."
+      ],
+      "whatYouBuilt": "Input sai bị chặn 400 ngay tại biên giới HTTP trước khi chạm vào logic tạo giao dịch, input đúng đi qua bình thường.",
+      "whyNotYet": [
+        "400 hiện tại có thể vẫn dùng payload lỗi mặc định của Spring, chưa nhất quán với cách domain exception được trả về — session cuối gom cả hai vào cùng một định dạng ProblemDetail."
+      ]
+    },
+    {
+      "id": "checkpoint-error-handling-advice",
+      "sessionId": "session-error-handling-advice",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/ApiExceptionHandler.java",
+        "src/test/java/com/spendwise/shared/ApiExceptionHandlerTest.java"
+      ],
+      "understanding": [
+        "Vì sao một @RestControllerAdvice duy nhất là 'the single error-translation point' (R17) thay vì mỗi controller tự try/catch.",
+        "Vì sao ProblemDetail (RFC 7807) cho một hình dạng lỗi nhất quán bất kể lỗi đến từ domain hay từ validation."
+      ],
+      "whatYouBuilt": "V0.4 hoàn tất: ba resource REST đầy đủ (Account/Category/Transaction), mapping tường minh, validation ở biên giới, và một điểm dịch lỗi duy nhất trả ProblemDetail nhất quán.",
+      "whyNotYet": [
+        "CHƯA CÓ DATABASE NÀO — toàn bộ dữ liệu vẫn sống trong InMemoryRepository của tiến trình JVM đang chạy; tắt app là mất dữ liệu (trừ phần đã ghi CSV thủ công từ V0.2). Spring Data JPA và một database thật chỉ xuất hiện từ V0.5 trở đi.",
+        "Update/delete cho Account, và mọi ràng buộc kiểu UNIQUE/khoá ngoại cấp database, chưa tồn tại vì chưa có database nào để định nghĩa chúng."
       ]
     }
   ]
