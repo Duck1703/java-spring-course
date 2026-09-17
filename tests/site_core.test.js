@@ -118,6 +118,13 @@ test("nextLessonId walks publication order with bounds", () => {
   assert.equal(core.nextLessonId(lessons, "day-02", 1), null);
 });
 
+test("defaultState includes an empty, independent guidedProgress track", () => {
+  const fresh = core.defaultState();
+  assert.equal(fresh.version, core.STATE_VERSION);
+  assert.deepEqual(fresh.projectProgress, { buildTasks: [], legacyCompleted: [] });
+  assert.deepEqual(fresh.guidedProgress, { completedSteps: [] });
+});
+
 test("sanitizeState drops unknown ids, keys and properties", () => {
   const cleaned = core.sanitizeState(
     {
@@ -128,12 +135,14 @@ test("sanitizeState drops unknown ids, keys and properties", () => {
       collapsedUnits: ["unit-01", "fake"],
       theme: "neon",
       projectProgress: { buildTasks: ["task-real", "task-fake", "task-real"] },
+      guidedProgress: { completedSteps: ["step-real", "step-fake", "step-real"] },
       extra: "discard",
     },
     new Set(["day-01"]),
     new Set(["unit-01"]),
     new Set(["day-01-practice-01"]),
     new Set(["task-real"]),
+    new Set(["step-real"]),
   );
   assert.deepEqual(cleaned.completed, ["day-01"]);
   assert.equal(cleaned.lastLessonId, null);
@@ -141,6 +150,7 @@ test("sanitizeState drops unknown ids, keys and properties", () => {
   assert.equal("extra" in cleaned, false);
   assert.deepEqual(Object.keys(cleaned.practice), ["day-01-practice-01"]);
   assert.deepEqual(cleaned.projectProgress.buildTasks, ["task-real"]);
+  assert.deepEqual(cleaned.guidedProgress.completedSteps, ["step-real"]);
 });
 
 test("sanitizeState returns fresh defaults on invalid input", () => {
@@ -148,6 +158,7 @@ test("sanitizeState returns fresh defaults on invalid input", () => {
   assert.equal(fresh.theme, "system");
   assert.deepEqual(fresh.completed, []);
   assert.deepEqual(fresh.projectProgress, { buildTasks: [], legacyCompleted: [] });
+  assert.deepEqual(fresh.guidedProgress, { completedSteps: [] });
 });
 
 test("sanitizeState migrates a v1 state forward, preserving course progress", () => {
@@ -157,12 +168,14 @@ test("sanitizeState migrates a v1 state forward, preserving course progress", ()
     new Set(["unit-01"]),
     new Set(["day-01-practice-01"]),
     new Set(["task-real"]),
+    new Set(["step-real"]),
   );
-  assert.equal(core.STATE_VERSION, 3);
+  assert.equal(core.STATE_VERSION, 4);
   assert.equal(migrated.version, core.STATE_VERSION);
   assert.deepEqual(migrated.completed, ["day-01"]);
   assert.equal(migrated.theme, "dark");
   assert.deepEqual(migrated.projectProgress, { buildTasks: [], legacyCompleted: [] });
+  assert.deepEqual(migrated.guidedProgress, { completedSteps: [] });
 });
 
 test("sanitizeState drops unknown build task ids and defaults missing project progress", () => {
@@ -181,6 +194,60 @@ test("sanitizeState drops unknown build task ids and defaults missing project pr
     { projectProgress: { buildTasks: ["task-a"] } }, new Set(), new Set(), new Set(),
   );
   assert.deepEqual(legacy.projectProgress, { buildTasks: [], legacyCompleted: ["task-a"] });
+});
+
+test("sanitizeState drops unknown guided step ids, dedupes, and defaults missing/malformed guidedProgress", () => {
+  const cleaned = core.sanitizeState(
+    { guidedProgress: { completedSteps: ["gstep-a", "ghost-step", "gstep-b", "gstep-a"] } },
+    new Set(), new Set(), new Set(), new Set(), new Set(["gstep-a", "gstep-b"]),
+  );
+  assert.deepEqual(cleaned.guidedProgress.completedSteps, ["gstep-a", "gstep-b"]);
+
+  // Unlike projectProgress, guidedProgress has NO legacyCompleted/rename-map:
+  // an unknown id is simply dropped, not recorded as history — no guided
+  // step id has ever shipped, so there is no rename history to preserve yet.
+  assert.equal("legacyCompleted" in cleaned.guidedProgress, false);
+
+  // A 5-arg caller (no validGuidedStepIds) still gets a well-formed, empty
+  // track rather than throwing.
+  const noArg = core.sanitizeState(
+    { guidedProgress: { completedSteps: ["gstep-a"] } }, new Set(), new Set(), new Set(), new Set(),
+  );
+  assert.deepEqual(noArg.guidedProgress, { completedSteps: [] });
+
+  // Malformed shapes (array instead of object, non-string entries, missing
+  // key entirely) all degrade to an empty track rather than throwing.
+  for (const malformed of [[], "nope", 42, { completedSteps: "nope" }, { completedSteps: [1, null, {}] }, {}]) {
+    const out = core.sanitizeState(
+      { guidedProgress: malformed }, new Set(), new Set(), new Set(), new Set(), new Set(["gstep-a"]),
+    );
+    assert.deepEqual(out.guidedProgress, { completedSteps: [] });
+  }
+});
+
+test("the three progress tracks (course/project/guided) sanitize independently — no cross-contamination", () => {
+  const cleaned = core.sanitizeState(
+    {
+      completed: ["day-01"],
+      projectProgress: { buildTasks: ["task-a"] },
+      guidedProgress: { completedSteps: ["gstep-a"] },
+    },
+    new Set(["day-01"]), new Set(), new Set(), new Set(["task-a"]), new Set(["gstep-a"]),
+  );
+  assert.deepEqual(cleaned.completed, ["day-01"]);
+  assert.deepEqual(cleaned.projectProgress.buildTasks, ["task-a"]);
+  assert.deepEqual(cleaned.guidedProgress.completedSteps, ["gstep-a"]);
+
+  // Setting only guidedProgress must not synthesize any course/project
+  // completion, and vice versa — no operation implicitly completes another
+  // track (task §18/§27).
+  const guidedOnly = core.sanitizeState(
+    { guidedProgress: { completedSteps: ["gstep-a"] } },
+    new Set(["day-01"]), new Set(), new Set(), new Set(["task-a"]), new Set(["gstep-a"]),
+  );
+  assert.deepEqual(guidedOnly.completed, []);
+  assert.deepEqual(guidedOnly.projectProgress.buildTasks, []);
+  assert.deepEqual(guidedOnly.guidedProgress.completedSteps, ["gstep-a"]);
 });
 
 test("migrateProjectProgress partitions ids into current and retired without synthesizing", () => {

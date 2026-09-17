@@ -2263,7 +2263,7 @@
       return lines.join("\n");
     }
 
-    const STATE_VERSION = 3;
+    const STATE_VERSION = 4;
 
     // Case A of the progress-migration contract: build-task ids RENAMED between
     // artifact revisions, old id -> new id. Filled by P1 (task-category-enum →
@@ -2315,10 +2315,33 @@
         // Spendwise build-task completion. Completing a lesson never touches
         // this list, and vice versa.
         projectProgress: { buildTasks: [], legacyCompleted: [] },
+        // Guided Build Progress is a THIRD, independent track: completing a
+        // guided step never touches completed[] or projectProgress, and vice
+        // versa. No guided step id has ever shipped, so unlike projectProgress
+        // there is no legacyCompleted/rename history yet — add that machinery
+        // only if/when a real guided-step id rename actually happens.
+        guidedProgress: { completedSteps: [] },
       };
     }
 
-    function sanitizeState(input, validLessonIds, validUnitIds, validPracticeKeys, validBuildTaskIds = new Set()) {
+    /* Sanitize a guidedProgress object: missing/malformed -> empty, must be
+       an array of strings, filtered to known step ids, deduped, order
+       preserved. No rename-map exists yet (see defaultState above). */
+    function sanitizeGuidedProgress(progress, validGuidedStepIds = new Set()) {
+      const out = { completedSteps: [] };
+      if (!progress || typeof progress !== "object" || Array.isArray(progress)) return out;
+      if (Array.isArray(progress.completedSteps)) {
+        out.completedSteps = [...new Set(
+          progress.completedSteps.filter((id) => typeof id === "string" && validGuidedStepIds.has(id))
+        )];
+      }
+      return out;
+    }
+
+    function sanitizeState(
+      input, validLessonIds, validUnitIds, validPracticeKeys,
+      validBuildTaskIds = new Set(), validGuidedStepIds = new Set()
+    ) {
       const fresh = defaultState();
       if (!input || typeof input !== "object" || Array.isArray(input)) return fresh;
       const out = { ...fresh };
@@ -2348,6 +2371,11 @@
       // ones as history instead of dropping them. version is always normalized
       // to the current STATE_VERSION.
       out.projectProgress = migrateProjectProgress(input.projectProgress, validBuildTaskIds);
+      // Guided Build Progress. Same "missing key migrates to empty" contract
+      // as projectProgress got when it was introduced — an old export/state
+      // with no guidedProgress key at all is valid input and yields the same
+      // empty result as one that has the key with an empty array.
+      out.guidedProgress = sanitizeGuidedProgress(input.guidedProgress, validGuidedStepIds);
       return out;
     }
 
@@ -2393,6 +2421,7 @@
       normalizeSearch, parseRoute, calculateProgress, nextLessonId,
       sanitizeState, searchLessons, defaultState, STATE_VERSION,
       migrateProjectProgress, RENAME_MAP,
+      sanitizeGuidedProgress,
       escapeHtml, safeExternalUrl,
       selectCurrentRelease, selectNextBuildTask,
       calculateReleaseProgress, calculateFeatureProgress,
@@ -2442,6 +2471,16 @@
       }
       var BUILD_TASK_IDS = new Set(buildTasksById.keys());
 
+      /* ---- guided build data layer (Spendwise Guided Rebuild) --------- */
+      // Same optional-artifact discipline as the project data layer above:
+      // the course renders fully without it. Wave 2 embeds the artifact and
+      // derives valid step ids for progress sanitization only — no guided
+      // route/UI reads guidedBuildData yet (that is Wave 3+).
+      var guidedBuildData = (courseData && courseData.guidedBuild) ? courseData.guidedBuild : null;
+      var GUIDED_STEP_IDS = new Set(
+        guidedBuildData ? guidedBuildData.guidedSteps.map(function(s){return s.id;}) : []
+      );
+
       /* ---- state ----------------------------------------------------- */
       var STORAGE_KEY = 'java-spring-course';
       var state = CourseCore.defaultState();
@@ -2454,7 +2493,7 @@
       function loadState() {
         try {
           var raw = localStorage.getItem(STORAGE_KEY);
-          return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS) : null;
+          return raw ? CourseCore.sanitizeState(JSON.parse(raw), LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, GUIDED_STEP_IDS) : null;
         } catch(e) { return null; }
       }
       function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {} }
@@ -3625,11 +3664,13 @@
       }
 
       /* ---- settings: export / import / reset (Site Task 5) -------------- */
-      var APP_SCHEMA = { app: "java-spring-course", schemaVersion: 2 };
+      var APP_SCHEMA = { app: "java-spring-course", schemaVersion: 3 };
       // Import accepts the current schema and every older one it can migrate:
       // a v1 export (course progress only) is upgraded by sanitizeState, which
-      // fills in an empty projectProgress. This keeps old backups importable.
-      var SUPPORTED_IMPORT_VERSIONS = new Set([1, 2]);
+      // fills in an empty projectProgress; a v2 export (no guidedProgress) is
+      // upgraded the same way, filling in an empty guidedProgress. This keeps
+      // old backups importable.
+      var SUPPORTED_IMPORT_VERSIONS = new Set([1, 2, 3]);
 
       function downloadProgress() {
         var payload = {
@@ -3665,7 +3706,7 @@
           previewEl.textContent = "Tệp không đúng định dạng tiến độ của khóa học (không phải tệp xuất từ khóa học này, hoặc phiên bản tệp không được hỗ trợ).";
           return;
         }
-        var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS);
+        var cleaned = CourseCore.sanitizeState(parsed.state, LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, GUIDED_STEP_IDS);
         previewEl.hidden = false;
         previewEl.textContent = "Sẵn sàng nhập: " + cleaned.completed.length + "/" + courseData.lessons.length +
           " bài đã hoàn thành. Nhấn “Xác nhận nhập” để thay thế tiến độ hiện tại.";
@@ -3732,7 +3773,7 @@
         });
 
         resetBtn.addEventListener("click", function() {
-          if (!window.confirm("Đặt lại toàn bộ tiến độ? Hành động này xóa trạng thái hoàn thành khóa học, tiến độ build project, bài đang học và cài đặt giao diện đã lưu trên máy bạn.")) return;
+          if (!window.confirm("Đặt lại toàn bộ tiến độ? Hành động này xóa trạng thái hoàn thành khóa học, tiến độ build project, tiến độ guided rebuild, bài đang học và cài đặt giao diện đã lưu trên máy bạn.")) return;
           state = CourseCore.defaultState();
           try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
           saveState();
@@ -5960,7 +6001,8 @@
               var exportedPayload = JSON.parse(capturedExportText);
               exportOk = exportedPayload.app === APP_SCHEMA.app &&
                 exportedPayload.schemaVersion === APP_SCHEMA.schemaVersion &&
-                JSON.stringify(exportedPayload.state.completed) === JSON.stringify(state.completed);
+                JSON.stringify(exportedPayload.state.completed) === JSON.stringify(state.completed) &&
+                JSON.stringify(exportedPayload.state.guidedProgress) === JSON.stringify(state.guidedProgress);
             } catch (e) { exportOk = false; }
           }
           assert("export progress builds a downloadable JSON payload matching current state", exportOk);
@@ -6005,6 +6047,33 @@
           assert("confirming an import replaces current progress with the imported completed set",
             state.completed.indexOf("day-02") !== -1 && state.completed.indexOf("day-15") !== -1 &&
             previewEl2.textContent.indexOf("thành công") !== -1);
+
+          /* 27b — backward compatibility: a schemaVersion=1 export file (the
+             oldest still-supported export format, predating both
+             projectProgress and guidedProgress) still imports successfully,
+             with both new tracks defaulting to empty. */
+          var oldImportPayload = JSON.stringify({
+            app: APP_SCHEMA.app, schemaVersion: 1, exportedAt: new Date().toISOString(),
+            state: { completed: ["day-07"] },
+          });
+          var previewEl3 = el("div"); previewEl3.hidden = true;
+          var confirmBtn3 = el("button"); confirmBtn3.hidden = true;
+          importProgressText(oldImportPayload, previewEl3, confirmBtn3);
+          var oldImportPreviewOk = !previewEl3.hidden && !confirmBtn3.hidden;
+          if (confirmBtn3.onclick) confirmBtn3.onclick();
+          assert("a schemaVersion=1 export (oldest supported) still imports, with new tracks defaulting empty",
+            oldImportPreviewOk &&
+            state.completed.indexOf("day-07") !== -1 &&
+            !!state.guidedProgress && state.guidedProgress.completedSteps.length === 0 &&
+            !!state.projectProgress && state.projectProgress.buildTasks.length === 0);
+
+          /* 27c — APP_SCHEMA regression: the current export schema version and
+             the exact set of import versions still accepted, read from the
+             real running source (never hardcoded here). */
+          assert("APP_SCHEMA/SUPPORTED_IMPORT_VERSIONS: current + every previously-supported version accepted",
+            APP_SCHEMA.schemaVersion === 3 &&
+            SUPPORTED_IMPORT_VERSIONS.has(1) && SUPPORTED_IMPORT_VERSIONS.has(2) && SUPPORTED_IMPORT_VERSIONS.has(3) &&
+            SUPPORTED_IMPORT_VERSIONS.size === 3);
 
           /* 28 — Escape closes the mobile drawer and, on a mobile viewport
              where the trigger button is actually focusable (it is
@@ -6064,18 +6133,66 @@
             featProg.total === 2 && featProg.completed === 2 && featProg.percent === 100);
 
           /* 32 — a v1 progress export (course progress only, no
-             projectProgress) still imports: sanitizeState migrates it forward,
-             preserving completed/theme and adding an empty project track. */
+             projectProgress, no guidedProgress) still imports: sanitizeState
+             migrates it forward, preserving completed/theme and adding an
+             empty project track AND an empty guided track. */
           var migrated = CourseCore.sanitizeState(
             { version: 1, completed: ["day-03"], theme: "dark" },
-            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS
+            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, GUIDED_STEP_IDS
           );
-          assert("v1 progress migrates forward: keeps completed, adds empty project track",
+          assert("v1 progress migrates forward: keeps completed, adds empty project+guided track",
             migrated.version === CourseCore.STATE_VERSION &&
             migrated.completed.indexOf("day-03") !== -1 &&
             migrated.theme === "dark" &&
             !!migrated.projectProgress && Array.isArray(migrated.projectProgress.buildTasks) &&
-            migrated.projectProgress.buildTasks.length === 0);
+            migrated.projectProgress.buildTasks.length === 0 &&
+            !!migrated.guidedProgress && Array.isArray(migrated.guidedProgress.completedSteps) &&
+            migrated.guidedProgress.completedSteps.length === 0);
+
+          /* 32b — a v2 export (has projectProgress, no guidedProgress yet)
+             also migrates forward cleanly: existing project progress survives
+             untouched, and guidedProgress defaults to empty. */
+          var migratedV2 = CourseCore.sanitizeState(
+            { version: 3, completed: [], theme: "system",
+              projectProgress: { buildTasks: [], legacyCompleted: [] } },
+            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, GUIDED_STEP_IDS
+          );
+          assert("v2 state (no guidedProgress key) migrates forward with an empty guided track",
+            !!migratedV2.guidedProgress && migratedV2.guidedProgress.completedSteps.length === 0);
+
+          /* 32c — guided build data layer is embedded and indexed by stable
+             id the same way the project layer is (task §14/§21): when present
+             it exposes the fixed 10-release spine with zero authored sessions/
+             steps/checkpoints (Wave 1/2 skeleton); the renderer degrades
+             gracefully (empty set) if the artifact is absent. */
+          var guidedLayerOk = guidedBuildData
+            ? (guidedBuildData.guidedReleases.length === 10 && GUIDED_STEP_IDS.size === 0)
+            : (GUIDED_STEP_IDS.size === 0);
+          assert("guided build data layer is embedded and indexed by stable id", guidedLayerOk);
+
+          /* 32d — guided progress is independent from BOTH course progress and
+             project progress: sanitizing input that sets one never sets the
+             others, using synthetic ids (real GUIDED_STEP_IDS is empty in
+             Wave 1/2, so this exercises the sanitizer directly rather than via
+             loadState/importProgressText). */
+          var indepGuided = CourseCore.sanitizeState(
+            { completed: ["day-01"], projectProgress: { buildTasks: firstTaskId ? [firstTaskId] : [] },
+              guidedProgress: { completedSteps: ["synthetic-step-x"] } },
+            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, new Set(["synthetic-step-x"])
+          );
+          assert("guided progress is sanitized independently of course/project progress",
+            indepGuided.completed.indexOf("day-01") !== -1 &&
+            (!firstTaskId || indepGuided.projectProgress.buildTasks.indexOf(firstTaskId) !== -1) &&
+            indepGuided.guidedProgress.completedSteps.indexOf("synthetic-step-x") !== -1);
+
+          /* 32e — an unknown guided step id is dropped (never crashes, never
+             silently accepted) the same way an unknown build task id is. */
+          var droppedGuided = CourseCore.sanitizeState(
+            { guidedProgress: { completedSteps: ["not-a-real-step"] } },
+            LESSON_IDS, UNIT_IDS, PRACTICE_IDS, BUILD_TASK_IDS, GUIDED_STEP_IDS
+          );
+          assert("unknown guided step id is dropped by sanitizeState",
+            droppedGuided.guidedProgress.completedSteps.length === 0);
 
           /* 33 — primary navigation exposes exactly the four P0 destinations
              as real anchors, and routeRender keeps aria-current in sync. */

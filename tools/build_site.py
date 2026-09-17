@@ -20,8 +20,10 @@ from pathlib import Path
 
 try:  # package import when run via pytest (repo root on path)
     from tools.validate_project import validate_project
+    from tools.validate_guided_build import validate_guided_build
 except ImportError:  # script import when run as `python tools/build_site.py`
     from validate_project import validate_project
+    from validate_guided_build import validate_guided_build
 
 EXPECTED_LESSON_IDS = [f"day-{n:02d}" for n in range(1, 39)] + ["day-39-64", "day-65-66"]
 GROUP_ORDER = ["java", "spring", "completion"]
@@ -267,6 +269,26 @@ def _load_project_model(project_path: Path, lessons: list[dict]) -> dict:
     return project
 
 
+def _load_guided_build_model(guided_build_path: Path, project: dict) -> dict:
+    """Load, validate and return the Guided Rebuild pedagogy layer.
+
+    Validated against the SAME already-validated project dict as the
+    canonical project layer (see tools/validate_guided_build.py). Its
+    theoryBridge.lessonId check resolves against validate_project.LESSON_IDS,
+    the same fixed 40-id sequence build_publication_model already asserts the
+    assembled lessons match (see the index_ids != EXPECTED_LESSON_IDS check
+    above) — so this is provably a check against the actual published lesson
+    ids, not a stale/independent constant. Any error refuses the build.
+    """
+    guided = _load_json(guided_build_path)
+    errors = validate_guided_build(guided, project)
+    if errors:
+        raise ValueError(
+            "spendwise-guided-build.json failed validation:\n  " + "\n  ".join(errors)
+        )
+    return guided
+
+
 def build_publication_model(
     catalog_path: Path,
     lesson_index_path: Path,
@@ -275,6 +297,7 @@ def build_publication_model(
     source_notes_dir: Path,
     built_at: str,
     project_path: Path | None = None,
+    guided_build_path: Path | None = None,
 ) -> dict:
     catalog = _load_json(catalog_path)
     lesson_index = _load_json(lesson_index_path)
@@ -369,6 +392,17 @@ def build_publication_model(
     # hard-coding Spendwise content, while course lessons stay untouched.
     if project_path is not None and Path(project_path).exists():
         model["project"] = _load_project_model(Path(project_path), lessons_out)
+    # The Guided Rebuild pedagogy layer is a sibling artifact, keyed off the
+    # SAME already-validated project dict — it requires model["project"] to
+    # exist (a guided build with no canonical project to reference makes no
+    # sense), matching the fail-closed style validate_guided_build itself
+    # expects (guided: dict, project: dict).
+    if guided_build_path is not None and Path(guided_build_path).exists():
+        if "project" not in model:
+            raise ValueError(
+                "spendwise-guided-build.json requires a validated spendwise-project.json"
+            )
+        model["guidedBuild"] = _load_guided_build_model(Path(guided_build_path), model["project"])
     return model
 
 
@@ -399,6 +433,7 @@ def main(argv=None) -> int:
     parser.add_argument("--manifest", default="content/source-manifest.json")
     parser.add_argument("--source-notes-dir", default="content/source-notes")
     parser.add_argument("--project", default="content/spendwise-project.json")
+    parser.add_argument("--guided-build", default="content/spendwise-guided-build.json")
     parser.add_argument("--output", default="index.html")
     args = parser.parse_args(argv)
 
@@ -413,6 +448,7 @@ def main(argv=None) -> int:
             source_notes_dir=Path(args.source_notes_dir),
             built_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             project_path=Path(args.project),
+            guided_build_path=Path(args.guided_build),
         )
     except ValueError as exc:
         print(f"ERROR {exc}", file=sys.stderr)
@@ -452,11 +488,19 @@ def main(argv=None) -> int:
         f",lessonMap:{len(project['lessonMap'])}"
         if project else " project=none"
     )
+    guided = model.get("guidedBuild")
+    guided_note = (
+        f" guidedBuild=releases:{len(guided['guidedReleases'])}"
+        f",sessions:{len(guided['guidedSessions'])}"
+        f",steps:{len(guided['guidedSteps'])}"
+        f",checkpoints:{len(guided['guidedCheckpoints'])}"
+        if guided else " guidedBuild=none"
+    )
     print(
         f"PASS output={output.name} units={len(model['units'])} "
         f"lessons={len(model['lessons'])} practices={n_practices} "
         f"citations={n_citations} resources={len(model['resources'])} "
-        f"external_dependencies=0{project_note}"
+        f"external_dependencies=0{project_note}{guided_note}"
     )
     return 0
 
