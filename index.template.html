@@ -97,7 +97,7 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
     body {
       margin: 0;
       font-family: "Segoe UI Variable Text", "Segoe UI", "Inter", system-ui, -apple-system, "Noto Sans", sans-serif;
@@ -105,6 +105,7 @@
       line-height: 1.65;
       background: var(--canvas);
       color: var(--ink);
+      overflow-wrap: break-word;
     }
     code, pre, kbd {
       font-family: var(--mono);

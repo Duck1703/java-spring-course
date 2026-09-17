@@ -52,6 +52,12 @@
           "type": "deliverable",
           "text": "- Assignment 5: Multi-module Notification Service\n  - Interface `NotificationService` → EmailSender, SmsSender, PushSender\n  - @Qualifier or @Profile select implementation \n  - @ConfigurationProperties for each config (SMTP, Twilio, Firebase)\n  - Retry logic when send fail\n  - The Factory pattern creates the correct sender based on the notification type.",
           "citations": []
+        },
+        {
+          "id": "day15-blk-40",
+          "type": "note",
+          "text": "Trước khi code, hãy đọc bản đồ khái niệm này. Bạn đang luyện tập gì: (1) đọc cấu hình bằng @ConfigurationProperties (Day 14), (2) chọn đúng implementation lúc runtime bằng @Qualifier/@Profile (Day 13-14), (3) tự viết một bean 'nhà máy' (factory) dựa trên List<T> mà Spring inject sẵn thay vì hardcode, (4) hoàn thiện logic retry. Kiến trúc mục tiêu: một interface NotificationService, ba implementation (Email/Sms/Push), một factory chọn implementation theo cấu hình, một client gọi qua factory. Thứ tự làm khuyến nghị (không bắt buộc làm đúng thứ tự nhưng nên theo để tránh bí): bước 1 — implement 3 class gửi thông báo ở mức tối thiểu (chưa cấu hình gì); bước 2 — thêm @ConfigurationProperties cho từng provider; bước 3 — gắn @Qualifier/@Profile để chọn đúng bean; bước 4 — viết Factory; bước 5 — hoàn thiện retry logic sau cùng, sau khi 4 bước trên đã chạy được.",
+          "citations": []
         }
       ]
     },
@@ -181,6 +187,12 @@
           "compile": false,
           "citations": [],
           "partialReason": "Khung sườn minh họa cấu trúc attempt loop có giới hạn cho retry logic — không có resource nào trong resourceIds của Day 15 mô tả chủ đề retry/backoff (xem authoring.limitations và day15-blk-11), nên không đưa vào bước javac của pipeline."
+        },
+        {
+          "id": "day15-blk-41",
+          "type": "note",
+          "text": "Phần retry thường khó hơn 4 phần trước vì phải suy nghĩ về số lần thử lại và thời gian chờ giữa các lần, không chỉ là 'gọi lại hàm'. Đề bài Assignment 5 vẫn yêu cầu retry logic là một deliverable bắt buộc (xem bảng nghiệm thu bên dưới) — không được bỏ qua — nhưng bạn có thể coi đây là milestone cuối cùng: hãy đảm bảo 4 phần trước (cấu hình, chọn provider, factory) chạy đúng và có thể tự kiểm tra được trước, rồi mới quay lại hoàn thiện hai TODO trong RetryingNotificationSender.",
+          "citations": []
         }
       ]
     },
@@ -191,7 +203,11 @@
         {
           "id": "day15-blk-14",
           "type": "table",
-          "columns": ["Deliverable", "Cách kiểm tra (observable)", "Đạt khi"],
+          "columns": [
+            "Deliverable",
+            "Cách kiểm tra (observable)",
+            "Đạt khi"
+          ],
           "rows": [
             [
               "Interface NotificationService + 3 implementation (Email/Sms/Push)",
@@ -219,7 +235,15 @@
               "delegate.send() được gọi tối đa MAX_ATTEMPTS lần (không phải vô hạn lần); sau lần cuối thất bại, phương thức kết thúc bằng một exception nghiệp vụ thay vì im lặng bỏ qua lỗi"
             ]
           ],
-          "citations": ["day15-src-1", "day15-src-2", "day15-src-3", "day15-src-4", "day15-src-6", "day15-src-7", "day15-src-8"]
+          "citations": [
+            "day15-src-1",
+            "day15-src-2",
+            "day15-src-3",
+            "day15-src-4",
+            "day15-src-6",
+            "day15-src-7",
+            "day15-src-8"
+          ]
         }
       ]
     }

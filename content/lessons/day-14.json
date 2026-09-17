@@ -62,6 +62,15 @@
       "title": "Ba kiểu Dependency Injection",
       "blocks": [
         {
+          "id": "day14-blk-20",
+          "type": "paragraph",
+          "text": "Hiểu đơn giản trước khi đi vào chi tiết: không có DI, mỗi class tự `new` những gì nó cần, nên nó bị gắn chặt vào *một* implementation cụ thể và bạn không thể thay thế hay giả lập chúng khi test. Với DI, class chỉ khai báo 'tôi cần một PricingPolicy' và ai đó bên ngoài đưa vào. Bản chất của Inversion of Control nằm ở chữ 'inversion': trước đây code của bạn gọi framework và tự quản lý vòng đời object; giờ container tạo object, nối chúng lại rồi gọi code của bạn.",
+          "citations": [
+            "day14-src-1",
+            "day14-src-2"
+          ]
+        },
+        {
           "id": "day14-blk-3",
           "type": "paragraph",
           "text": "Inversion of Control là nguyên lý chuyển quyền kiểm soát việc tạo/luồng chương trình từ code tự viết sang một container/framework; framework gọi ngược lại code của mình thay vì code tự gọi thư viện. Spring hỗ trợ 3 kiểu Dependency Injection: constructor injection (container gọi constructor có tham số, mỗi tham số ứng với một dependency), setter injection (container gọi constructor không tham số rồi gọi các setter để gán dependency), và field injection (dùng @Autowired trực tiếp trên field, dùng reflection để gán giá trị).",
@@ -119,15 +128,6 @@
           "type": "note",
           "text": "Về thứ tự resolve dependency: với constructor injection, Spring resolve theo type trước; nếu có nhiều bean cùng type, Spring xét tiếp theo tên thuộc tính (thường kết hợp với @Qualifier); cuối cùng mới xét theo index để phân biệt các tham số cùng type.",
           "citations": [
-            "day14-src-2"
-          ]
-        },
-        {
-          "id": "day14-blk-20",
-          "type": "paragraph",
-          "text": "Hiểu đơn giản trước khi đi vào chi tiết: không có DI, mỗi class tự `new` những gì nó cần, nên nó bị gắn chặt vào *một* implementation cụ thể và bạn không thể thay thế hay giả lập chúng khi test. Với DI, class chỉ khai báo 'tôi cần một PricingPolicy' và ai đó bên ngoài đưa vào. Bản chất của Inversion of Control nằm ở chữ 'inversion': trước đây code của bạn gọi framework và tự quản lý vòng đời object; giờ container tạo object, nối chúng lại rồi gọi code của bạn.",
-          "citations": [
-            "day14-src-1",
             "day14-src-2"
           ]
         },
@@ -191,23 +191,6 @@
           ]
         },
         {
-          "id": "day14-blk-8",
-          "type": "important",
-          "text": "Auto-configuration không xâm lấn (non-invasive): nó lui lại (back away) ngay khi ứng dụng tự định nghĩa bean của riêng mình cho cùng vai trò — ví dụ nếu tự khai báo một @Bean DataSource trong @Configuration class thì cấu hình database nhúng mặc định của Spring Boot sẽ không còn được áp dụng nữa. Đây là lý do @Bean tự viết luôn được ưu tiên hơn auto-configuration mặc định.",
-          "citations": [
-            "day14-src-6"
-          ]
-        },
-        {
-          "id": "day14-blk-9",
-          "type": "note",
-          "text": "Có thể loại trừ một auto-configuration class không mong muốn bằng thuộc tính exclude của @SpringBootApplication/@EnableAutoConfiguration (hoặc excludeName nếu class không có trên classpath), hoặc qua property spring.autoconfigure.exclude. Để xem auto-configuration nào đang được áp dụng và lý do, chạy ứng dụng với cờ --debug: Spring Boot sẽ in ra console một conditions report.",
-          "citations": [
-            "day14-src-7",
-            "day14-src-8"
-          ]
-        },
-        {
           "id": "day14-blk-26",
           "type": "paragraph",
           "text": "Khi nào dùng `@Bean` thay vì `@Component`: `@Component` chỉ áp dụng được cho class *của bạn* mà bạn sửa được source. Với class của thư viện bên thứ ba (một `RestClient`, một `ObjectMapper` cấu hình riêng, một `DataSource`), bạn không thể dán annotation lên chúng, nên phải khai báo một method `@Bean` trong class `@Configuration` — method đó chính là factory mà container gọi để tạo bean. Tham số của method `@Bean` cũng được container resolve như tham số constructor, đó là cách sạch nhất để một bean cấu hình dùng bean khác.",
@@ -228,12 +211,29 @@
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
         },
         {
+          "id": "day14-blk-8",
+          "type": "important",
+          "text": "Auto-configuration không xâm lấn (non-invasive): nó lui lại (back away) ngay khi ứng dụng tự định nghĩa bean của riêng mình cho cùng vai trò — ví dụ nếu tự khai báo một @Bean DataSource trong @Configuration class thì cấu hình database nhúng mặc định của Spring Boot sẽ không còn được áp dụng nữa. Đây là lý do @Bean tự viết luôn được ưu tiên hơn auto-configuration mặc định.",
+          "citations": [
+            "day14-src-6"
+          ]
+        },
+        {
           "id": "day14-blk-28",
           "type": "paragraph",
           "text": "Auto-configuration hoạt động theo nguyên tắc 'đoán hợp lý rồi nhường chỗ': mỗi lớp auto-configuration được bảo vệ bởi các điều kiện như `@ConditionalOnClass` (có thư viện này trên classpath không), `@ConditionalOnMissingBean` (ứng dụng đã tự định nghĩa bean này chưa), `@ConditionalOnProperty`. Vì vậy chỉ cần thêm một starter là Spring Boot dựng sẵn cấu hình mặc định, nhưng ngay khi bạn khai báo bean cùng loại, cấu hình mặc định tự lui lại. Muốn biết chính xác điều gì đã bật hay tắt và *vì sao*, chạy ứng dụng với `--debug` để đọc condition evaluation report.",
           "citations": [
             "day14-src-6",
             "day14-src-7"
+          ]
+        },
+        {
+          "id": "day14-blk-9",
+          "type": "note",
+          "text": "Có thể loại trừ một auto-configuration class không mong muốn bằng thuộc tính exclude của @SpringBootApplication/@EnableAutoConfiguration (hoặc excludeName nếu class không có trên classpath), hoặc qua property spring.autoconfigure.exclude. Để xem auto-configuration nào đang được áp dụng và lý do, chạy ứng dụng với cờ --debug: Spring Boot sẽ in ra console một conditions report.",
+          "citations": [
+            "day14-src-7",
+            "day14-src-8"
           ]
         },
         {
@@ -301,6 +301,12 @@
           "citations": [
             "day14-src-5"
           ]
+        },
+        {
+          "id": "day14-blk-40",
+          "type": "note",
+          "text": "Tóm tắt Day 14 theo mức cần nhớ: Cần hiểu ngay — 3 kiểu DI và vì sao constructor injection là mặc định nên dùng, cách @Qualifier gỡ ambiguity khi có nhiều bean cùng kiểu, @Bean dùng khi cần cấu hình object bên thứ ba (không sửa được để gắn @Component). Nhận biết lúc này — auto-configuration hoạt động theo cơ chế 'đoán rồi lùi' (back off) khi bạn tự khai bean, circular dependency vì sao xảy ra và vì sao nên tái cấu trúc thay vì dùng @Lazy để né. Sẽ học sâu hơn sau — @ConfigurationProperties và @Profile sẽ dùng thật ở Day 15 (Assignment 5) thay vì chỉ đọc khái niệm. Nơi kiến thức này xuất hiện lại: mọi bean tự khai từ Day 15 trở đi đều đi qua đúng vòng đời/scope đã học ở Day 13 cộng với cơ chế inject/auto-config vừa học ở đây.",
+          "citations": []
         }
       ]
     }

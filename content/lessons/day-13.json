@@ -63,8 +63,55 @@
       ]
     },
     {
+      "id": "day13-sec-ioc",
+      "title": "IoC Container: BeanFactory, ApplicationContext, Bean",
+      "blocks": [
+        {
+          "id": "day13-blk-30",
+          "type": "paragraph",
+          "text": "Hiểu IoC bằng cách so sánh hai lối viết cùng một việc. Không có IoC, class của bạn tự `new` phụ thuộc: nó phải biết dùng cài đặt nào, biết cách cấu hình, và mỗi khi đổi cài đặt bạn phải sửa code. Có IoC, class chỉ *khai báo* nó cần gì (qua tham số constructor), còn việc tạo và ghép nối do container làm. Bản chất bị đảo là *quyền quyết định*: không phải class quyết định lấy phụ thuộc ở đâu, mà cấu hình bên ngoài quyết định. Lợi ích cụ thể chứ không trừu tượng: đổi cài đặt không sửa code gọi, và trong test bạn tiêm được bản giả mà không cần chạy cả hệ thống.",
+          "citations": [
+            "day13-src-1",
+            "day13-src-2"
+          ]
+        },
+        {
+          "id": "day13-blk-5",
+          "type": "paragraph",
+          "text": "Spring định nghĩa Dependency Injection là một dạng chuyên biệt của Inversion of Control, trong đó đối tượng khai báo dependency của nó chỉ qua constructor argument, tham số của factory method, hoặc property được set sau khi đối tượng được khởi tạo; container tiêm các dependency này khi tạo bean. Hai gói org.springframework.beans và org.springframework.context là nền tảng của IoC container: BeanFactory cung cấp cơ chế cấu hình cơ bản, còn ApplicationContext là sub-interface của BeanFactory bổ sung tích hợp AOP, xử lý message resource (i18n), publish event, và các context chuyên biệt như WebApplicationContext. Một bean là đối tượng được khởi tạo, lắp ráp (assemble) và quản lý bởi Spring IoC container.",
+          "citations": [
+            "day13-src-1",
+            "day13-src-2",
+            "day13-src-3"
+          ]
+        },
+        {
+          "id": "day13-blk-6",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.context.annotation.AnnotationConfigApplicationContext;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\n\n@Configuration\nclass AppConfig {\n\n    @Bean\n    GreetingService greetingService() {\n        return new GreetingService(\"Xin chao\");\n    }\n}\n\nclass GreetingService {\n    private final String prefix;\n\n    GreetingService(String prefix) {\n        this.prefix = prefix;\n    }\n\n    String greet(String name) {\n        return prefix + \", \" + name;\n    }\n}\n\nclass BeanLookupDemo {\n    public static void main(String[] args) {\n        var context = new AnnotationConfigApplicationContext(AppConfig.class);\n        GreetingService service = context.getBean(GreetingService.class);\n        System.out.println(service.greet(\"Spring\"));\n        context.close();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day13-src-1",
+            "day13-src-2",
+            "day13-src-3"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day13-blk-31",
+          "type": "note",
+          "text": "`ApplicationContext` là gì trong thực tế: một sổ đăng ký các bean cùng metadata về cách tạo và ghép chúng. Khi ứng dụng khởi động, Spring quét cấu hình, dựng *định nghĩa bean* (chưa tạo object), rồi khởi tạo — mặc định các bean singleton được tạo sẵn ngay lúc startup (eager). Đây là lý do nhiều lỗi cấu hình lộ ra ngay khi khởi động chứ không đợi tới request đầu tiên, và đó là điều tốt: sai cấu hình thì ứng dụng không lên, thay vì chết giữa giờ cao điểm. `ApplicationContext` mở rộng `BeanFactory` bằng các khả năng của một ứng dụng thật: đọc cấu hình theo môi trường, quốc tế hoá, phát/nhận event, và tự động áp dụng các bộ hậu xử lý bean.",
+          "citations": [
+            "day13-src-2",
+            "day13-src-3"
+          ]
+        }
+      ]
+    },
+    {
       "id": "day13-sec-architecture",
-      "title": "Spring Boot Architecture (tổng quan)",
+      "title": "Spring Boot Architecture — bối cảnh đóng gói (nhận biết, không phải mô hình tư duy chính)",
       "blocks": [
         {
           "id": "day13-blk-3",
@@ -92,55 +139,8 @@
       ]
     },
     {
-      "id": "day13-sec-ioc",
-      "title": "IoC Container: BeanFactory, ApplicationContext, Bean",
-      "blocks": [
-        {
-          "id": "day13-blk-5",
-          "type": "paragraph",
-          "text": "Spring định nghĩa Dependency Injection là một dạng chuyên biệt của Inversion of Control, trong đó đối tượng khai báo dependency của nó chỉ qua constructor argument, tham số của factory method, hoặc property được set sau khi đối tượng được khởi tạo; container tiêm các dependency này khi tạo bean. Hai gói org.springframework.beans và org.springframework.context là nền tảng của IoC container: BeanFactory cung cấp cơ chế cấu hình cơ bản, còn ApplicationContext là sub-interface của BeanFactory bổ sung tích hợp AOP, xử lý message resource (i18n), publish event, và các context chuyên biệt như WebApplicationContext. Một bean là đối tượng được khởi tạo, lắp ráp (assemble) và quản lý bởi Spring IoC container.",
-          "citations": [
-            "day13-src-1",
-            "day13-src-2",
-            "day13-src-3"
-          ]
-        },
-        {
-          "id": "day13-blk-6",
-          "type": "code",
-          "language": "java",
-          "code": "import org.springframework.context.annotation.AnnotationConfigApplicationContext;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\n\n@Configuration\nclass AppConfig {\n\n    @Bean\n    GreetingService greetingService() {\n        return new GreetingService(\"Xin chao\");\n    }\n}\n\nclass GreetingService {\n    private final String prefix;\n\n    GreetingService(String prefix) {\n        this.prefix = prefix;\n    }\n\n    String greet(String name) {\n        return prefix + \", \" + name;\n    }\n}\n\nclass BeanLookupDemo {\n    public static void main(String[] args) {\n        var context = new AnnotationConfigApplicationContext(AppConfig.class);\n        GreetingService service = context.getBean(GreetingService.class);\n        System.out.println(service.greet(\"Spring\"));\n        context.close();\n    }\n}\n",
-          "compile": false,
-          "citations": [
-            "day13-src-1",
-            "day13-src-2",
-            "day13-src-3"
-          ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
-        },
-        {
-          "id": "day13-blk-30",
-          "type": "paragraph",
-          "text": "Hiểu IoC bằng cách so sánh hai lối viết cùng một việc. Không có IoC, class của bạn tự `new` phụ thuộc: nó phải biết dùng cài đặt nào, biết cách cấu hình, và mỗi khi đổi cài đặt bạn phải sửa code. Có IoC, class chỉ *khai báo* nó cần gì (qua tham số constructor), còn việc tạo và ghép nối do container làm. Bản chất bị đảo là *quyền quyết định*: không phải class quyết định lấy phụ thuộc ở đâu, mà cấu hình bên ngoài quyết định. Lợi ích cụ thể chứ không trừu tượng: đổi cài đặt không sửa code gọi, và trong test bạn tiêm được bản giả mà không cần chạy cả hệ thống.",
-          "citations": [
-            "day13-src-1",
-            "day13-src-2"
-          ]
-        },
-        {
-          "id": "day13-blk-31",
-          "type": "note",
-          "text": "`ApplicationContext` là gì trong thực tế: một sổ đăng ký các bean cùng metadata về cách tạo và ghép chúng. Khi ứng dụng khởi động, Spring quét cấu hình, dựng *định nghĩa bean* (chưa tạo object), rồi khởi tạo — mặc định các bean singleton được tạo sẵn ngay lúc startup (eager). Đây là lý do nhiều lỗi cấu hình lộ ra ngay khi khởi động chứ không đợi tới request đầu tiên, và đó là điều tốt: sai cấu hình thì ứng dụng không lên, thay vì chết giữa giờ cao điểm. `ApplicationContext` mở rộng `BeanFactory` bằng các khả năng của một ứng dụng thật: đọc cấu hình theo môi trường, quốc tế hoá, phát/nhận event, và tự động áp dụng các bộ hậu xử lý bean.",
-          "citations": [
-            "day13-src-2",
-            "day13-src-3"
-          ]
-        }
-      ]
-    },
-    {
       "id": "day13-sec-scopes",
-      "title": "Bean Scopes",
+      "title": "Bean Scopes: singleton/prototype trước, scope web sau",
       "blocks": [
         {
           "id": "day13-blk-7",
@@ -149,6 +149,53 @@
           "citations": [
             "day13-src-4",
             "day13-src-5"
+          ]
+        },
+        {
+          "id": "day13-blk-32",
+          "type": "warning",
+          "text": "Hệ quả quan trọng nhất của scope singleton: *một* instance phục vụ *mọi* request đồng thời. Vì vậy bean singleton không được giữ trạng thái mutable theo từng request; nếu thật sự có shared mutable state thì code phải bảo vệ nó trước truy cập đồng thời. Đặt một field mutable trong `@Service` để 'giữ tạm dữ liệu của request' là bug nghiêm trọng nhưng khó phát hiện: khi test một mình thì đúng, khi có tải thì hai người dùng ghi đè dữ liệu của nhau. Nơi giữ dữ liệu theo request phải là biến cục bộ trong method (mỗi lời gọi có stack riêng) hoặc tham số truyền vào. `final` chỉ ngăn gán lại reference tới dependency; nó không tự làm object dependency bất biến hoặc thread-safe.",
+          "citations": [
+            "day13-src-4",
+            "day13-src-5"
+          ]
+        },
+        {
+          "id": "day13-blk-9",
+          "type": "code",
+          "language": "java",
+          "code": "import org.springframework.beans.factory.config.ConfigurableBeanFactory;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.context.annotation.Scope;\n\n@Configuration\nclass ReportConfig {\n\n    @Bean\n    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)\n    ReportBuilder reportBuilder() {\n        return new ReportBuilder();\n    }\n}\n\nclass ReportBuilder {\n    private final StringBuilder content = new StringBuilder();\n\n    ReportBuilder append(String line) {\n        content.append(line).append('\\n');\n        return this;\n    }\n\n    String build() {\n        return content.toString();\n    }\n}\n",
+          "compile": false,
+          "citations": [
+            "day13-src-5",
+            "day13-src-6"
+          ],
+          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
+        },
+        {
+          "id": "day13-blk-10",
+          "type": "note",
+          "text": "Với prototype scope, container tạo instance mới cho mỗi lần request bean nhưng không quản lý toàn bộ vòng đời: callback khởi tạo vẫn được gọi nhưng destruction callback đã cấu hình không được gọi, client code phải tự dọn dẹp tài nguyên của bean prototype. Có thể gắn bean vào scope request/session/application bằng annotation @RequestScope, @SessionScope, @ApplicationScope; các scope này chỉ hợp lệ trong web-aware ApplicationContext, nếu dùng ngoài ngữ cảnh đó sẽ ném IllegalStateException.",
+          "citations": [
+            "day13-src-6",
+            "day13-src-7"
+          ]
+        },
+        {
+          "id": "day13-blk-33",
+          "type": "note",
+          "text": "Điểm dễ nhầm khi trộn scope là coi mọi scope ngắn giống nhau. Với `request`/`session`, singleton cần scoped proxy để một reference ổn định có thể tìm đúng target của request/session hiện tại khi method được gọi. Với `prototype`, inject trực tiếp vào singleton chỉ tạo prototype một lần khi singleton được dựng; nếu thật sự cần instance mới cho mỗi lần dùng, hãy inject `ObjectProvider<PrototypeBean>` rồi gọi `getObject()` tại thời điểm cần. Thực tế: hãy dùng scope khác singleton khi có lý do rõ ràng; trạng thái theo request thường nên truyền tường minh qua tham số thay vì ẩn trong bean.",
+          "citations": [
+            "day13-src-6",
+            "day13-src-8"
+          ]
+        },
+        {
+          "id": "day13-blk-11",
+          "type": "note",
+          "text": "Khi một singleton phụ thuộc vào bean request-scoped, hai vòng đời không khớp nhau: singleton tồn tại qua nhiều request, còn target phải đổi theo request hiện tại. Scoped proxy giải quyết bằng cách tiêm một proxy ổn định vào singleton; mỗi lần method được gọi, proxy mới lấy target thật từ request scope đang hoạt động. Vì vậy singleton không giữ một concrete request object từ lúc khởi tạo.",
+          "citations": [
+            "day13-src-8"
           ]
         },
         {
@@ -187,53 +234,6 @@
           "citations": [
             "day13-src-4"
           ]
-        },
-        {
-          "id": "day13-blk-9",
-          "type": "code",
-          "language": "java",
-          "code": "import org.springframework.beans.factory.config.ConfigurableBeanFactory;\nimport org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.context.annotation.Scope;\n\n@Configuration\nclass ReportConfig {\n\n    @Bean\n    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)\n    ReportBuilder reportBuilder() {\n        return new ReportBuilder();\n    }\n}\n\nclass ReportBuilder {\n    private final StringBuilder content = new StringBuilder();\n\n    ReportBuilder append(String line) {\n        content.append(line).append('\\n');\n        return this;\n    }\n\n    String build() {\n        return content.toString();\n    }\n}\n",
-          "compile": false,
-          "citations": [
-            "day13-src-5",
-            "day13-src-6"
-          ],
-          "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn)."
-        },
-        {
-          "id": "day13-blk-10",
-          "type": "note",
-          "text": "Với prototype scope, container tạo instance mới cho mỗi lần request bean nhưng không quản lý toàn bộ vòng đời: callback khởi tạo vẫn được gọi nhưng destruction callback đã cấu hình không được gọi, client code phải tự dọn dẹp tài nguyên của bean prototype. Có thể gắn bean vào scope request/session/application bằng annotation @RequestScope, @SessionScope, @ApplicationScope; các scope này chỉ hợp lệ trong web-aware ApplicationContext, nếu dùng ngoài ngữ cảnh đó sẽ ném IllegalStateException.",
-          "citations": [
-            "day13-src-6",
-            "day13-src-7"
-          ]
-        },
-        {
-          "id": "day13-blk-11",
-          "type": "note",
-          "text": "Khi một singleton phụ thuộc vào bean request-scoped, hai vòng đời không khớp nhau: singleton tồn tại qua nhiều request, còn target phải đổi theo request hiện tại. Scoped proxy giải quyết bằng cách tiêm một proxy ổn định vào singleton; mỗi lần method được gọi, proxy mới lấy target thật từ request scope đang hoạt động. Vì vậy singleton không giữ một concrete request object từ lúc khởi tạo.",
-          "citations": [
-            "day13-src-8"
-          ]
-        },
-        {
-          "id": "day13-blk-32",
-          "type": "warning",
-          "text": "Hệ quả quan trọng nhất của scope singleton: *một* instance phục vụ *mọi* request đồng thời. Vì vậy bean singleton không được giữ trạng thái mutable theo từng request; nếu thật sự có shared mutable state thì code phải bảo vệ nó trước truy cập đồng thời. Đặt một field mutable trong `@Service` để 'giữ tạm dữ liệu của request' là bug nghiêm trọng nhưng khó phát hiện: khi test một mình thì đúng, khi có tải thì hai người dùng ghi đè dữ liệu của nhau. Nơi giữ dữ liệu theo request phải là biến cục bộ trong method (mỗi lời gọi có stack riêng) hoặc tham số truyền vào. `final` chỉ ngăn gán lại reference tới dependency; nó không tự làm object dependency bất biến hoặc thread-safe.",
-          "citations": [
-            "day13-src-4",
-            "day13-src-5"
-          ]
-        },
-        {
-          "id": "day13-blk-33",
-          "type": "note",
-          "text": "Điểm dễ nhầm khi trộn scope là coi mọi scope ngắn giống nhau. Với `request`/`session`, singleton cần scoped proxy để một reference ổn định có thể tìm đúng target của request/session hiện tại khi method được gọi. Với `prototype`, inject trực tiếp vào singleton chỉ tạo prototype một lần khi singleton được dựng; nếu thật sự cần instance mới cho mỗi lần dùng, hãy inject `ObjectProvider<PrototypeBean>` rồi gọi `getObject()` tại thời điểm cần. Thực tế: hãy dùng scope khác singleton khi có lý do rõ ràng; trạng thái theo request thường nên truyền tường minh qua tham số thay vì ẩn trong bean.",
-          "citations": [
-            "day13-src-6",
-            "day13-src-8"
-          ]
         }
       ]
     },
@@ -242,15 +242,15 @@
       "title": "Bean Lifecycle (giới thiệu)",
       "blocks": [
         {
-          "id": "day13-blk-12",
-          "type": "note",
-          "text": "Chủ đề bean lifecycle (thứ tự gọi các callback khởi tạo/hủy) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
-          "citations": []
-        },
-        {
           "id": "day13-blk-34",
           "type": "paragraph",
           "text": "Trình tự vòng đời bean, hiểu theo đúng thứ tự nhân quả: container tạo instance (gọi constructor, tiêm các phụ thuộc bắt buộc) → tiêm các phụ thuộc còn lại qua setter/field → chạy các bộ hậu xử lý và callback khởi tạo (`@PostConstruct`, `afterPropertiesSet`) → bean sẵn sàng phục vụ → khi scope/container kết thúc và container quản lý destruction của scope đó thì chạy callback hủy (`@PreDestroy`). Suy ra một quy tắc thực dụng: trong constructor *không* nên làm việc nặng hay phụ thuộc vào toàn bộ application context đã sẵn sàng, vì lúc đó hệ thống chưa hoàn chỉnh; các việc như nạp cache ban đầu hay kiểm tra kết nối thuộc về `@PostConstruct` hoặc `ApplicationRunner`. Lưu ý cho Spring Boot 3: các annotation này thuộc `jakarta.annotation`, không còn là `javax.annotation`.",
+          "citations": []
+        },
+        {
+          "id": "day13-blk-12",
+          "type": "note",
+          "text": "Chủ đề bean lifecycle (thứ tự gọi các callback khởi tạo/hủy) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
           "citations": []
         },
         {
@@ -279,6 +279,12 @@
             "day13-src-1",
             "day13-src-3"
           ]
+        },
+        {
+          "id": "day13-blk-38",
+          "type": "note",
+          "text": "Tóm tắt Day 13 theo mức cần nhớ: Cần hiểu ngay — vì sao IoC/DI tồn tại (đảo quyền quyết định tạo dependency ra khỏi class), Bean là gì, ApplicationContext là container ứng dụng thường dùng. Nhận biết lúc này (chưa cần thuộc lòng) — quan hệ BeanFactory/ApplicationContext, sáu bean scope cụ thể, scoped proxy, thứ tự callback @PostConstruct/@PreDestroy. Sẽ học sâu hơn sau — cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot (Day 14), và cách stereotype annotation ánh xạ vào Spring MVC/JPA thật (các Unit sau). Nơi kiến thức này xuất hiện lại: mọi bean từ Day 14 trở đi đều được tạo/quản lý bởi đúng cơ chế IoC container vừa học ở đây.",
+          "citations": []
         }
       ]
     }
