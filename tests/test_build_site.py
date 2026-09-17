@@ -112,12 +112,49 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
             authored = json.load(fh)
         self.assertEqual(self.model["guidedBuild"], authored)
 
-    def test_guided_build_skeleton_shape(self):
+    def test_guided_build_v0_1_authored_shape(self):
+        # V0.1 is authored content now; the other 9 releases stay planned with
+        # zero sessions until their own authoring work happens.
         guided = self.model["guidedBuild"]
         self.assertEqual(len(guided["guidedReleases"]), 10)
-        self.assertEqual(guided["guidedSessions"], [])
-        self.assertEqual(guided["guidedSteps"], [])
-        self.assertEqual(guided["guidedCheckpoints"], [])
+        status_by_release = {r["releaseId"]: r["authoringStatus"] for r in guided["guidedReleases"]}
+        self.assertEqual(status_by_release["v0-1"], "authored")
+        for release_id, status in status_by_release.items():
+            if release_id != "v0-1":
+                self.assertEqual(status, "planned", release_id)
+
+        sessions = guided["guidedSessions"]
+        steps = guided["guidedSteps"]
+        checkpoints = guided["guidedCheckpoints"]
+        self.assertTrue(sessions)
+        self.assertTrue(steps)
+        self.assertTrue(checkpoints)
+        self.assertTrue(all(s["releaseId"] == "v0-1" for s in sessions))
+        self.assertEqual(len(checkpoints), len(sessions))
+
+    def test_guided_build_v0_1_covers_every_required_canonical_build_step(self):
+        project = self.model["project"]
+        guided = self.model["guidedBuild"]
+        required_task_ids = {
+            t["id"] for t in project["buildTasks"]
+            if t.get("required") and t["releaseId"] == "v0-1"
+        }
+        covered_task_ids = {s["buildTaskId"] for s in guided["guidedSessions"]}
+        self.assertEqual(required_task_ids, covered_task_ids)
+
+        steps_by_task = {}
+        for build_step in project["buildSteps"]:
+            steps_by_task.setdefault(build_step["taskId"], set()).add(build_step["id"])
+        session_task_by_id = {s["id"]: s["buildTaskId"] for s in guided["guidedSessions"]}
+        covered_build_steps_by_task = {}
+        for step in guided["guidedSteps"]:
+            build_step_id = step.get("buildStepId")
+            if build_step_id is None:
+                continue
+            task_id = session_task_by_id[step["sessionId"]]
+            covered_build_steps_by_task.setdefault(task_id, set()).add(build_step_id)
+        for task_id in required_task_ids:
+            self.assertEqual(steps_by_task.get(task_id, set()), covered_build_steps_by_task.get(task_id, set()), task_id)
 
     def test_absent_guided_build_path_omits_key(self):
         model = build_publication_model(**BUILD_KWARGS)

@@ -466,14 +466,40 @@ def main() -> int:
                     if proc.returncode != 0 or not shot.exists():
                         failures.append(f"{label}: screenshot failed ({proc.stderr[:200]})")
 
-            # Wave 3: exercise the 5 Guided Build routes directly (not just
-            # via the in-page self-test harness) on both viewports, so a
-            # route that crashes routeRender or renders a blank #route-view
-            # fails this gate even if the unrelated selftest counter above
-            # still happens to pass.
+            # Wave 3: exercise real Guided Build routes directly (not just via
+            # the in-page self-test harness) on both viewports, so a route
+            # that crashes routeRender or renders a blank #route-view fails
+            # this gate even if the unrelated selftest counter above still
+            # happens to pass. V0.1 is authored content now — these use its
+            # real session/step ids and cover every guidedStep.type it uses
+            # (orientation, setup, code-with-me, your-turn, checkpoint).
             guided_routes = {
                 "guided-overview": ("#/guided-build", "roadmap-release"),
-                "guided-release": ("#/guided-build/v0-1", "Chưa biên soạn"),
+                "guided-release-v01-authored": ("#/guided-build/v0-1", "Tạo nền móng project Spendwise"),
+                "guided-release-v02-planned": ("#/guided-build/v0-2", "Chưa biên soạn"),
+                "guided-session-first": (
+                    "#/guided-build/v0-1/session-project-foundation", "Tạo nền móng project Spendwise",
+                ),
+                "guided-step-orientation": (
+                    "#/guided-build/v0-1/session-project-foundation/step-s1-orientation",
+                    "Bạn sắp xây gì",
+                ),
+                "guided-step-code-with-me": (
+                    "#/guided-build/v0-1/session-project-foundation/step-s1-app",
+                    "Tạo package gốc",
+                ),
+                "guided-step-your-turn": (
+                    "#/guided-build/v0-1/session-money-vo/step-s2-implement-money",
+                    "Tự viết Money bất biến",
+                ),
+                "guided-step-checkpoint": (
+                    "#/guided-build/v0-1/session-project-foundation/step-s1-checkpoint",
+                    "nền móng đã sẵn sàng",
+                ),
+                "guided-step-last-in-release": (
+                    "#/guided-build/v0-1/session-domain-validation/step-s6-checkpoint",
+                    "Điểm dừng cuối: V0.1 hoàn thành",
+                ),
                 "guided-not-found-release": ("#/guided-build/unknown-release", "Không tìm thấy nội dung"),
                 "guided-not-found-session": ("#/guided-build/v0-1/unknown-session", "Không tìm thấy nội dung"),
                 "guided-not-found-step": ("#/guided-build/v0-1/unknown-session/unknown-step", "Không tìm thấy nội dung"),
@@ -492,8 +518,9 @@ def main() -> int:
                         failures.append(
                             f"{viewport_name}/{route_name}: expected marker {marker!r} not found in #route-view"
                         )
+            n_routes = len(guided_routes)
             if not any(f.startswith(("desktop/guided-", "mobile/guided-")) for f in failures):
-                print("PASS guided-build routes render on desktop+mobile (5 routes x 2 viewports)")
+                print(f"PASS guided-build routes render on desktop+mobile ({n_routes} routes x 2 viewports)")
 
         print(f"PASS screenshots={output_dir / 'desktop.png'},{output_dir / 'mobile.png'}"
               if not failures and not args.skip_screenshots else

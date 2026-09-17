@@ -1,24 +1,1024 @@
 {
   "schemaVersion": 1,
   "guidedCourse": {
-    "id": "spendwise-guided-build",
-    "title": "Spendwise Guided Rebuild",
+    "id": "guided-spendwise",
+    "title": "Xây Spendwise cùng khoá học",
     "workspaceExample": "D:\\spendwise-learning",
     "referenceWorkspaceExample": "D:\\spendwise"
   },
   "guidedReleases": [
-    { "releaseId": "v0-1", "authoringStatus": "planned" },
-    { "releaseId": "v0-2", "authoringStatus": "planned" },
-    { "releaseId": "v0-3", "authoringStatus": "planned" },
-    { "releaseId": "v0-4", "authoringStatus": "planned" },
-    { "releaseId": "v0-5", "authoringStatus": "planned" },
-    { "releaseId": "v0-6", "authoringStatus": "planned" },
-    { "releaseId": "v0-7", "authoringStatus": "planned" },
-    { "releaseId": "v0-8", "authoringStatus": "planned" },
-    { "releaseId": "v0-9", "authoringStatus": "planned" },
-    { "releaseId": "v1-0", "authoringStatus": "planned" }
+    {
+      "releaseId": "v0-1",
+      "authoringStatus": "authored"
+    },
+    {
+      "releaseId": "v0-2",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-3",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-4",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-5",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-6",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-7",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-8",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v0-9",
+      "authoringStatus": "planned"
+    },
+    {
+      "releaseId": "v1-0",
+      "authoringStatus": "planned"
+    }
   ],
-  "guidedSessions": [],
-  "guidedSteps": [],
-  "guidedCheckpoints": []
+  "guidedSessions": [
+    {
+      "id": "session-project-foundation",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-project-foundation",
+      "order": 1,
+      "title": "Tạo nền móng project Spendwise",
+      "goal": "Có một project Maven chạy được và test được, trống rỗng về nghiệp vụ nhưng đúng cấu trúc, làm bệ phóng cho toàn bộ V0.1."
+    },
+    {
+      "id": "session-money-vo",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-money-vo",
+      "order": 2,
+      "title": "Xây Money: đại diện tiền tệ an toàn",
+      "goal": "Có một kiểu Money bất biến, chính xác tuyệt đối (BigDecimal scale 2), so sánh đúng theo giá trị, và không cho phép cộng trừ khác đơn vị tiền tệ."
+    },
+    {
+      "id": "session-account-entity",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-account-entity",
+      "order": 3,
+      "title": "Xây Account: bảo vệ số dư",
+      "goal": "Có Account với số dư khởi tạo hợp lệ, không có setter tuỳ tiện, và số dư chỉ thay đổi qua các phương thức nghiệp vụ tuân theo quy ước dấu hiệu."
+    },
+    {
+      "id": "session-transaction-entity",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-transaction-entity",
+      "order": 4,
+      "title": "Xây Transaction: sự kiện tài chính có hướng",
+      "goal": "Có Transaction ghi lại một sự kiện tài chính hợp lệ — amount luôn dương, hướng (INCOME/EXPENSE) nằm trong type, gắn với đúng một Account."
+    },
+    {
+      "id": "session-category-model",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-category-model",
+      "order": 5,
+      "title": "Category: phân loại giao dịch",
+      "goal": "Có một tập category cố định dạng enum, và Transaction có thể mang theo một category bắt buộc."
+    },
+    {
+      "id": "session-domain-validation",
+      "releaseId": "v0-1",
+      "buildTaskId": "task-domain-validation",
+      "order": 6,
+      "title": "Hình thức hoá exception miền nghiệp vụ",
+      "goal": "Mọi vi phạm bất biến trong Money/Account/Transaction ném ra một exception miền nghiệp vụ có tên rõ ràng thay vì IllegalArgumentException chung chung, và toàn bộ luồng hợp lệ được chứng minh không ném exception nào."
+    }
+  ],
+  "guidedSteps": [
+    {
+      "id": "step-s1-orientation",
+      "sessionId": "session-project-foundation",
+      "order": 1,
+      "buildStepId": null,
+      "type": "orientation",
+      "title": "Bạn sắp xây gì, và xây ở đâu",
+      "goal": "Hiểu rõ workspace của bạn khác gì với bản tham chiếu, và V0.1 kết thúc ở đâu.",
+      "whyThisMatters": "Nếu không phân biệt rõ hai thư mục ngay từ đầu, rất dễ nhầm lẫn giữa \"nơi tôi đang code\" và \"đáp án tham chiếu\".",
+      "instructions": [
+        "Project của BẠN sẽ nằm ở D:\\spendwise-learning — đây là thư mục bạn tự tạo, tự gõ code, tự chạy Maven. Nó bắt đầu rỗng hoàn toàn.",
+        "D:\\spendwise là ứng dụng Spendwise đã hoàn thiện nhiều phiên bản (dùng để minh hoạ trong khoá học) — bạn không mở nó để chép đáp án; toàn bộ hướng dẫn ở đây tự đủ để bạn tự xây V0.1.",
+        "V0.1 có tên gọi \"Java Domain\": chỉ dùng Java thuần — class, interface, enum, exception, BigDecimal, JUnit. Chưa có Spring, chưa có database, chưa có REST API.",
+        "Kết thúc V0.1, bạn sẽ có: Money (đại diện tiền tệ an toàn), Account (tài khoản với số dư được bảo vệ), Transaction (giao dịch tài chính có hướng), Category (phân loại giao dịch), và một bộ exception miền nghiệp vụ — tất cả là Java object thuần, chạy được, test được, không phụ thuộc framework nào.",
+        "Vì sao chưa dùng Spring? Spring IoC Container là công cụ quản lý vòng đời object và kết nối chúng lại với nhau — nhưng trước khi học công cụ đó, bạn cần tự tay tạo object, tự tay nối chúng, để hiểu Spring sau này thay bạn làm việc gì. V0.3 mới bắt đầu giới thiệu Spring."
+      ]
+    },
+    {
+      "id": "step-s1-scaffold",
+      "sessionId": "session-project-foundation",
+      "order": 2,
+      "buildStepId": "step-project-foundation-01",
+      "type": "setup",
+      "title": "Khởi tạo project Maven thuần Java 17",
+      "goal": "Có một project Maven với pom.xml khai báo Java 17, không có bất kỳ dependency Spring/database/REST nào, cộng với Maven Wrapper đã commit.",
+      "whyThisMatters": "pom.xml là hợp đồng: nó nói cho Maven biết project build bằng phiên bản Java nào và cần thư viện gì. Một pom.xml sạch, không có Spring, là bằng chứng sống rằng V0.1 thực sự chỉ là Java thuần.",
+      "instructions": [
+        "Tạo thư mục D:\\spendwise-learning, mở nó bằng VS Code (hoặc IDE bạn quen).",
+        "Chạy git init để bắt đầu theo dõi lịch sử thay đổi ngay từ đầu — thói quen tốt cho mọi project thật.",
+        "Tạo pom.xml ở thư mục gốc với groupId com.spendwise, artifactId spendwise, và maven.compiler.release=17.",
+        "Thêm đúng MỘT dependency: junit-jupiter, scope test — đây là framework viết test, không phải framework ứng dụng.",
+        "Không thêm bất kỳ dependency nào có chữ spring, jpa, jdbc, hay rest trong tên — nếu pom.xml scaffold từ start.spring.io, nó sẽ kéo theo một Spring Boot parent mà V0.1 chưa cần tới.",
+        "Thêm Maven Wrapper (mvnw, mvnw.cmd, .mvn/wrapper/maven-wrapper.properties) — wrapper đảm bảo ai chạy project cũng dùng đúng phiên bản Maven, không cần cài Maven thủ công trước."
+      ],
+      "codeBlocks": [
+        {
+          "language": "xml",
+          "code": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n    <modelVersion>4.0.0</modelVersion>\n\n    <groupId>com.spendwise</groupId>\n    <artifactId>spendwise</artifactId>\n    <version>0.1.0-SNAPSHOT</version>\n\n    <properties>\n        <maven.compiler.release>17</maven.compiler.release>\n        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\n        <junit.version>5.11.0</junit.version>\n    </properties>\n\n    <dependencies>\n        <dependency>\n            <groupId>org.junit.jupiter</groupId>\n            <artifactId>junit-jupiter</artifactId>\n            <version>${junit.version}</version>\n            <scope>test</scope>\n        </dependency>\n    </dependencies>\n\n    <build>\n        <plugins>\n            <plugin>\n                <artifactId>maven-compiler-plugin</artifactId>\n                <version>3.13.0</version>\n            </plugin>\n            <plugin>\n                <artifactId>maven-surefire-plugin</artifactId>\n                <version>3.5.0</version>\n            </plugin>\n            <plugin>\n                <groupId>org.codehaus.mojo</groupId>\n                <artifactId>exec-maven-plugin</artifactId>\n                <version>3.5.0</version>\n            </plugin>\n        </plugins>\n    </build>\n</project>\n",
+          "caption": "pom.xml — không một dòng Spring nào"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -version",
+        "expectedResult": "In ra Apache Maven 3.9.x và Java version 17 — lần chạy đầu sẽ tự tải Maven qua wrapper nên hơi chậm.",
+        "explanation": "Đây là cách kiểm tra nhanh nhất rằng wrapper hoạt động và project trỏ đúng Java 17, trước khi viết bất kỳ dòng code nào."
+      },
+      "commonErrors": [
+        {
+          "symptom": "'mvnw.cmd' is not recognized as an internal or external command",
+          "likelyCause": "Đang đứng sai thư mục — PowerShell không ở gốc project nên không thấy file mvnw.cmd",
+          "fix": "Chạy cd D:\\spendwise-learning rồi thử lại. Dùng lệnh pwd hoặc Get-Location để kiểm tra thư mục hiện tại trước khi chạy mvnw.cmd."
+        },
+        {
+          "symptom": "BUILD FAILURE do JAVA_HOME hoặc phiên bản Java không khớp",
+          "likelyCause": "Máy có nhiều bản JDK cài song song, biến môi trường JAVA_HOME đang trỏ vào bản cũ hơn Java 17",
+          "fix": "Kiểm tra bằng java -version; nếu không phải 17+, cài JDK 17 và set JAVA_HOME trỏ đúng thư mục JDK 17 đó."
+        }
+      ],
+      "projectStateAfter": "D:\\spendwise-learning\\\n  pom.xml\n  mvnw\n  mvnw.cmd\n  .mvn\\wrapper\\maven-wrapper.properties\n  .gitignore"
+    },
+    {
+      "id": "step-s1-app",
+      "sessionId": "session-project-foundation",
+      "order": 3,
+      "buildStepId": "step-project-foundation-02",
+      "type": "code-with-me",
+      "title": "Tạo package gốc com.spendwise với một main() chạy được",
+      "goal": "Có class SpendwiseApp trong package com.spendwise với main() in ra một dòng và thoát bình thường.",
+      "whyThisMatters": "com.spendwise là package gốc toàn bộ kiến trúc sau này build trên đó. Chạy được main() một lần, sớm, chứng minh toolchain (Java + Maven + wrapper) hoạt động end-to-end trước khi có bất kỳ logic nghiệp vụ nào — nếu lỗi ở bước này thì chắc chắn là lỗi môi trường, không phải lỗi domain.",
+      "instructions": [
+        "Tạo thư mục src\\main\\java\\com\\spendwise — đường dẫn thư mục phải khớp CHÍNH XÁC với tên package, đây là quy ước bắt buộc của Java, không phải tuỳ chọn.",
+        "Tạo file SpendwiseApp.java trong thư mục đó.",
+        "Class final, constructor private (đây chỉ là entry point, không ai cần tạo instance của nó) — bạn đã biết ý nghĩa của private constructor từ phần OOP."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise;\n\npublic final class SpendwiseApp {\n    private SpendwiseApp() {\n    }\n\n    public static void main(String[] args) {\n        System.out.println(\"Spendwise V0.1\");\n    }\n}\n",
+          "caption": "src/main/java/com/spendwise/SpendwiseApp.java"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q compile exec:java \"-Dexec.mainClass=com.spendwise.SpendwiseApp\"",
+        "expectedResult": "In ra dòng Spendwise V0.1 rồi kết thúc, không có exception.",
+        "explanation": "exec:java biên dịch rồi chạy main() của class bạn chỉ định qua -Dexec.mainClass — đây là cách nhanh nhất để chạy thử một chương trình Java qua Maven mà không cần đóng gói jar."
+      },
+      "commonErrors": [
+        {
+          "symptom": "package com.spendwise does not exist / cannot find symbol",
+          "likelyCause": "Thư mục vật lý không khớp tên package khai báo trong file, hoặc file nằm sai nhánh src/main/java",
+          "fix": "Kiểm tra lại: file phải nằm đúng src/main/java/com/spendwise/SpendwiseApp.java, và dòng package com.spendwise; phải là dòng đầu tiên."
+        },
+        {
+          "symptom": "No plugin found for prefix 'exec'",
+          "likelyCause": "exec-maven-plugin chưa được khai báo trong pom.xml ở bước trước",
+          "fix": "Quay lại pom.xml, xác nhận block plugin exec-maven-plugin có mặt trong <build><plugins>."
+        }
+      ],
+      "projectStateAfter": "D:\\spendwise-learning\\\n  pom.xml\n  src\\main\\java\\com\\spendwise\\SpendwiseApp.java"
+    },
+    {
+      "id": "step-s1-first-test",
+      "sessionId": "session-project-foundation",
+      "order": 4,
+      "buildStepId": "step-project-foundation-03",
+      "type": "code-with-me",
+      "title": "Viết test JUnit xanh đầu tiên",
+      "goal": "mvnw test chạy và pass ít nhất một test, chứng minh toolchain test hoạt động trước khi nó cần chứng minh bất kỳ điều gì về nghiệp vụ.",
+      "whyThisMatters": "Từ giờ về sau, mọi buildStep sẽ được xác nhận bằng test xanh. Nếu bản thân cơ chế test còn chưa chạy được, mọi \"test pass\" phía sau đều vô nghĩa — đây là lý do bước này tồn tại độc lập, trước khi có bất kỳ class nghiệp vụ nào.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-03",
+          "note": "Bạn đã biết cấu trúc một method Java. Một @Test chỉ là một method void không tham số, được JUnit tự động gọi."
+        }
+      ],
+      "instructions": [
+        "Tạo thư mục src\\test\\java\\com\\spendwise (cùng cấu trúc package như main, nhưng dưới nhánh test).",
+        "Tạo SpendwiseAppTest.java — dùng assertDoesNotThrow để xác nhận main() chạy xong không ném exception nào."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise;\n\nimport static org.junit.jupiter.api.Assertions.assertDoesNotThrow;\n\nimport org.junit.jupiter.api.Test;\n\nclass SpendwiseAppTest {\n    @Test\n    void mainExitsNormally() {\n        assertDoesNotThrow(() -> SpendwiseApp.main(new String[0]));\n    }\n}\n",
+          "caption": "src/test/java/com/spendwise/SpendwiseAppTest.java"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS, Tests run: 1, Failures: 0, Errors: 0, Skipped: 0.",
+        "explanation": "mvnw test tự tìm mọi class **/*Test.java dưới src/test/java, biên dịch rồi chạy chúng qua Surefire — không cần chỉ định file nào cả."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Tests run: 0 — không có test nào được chạy",
+          "likelyCause": "Tên file/class không kết thúc bằng Test, nên Surefire không nhận diện được đây là test class",
+          "fix": "Đổi tên đúng thành SpendwiseAppTest.java, class SpendwiseAppTest — quy ước đặt tên *Test là bắt buộc để Surefire tìm thấy."
+        },
+        {
+          "symptom": "cannot find symbol: class Test / method assertDoesNotThrow",
+          "likelyCause": "Thiếu dòng import cho annotation @Test hoặc phương thức assert tĩnh",
+          "fix": "Kiểm tra hai dòng import ở đầu file khớp đúng gói org.junit.jupiter.api."
+        }
+      ],
+      "projectStateAfter": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\SpendwiseApp.java\n  src\\test\\java\\com\\spendwise\\SpendwiseAppTest.java"
+    },
+    {
+      "id": "step-s1-commit",
+      "sessionId": "session-project-foundation",
+      "order": 5,
+      "buildStepId": "step-project-foundation-04",
+      "type": "setup",
+      "title": "Commit nền móng, dọn sạch file IDE",
+      "goal": "Có ít nhất một commit trong git log, và không có file .idea/, .vscode/, *.iml nào lọt vào lịch sử.",
+      "whyThisMatters": "Từ commit này trở đi, mọi diff bạn xem lại đều so với baseline này. Một baseline lẫn file cấu hình IDE cá nhân sẽ làm nhiễu mọi diff sau — dọn nó một lần, ngay từ đầu, rẻ hơn nhiều so với dọn giữa chừng.",
+      "instructions": [
+        "Tạo .gitignore ở thư mục gốc, loại trừ target/, *.class, .idea/, .vscode/, *.iml, và file jar của wrapper (nó sẽ tự tải lại khi cần, không cần commit).",
+        "git add -A rồi git commit với message mô tả đúng việc vừa làm."
+      ],
+      "codeBlocks": [
+        {
+          "language": "text",
+          "code": "target/\n*.class\n.idea/\n.vscode/\n*.iml\n.mvn/wrapper/maven-wrapper.jar\n",
+          "caption": ".gitignore"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "git add -A; git commit -m \"feat: scaffold plain Java 17 Maven project\"",
+        "expectedResult": "git log --oneline hiện ra ít nhất một dòng commit; git status báo working tree clean.",
+        "explanation": "Commit đầu tiên là baseline — mọi thay đổi từ Money trở đi sẽ được so sánh với điểm mốc này."
+      },
+      "commonErrors": [
+        {
+          "symptom": "nothing to commit, working tree clean ngay cả khi vừa tạo file mới",
+          "likelyCause": "Quên chạy git add trước git commit, hoặc file đã bị .gitignore loại trừ nhầm",
+          "fix": "Chạy git status trước để xem file nào đang ở trạng thái Untracked, rồi git add -A."
+        }
+      ]
+    },
+    {
+      "id": "step-s1-checkpoint",
+      "sessionId": "session-project-foundation",
+      "order": 6,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: nền móng đã sẵn sàng",
+      "goal": "Xác nhận project compile, test, và đã có commit — trước khi bắt đầu viết Money."
+    },
+    {
+      "id": "step-s2-failing-test",
+      "sessionId": "session-money-vo",
+      "order": 1,
+      "buildStepId": "step-money-vo-01",
+      "type": "code-with-me",
+      "title": "Khoá hợp đồng làm tròn bằng một test thất bại trước",
+      "goal": "Có MoneyTest khẳng định new Money(\"10.005\") chuẩn hoá về 10.01 (HALF_UP, scale 2) — test này biên dịch thất bại vì Money chưa tồn tại, đúng như dự kiến.",
+      "whyThisMatters": "double/float không thể đại diện tiền chính xác: 0.1 + 0.2 trong Java double không ra đúng 0.3 tuyệt đối, sai số nhỏ này tích luỹ qua hàng nghìn giao dịch sẽ lệch sổ sách thật. BigDecimal biểu diễn số thập phân đúng như con người viết ra, không có sai số nhị phân. Viết test trước ép bạn phát biểu rõ hợp đồng — \"chuẩn hoá scale 2, làm tròn HALF_UP\" — trước khi nghĩ tới cách implement.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-04",
+          "note": "Bạn đã biết class/constructor cơ bản. Money sẽ là ví dụ đầu tiên một constructor tự chuẩn hoá dữ liệu đầu vào thay vì chỉ gán trực tiếp."
+        }
+      ],
+      "instructions": [
+        "Tạo src/test/java/com/spendwise/shared/MoneyTest.java — package shared vì Money được dùng chung bởi nhiều phần khác nhau của domain, không riêng account hay category.",
+        "Viết một @Test khẳng định new Money(\"10.005\").amount() bằng đúng new BigDecimal(\"10.01\").",
+        "Chạy test — nó phải báo lỗi biên dịch (cannot find symbol: class Money) vì Money chưa tồn tại. Đây là thất bại đúng nghĩa: bạn đang xác nhận test thực sự kiểm tra thứ chưa có, không phải một test tự pass vì viết sai."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise.shared;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\nimport java.math.BigDecimal;\nimport org.junit.jupiter.api.Test;\n\nclass MoneyTest {\n    @Test\n    void normalizesConstructionToScaleTwoUsingHalfUp() {\n        assertEquals(new BigDecimal(\"10.01\"), new Money(\"10.005\").amount());\n    }\n}\n",
+          "caption": "src/test/java/com/spendwise/shared/MoneyTest.java (test dau tien)"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=MoneyTest test",
+        "expectedResult": "BUILD FAILURE — lỗi biên dịch \"cannot find symbol: class Money\". Đây là kết quả đúng mong đợi ở bước này.",
+        "explanation": "-Dtest=MoneyTest giới hạn Surefire chỉ chạy đúng class test này, giúp vòng lặp viết-test-rồi-chạy nhanh hơn khi bạn chưa cần chạy lại toàn bộ suite."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Test PASS ngay dù Money chưa tồn tại",
+          "likelyCause": "Không thể xảy ra với lỗi biên dịch thật — nếu bạn thấy PASS, khả năng cao bạn đang chạy nhầm test cũ đã compile trước đó trong target/",
+          "fix": "Chạy mvnw clean test để xoá cache biên dịch cũ rồi thử lại."
+        }
+      ]
+    },
+    {
+      "id": "step-s2-implement-money",
+      "sessionId": "session-money-vo",
+      "order": 2,
+      "buildStepId": "step-money-vo-02",
+      "type": "your-turn",
+      "title": "Tự viết Money bất biến với add/subtract",
+      "goal": "Money compile, test ở bước trước chuyển xanh, class bất biến (mọi field final, không setter), và không có constructor nhận double hay float.",
+      "whyThisMatters": "Một constructor Money(double amount) \"cho tiện\" là chỉ cần một lời gọi để tái tạo lại đúng lỗi làm tròn nhị phân mà kiểu Money sinh ra để tiêu diệt. Ràng buộc chỉ nhận String hoặc BigDecimal là chủ đích, không phải thiếu sót.",
+      "learnerAction": {
+        "goal": "Viết class Money trong src/main/java/com/spendwise/shared/Money.java: field amount (BigDecimal) và currency (java.util.Currency) đều final; constructor chính nhận (BigDecimal amount, Currency currency), gọi amount.setScale(2, RoundingMode.HALF_UP) trước khi gán; thêm getter amount() và currency(); thêm add(Money other) và subtract(Money other) trả về Money mới (không sửa object hiện tại); thêm hai constructor phụ Money(String amount) (mặc định currency USD) và Money(String amount, String currencyCode), cả hai chỉ parse rồi gọi lại constructor chính.",
+        "constraints": [
+          "Không có bất kỳ constructor nào nhận double hoặc float.",
+          "Mọi field phải final — không có setter.",
+          "add/subtract phải trả về instance Money mới, giữ nguyên hai object gốc không đổi (bất biến thật sự).",
+          "Nếu amount truyền vào null, ném IllegalArgumentException (tạm thời — task Domain Validation phía sau sẽ thay bằng exception miền nghiệp vụ chuyên biệt hơn).",
+          "Bắt buộc có Money(String amount) và Money(String amount, String currencyCode) — test ở bước trước gọi new Money(\"10.005\") và sẽ không compile nếu thiếu constructor này."
+        ],
+        "hints": [
+          "BigDecimal.setScale(2, RoundingMode.HALF_UP) chuẩn hoá số chữ số thập phân và cách làm tròn cùng lúc.",
+          "java.util.Currency.getInstance(\"USD\") tạo một Currency hợp lệ; dùng nó làm mặc định nếu bạn thêm constructor chỉ nhận amount."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=MoneyTest test",
+        "expectedResult": "BUILD SUCCESS, test normalizesConstructionToScaleTwoUsingHalfUp chuyển xanh.",
+        "explanation": "Chạy lại đúng test đã viết ở bước trước — nếu nó xanh, class Money của bạn đã thoả đúng hợp đồng đã khoá."
+      },
+      "commonErrors": [
+        {
+          "symptom": "BigDecimal.setScale ném ArithmeticException",
+          "likelyCause": "Gọi setScale mà không chỉ định RoundingMode (chỉ new scale), trong khi số cần làm tròn thay vì cắt",
+          "fix": "Luôn gọi setScale(2, RoundingMode.HALF_UP) — hai tham số, không phải một."
+        },
+        {
+          "symptom": "assertEquals thất bại dù amount trông giống nhau",
+          "likelyCause": "So sánh BigDecimal bằng equals() coi 10.0 và 10.00 là khác nhau (khác scale) — nếu bạn đã setScale(2) đúng trong constructor, hai giá trị scale-2 phải bằng nhau; lỗi này thường do quên gọi setScale",
+          "fix": "Xác nhận dòng amount.setScale(2, RoundingMode.HALF_UP) thực sự được gọi trước khi gán vào field final."
+        }
+      ],
+      "reveal": {
+        "label": "Xem cách Money constructor chính và add/subtract được viết (giai đoạn này, chưa có equals/hashCode/currency validation)",
+        "content": "public final class Money {\n    private final BigDecimal amount;\n    private final Currency currency;\n\n    public Money(BigDecimal amount, Currency currency) {\n        if (amount == null) {\n            throw new IllegalArgumentException(\"amount is required\");\n        }\n        this.amount = amount.setScale(2, RoundingMode.HALF_UP);\n        this.currency = currency;\n    }\n\n    public BigDecimal amount() { return amount; }\n    public Currency currency() { return currency; }\n\n    public Money add(Money other) {\n        return new Money(amount.add(other.amount), currency);\n    }\n\n    public Money subtract(Money other) {\n        return new Money(amount.subtract(other.amount), currency);\n    }\n}"
+      },
+      "projectStateAfter": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\shared\\Money.java\n  src\\test\\java\\com\\spendwise\\shared\\MoneyTest.java"
+    },
+    {
+      "id": "step-s2-equality-currency",
+      "sessionId": "session-money-vo",
+      "order": 3,
+      "buildStepId": "step-money-vo-03",
+      "type": "your-turn",
+      "title": "So sánh Money đúng giá trị, chặn cộng trừ khác đơn vị tiền",
+      "goal": "new Money(\"0.50\").equals(new Money(\"0.5\")) trả về true, và cộng hai Money khác currency ném exception thay vì âm thầm ra kết quả sai.",
+      "whyThisMatters": "BigDecimal.equals() so sánh cả giá trị lẫn scale — 0.50 và 0.5 có scale khác nhau nên BigDecimal coi chúng khác nhau, dù về mặt tiền tệ chúng là cùng một số tiền. compareTo() chỉ so sánh giá trị, bỏ qua scale — đây là công cụ đúng cho equals() của một kiểu tiền tệ. Currency mismatch (USD + JPY) phải bị chặn ngay lập tức: cộng nhầm hai đơn vị tiền khác nhau là lỗi nghiệp vụ nghiêm trọng, im lặng cho qua còn tệ hơn crash rõ ràng.",
+      "learnerAction": {
+        "goal": "Override equals(Object) và hashCode() trên Money dùng amount.compareTo(...) == 0 (không dùng equals trực tiếp trên BigDecimal); thêm một hàm private requireSameCurrency(Money other) được add/subtract gọi trước khi tính, ném exception nếu currency khác nhau.",
+        "constraints": [
+          "equals() phải dùng compareTo, không dùng amount.equals(other.amount) trực tiếp.",
+          "hashCode() phải nhất quán với equals() — hai Money bằng nhau theo equals() phải có cùng hashCode(). Gợi ý: dùng amount.stripTrailingZeros() trước khi đưa vào Objects.hash để 0.50 và 0.5 ra cùng hash.",
+          "add/subtract phải gọi requireSameCurrency trước khi tính toán."
+        ],
+        "hints": [
+          "Objects.hash(currency, amount.stripTrailingZeros()) là một cách gọn để có hashCode nhất quán với compareTo-based equals.",
+          "Pattern matching instanceof (Java 16+): if (other instanceof Money money && ...) — bạn đã dùng pattern này ở phần OOP nâng cao."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=MoneyTest test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test trong MoneyTest xanh, kể cả hai test mới về equality và currency mismatch bạn vừa thêm.",
+        "explanation": "Lần này bạn tự thêm test cho hành vi mình vừa viết trước khi tin nó đúng — thói quen sẽ lặp lại xuyên suốt khoá học."
+      },
+      "commonErrors": [
+        {
+          "symptom": "hashCode() không nhất quán, HashSet/HashMap chứa Money hoạt động sai",
+          "likelyCause": "hashCode() được tính từ amount thô (chưa stripTrailingZeros) trong khi equals() dùng compareTo — hai object equals() = true nhưng hashCode() khác nhau, vi phạm hợp đồng equals/hashCode của Java",
+          "fix": "Đưa amount.stripTrailingZeros() vào Objects.hash thay vì amount thô."
+        },
+        {
+          "symptom": "CurrencyMismatchException không được ném khi cộng USD với JPY",
+          "likelyCause": "requireSameCurrency được định nghĩa nhưng quên gọi nó ở đầu add()/subtract()",
+          "fix": "Kiểm tra dòng đầu tiên trong thân add() và subtract() đều gọi requireSameCurrency(other) trước khi amount.add/subtract."
+        }
+      ],
+      "reveal": {
+        "label": "Xem equals/hashCode/requireSameCurrency hoàn chỉnh của Money ở cuối session này",
+        "content": "@Override\npublic boolean equals(Object other) {\n    return other instanceof Money money\n            && currency.equals(money.currency)\n            && amount.compareTo(money.amount) == 0;\n}\n\n@Override\npublic int hashCode() {\n    return Objects.hash(currency, amount.stripTrailingZeros());\n}\n\nprivate void requireSameCurrency(Money other) {\n    if (other == null) {\n        throw new IllegalArgumentException(\"money is required\");\n    }\n    if (!currency.equals(other.currency)) {\n        throw new IllegalArgumentException(\"money currencies must match\");\n    }\n}"
+      }
+    },
+    {
+      "id": "step-s2-checkpoint",
+      "sessionId": "session-money-vo",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: Money đã an toàn để dùng ở mọi nơi",
+      "goal": "Xác nhận Money bất biến, chính xác, so sánh đúng — trước khi Account bắt đầu dùng nó để lưu số dư."
+    },
+    {
+      "id": "step-s3-failing-test",
+      "sessionId": "session-account-entity",
+      "order": 1,
+      "buildStepId": "step-account-entity-01",
+      "type": "code-with-me",
+      "title": "Viết test khởi tạo Account thất bại trước",
+      "goal": "Có AccountTest khẳng định Account được tạo với openingBalance hợp lệ thì balance() ban đầu bằng đúng openingBalance — test biên dịch thất bại vì Account/AccountType chưa tồn tại.",
+      "whyThisMatters": "Một Account sinh ra phải có số dư xác định ngay từ constructor — không có trạng thái \"account rỗng chưa có số dư\" lơ lửng ở đâu đó chờ gán sau. Test này khoá hợp đồng đó trước khi có bất kỳ dòng implementation nào.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-05",
+          "note": "Bạn đã học encapsulation. Account là ví dụ đầu tiên field private không có setter công khai — mọi thay đổi đi qua phương thức có kiểm tra."
+        }
+      ],
+      "instructions": [
+        "Tạo package com.spendwise.account (package riêng — Account và các khái niệm liên quan tài khoản sẽ sống ở đây, tách khỏi shared nơi Money đang ở).",
+        "Tạo src/test/java/com/spendwise/account/AccountTest.java.",
+        "Viết test tạo Account với tên, một AccountType (chưa tồn tại), và một Money làm openingBalance — khẳng định account.openingBalance() và account.balance() đều bằng đúng Money đó."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise.account;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\nimport com.spendwise.shared.Money;\nimport org.junit.jupiter.api.Test;\n\nclass AccountTest {\n    @Test\n    void createsAccountWithImmutableOpeningBalance() {\n        Money openingBalance = new Money(\"100.00\");\n\n        Account account = new Account(\"Cash\", AccountType.CASH, openingBalance);\n\n        assertEquals(openingBalance, account.openingBalance());\n        assertEquals(openingBalance, account.balance());\n    }\n}\n",
+          "caption": "src/test/java/com/spendwise/account/AccountTest.java (test dau tien)"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=AccountTest test",
+        "expectedResult": "BUILD FAILURE — cannot find symbol: class Account, class AccountType. Kết quả đúng mong đợi.",
+        "explanation": "Cả Account lẫn AccountType đều chưa tồn tại, nên compile thất bại ngay — đúng bước 'thất bại vì đúng lý do' trước khi implement."
+      },
+      "commonErrors": [
+        {
+          "symptom": "import com.spendwise.shared.Money không thấy Money",
+          "likelyCause": "Session Money (session 2) chưa hoàn tất, hoặc Money.java bị đặt sai package",
+          "fix": "Xác nhận src/main/java/com/spendwise/shared/Money.java tồn tại và có dòng package com.spendwise.shared;"
+        }
+      ]
+    },
+    {
+      "id": "step-s3-implement-account",
+      "sessionId": "session-account-entity",
+      "order": 2,
+      "buildStepId": "step-account-entity-02",
+      "type": "your-turn",
+      "title": "Tự viết Account với AccountType enum và constructor kiểm tra",
+      "goal": "Test ở bước trước chuyển xanh; Account có field private, AccountType là enum, và constructor từ chối tên rỗng/type null/openingBalance null.",
+      "whyThisMatters": "Đây là ứng dụng thực tế của encapsulation bạn đã học: field private không phải vì quy ước, mà vì Account phải tự đảm bảo trạng thái của nó luôn hợp lệ — không ai từ bên ngoài có thể gán balance = null hay tạo account không tên.",
+      "learnerAction": {
+        "goal": "Viết Account.java và AccountType.java trong src/main/java/com/spendwise/account/. AccountType là enum với CASH, BANK. Account có field private final name (String), type (AccountType), openingBalance (Money), và field private balance (Money, không final — sẽ đổi qua các phương thức ở bước sau). Constructor nhận (String name, AccountType type, Money openingBalance), kiểm tra cả ba tham số, gán balance = openingBalance ban đầu.",
+        "constraints": [
+          "Constructor ném IllegalArgumentException nếu name null hoặc blank, type null, hoặc openingBalance null.",
+          "Không có setter công khai nào cho balance — chỉ có getter balance().",
+          "class Account nên là final (không ai cần kế thừa nó ở V0.1)."
+        ],
+        "hints": [
+          "String.isBlank() kiểm tra chuỗi rỗng hoặc toàn khoảng trắng — bạn đã dùng nó trước đây.",
+          "AccountType chỉ cần hai hằng số CASH, BANK — enum đơn giản, chưa cần field hay constructor riêng (khác với TransactionType ở session sau)."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=AccountTest test",
+        "expectedResult": "BUILD SUCCESS, createsAccountWithImmutableOpeningBalance chuyển xanh.",
+        "explanation": "Test đầu tiên giờ đã pass — Account tồn tại và khởi tạo đúng."
+      },
+      "commonErrors": [
+        {
+          "symptom": "cannot find symbol: variable CASH",
+          "likelyCause": "AccountType enum chưa có hằng số CASH (có thể gõ nhầm tên hoặc quên tạo file AccountType.java)",
+          "fix": "Kiểm tra AccountType.java có đúng hai dòng CASH, BANK; phải khớp chính xác chữ hoa/thường với test."
+        },
+        {
+          "symptom": "NullPointerException khi gọi account.balance() ngay sau khi tạo",
+          "likelyCause": "Quên gán this.balance = openingBalance ở cuối constructor",
+          "fix": "Thêm dòng gán balance trong constructor, sau khi đã validate xong ba tham số."
+        }
+      ],
+      "reveal": {
+        "label": "Xem Account constructor và AccountType ở giai đoạn này (chưa có applyIncome/applyExpense)",
+        "content": "public enum AccountType {\n    CASH,\n    BANK\n}\n\npublic final class Account {\n    private final String name;\n    private final AccountType type;\n    private final Money openingBalance;\n    private Money balance;\n\n    public Account(String name, AccountType type, Money openingBalance) {\n        if (name == null || name.isBlank()) {\n            throw new IllegalArgumentException(\"account name is required\");\n        }\n        if (type == null) {\n            throw new IllegalArgumentException(\"account type is required\");\n        }\n        if (openingBalance == null) {\n            throw new IllegalArgumentException(\"opening balance is required\");\n        }\n        this.name = name;\n        this.type = type;\n        this.openingBalance = openingBalance;\n        this.balance = openingBalance;\n    }\n\n    public String name() { return name; }\n    public AccountType type() { return type; }\n    public Money openingBalance() { return openingBalance; }\n    public Money balance() { return balance; }\n}"
+      },
+      "projectStateAfter": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\account\\Account.java\n  src\\main\\java\\com\\spendwise\\account\\AccountType.java\n  src\\test\\java\\com\\spendwise\\account\\AccountTest.java"
+    },
+    {
+      "id": "step-s3-balance-behavior",
+      "sessionId": "session-account-entity",
+      "order": 3,
+      "buildStepId": "step-account-entity-03",
+      "type": "your-turn",
+      "title": "Đổi số dư chỉ qua hành vi nghiệp vụ, theo quy ước dấu hiệu",
+      "goal": "Account có applyIncome/applyExpense/applyTransferIn/applyTransferOut, mỗi phương thức từ chối amount null/âm/bằng-không, và balance sau một chuỗi thao tác phải khớp đúng tổng openingBalance cộng các hiệu ứng có dấu.",
+      "whyThisMatters": "Quy ước dấu hiệu (signed-effect) là nền tảng cho mọi tính toán số dư sau này: INCOME cộng dương, EXPENSE trừ, TRANSFER_IN cộng, TRANSFER_OUT trừ. Nếu cho phép setBalance trực tiếp — kể cả 'chỉ để test cho tiện' — bạn mở một cửa hậu để balance lệch khỏi lịch sử giao dịch thật, và test cũng không còn đại diện đúng cách production code hoạt động.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-04",
+          "note": "applyIncome/applyExpense là các phương thức đổi trạng thái nội bộ — áp dụng trực tiếp khái niệm method bạn đã học, nhưng lần này method chính là ranh giới bảo vệ invariant."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Thêm 4 phương thức public vào Account: applyIncome(Money amount), applyExpense(Money amount), applyTransferIn(Money amount), applyTransferOut(Money amount). income/transferIn cộng vào balance; expense/transferOut trừ khỏi balance. Cả 4 đều validate amount qua một hàm private chung requireAmount(Money amount) trước khi áp dụng.",
+        "constraints": [
+          "requireAmount ném exception nếu amount null hoặc amount.amount().signum() <= 0 (0 hoặc âm đều bị từ chối — hiệu ứng phải luôn dương, chiều đã nằm trong tên phương thức).",
+          "Không thêm bất kỳ setBalance(...) public nào — balance chỉ đổi qua 4 phương thức trên.",
+          "Viết thêm test reconcilesBalanceFromSignedEffects: gọi cả 4 phương thức theo một chuỗi số cụ thể, khẳng định balance cuối cùng đúng bằng openingBalance + tổng các hiệu ứng có dấu."
+        ],
+        "hints": [
+          "Money.amount() trả BigDecimal; BigDecimal.signum() trả -1/0/1 — cách gọn nhất để kiểm tra âm/không/dương.",
+          "4 phương thức applyX chỉ khác nhau ở add hay subtract — cân nhắc để chúng dùng chung requireAmount rồi rẽ nhánh add/subtract."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=AccountTest test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ AccountTest xanh, bao gồm test reconcile bạn vừa thêm.",
+        "explanation": "Đây là lần đầu bạn viết một test 'pin' một chuỗi thao tác nhiều bước — mẫu này sẽ lặp lại khi Transaction cần chứng minh luồng hoàn chỉnh."
+      },
+      "commonErrors": [
+        {
+          "symptom": "applyIncome(new Money(\"0.00\")) không bị từ chối dù mong đợi throw",
+          "likelyCause": "requireAmount dùng signum() < 0 (chỉ chặn âm) thay vì <= 0 (chặn cả không lẫn âm)",
+          "fix": "Đổi điều kiện thành amount.amount().signum() <= 0 — 0 không phải là một hiệu ứng hợp lệ."
+        },
+        {
+          "symptom": "reconcilesBalanceFromSignedEffects thất bại, balance lệch",
+          "likelyCause": "applyTransferOut cộng thay vì trừ (nhầm dấu), hoặc gọi sai thứ tự add/subtract trong một trong 4 phương thức",
+          "fix": "Kiểm tra lại quy ước: INCOME +, EXPENSE -, TRANSFER_IN +, TRANSFER_OUT - — so khớp từng phương thức với đúng chiều."
+        }
+      ],
+      "reveal": {
+        "label": "Xem 4 phương thức applyX và requireAmount hoàn chỉnh",
+        "content": "public void applyIncome(Money amount) {\n    balance = balance.add(requireAmount(amount));\n}\n\npublic void applyExpense(Money amount) {\n    balance = balance.subtract(requireAmount(amount));\n}\n\npublic void applyTransferIn(Money amount) {\n    balance = balance.add(requireAmount(amount));\n}\n\npublic void applyTransferOut(Money amount) {\n    balance = balance.subtract(requireAmount(amount));\n}\n\nprivate static Money requireAmount(Money amount) {\n    if (amount == null) {\n        throw new IllegalArgumentException(\"amount is required\");\n    }\n    if (amount.amount().signum() <= 0) {\n        throw new IllegalArgumentException(\"effect amount must be positive\");\n    }\n    return amount;\n}"
+      }
+    },
+    {
+      "id": "step-s3-checkpoint",
+      "sessionId": "session-account-entity",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: Account đã bảo vệ được số dư của chính nó",
+      "goal": "Xác nhận balance chỉ đổi qua hành vi kiểm soát — trước khi Transaction bắt đầu là nguồn tạo ra các hiệu ứng đó."
+    },
+    {
+      "id": "step-s4-failing-test",
+      "sessionId": "session-transaction-entity",
+      "order": 1,
+      "buildStepId": "step-transaction-entity-01",
+      "type": "code-with-me",
+      "title": "Viết test từ chối amount không dương",
+      "goal": "Có TransactionTest khẳng định tạo Transaction với amount 0 hoặc âm phải ném exception — test biên dịch thất bại vì Transaction/TransactionType chưa tồn tại.",
+      "whyThisMatters": "Transaction domain KHÔNG giống @Transactional của Spring sau này — đừng nhầm hai khái niệm. Transaction ở đây là một GIAO DỊCH TÀI CHÍNH (một khoản thu/chi có thật), còn @Transactional là một khái niệm kỹ thuật về ranh giới database transaction. Chúng trùng tên tiếng Anh nhưng là hai thứ hoàn toàn khác nhau — phân biệt rõ ngay từ bây giờ sẽ tránh nhầm lẫn lớn khi học Spring Data sau này.",
+      "instructions": [
+        "Vẫn trong package com.spendwise.account — Transaction gắn chặt với Account nên sống cùng package, không tách riêng.",
+        "Tạo src/test/java/com/spendwise/account/TransactionTest.java, khai báo một Account dùng chung cho các test trong class.",
+        "Viết hai test: rejectsZeroAmount và rejectsNegativeAmount, cả hai khẳng định constructor Transaction ném exception."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise.account;\n\nimport static org.junit.jupiter.api.Assertions.assertThrows;\n\nimport com.spendwise.shared.Money;\nimport org.junit.jupiter.api.Test;\n\nclass TransactionTest {\n    private final Account account = new Account(\"Cash\", AccountType.CASH, new Money(\"0.00\"));\n\n    @Test\n    void rejectsZeroAmount() {\n        assertThrows(IllegalArgumentException.class,\n                () -> new Transaction(account, TransactionType.INCOME, new Money(\"0.00\")));\n    }\n\n    @Test\n    void rejectsNegativeAmount() {\n        assertThrows(IllegalArgumentException.class,\n                () -> new Transaction(account, TransactionType.INCOME, new Money(\"-1.00\")));\n    }\n}\n",
+          "caption": "src/test/java/com/spendwise/account/TransactionTest.java (hai test dau tien)"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=TransactionTest test",
+        "expectedResult": "BUILD FAILURE — cannot find symbol: class Transaction, class TransactionType.",
+        "explanation": "Đúng như Account trước đó: test thất bại vì đúng lý do (class chưa tồn tại), không phải vì logic sai."
+      }
+    },
+    {
+      "id": "step-s4-implement-transaction",
+      "sessionId": "session-transaction-entity",
+      "order": 2,
+      "buildStepId": "step-transaction-entity-02",
+      "type": "your-turn",
+      "title": "Tự viết Transaction với amount, hướng, và tham chiếu Account",
+      "goal": "Transaction validate Money amount (luôn dương), TransactionType enum (INCOME/EXPENSE — TRANSFER_* để sau), và account khác null; test ở bước trước chuyển xanh.",
+      "whyThisMatters": "Mọi bất biến (invariant) của Transaction được kiểm tra đúng MỘT LẦN, tại constructor. Sau khi Transaction được tạo ra thành công, mọi nơi khác trong hệ thống có thể tin tưởng object đó luôn hợp lệ, không cần validate lại.",
+      "learnerAction": {
+        "goal": "Viết TransactionType.java (enum INCOME, EXPENSE — ghi rõ comment rằng TRANSFER_IN/TRANSFER_OUT chưa thuộc V0.1) và Transaction.java trong com.spendwise.account. Transaction có field private final account (Account), type (TransactionType), amount (Money). Constructor nhận (Account account, TransactionType type, Money amount), validate cả ba.",
+        "constraints": [
+          "amount phải khác null và amount.amount().signum() phải dương (> 0) — không dùng lại hàm requireAmount của Account, Transaction tự kiểm tra vì đây là bất biến của chính nó.",
+          "account khác null, type khác null — nếu không, ném IllegalArgumentException.",
+          "Có getter account(), type(), amount()."
+        ],
+        "hints": [
+          "TransactionType chưa cần field/constructor riêng ở bước này (đó là bước sau) — enum trần INCOME, EXPENSE là đủ cho bước này.",
+          "Đặt comment rõ trong TransactionType lý do TRANSFER_IN/TRANSFER_OUT chưa có mặt, để người đọc code sau này (kể cả chính bạn) hiểu đây là chủ đích, không phải thiếu sót."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=TransactionTest test",
+        "expectedResult": "BUILD SUCCESS, rejectsZeroAmount và rejectsNegativeAmount đều xanh.",
+        "explanation": "Cả hai test khẳng định constructor từ chối amount không dương đều đã pass."
+      },
+      "commonErrors": [
+        {
+          "symptom": "assertThrows thất bại vì không exception nào được ném",
+          "likelyCause": "Điều kiện kiểm tra amount dùng < 0 thay vì <= 0, nên amount = 0 lọt qua",
+          "fix": "Đổi điều kiện thành amount.amount().signum() <= 0."
+        }
+      ],
+      "reveal": {
+        "label": "Xem TransactionType và Transaction constructor chính ở giai đoạn này (chưa có overload nhận Category)",
+        "content": "// TRANSFER_IN/TRANSFER_OUT deferred past V0.1 - se them khi co feature chuyen khoan\npublic enum TransactionType {\n    INCOME,\n    EXPENSE\n}\n\npublic final class Transaction {\n    private final Account account;\n    private final TransactionType type;\n    private final Money amount;\n\n    public Transaction(Account account, TransactionType type, Money amount) {\n        if (account == null) {\n            throw new IllegalArgumentException(\"account is required\");\n        }\n        if (type == null) {\n            throw new IllegalArgumentException(\"transaction type is required\");\n        }\n        if (amount == null) {\n            throw new IllegalArgumentException(\"amount is required\");\n        }\n        if (amount.amount().signum() <= 0) {\n            throw new IllegalArgumentException(\"transaction amount must be positive\");\n        }\n        this.account = account;\n        this.type = type;\n        this.amount = amount;\n    }\n\n    public Account account() { return account; }\n    public TransactionType type() { return type; }\n    public Money amount() { return amount; }\n}"
+      },
+      "projectStateAfter": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\account\\Transaction.java\n  src\\main\\java\\com\\spendwise\\account\\TransactionType.java\n  src\\test\\java\\com\\spendwise\\account\\TransactionTest.java"
+    },
+    {
+      "id": "step-s4-signed-effect",
+      "sessionId": "session-transaction-entity",
+      "order": 3,
+      "buildStepId": "step-transaction-entity-03",
+      "type": "your-turn",
+      "title": "Gắn cứng hiệu ứng có dấu vào từng loại giao dịch",
+      "goal": "Mỗi TransactionType map đúng một hiệu ứng có dấu (INCOME = +1, EXPENSE = -1), có test pin chặt mapping này lại để không ai vô tình đổi nhầm sau này.",
+      "whyThisMatters": "Đây chính là quy ước Account đã dùng ở session trước (INCOME cộng, EXPENSE trừ) — giờ formalize thành dữ liệu gắn trên enum thay vì chỉ nằm rải rác trong logic if/else. Khi Account cần tính lại số dư từ danh sách Transaction (một tính năng V0.2), signedEffect() sẽ là nguồn chân lý duy nhất cho chiều tác động — pin nó bằng test ngay bây giờ để nó không âm thầm đổi.",
+      "learnerAction": {
+        "goal": "Thêm một field int signedEffect vào TransactionType, gán qua constructor enum (INCOME(1), EXPENSE(-1);), và một getter signedEffect(). Viết thêm test eachTransactionTypeMapsToExactlyOneSignedEffect khẳng định INCOME.signedEffect() == 1 và EXPENSE.signedEffect() == -1.",
+        "constraints": [
+          "signedEffect phải là field private final trên enum, gán qua constructor riêng của enum — không dùng switch/if bên ngoài để suy ra dấu."
+        ],
+        "hints": [
+          "Cú pháp enum có constructor: INCOME(1), EXPENSE(-1); — theo sau là dấu chấm phẩy, rồi field/constructor/method như một class bình thường."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=TransactionTest test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ TransactionTest xanh, gồm cả test mapping vừa thêm.",
+        "explanation": "signedEffect() giờ là nguồn chân lý duy nhất về chiều tác động của mỗi loại giao dịch."
+      },
+      "reveal": {
+        "label": "Xem TransactionType với signedEffect hoàn chỉnh",
+        "content": "public enum TransactionType {\n    INCOME(1),\n    EXPENSE(-1);\n\n    private final int signedEffect;\n\n    TransactionType(int signedEffect) {\n        this.signedEffect = signedEffect;\n    }\n\n    public int signedEffect() {\n        return signedEffect;\n    }\n}"
+      }
+    },
+    {
+      "id": "step-s4-checkpoint",
+      "sessionId": "session-transaction-entity",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: Transaction đã ghi lại đúng một sự kiện tài chính",
+      "goal": "Xác nhận amount luôn dương và hướng nằm trong type — trước khi thêm khả năng phân loại giao dịch."
+    },
+    {
+      "id": "step-s5-category-enum",
+      "sessionId": "session-category-model",
+      "order": 1,
+      "buildStepId": "step-category-model-01",
+      "type": "code-with-me",
+      "title": "Mô hình hoá tập category MVP bằng enum",
+      "goal": "Có enum Category với 5 giá trị cố định: FOOD, TRANSPORT, HOUSING, ENTERTAINMENT, SALARY — không có cấu trúc phân cấp (cha/con).",
+      "whyThisMatters": "Một tập giá trị cố định, đã biết trước, đóng vai trò phân loại — đó chính xác là lúc dùng enum thay vì String tự do (String category = \"food\" cho phép gõ sai chính tả, enum thì không). Ở V0.1, đây vẫn thuần tuý là một kiểu Java trong bộ nhớ; khái niệm 'category có ID lưu trong database, người dùng tự thêm category mới' thuộc về giai đoạn có persistence sau này — chưa cần nghĩ tới bây giờ.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-07",
+          "note": "Bạn đã học enum. Category là enum đơn giản nhất trong toàn bộ V0.1 — không field, không constructor, chỉ là một tập hằng số hữu hạn."
+        }
+      ],
+      "instructions": [
+        "Tạo package com.spendwise.category.",
+        "Tạo Category.java — enum với đúng 5 hằng số theo thứ tự: FOOD, TRANSPORT, HOUSING, ENTERTAINMENT, SALARY.",
+        "Không thêm bất kỳ field, constructor, hay quan hệ cha/con nào — MVP category set không cần phân cấp."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise.category;\n\npublic enum Category {\n    FOOD,\n    TRANSPORT,\n    HOUSING,\n    ENTERTAINMENT,\n    SALARY\n}\n",
+          "caption": "src/main/java/com/spendwise/category/Category.java"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -q test",
+        "expectedResult": "BUILD SUCCESS — Category chưa được dùng ở đâu nên không có test riêng cho nó, nhưng toàn bộ suite hiện tại vẫn phải xanh sau khi thêm file mới.",
+        "explanation": "-q (quiet) giảm log Maven xuống mức tối thiểu, chỉ hiện lỗi nếu có — hữu ích khi bạn chỉ muốn biết PASS/FAIL nhanh."
+      }
+    },
+    {
+      "id": "step-s5-wire-category",
+      "sessionId": "session-category-model",
+      "order": 2,
+      "buildStepId": "step-category-model-02",
+      "type": "your-turn",
+      "title": "Cho Transaction mang theo một Category bắt buộc",
+      "goal": "Transaction có thêm constructor overload nhận Category; category null bị từ chối; test transactionCanCarryACategory và rejectsUnknownCategoryValue đều xanh.",
+      "whyThisMatters": "Phân loại trở thành một phần của sự kiện được ghi lại, không phải một trường tuỳ chọn thêm vào sau. Vì Category đã là enum, Java compiler tự chặn giá trị không tồn tại ở compile-time — cái duy nhất bạn cần tự kiểm tra ở runtime là category null (chưa được gán).",
+      "learnerAction": {
+        "goal": "Thêm một constructor overload vào Transaction: Transaction(Account account, TransactionType type, Money amount, Category category) — gọi lại constructor 3-tham số hiện có bằng this(...), rồi validate category khác null trước khi gán vào một field private category. Thêm getter category(). Viết test CategoryTest trong package com.spendwise.category kiểm tra cả hai trường hợp: gán category hợp lệ, và category null bị từ chối.",
+        "constraints": [
+          "Dùng this(account, type, amount) để tái sử dụng validate của constructor 3-tham số, không copy-paste logic kiểm tra.",
+          "category field không final nếu constructor 3-tham số cần gán null mặc định — cân nhắc cách field category được khởi tạo ở cả hai constructor.",
+          "category null ở constructor 4-tham số phải ném exception — đây LÀ constructor bắt buộc category, khác với constructor 3-tham số (không có category)."
+        ],
+        "hints": [
+          "this(...) làm dòng đầu tiên trong constructor gọi sang constructor khác cùng class — bạn đã dùng pattern này để tránh lặp code validate.",
+          "CategoryTest có thể tái sử dụng một Account test chung, tương tự cách TransactionTest đã làm."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=CategoryTest test",
+        "expectedResult": "BUILD SUCCESS — cả hai test trong CategoryTest xanh.",
+        "explanation": "Transaction giờ có thể mang theo phân loại, và việc thiếu category bị từ chối rõ ràng thay vì âm thầm chấp nhận null."
+      },
+      "commonErrors": [
+        {
+          "symptom": "StackOverflowError khi tạo Transaction",
+          "likelyCause": "Constructor 4-tham số gọi this(account, type, amount, category) thay vì this(account, type, amount) — tự gọi lại chính nó vô hạn",
+          "fix": "Constructor 4-tham số phải gọi this(account, type, amount) — đúng 3 tham số, không có category — để nhảy sang constructor kia."
+        },
+        {
+          "symptom": "category() trả về null dù đã truyền Category.FOOD lúc tạo",
+          "likelyCause": "Quên gán this.category = category sau khi validate trong constructor 4-tham số",
+          "fix": "Thêm dòng gán field category sau bước kiểm tra null."
+        }
+      ],
+      "reveal": {
+        "label": "Xem constructor overload nhận Category",
+        "content": "public Transaction(Account account, TransactionType type, Money amount, Category category) {\n    this(account, type, amount);\n    if (category == null) {\n        throw new IllegalArgumentException(\"category is required\");\n    }\n    this.category = category;\n}\n\npublic Category category() {\n    return category;\n}"
+      },
+      "projectStateAfter": "D:\\spendwise-learning\\\n  src\\main\\java\\com\\spendwise\\category\\Category.java\n  src\\test\\java\\com\\spendwise\\category\\CategoryTest.java\n  src\\main\\java\\com\\spendwise\\account\\Transaction.java (da cap nhat)"
+    },
+    {
+      "id": "step-s5-checkpoint",
+      "sessionId": "session-category-model",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: giao dịch giờ đã phân loại được",
+      "goal": "Xác nhận Transaction mang được Category bắt buộc — trước khi hình thức hoá toàn bộ hệ thống exception."
+    },
+    {
+      "id": "step-s6-exception-types",
+      "sessionId": "session-domain-validation",
+      "order": 1,
+      "buildStepId": "step-domain-validation-01",
+      "type": "code-with-me",
+      "title": "Định nghĩa các loại exception miền nghiệp vụ",
+      "goal": "Có DomainException (gốc), InvalidAmountException và CurrencyMismatchException (đều kế thừa DomainException) — một test xác nhận cả hai exception con đều là DomainException.",
+      "whyThisMatters": "Suốt 3 session vừa qua, mọi lỗi validate đều ném IllegalArgumentException — hợp lý để bắt đầu, nhưng không nói lên được LOẠI vi phạm nào đã xảy ra. Một hệ thống exception theo tên (DomainException là gốc, các loại cụ thể kế thừa nó) cho phép code gọi bắt đúng loại lỗi nó quan tâm (ví dụ chỉ bắt InvalidAmountException để hiển thị thông báo về số tiền), mà vẫn bắt được tất cả qua DomainException nếu không cần phân biệt.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-08",
+          "note": "Bạn đã học exception hierarchy (checked/unchecked, kế thừa exception). Đây là ứng dụng trực tiếp: DomainException extends RuntimeException (unchecked — vi phạm bất biến là lỗi lập trình, không phải điều kiện caller cần bắt buộc xử lý), các exception con extends DomainException."
+        }
+      ],
+      "instructions": [
+        "Tạo package com.spendwise.shared (cùng package với Money — đây là các kiểu dùng chung toàn hệ thống).",
+        "DomainException extends RuntimeException — constructor nhận String message, gọi super(message).",
+        "InvalidAmountException và CurrencyMismatchException đều extends DomainException — cùng một khuôn constructor.",
+        "Viết DomainExceptionTest khẳng định cả hai exception con đều là instance của DomainException (dùng assertInstanceOf)."
+      ],
+      "codeBlocks": [
+        {
+          "language": "java",
+          "code": "package com.spendwise.shared;\n\npublic class DomainException extends RuntimeException {\n    public DomainException(String message) {\n        super(message);\n    }\n}\n\npublic class InvalidAmountException extends DomainException {\n    public InvalidAmountException(String message) {\n        super(message);\n    }\n}\n\npublic class CurrencyMismatchException extends DomainException {\n    public CurrencyMismatchException(String message) {\n        super(message);\n    }\n}\n",
+          "caption": "3 file trong src/main/java/com/spendwise/shared/"
+        },
+        {
+          "language": "java",
+          "code": "package com.spendwise.shared;\n\nimport static org.junit.jupiter.api.Assertions.assertInstanceOf;\n\nimport org.junit.jupiter.api.Test;\n\nclass DomainExceptionTest {\n    @Test\n    void groupsSpecificExceptionsUnderDomainException() {\n        assertInstanceOf(DomainException.class, new InvalidAmountException(\"invalid amount\"));\n        assertInstanceOf(DomainException.class, new CurrencyMismatchException(\"currencies differ\"));\n    }\n}\n",
+          "caption": "src/test/java/com/spendwise/shared/DomainExceptionTest.java"
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd -Dtest=DomainExceptionTest test",
+        "expectedResult": "BUILD SUCCESS — cả hai assertInstanceOf đều pass.",
+        "explanation": "Ba class exception mới chưa được dùng ở đâu cả — bước tiếp theo mới thay các lời gọi IllegalArgumentException cũ bằng chúng."
+      },
+      "commonErrors": [
+        {
+          "symptom": "cannot find symbol trong DomainExceptionTest",
+          "likelyCause": "Ba class exception được tạo sai package (không phải com.spendwise.shared), hoặc tên file không khớp tên class public",
+          "fix": "Java yêu cầu tên file .java khớp CHÍNH XÁC tên class public bên trong — DomainException.java chỉ chứa class DomainException."
+        }
+      ]
+    },
+    {
+      "id": "step-s6-retrofit-throws",
+      "sessionId": "session-domain-validation",
+      "order": 2,
+      "buildStepId": "step-domain-validation-02",
+      "type": "your-turn",
+      "title": "Thay IllegalArgumentException bằng exception miền nghiệp vụ ở khắp nơi",
+      "goal": "Mọi throw new IllegalArgumentException(...) trong Money/Account/Transaction được thay bằng đúng loại exception miền nghiệp vụ tương ứng; toàn bộ test cũ (MoneyTest, AccountTest, TransactionTest, CategoryTest) vẫn phải xanh sau khi đổi — bao gồm việc cập nhật assertThrows(IllegalArgumentException.class, ...) trong các test đó thành đúng loại exception cụ thể mới, vì không loại exception mới nào (InvalidAmountException, CurrencyMismatchException, DomainException) là subtype của IllegalArgumentException.",
+      "whyThisMatters": "Đây là một buổi refactor có mục đích rõ ràng: hành vi bên ngoài (test) không đổi, nhưng loại exception ném ra trở nên có ý nghĩa nghiệp vụ. Việc test cũ vẫn phải xanh sau khi đổi loại exception là một ràng buộc quan trọng — nếu một test cũ giờ thất bại, nghĩa là bạn đã đổi nhầm class exception ở đâu đó.",
+      "learnerAction": {
+        "goal": "Duyệt lại từng lời gọi throw new IllegalArgumentException(...) trong Money.java, Account.java, Transaction.java và đổi thành đúng loại: InvalidAmountException cho mọi vi phạm liên quan tới amount (amount null, amount không dương, amount không phải số); CurrencyMismatchException cho vi phạm currency không khớp khi cộng/trừ Money; DomainException (gốc) cho mọi vi phạm khác (name rỗng, type null, account null, category null, currency null...).",
+        "constraints": [
+          "Không đổi bất kỳ message text nào — chỉ đổi TÊN class exception được ném.",
+          "Cập nhật assertThrows(IllegalArgumentException.class, ...) trong MoneyTest/AccountTest/TransactionTest/CategoryTest thành đúng loại exception cụ thể (theo bảng quy chiếu bên dưới) — đây là phần bắt buộc của việc retrofit, không phải lỗi. Sau khi đổi xong, chạy lại mvnw test — nếu MỘT test cũ nào vẫn FAIL sau khi đã cập nhật assertion, nghĩa là bạn đã gán sai loại exception cho lời gọi throw tương ứng; sửa lại rồi chạy lại.",
+          "Không cần (và không nên) tách logic parse/validate trong Money thành các method riêng như parseAmount/parseCurrency — chỉ cần đổi tên exception ngay tại nơi nó được throw trong constructor/requireSameCurrency hiện có."
+        ],
+        "hints": [
+          "Bảng quy chiếu nhanh: 'amount is required' / 'amount must be numeric' / 'effect amount must be positive' / 'transaction amount must be positive' → InvalidAmountException. 'money currencies must match' → CurrencyMismatchException. Mọi thông điệp còn lại ('... is required' cho name/type/account/category/currency) → DomainException.",
+          "IDE của bạn có thể tìm tất cả 'IllegalArgumentException' trong 3 file này (Ctrl+Shift+F trong VS Code) để không bỏ sót vị trí nào."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ test suite (MoneyTest, AccountTest, TransactionTest, CategoryTest, DomainExceptionTest, SpendwiseAppTest) đều xanh, không mất test nào đã pass trước đó.",
+        "explanation": "Chạy TOÀN BỘ suite (không giới hạn -Dtest=) là cách duy nhất chắc chắn rằng đổi exception ở một class không làm hỏng test ở class khác."
+      },
+      "commonErrors": [
+        {
+          "symptom": "AccountTest.rejectsMissingMutationAmount thất bại sau khi đổi",
+          "likelyCause": "Account.requireAmount đổi nhầm sang DomainException thay vì InvalidAmountException — 'amount is required' và 'effect amount must be positive' đều là lỗi về AMOUNT",
+          "fix": "Đổi Account.requireAmount thành ném InvalidAmountException cho cả hai nhánh kiểm tra của nó."
+        },
+        {
+          "symptom": "TransactionTest.rejectsNullAccount thất bại (mong DomainException nhưng nhận InvalidAmountException)",
+          "likelyCause": "Nhầm lẫn giữa 'account is required' (không liên quan tới số tiền → DomainException) với các lỗi liên quan amount",
+          "fix": "Chỉ những vi phạm về CHÍNH giá trị tiền (amount) mới dùng InvalidAmountException; account/type/category null dùng DomainException gốc."
+        }
+      ],
+      "reveal": {
+        "label": "Xem Account.requireAmount và Transaction constructor sau khi retrofit xong",
+        "content": "private static Money requireAmount(Money amount) {\n    if (amount == null) {\n        throw new InvalidAmountException(\"amount is required\");\n    }\n    if (amount.amount().signum() <= 0) {\n        throw new InvalidAmountException(\"effect amount must be positive\");\n    }\n    return amount;\n}\n\npublic Transaction(Account account, TransactionType type, Money amount) {\n    if (account == null) {\n        throw new DomainException(\"account is required\");\n    }\n    if (type == null) {\n        throw new DomainException(\"transaction type is required\");\n    }\n    if (amount == null) {\n        throw new InvalidAmountException(\"amount is required\");\n    }\n    if (amount.amount().signum() <= 0) {\n        throw new InvalidAmountException(\"transaction amount must be positive\");\n    }\n    this.account = account;\n    this.type = type;\n    this.amount = amount;\n}"
+      }
+    },
+    {
+      "id": "step-s6-happy-path-proof",
+      "sessionId": "session-domain-validation",
+      "order": 3,
+      "buildStepId": "step-domain-validation-03",
+      "type": "your-turn",
+      "title": "Chứng minh luồng hợp lệ hoàn chỉnh không ném exception nào",
+      "goal": "Một test kết hợp Account + Transaction + Category theo đúng luồng thật (tạo account, tạo giao dịch, gán category) chạy xong hoàn toàn không có exception nào.",
+      "whyThisMatters": "Validate chỉ kiểm tra 'trường hợp sai bị từ chối' là chưa đủ — một hệ thống validate quá tay (false positive) từ chối luôn cả trường hợp ĐÚNG cũng nguy hiểm không kém, chỉ khác là âm thầm hơn. Test này pin lại rằng luồng nghiệp vụ hợp lệ, đầy đủ nhất mà V0.1 hỗ trợ, luôn luôn chạy trót lọt.",
+      "learnerAction": {
+        "goal": "Thêm test completesValidCreateAssignClassifyFlow vào TransactionTest: bọc trong assertDoesNotThrow, tạo một Account mới, tạo một Transaction với type EXPENSE và category FOOD từ account đó, rồi khẳng định transaction.account() và transaction.category() đúng như đã gán.",
+        "constraints": [
+          "Toàn bộ luồng tạo Account + tạo Transaction + gán Category phải nằm trong MỘT lambda truyền cho assertDoesNotThrow.",
+          "Dùng số tiền và category bất kỳ hợp lệ — chỉ cần chứng minh luồng chạy trót lọt."
+        ],
+        "hints": [
+          "assertDoesNotThrow(() -> { ... }) — nếu lambda ném bất kỳ exception nào, test tự động fail; nếu không, bạn có thể assert thêm bên trong lambda."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ project (SpendwiseAppTest, MoneyTest, AccountTest, TransactionTest, CategoryTest, DomainExceptionTest) đều xanh.",
+        "explanation": "Đây là lần chạy test cuối cùng của V0.1 — nếu xanh, toàn bộ domain foundation đã đúng như thiết kế."
+      },
+      "reveal": {
+        "label": "Xem test luồng hợp lệ hoàn chỉnh",
+        "content": "@Test\nvoid completesValidCreateAssignClassifyFlow() {\n    assertDoesNotThrow(() -> {\n        Account cash = new Account(\"Cash\", AccountType.CASH, new Money(\"100.00\"));\n        Transaction transaction =\n                new Transaction(cash, TransactionType.EXPENSE, new Money(\"12.50\"), Category.FOOD);\n\n        assertEquals(cash, transaction.account());\n        assertEquals(Category.FOOD, transaction.category());\n    });\n}"
+      }
+    },
+    {
+      "id": "step-s6-checkpoint",
+      "sessionId": "session-domain-validation",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng cuối: V0.1 hoàn thành",
+      "goal": "Xác nhận toàn bộ domain foundation (Money, Account, Transaction, Category, exception hierarchy) hoạt động đúng và test xanh toàn bộ — đây là điểm hoàn thành của V0.1."
+    }
+  ],
+  "guidedCheckpoints": [
+    {
+      "id": "checkpoint-project-foundation",
+      "sessionId": "session-project-foundation",
+      "expectedFiles": [
+        "pom.xml",
+        "mvnw.cmd",
+        ".mvn/wrapper/maven-wrapper.properties",
+        "src/main/java/com/spendwise/SpendwiseApp.java",
+        "src/test/java/com/spendwise/SpendwiseAppTest.java",
+        ".gitignore"
+      ],
+      "understanding": [
+        "Vì sao đường dẫn thư mục phải khớp tên package trong Java.",
+        "pom.xml khai báo Java version và dependency nào cho project, và Maven Wrapper giải quyết vấn đề gì (ai chạy project cũng cùng một phiên bản Maven).",
+        "mvnw.cmd test tự tìm và chạy mọi *Test.java dưới src/test/java mà không cần chỉ định file."
+      ],
+      "whatYouBuilt": "Một project Maven Java 17 thuần, không Spring, chạy được (mvnw exec:java) và test được (mvnw test), đã có commit đầu tiên sạch làm baseline.",
+      "expectedProjectTree": "D:\\spendwise-learning\\\n  pom.xml\n  mvnw.cmd\n  .mvn\\wrapper\\maven-wrapper.properties\n  .gitignore\n  src\\main\\java\\com\\spendwise\\SpendwiseApp.java\n  src\\test\\java\\com\\spendwise\\SpendwiseAppTest.java",
+      "whyNotYet": [
+        "Chưa có class nghiệp vụ nào (Money, Account, Transaction) — project hiện tại chỉ chứng minh toolchain chạy được.",
+        "Chưa dùng Spring: object duy nhất trong project (SpendwiseApp) được JVM gọi trực tiếp qua main(), chưa có container nào quản lý vòng đời object."
+      ]
+    },
+    {
+      "id": "checkpoint-money-vo",
+      "sessionId": "session-money-vo",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/Money.java",
+        "src/test/java/com/spendwise/shared/MoneyTest.java"
+      ],
+      "understanding": [
+        "Vì sao double/float không phù hợp để đại diện tiền, và BigDecimal giải quyết vấn đề đó thế nào.",
+        "Sự khác biệt giữa BigDecimal.equals() (so cả scale) và BigDecimal.compareTo() (chỉ so giá trị) — và vì sao Money.equals() phải dùng compareTo.",
+        "Vì sao Money bất biến (immutable): add/subtract luôn trả về object mới, không sửa object cũ."
+      ],
+      "whatYouBuilt": "Kiểu Money bất biến, chuẩn hoá scale 2 HALF_UP khi khởi tạo, so sánh đúng theo giá trị tiền tệ, chặn cộng trừ khác đơn vị tiền.",
+      "whyNotYet": [
+        "Money hiện ném IllegalArgumentException (ngoại lệ chuẩn của Java) thay vì một exception miền nghiệp vụ riêng — task Domain Validation (session cuối) sẽ giới thiệu InvalidAmountException/CurrencyMismatchException và thay thế các lời gọi này.",
+        "Chưa có Account hay Transaction nào dùng Money — Money vẫn đang là một kiểu độc lập, chưa gắn vào bất kỳ luồng nghiệp vụ nào."
+      ]
+    },
+    {
+      "id": "checkpoint-account-entity",
+      "sessionId": "session-account-entity",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/Account.java",
+        "src/main/java/com/spendwise/account/AccountType.java",
+        "src/test/java/com/spendwise/account/AccountTest.java"
+      ],
+      "understanding": [
+        "Vì sao Account không có setBalance — mọi thay đổi số dư đi qua phương thức nghiệp vụ có kiểm tra.",
+        "Quy ước dấu hiệu: INCOME/TRANSFER_IN cộng, EXPENSE/TRANSFER_OUT trừ, và vì sao chính bản thân hiệu ứng (amount truyền vào) luôn phải dương.",
+        "Vì sao constructor kiểm tra cả ba tham số (name, type, openingBalance) trước khi gán bất kỳ field nào."
+      ],
+      "whatYouBuilt": "Account với số dư khởi tạo hợp lệ, đổi qua 4 phương thức nghiệp vụ tuân theo quy ước dấu hiệu, không có cách nào gán balance trực tiếp từ bên ngoài.",
+      "whyNotYet": [
+        "TRANSFER_IN/TRANSFER_OUT tồn tại trên Account nhưng TransactionType (session sau) chưa có hai giá trị này — Account 'sẵn sàng trước' cho tính năng chuyển khoản chưa thuộc phạm vi V0.1.",
+        "Vẫn ném IllegalArgumentException chung chung — session Domain Validation cuối cùng sẽ thay bằng exception miền nghiệp vụ."
+      ]
+    },
+    {
+      "id": "checkpoint-transaction-entity",
+      "sessionId": "session-transaction-entity",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/Transaction.java",
+        "src/main/java/com/spendwise/account/TransactionType.java",
+        "src/test/java/com/spendwise/account/TransactionTest.java"
+      ],
+      "understanding": [
+        "Vì sao Transaction.amount luôn dương và chiều (thu/chi) nằm trong TransactionType, không nằm trong dấu của amount.",
+        "Domain Transaction (một giao dịch tài chính) khác hoàn toàn với @Transactional của Spring (ranh giới database) dù trùng tên tiếng Anh.",
+        "signedEffect() trên enum là nguồn chân lý duy nhất cho chiều tác động của mỗi loại giao dịch lên số dư."
+      ],
+      "whatYouBuilt": "Transaction ghi lại một sự kiện tài chính hợp lệ: amount dương, hướng rõ ràng qua TransactionType, gắn với một Account cụ thể.",
+      "whyNotYet": [
+        "Chưa dùng Spring @Transactional — khái niệm đó thuộc tầng kỹ thuật quản lý ranh giới database, sẽ gặp ở giai đoạn Spring Data sau này, và không liên quan tới domain Transaction bạn vừa xây.",
+        "Transaction chưa gắn Category — session tiếp theo sẽ thêm khả năng phân loại."
+      ]
+    },
+    {
+      "id": "checkpoint-category-model",
+      "sessionId": "session-category-model",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/category/Category.java",
+        "src/test/java/com/spendwise/category/CategoryTest.java"
+      ],
+      "understanding": [
+        "Vì sao một tập giá trị cố định, biết trước, nên là enum thay vì String tự do.",
+        "Category ở V0.1 vẫn là một kiểu Java thuần trong bộ nhớ — chưa có ID, chưa lưu database, persistence là chuyện của giai đoạn sau.",
+        "Transaction có hai constructor: một không bắt buộc category, một bắt buộc — và constructor sau tái sử dụng validate của constructor trước qua this(...)."
+      ],
+      "whatYouBuilt": "Category enum với 5 giá trị MVP, và Transaction có thể mang theo một category bắt buộc khi được gán.",
+      "whyNotYet": [
+        "Category chưa có ID hay khả năng người dùng tự thêm category mới — đó là tính năng của giai đoạn có persistence, chưa thuộc V0.1."
+      ]
+    },
+    {
+      "id": "checkpoint-domain-validation",
+      "sessionId": "session-domain-validation",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/shared/DomainException.java",
+        "src/main/java/com/spendwise/shared/InvalidAmountException.java",
+        "src/main/java/com/spendwise/shared/CurrencyMismatchException.java",
+        "src/test/java/com/spendwise/shared/DomainExceptionTest.java"
+      ],
+      "understanding": [
+        "Vì sao nhóm exception theo tên (DomainException gốc, các loại con cụ thể) giúp caller bắt đúng loại lỗi mình quan tâm.",
+        "DomainException extends RuntimeException (unchecked) — vi phạm bất biến domain là lỗi lập trình, caller không bị compiler ép phải try/catch.",
+        "Validate không chỉ là 'từ chối cái sai' — luồng hợp lệ đầy đủ nhất cũng cần một test chứng minh nó không bao giờ bị từ chối nhầm."
+      ],
+      "whatYouBuilt": "Toàn bộ Money/Account/Transaction giờ ném đúng loại exception miền nghiệp vụ (InvalidAmountException, CurrencyMismatchException, DomainException) thay vì IllegalArgumentException chung chung, và một test pin lại luồng nghiệp vụ hợp lệ hoàn chỉnh.",
+      "expectedProjectTree": "D:\\spendwise-learning\\\n  pom.xml, mvnw.cmd, .mvn\\..., .gitignore\n  src\\main\\java\\com\\spendwise\\\n    SpendwiseApp.java\n    shared\\Money.java, DomainException.java, InvalidAmountException.java, CurrencyMismatchException.java\n    account\\Account.java, AccountType.java, Transaction.java, TransactionType.java\n    category\\Category.java\n  src\\test\\java\\com\\spendwise\\ (một *Test.java cho mỗi class main tương ứng)",
+      "whyNotYet": [
+        "V0.1 kết thúc ở đây: object graph (Account, Transaction, Category) vẫn được bạn tự tay new lên bằng Java code thuần — chưa có ApplicationContext, chưa có @Component/@Service nào quản lý vòng đời chúng. V0.3 mới bắt đầu để Spring IoC Container đảm nhận việc đó.",
+        "Chưa có database — mọi object chỉ sống trong bộ nhớ JVM, mất hết khi chương trình dừng. Persistence (JPA/PostgreSQL) thuộc các giai đoạn sau, xây trên đúng domain model bạn vừa hoàn thành.",
+        "Chưa có REST API, chưa có CSV import/export — đây là các buildTask của các release sau, chưa mở khoá ở V0.1."
+      ]
+    }
+  ]
 }
