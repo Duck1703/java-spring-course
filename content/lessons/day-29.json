@@ -43,7 +43,7 @@
   "sections": [
     {
       "id": "day29-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day29-blk-1",
@@ -55,7 +55,7 @@
     },
     {
       "id": "day29-sec-openapi",
-      "title": "Tai lieu API voi OpenAPI/Swagger",
+      "title": "Tài liệu API với OpenAPI/Swagger",
       "blocks": [
         {
           "id": "day29-blk-2",
@@ -192,7 +192,7 @@
     },
     {
       "id": "day29-sec-actuator",
-      "title": "Actuator va giam sat",
+      "title": "Actuator và giám sát",
       "blocks": [
         {
           "id": "day29-blk-8",
@@ -254,7 +254,7 @@
     },
     {
       "id": "day29-sec-docker",
-      "title": "Docker va docker-compose (gioi thieu)",
+      "title": "Docker và docker-compose (giới thiệu)",
       "blocks": [
         {
           "id": "day29-blk-11",

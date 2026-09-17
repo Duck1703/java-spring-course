@@ -48,7 +48,7 @@
   "sections": [
     {
       "id": "day27-sec-brief",
-      "title": "De bai Assignment 9",
+      "title": "Đề bài Assignment 9",
       "blocks": [
         {
           "id": "day27-blk-1",
@@ -66,7 +66,7 @@
     },
     {
       "id": "day27-sec-cache",
-      "title": "Cache danh sach san pham & cay danh muc",
+      "title": "Cache danh sách sản phẩm & cây danh mục",
       "blocks": [
         {
           "id": "day27-blk-3",
@@ -94,7 +94,7 @@
     },
     {
       "id": "day27-sec-async",
-      "title": "Async: gui email xac nhan va cap nhat ton kho",
+      "title": "Async: gửi email xác nhận và cập nhật tồn kho",
       "blocks": [
         {
           "id": "day27-blk-5",
@@ -121,7 +121,7 @@
     },
     {
       "id": "day27-sec-scheduled",
-      "title": "Scheduled job: huy don hang cho qua 30 phut",
+      "title": "Scheduled job: hủy đơn hàng chờ quá 30 phút",
       "blocks": [
         {
           "id": "day27-blk-7",
@@ -154,7 +154,7 @@
     },
     {
       "id": "day27-sec-upload",
-      "title": "Upload anh san pham + thumbnail",
+      "title": "Upload ảnh sản phẩm + thumbnail",
       "blocks": [
         {
           "id": "day27-blk-9",
@@ -174,7 +174,7 @@
     },
     {
       "id": "day27-sec-payment",
-      "title": "Goi payment gateway (mock) qua WebClient + Circuit Breaker",
+      "title": "Gọi payment gateway (mock) qua WebClient + Circuit Breaker",
       "blocks": [
         {
           "id": "day27-blk-11",
@@ -201,7 +201,7 @@
     },
     {
       "id": "day27-sec-export",
-      "title": "Xuat don hang ra CSV (tinh nang admin)",
+      "title": "Xuất đơn hàng ra CSV (tính năng admin)",
       "blocks": [
         {
           "id": "day27-blk-13",
@@ -213,7 +213,7 @@
     },
     {
       "id": "day27-sec-acceptance",
-      "title": "Tieu chi nghiem thu Assignment 9",
+      "title": "Tiêu chí nghiệm thu Assignment 9",
       "blocks": [
         {
           "id": "day27-blk-29",

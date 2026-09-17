@@ -46,7 +46,7 @@
   "sections": [
     {
       "id": "day25-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day25-blk-1",
@@ -148,7 +148,7 @@
     },
     {
       "id": "day25-sec-redis",
-      "title": "Redis lam backend cache",
+      "title": "Redis làm backend cache",
       "blocks": [
         {
           "id": "day25-blk-6",
@@ -219,7 +219,7 @@
     },
     {
       "id": "day25-sec-async",
-      "title": "@Async - xu ly bat dong bo",
+      "title": "@Async - xử lý bất đồng bộ",
       "blocks": [
         {
           "id": "day25-blk-10",
@@ -282,7 +282,7 @@
     },
     {
       "id": "day25-sec-scheduled",
-      "title": "@Scheduled - tac vu dinh ky",
+      "title": "@Scheduled - tác vụ định kỳ",
       "blocks": [
         {
           "id": "day25-blk-11",

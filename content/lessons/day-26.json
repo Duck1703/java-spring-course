@@ -42,7 +42,7 @@
   "sections": [
     {
       "id": "day26-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day26-blk-1",
@@ -54,7 +54,7 @@
     },
     {
       "id": "day26-sec-upload",
-      "title": "Upload file voi MultipartFile",
+      "title": "Upload file với MultipartFile",
       "blocks": [
         {
           "id": "day26-blk-2",
@@ -183,7 +183,7 @@
     },
     {
       "id": "day26-sec-webclient",
-      "title": "Goi API ben ngoai voi WebClient",
+      "title": "Gọi API bên ngoài với WebClient",
       "blocks": [
         {
           "id": "day26-blk-8",
@@ -244,7 +244,7 @@
     },
     {
       "id": "day26-sec-resilience",
-      "title": "Chiu loi khi goi API ben ngoai",
+      "title": "Chịu lỗi khi gọi API bên ngoài",
       "blocks": [
         {
           "id": "day26-blk-11",
@@ -312,7 +312,7 @@
     },
     {
       "id": "day26-sec-csv",
-      "title": "Xuat du lieu CSV/Excel",
+      "title": "Xuất dữ liệu CSV/Excel",
       "blocks": [
         {
           "id": "day26-blk-13",

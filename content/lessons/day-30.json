@@ -47,7 +47,7 @@
   "sections": [
     {
       "id": "day30-sec-brief",
-      "title": "De bai Lab 10",
+      "title": "Đề bài Lab 10",
       "blocks": [
         {
           "id": "day30-blk-1",
@@ -124,7 +124,7 @@
     },
     {
       "id": "day30-sec-openapi",
-      "title": "OpenAPI doc cho toan bo endpoint",
+      "title": "OpenAPI doc cho toàn bộ endpoint",
       "blocks": [
         {
           "id": "day30-blk-8",

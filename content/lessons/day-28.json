@@ -46,7 +46,7 @@
   "sections": [
     {
       "id": "day28-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day28-blk-1",
@@ -64,7 +64,7 @@
     },
     {
       "id": "day28-sec-junit5",
-      "title": "Nen tang JUnit 5",
+      "title": "Nền tảng JUnit 5",
       "blocks": [
         {
           "id": "day28-blk-3",
@@ -245,7 +245,7 @@
     },
     {
       "id": "day28-sec-springboottest",
-      "title": "@SpringBootTest va webEnvironment",
+      "title": "@SpringBootTest và webEnvironment",
       "blocks": [
         {
           "id": "day28-blk-11",
@@ -299,7 +299,7 @@
     },
     {
       "id": "day28-sec-testcontainers",
-      "title": "Testcontainers (gioi thieu)",
+      "title": "Testcontainers (giới thiệu)",
       "blocks": [
         {
           "id": "day28-blk-13",
@@ -311,7 +311,7 @@
     },
     {
       "id": "day28-sec-slices",
-      "title": "Bang tham khao: cac slice test khac",
+      "title": "Bảng tham khảo: các slice test khác",
       "blocks": [
         {
           "id": "day28-blk-14",

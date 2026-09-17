@@ -598,6 +598,7 @@
     .lesson-columns { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
     @media (min-width: 48rem) { .lesson-columns.twocol { grid-template-columns: 1fr 1fr; } }
     .lesson-column {
+      min-width: 0;
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
       background: var(--surface);
@@ -615,7 +616,7 @@
     }
     .lesson-column h2 svg { width: 1rem; height: 1rem; color: var(--accent, var(--spring-ink)); flex-shrink: 0; }
     .lesson-column ul { margin: 0; padding: 0; list-style: none; font-size: .9063rem; line-height: 1.6; display: grid; gap: .5rem; }
-    .lesson-column li { display: flex; gap: .5rem; align-items: flex-start; }
+    .lesson-column li { display: flex; gap: .5rem; align-items: flex-start; min-width: 0; }
     .lesson-column li::before {
       content: '';
       flex-shrink: 0;
