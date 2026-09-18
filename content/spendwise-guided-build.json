@@ -25,11 +25,11 @@
     },
     {
       "releaseId": "v0-5",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v0-6",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v0-7",
@@ -200,6 +200,94 @@
       "order": 6,
       "title": "Một nơi duy nhất dịch lỗi thành HTTP: @RestControllerAdvice",
       "goal": "Có một @RestControllerAdvice dịch domain exception và lỗi validation thành ProblemDetail (RFC 7807) với đúng status code cho từng loại lỗi."
+    },
+    {
+      "id": "session-jpa-entities",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-jpa-entities",
+      "order": 1,
+      "title": "Domain sống được qua restart: Account/Transaction/Category thành JPA entity",
+      "goal": "Account, Transaction, Category mang @Entity/@Id/@Table/@Column tại chỗ — không tạo entity song sinh — và tiền lưu đúng kiểu BigDecimal round-trip qua PostgreSQL."
+    },
+    {
+      "id": "session-jpa-relationships",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-jpa-relationships",
+      "order": 2,
+      "title": "Quan hệ giữa entity: cascade/fetch có chủ đích, không N+1",
+      "goal": "Account-Transaction và Transaction-Category được map bằng cascade/fetch được chọn tường minh và có ghi lại lý do, và đường đọc chính không phát sinh N+1."
+    },
+    {
+      "id": "session-flyway-baseline",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-flyway-baseline",
+      "order": 3,
+      "title": "Flyway sở hữu schema: V1__init.sql và ddl-auto=validate",
+      "goal": "Có V1__init.sql tạo toàn bộ bảng hiện có với cột tiền NUMERIC(19,2), ddl-auto chuyển sang validate, và migration đã apply thì không được sửa — thay đổi sau này là file mới."
+    },
+    {
+      "id": "session-spring-data-repositories",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-spring-data-repositories",
+      "order": 4,
+      "title": "Thay in-memory store bằng Spring Data JPA repository",
+      "goal": "AccountRepository/TransactionRepository là JpaRepository thật chạy trên PostgreSQL, service trỏ lại vào chúng thay vì in-memory store, và có listing phân trang/sắp xếp."
+    },
+    {
+      "id": "session-balance-projection",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-balance-projection",
+      "order": 5,
+      "title": "Balance là projection có version, không phải số tự do",
+      "goal": "Account.balance là cột persisted, có @Version chặn ghi đè đồng thời, chỉ được ghi trong transaction ghi Transaction, và luôn thoả balance == openingBalance + tổng hiệu ứng có dấu."
+    },
+    {
+      "id": "session-atomic-transfer",
+      "releaseId": "v0-5",
+      "buildTaskId": "task-atomic-transfer",
+      "order": 6,
+      "title": "Transfer là một cặp TRANSFER_OUT/TRANSFER_IN trong một @Transactional, không phải aggregate riêng",
+      "goal": "Một method @Transactional duy nhất tạo cặp giao dịch chia sẻ một transferRef, cập nhật cả hai balance projection, và rollback toàn bộ khi có lỗi giữa chừng — không có class Transfer nào tồn tại."
+    },
+    {
+      "id": "session-auth-foundation",
+      "releaseId": "v0-6",
+      "buildTaskId": "task-auth-foundation",
+      "order": 1,
+      "title": "Nền tảng xác thực: hash password + filter chain không session",
+      "goal": "Register lưu password đã hash bằng delegating encoder, login xác minh raw/hash, và một SecurityFilterChain STATELESS trả 401 cho request không token hoặc token sai — trước khi có bất kỳ logic ký JWT nào."
+    },
+    {
+      "id": "session-user-migration",
+      "releaseId": "v0-6",
+      "buildTaskId": "task-user-migration",
+      "order": 2,
+      "title": "Di trú danh tính người dùng: cột user_id + query có phạm vi",
+      "goal": "Một migration Flyway mới thêm bảng users và cột user_id (có FK) vào mọi bảng thuộc về user, và từ đây mọi query danh sách đều lọc theo user hiện tại."
+    },
+    {
+      "id": "session-ownership-checks",
+      "releaseId": "v0-6",
+      "buildTaskId": "task-ownership-checks",
+      "order": 3,
+      "title": "Enforce ownership ở tầng service: 404, không phải 403",
+      "goal": "Đúng một class đọc SecurityContextHolder; service tải lại resource theo owner id; một record thuộc người khác trả về 404 (không phải 403) trên mọi resource được bảo vệ."
+    },
+    {
+      "id": "session-token-lifecycle",
+      "releaseId": "v0-6",
+      "buildTaskId": "task-token-lifecycle",
+      "order": 4,
+      "title": "Vòng đời token: login cấp token, logout thu hồi — qua một seam chưa có bộ ký thật",
+      "goal": "Login trả về token được tạo qua interface TokenIssuer (chưa có triển khai ký thật); sau logout, cùng token đó bị từ chối với 401."
+    },
+    {
+      "id": "session-canonical-token-issuer",
+      "releaseId": "v0-6",
+      "buildTaskId": "task-canonical-token-issuer",
+      "order": 5,
+      "title": "Bộ ký JWT chính thức: NimbusJwtEncoder sau day-36",
+      "goal": "Triển khai TokenIssuer duy nhất bằng NimbusJwtEncoder + ImmutableSecret + JwtClaimsSet, chỉ thực hiện sau day-36, rồi thay test double bằng bộ ký thật trong toàn bộ luồng login/logout/ownership đã xây từ trước."
     }
   ],
   "guidedSteps": [
@@ -2013,6 +2101,983 @@
       "type": "checkpoint",
       "title": "Điểm dừng: V0.4 hoàn tất — API sống, vẫn chưa có database",
       "goal": "Xác nhận cả ba resource (Account/Category/Transaction) có route HTTP đúng semantics, lỗi được dịch nhất quán qua một @RestControllerAdvice duy nhất, trước khi V0.5 đưa Spring Data JPA và database thật vào."
+    },
+    {
+      "id": "step-v05-jpa-entities-annotate",
+      "sessionId": "session-jpa-entities",
+      "order": 1,
+      "buildStepId": "step-jpa-entities-01",
+      "type": "code-with-me",
+      "title": "Gắn @Entity/@Id/@Table/@Column tại chỗ lên Account, Transaction, Category",
+      "goal": "Account, Transaction, Category vẫn là đúng class domain cũ, nay mang thêm annotation JPA — không có entity song sinh nào được tạo ra — và toàn bộ test cũ từ V0.1-V0.4 vẫn xanh.",
+      "whyThisMatters": "R15 (một class cho một khái niệm) là lý do annotation được gắn ngay lên class domain hiện có, không tạo AccountEntity riêng rồi viết mapper. Đây cũng là chỗ spring-boot-starter-data-jpa và driver PostgreSQL được khai báo trong pom.xml (không ghi version — kế thừa từ parent) TRƯỚC khi gắn annotation, để test compile của bước này resolve được jakarta.persistence.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-19",
+          "note": "@Entity, @Id, @Table, @Column, và protected no-arg constructor — bộ annotation tối thiểu để Hibernate map một class Java sang một bảng."
+        }
+      ],
+      "instructions": [
+        "Thêm spring-boot-starter-data-jpa và driver PostgreSQL vào pom.xml (không ghi version, kế thừa từ spring-boot-starter-parent).",
+        "Gắn @Entity + @Table(name=...) lên Account, Transaction, Category — dùng lại đúng class hiện có, không tạo class mới.",
+        "Gắn @Id + @GeneratedValue lên khoá chính của Account và Transaction; gắn @Column lên các field cần map tên cột khác tên field.",
+        "Thêm protected no-arg constructor nếu class chưa có — Hibernate cần nó để khởi tạo entity qua reflection."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AccountTest,TransactionTest' test",
+        "expectedResult": "BUILD SUCCESS — Account và Transaction vẫn compile, toàn bộ test domain cũ (không liên quan JPA) vẫn pass nguyên vẹn.",
+        "explanation": "Test cũ không được sửa nội dung assertion — nếu annotation JPA làm test cũ đỏ, đó là annotation sai, không phải test cần cập nhật."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Tạo AccountEntity riêng và một AccountMapper chuyển đổi domain<->entity",
+          "likelyCause": "Nhầm rằng JPA entity phải tách khỏi domain object 'cho sạch kiến trúc' — đây là mẫu hình DDD khác, không phải mẫu hình course này đang dạy.",
+          "fix": "R15 cấm entity song sinh. Gắn annotation trực tiếp lên Account/Transaction/Category hiện có."
+        }
+      ]
+    },
+    {
+      "id": "step-v05-jpa-entities-money-roundtrip",
+      "sessionId": "session-jpa-entities",
+      "order": 2,
+      "buildStepId": "step-jpa-entities-02",
+      "type": "your-turn",
+      "title": "Map cột tiền là BigDecimal và chứng minh round-trip qua PostgreSQL thật",
+      "goal": "Một @DataJpaTest lưu một Account rồi đọc lại, số tiền compareTo-equal với số đã lưu — chạy trên PostgreSQL thật, không phải H2 hay in-memory giả.",
+      "whyThisMatters": "R1/R2: tiền là BigDecimal ở tầng Java và NUMERIC(19,2) ở tầng cột — hai kiểu này phải khớp nhau, nếu không phần lẻ thập phân có thể bị cắt hoặc sai khi round-trip qua ORM. Đây là bước đầu tiên project thật sự nói chuyện với một database sống.",
+      "learnerAction": {
+        "goal": "Cấu hình spring.datasource trong application.properties trỏ vào PostgreSQL local (host/port/db/user/password của môi trường học, không phải secret thật production), viết AccountJpaTest dùng @DataJpaTest lưu một Account với openingBalance có phần thập phân rồi đọc lại, assert bằng compareTo == 0.",
+        "constraints": [
+          "Không dùng equals() để so BigDecimal — 100.0 và 100.00 equals() trả false dù compareTo() trả 0; đây chính là cái mà tiền hay dính bug.",
+          "Không được hardcode secret/password thật vào application.properties — chỉ giá trị demo local dùng cho máy học, không phải giá trị production."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AccountJpaTest' test",
+        "expectedResult": "BUILD SUCCESS — Account lưu và đọc lại từ PostgreSQL thật, so sánh bằng compareTo() cho kết quả bằng 0.",
+        "explanation": "Đây là bằng chứng đầu tiên rằng dữ liệu không còn sống chỉ trong RAM — @DataJpaTest ở đây chạy trên PostgreSQL local thật (không phải embedded H2), như R1/R2 yêu cầu."
+      }
+    },
+    {
+      "id": "step-v05-jpa-entities-checkpoint",
+      "sessionId": "session-jpa-entities",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: domain đã map JPA, chưa có schema migration nào sở hữu bảng",
+      "goal": "Xác nhận Account/Transaction/Category là JPA entity thật, tiền round-trip đúng qua PostgreSQL, trước khi session kế tiếp xử lý quan hệ giữa các entity và session sau đó đưa Flyway vào sở hữu schema."
+    },
+    {
+      "id": "step-v05-jpa-relationships-model",
+      "sessionId": "session-jpa-relationships",
+      "order": 1,
+      "buildStepId": "step-jpa-relationships-01",
+      "type": "code-with-me",
+      "title": "Khai báo quan hệ Account-Transaction và Transaction-Category với fetch type có chủ đích",
+      "goal": "Quan hệ giữa các entity được khai báo bằng @ManyToOne/@OneToMany với cascade và fetch type được chọn tường minh và ghi lại lý do trong code — không dùng mặc định của Hibernate mà không suy nghĩ.",
+      "whyThisMatters": "Fetch mặc định của @OneToMany là LAZY, của @ManyToOne là EAGER — nếu để mặc định @ManyToOne EAGER trên quan hệ Transaction->Account, mỗi lần load một Transaction sẽ kéo theo một query load Account ngay lập tức, dù có cần hay không. R15 nói quan hệ phải phản ánh domain thật, không phải tiện tay copy annotation.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-19",
+          "note": "@ManyToOne/@OneToMany, FetchType.LAZY/EAGER, và vì sao mặc định của @ManyToOne (EAGER) thường không phải điều bạn muốn cho một bảng giao dịch lớn."
+        }
+      ],
+      "instructions": [
+        "Khai báo Transaction.account là @ManyToOne(fetch = FetchType.LAZY) trỏ tới Account — ghi comment giải thích vì sao LAZY (tránh load Account không cần thiết mỗi lần đọc một Transaction).",
+        "Khai báo Transaction.category tương tự @ManyToOne(fetch = FetchType.LAZY) trỏ tới Category.",
+        "Không khai báo @OneToMany ngược từ Account sang List<Transaction> trừ khi có nhu cầu đọc thật — quan hệ một chiều Transaction->Account là đủ cho các use case hiện tại và tránh load một danh sách giao dịch khổng lồ mỗi khi load Account."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AccountJpaTest' test",
+        "expectedResult": "BUILD SUCCESS — quan hệ compile và map đúng, test JPA hiện có (round-trip tiền) vẫn xanh.",
+        "explanation": "Chỉ xác nhận biên dịch và mapping cơ bản ở bước này — chứng minh không N+1 là việc của bước kế tiếp."
+      }
+    },
+    {
+      "id": "step-v05-jpa-relationships-n-plus-one",
+      "sessionId": "session-jpa-relationships",
+      "order": 2,
+      "buildStepId": "step-jpa-relationships-02",
+      "type": "your-turn",
+      "title": "Chứng minh đường đọc chính không phát sinh N+1",
+      "goal": "Một test đếm số query (hoặc log SQL) cho thấy việc load một danh sách Transaction không phát ra một query riêng cho mỗi row để load Account/Category liên quan.",
+      "whyThisMatters": "N+1 là lỗi hiệu năng kinh điển của ORM: load N row rồi lười tải quan hệ, mỗi row lại bắn một query riêng. Bài học này được áp dụng ngay ở V0.5, không phải để dồn tới V0.9 mới xử lý.",
+      "learnerAction": {
+        "goal": "Bật log SQL (spring.jpa.properties.hibernate.SQL hoặc logging.level.org.hibernate.SQL=DEBUG) tạm thời trong test, load một danh sách nhiều Transaction thuộc nhiều Account khác nhau, và xác nhận số lượng SELECT không tăng tuyến tính theo số row khi chỉ đọc field cơ bản của Transaction (không chạm .getAccount().getName()).",
+        "constraints": [
+          "Nếu code thực sự cần dữ liệu Account đi kèm (ví dụ hiển thị tên account), phải dùng JOIN FETCH hoặc @EntityGraph tường minh trong repository — không im lặng chấp nhận N+1 rồi giải thích 'cần dữ liệu đó mà'."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AccountJpaTest' test",
+        "expectedResult": "BUILD SUCCESS — test đếm/log query xác nhận không có N+1 trên đường đọc listing cơ bản.",
+        "explanation": "Vì FetchType.LAZY đã được chọn ở bước trước, việc chỉ đọc field cơ bản của Transaction không kéo theo query load Account/Category — LAZY chỉ tải khi thực sự truy cập getter của quan hệ."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Controller (không @Transactional, theo R18) build response DTO bằng cách gọi transaction.getAccount().getId() hoặc transaction.getCategory().name() SAU KHI service @Transactional đã return — ứng dụng chạy test MockMvc (bọc @Transactional) thì xanh, nhưng khi chạy thật với spring.jpa.open-in-view=false và một request HTTP thật, request đó nhận 500 với org.hibernate.LazyInitializationException: no session.",
+          "likelyCause": "MockMvc test trong một @Transactional test method giữ session mở xuyên suốt cả gọi service lẫn đọc response, nên che giấu mất lỗi — lỗi chỉ lộ ra khi có một process thật, một request HTTP thật, không có transaction bao ngoài nào khác ngoài transaction của chính service.",
+          "fix": "Map entity sang response DTO (ví dụ TransactionResponse) NGAY TRONG method @Transactional của service, trước khi return — service trả DTO, không trả entity. Controller khi đó chỉ cầm DTO đã tách rời session, không bao giờ chạm getter của một quan hệ LAZY. Không 'chữa' bằng cách bật spring.jpa.open-in-view=true hay thêm @Transactional vào controller (vi phạm R18) hay đổi quan hệ sang EAGER (âm thầm bỏ quyết định LAZY đã có chủ đích ở bước trước)."
+        }
+      ]
+    },
+    {
+      "id": "step-v05-jpa-relationships-checkpoint",
+      "sessionId": "session-jpa-relationships",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: quan hệ entity có chủ đích, không N+1 âm thầm",
+      "goal": "Xác nhận cascade/fetch được chọn tường minh và có lý do ghi lại, đường đọc chính không phát sinh N+1, trước khi Flyway vào sở hữu schema ở session kế tiếp."
+    },
+    {
+      "id": "step-v05-flyway-init",
+      "sessionId": "session-flyway-baseline",
+      "order": 1,
+      "buildStepId": "step-flyway-baseline-01",
+      "type": "code-with-me",
+      "title": "Thêm Flyway và viết V1__init.sql cho toàn bộ bảng hiện có",
+      "goal": "V1__init.sql tạo mọi bảng hiện có (account, transaction, category nếu cần bảng riêng) với cột tiền NUMERIC(19,2), Flyway dependency có trong pom.xml, và từ migration này schema không còn do Hibernate tự sinh.",
+      "whyThisMatters": "R26: từ baseline này, schema thuộc về file migration có version, không phải do ddl-auto=update tự đoán. Đây là điểm chuyển giao — trước bước này Hibernate có thể đã tự tạo bảng khi test chạy; sau bước này, chỉ V1__init.sql mới được quyền định nghĩa bảng.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-21",
+          "note": "Flyway versioned migration (V<n>__description.sql), flyway_schema_history, và vì sao ddl-auto=validate cần một baseline migration khớp chính xác với entity mapping."
+        }
+      ],
+      "instructions": [
+        "Thêm dependency flyway-core (và flyway-database-postgresql nếu phiên bản Flyway yêu cầu) vào pom.xml.",
+        "Tạo src/main/resources/db/migration/V1__init.sql tạo bảng account, transaction (và category nếu category cần bảng riêng trong thiết kế của bạn) với cột tiền là NUMERIC(19,2) — không dùng FLOAT/DOUBLE cho tiền.",
+        "Đảm bảo tên cột/bảng trong V1__init.sql khớp chính xác với @Table/@Column đã khai ở session trước — Flyway tạo bảng, Hibernate chỉ đọc và so khớp."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "-q test",
+        "expectedResult": "BUILD SUCCESS — Flyway apply V1__init.sql thành công khi context khởi động, test hiện có vẫn xanh.",
+        "explanation": "Ở bước này Flyway mới apply migration; ddl-auto vẫn chưa chuyển sang validate — việc đó là bước kế tiếp."
+      }
+    },
+    {
+      "id": "step-v05-flyway-validate",
+      "sessionId": "session-flyway-baseline",
+      "order": 2,
+      "buildStepId": "step-flyway-baseline-02",
+      "type": "your-turn",
+      "title": "Chuyển ddl-auto sang validate và khởi động trên schema đã migrate",
+      "goal": "spring.jpa.hibernate.ddl-auto=validate, một SchemaValidationTest khởi động context thành công trên schema do Flyway tạo, không có mismatch nào giữa entity mapping và bảng thật.",
+      "whyThisMatters": "Đây là điểm thực thi của R26: Hibernate không còn được quyền tự sửa schema, nó chỉ kiểm tra (validate) rằng mapping khớp với bảng đã có. Nếu để ddl-auto=update 'tạm thời', drift đầu tiên sẽ bị Hibernate tự âm thầm vá thay vì làm boot fail — và lỗi đó chỉ lộ ra khi đã quá muộn.",
+      "learnerAction": {
+        "goal": "Đặt spring.jpa.hibernate.ddl-auto=validate trong application.properties, viết SchemaValidationTest (@DataJpaTest hoặc @SpringBootTest tối thiểu) khởi động context trên schema do Flyway migrate, xác nhận flyway_schema_history có record V1 và context khởi động không lỗi mismatch.",
+        "constraints": [
+          "Không để ddl-auto=update hoặc create song song 'cho chắc' — chỉ validate; nếu mapping sai, test này phải đỏ, không được Hibernate tự vá schema che lỗi."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=SchemaValidationTest' test",
+        "expectedResult": "BUILD SUCCESS — context khởi động với ddl-auto=validate trên schema Flyway đã tạo, flyway_schema_history ghi nhận V1, không mismatch.",
+        "explanation": "Testcontainers/Postgres đầy đủ cho integration tier được xác nhận sau ở V0.9 — ở đây @DataJpaTest chạy trực tiếp trên PostgreSQL local đã cấu hình từ session trước là đủ để chứng minh R26."
+      }
+    },
+    {
+      "id": "step-v05-flyway-immutable",
+      "sessionId": "session-flyway-baseline",
+      "order": 3,
+      "buildStepId": "step-flyway-baseline-03",
+      "type": "your-turn",
+      "title": "Commit baseline và chứng minh: đổi schema sau này là file mới, không sửa V1",
+      "goal": "V1__init.sql được commit vào git, và một thử nghiệm sửa trực tiếp V1 (rồi revert lại) xác nhận phản xạ đúng: thay đổi schema có nghĩa là thêm V2, không phải sửa V1.",
+      "whyThisMatters": "Migration đã apply là lịch sử bất biến (R26) — sửa một file đã apply trên một database đã chạy khiến flyway_schema_history (lưu checksum của mỗi migration) phát hiện sai lệch và Flyway sẽ từ chối chạy tiếp ở lần khởi động sau. Phản xạ 'sửa V1 cho nhanh' phải bị chặn ngay từ V0.5, vì V0.6/V0.7/V0.8 đều sẽ cần thêm cột/bảng mới.",
+      "learnerAction": {
+        "goal": "git add + commit V1__init.sql (cùng .gitignore nếu cần loại trừ file build). Sau đó, chỉ để tự kiểm chứng phản xạ: thử sửa trực tiếp một dòng trong V1__init.sql, quan sát Flyway sẽ phản ứng thế nào ở lần chạy kế (checksum mismatch), rồi git checkout để revert thử nghiệm đó — không giữ lại thay đổi trên V1.",
+        "constraints": [
+          "Không giữ lại bất kỳ sửa đổi nào trên V1__init.sql sau khi đã commit lần đầu — bài học ở đây là thấy Flyway phản ứng thế nào, không phải để sửa thật."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "git log --oneline -- 'src/main/resources/db/migration/V1__init.sql'",
+        "expectedResult": "Ít nhất một commit hiện ra cho đường dẫn này — xác nhận V1__init.sql đã được commit vào lịch sử git.",
+        "explanation": "Verify command chỉ kiểm tra file đã có lịch sử git — bằng chứng 'không sửa migration đã apply' là kỷ luật quy trình, không phải thứ một lệnh máy có thể tự động chấm được hoàn toàn."
+      }
+    },
+    {
+      "id": "step-v05-flyway-checkpoint",
+      "sessionId": "session-flyway-baseline",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: Flyway sở hữu schema, ddl-auto=validate",
+      "goal": "Xác nhận V1__init.sql là nguồn sự thật duy nhất cho schema, ddl-auto=validate không lỗi, và kỷ luật 'không sửa migration đã apply' đã được thực hành, trước khi Spring Data JPA repository thay thế in-memory store."
+    },
+    {
+      "id": "step-v05-repos-introduce",
+      "sessionId": "session-spring-data-repositories",
+      "order": 1,
+      "buildStepId": "step-spring-data-repositories-01",
+      "type": "code-with-me",
+      "title": "Tạo AccountRepository/TransactionRepository là JpaRepository thật",
+      "goal": "AccountRepository và TransactionRepository extends JpaRepository, CRUD hoạt động trên PostgreSQL thật, được xác nhận qua một @DataJpaTest.",
+      "whyThisMatters": "R13: Spring Data JPA sinh implementation CRUD từ interface — đây là chỗ chuyển từ InMemoryRepository (V0.2) sang một implementation thật chạy trên database, cùng một seam interface Repository<T,ID> mà service đã lệ thuộc vào từ V0.2/V0.3.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-19",
+          "note": "JpaRepository<T, ID> và các method CRUD Spring Data tự sinh (save, findById, findAll, deleteById) mà không cần viết implementation."
+        },
+        {
+          "lessonId": "day-20",
+          "note": "Vì sao inject vào interface repository, không vào implementation cụ thể — đây chính là điều làm việc thay in-memory bằng JPA trở nên rẻ."
+        }
+      ],
+      "instructions": [
+        "Tạo interface AccountRepository extends JpaRepository<Account, Long> (hoặc kiểu id thật của Account).",
+        "Tạo interface TransactionRepository extends JpaRepository<Transaction, Long>.",
+        "Viết TransactionRepositoryTest dùng @DataJpaTest: save một Transaction, findById, xác nhận dữ liệu round-trip đúng trên PostgreSQL thật."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=TransactionRepositoryTest' test",
+        "expectedResult": "BUILD SUCCESS — CRUD cơ bản qua JpaRepository hoạt động đúng trên PostgreSQL.",
+        "explanation": "Đây chỉ xác nhận repository interface hoạt động — service vẫn chưa trỏ vào nó, đó là bước kế tiếp."
+      }
+    },
+    {
+      "id": "step-v05-repos-repoint-service",
+      "sessionId": "session-spring-data-repositories",
+      "order": 2,
+      "buildStepId": "step-spring-data-repositories-02",
+      "type": "your-turn",
+      "title": "Trỏ TransactionService vào Spring Data repository, gỡ InMemoryRepository",
+      "goal": "TransactionService dùng AccountRepository/TransactionRepository (Spring Data) thay cho InMemoryRepository, và toàn bộ test nghiệp vụ V0.2/V0.3 vẫn thể hiện đúng hành vi cũ mà không sửa assertion.",
+      "whyThisMatters": "Đây là bằng chứng thật cho lời hứa 'service phụ thuộc vào abstraction' từ V0.2/V0.3 — nếu constructor injection và interface Repository<T,ID> thật sự tách rời implementation, việc đổi từ HashMap sang PostgreSQL chỉ là đổi bean được wire vào, không đổi một dòng logic nghiệp vụ nào trong service.",
+      "learnerAction": {
+        "goal": "Sửa TransactionService để constructor nhận AccountRepository/TransactionRepository (Spring Data) thay vì Repository<Account,...>/Repository<Transaction,...> in-memory cũ; xoá hoặc để lại InMemoryRepository không còn được wire vào service nữa.",
+        "constraints": [
+          "Không sửa assertion nghiệp vụ đã có từ V0.2/V0.3 để 'cho nó pass' trên implementation mới — nếu một assertion cũ đỏ, đó là hành vi thật bị lệch, phải sửa service, không sửa test."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ suite (bao gồm test nghiệp vụ V0.2/V0.3 không sửa assertion) chạy trên implementation Spring Data mới.",
+        "explanation": "Chạy full suite không giới hạn -Dtest vì đây là điểm kiểm tra 'đổi implementation không đổi hành vi' cho toàn bộ project, không riêng một class."
+      }
+    },
+    {
+      "id": "step-v05-repos-paged-sorted",
+      "sessionId": "session-spring-data-repositories",
+      "order": 3,
+      "buildStepId": "step-spring-data-repositories-03",
+      "type": "your-turn",
+      "title": "Thêm listing giao dịch có phân trang và sắp xếp",
+      "goal": "TransactionRepository có một query method dùng Pageable, một test xác nhận kết quả trả về đúng trang, đúng thứ tự sắp xếp.",
+      "whyThisMatters": "Danh sách giao dịch của một account thật có thể lên tới hàng nghìn dòng — phân trang/sắp xếp là yêu cầu đọc mà dashboard sẽ đứng trên, không phải tính năng phụ.",
+      "learnerAction": {
+        "goal": "Thêm method như findByAccountId(Long accountId, Pageable pageable) trả Page<Transaction> vào TransactionRepository; viết test tạo nhiều Transaction, gọi với PageRequest.of(...) kèm Sort, xác nhận trang trả về đúng số lượng, đúng thứ tự.",
+        "constraints": [
+          "Không tự viết phân trang bằng tay (sublist thủ công trên List đã load toàn bộ) — dùng đúng cơ chế Pageable của Spring Data để query chỉ lấy đúng trang cần từ database."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=TransactionRepositoryTest' test",
+        "expectedResult": "BUILD SUCCESS — listing phân trang/sắp xếp trả đúng kết quả từ PostgreSQL.",
+        "explanation": "Test xác nhận Pageable query hoạt động đúng, không phải chỉ compile."
+      }
+    },
+    {
+      "id": "step-v05-repos-checkpoint",
+      "sessionId": "session-spring-data-repositories",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: in-memory store đã bị thay hoàn toàn bởi PostgreSQL",
+      "goal": "Xác nhận service không còn phụ thuộc InMemoryRepository, CRUD và listing phân trang/sắp xếp hoạt động trên PostgreSQL thật, trước khi balance trở thành một projection có version ở session kế tiếp."
+    },
+    {
+      "id": "step-v05-balance-version",
+      "sessionId": "session-balance-projection",
+      "order": 1,
+      "buildStepId": "step-balance-projection-01",
+      "type": "code-with-me",
+      "title": "Persist Account.balance với @Version chặn ghi đè đồng thời",
+      "goal": "Account có cột balance persisted và cột @Version, cả hai đến từ migration mới V2__balance_projection.sql (không sửa V1__init.sql), và một test ghi đồng thời phát hiện được optimistic-lock conflict.",
+      "whyThisMatters": "R8: balance là stored projection, không phải số tính lại mỗi lần đọc — và @Version là cơ chế duy nhất chặn hai request ghi đồng thời làm mất cập nhật của nhau (lost update). R26 vẫn áp dụng: cột mới nghĩa là migration mới, V1 không được sửa.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-20",
+          "note": "@Version, optimistic locking, OptimisticLockException/ObjectOptimisticLockingFailureException — cơ chế Hibernate dùng để phát hiện (không phải ngăn) hai transaction ghi đè cùng một row."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/resources/db/migration/V2__balance_projection.sql thêm cột balance NUMERIC(19,2) và version BIGINT vào bảng account (nếu balance chưa có cột riêng từ V1).",
+        "Gắn @Version lên field version của Account; đảm bảo balance là field persisted thật (@Column), không phải @Transient tính toán mỗi lần getter gọi.",
+        "Viết một test mô phỏng hai transaction cùng load một Account rồi cùng ghi — xác nhận transaction ghi sau nhận OptimisticLockException hoặc ObjectOptimisticLockingFailureException."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AccountJpaTest' test",
+        "expectedResult": "BUILD SUCCESS — Account mang @Version, balance persisted qua V2 migration, test ghi đồng thời phát hiện đúng conflict.",
+        "explanation": "V2__balance_projection.sql là migration MỚI — V1__init.sql không bị mở lại để sửa, đúng kỷ luật R26 đã thực hành ở session Flyway."
+      }
+    },
+    {
+      "id": "step-v05-balance-reconcile",
+      "sessionId": "session-balance-projection",
+      "order": 2,
+      "buildStepId": "step-balance-projection-02",
+      "type": "your-turn",
+      "title": "Đối soát một lịch sử giả lập: balance == openingBalance + tổng hiệu ứng có dấu",
+      "goal": "BalanceReconciliationTest tạo một chuỗi giao dịch (INCOME/EXPENSE) đã seed, rồi xác nhận balance lưu trong database khớp chính xác với openingBalance + tổng các hiệu ứng có dấu tính từ chính các Transaction đã lưu — sai lệch bằng 0.",
+      "whyThisMatters": "R7/R8/R9 không phải quy tắc trừu tượng — đây là bước biến chúng thành một test thật chạy trên dữ liệu đã persist: INCOME/TRANSFER_IN cộng, EXPENSE/TRANSFER_OUT trừ, amount luôn dương, openingBalance bất biến sau khi account được tạo.",
+      "learnerAction": {
+        "goal": "Viết BalanceReconciliationTest: tạo một Account với openingBalance cho trước, tạo một chuỗi Transaction (ít nhất INCOME và EXPENSE) qua đúng đường ghi service/repository, rồi tính lại balance kỳ vọng = openingBalance + sum(hiệu ứng có dấu theo type) và so sánh compareTo-equal với Account.balance đọc lại từ database.",
+        "constraints": [
+          "Không tính lại balance kỳ vọng bằng cách gọi lại chính công thức production code dùng để ghi balance — test phải tính độc lập từ danh sách Transaction đã seed, nếu không test chỉ lặp lại đúng bug nếu công thức production sai."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=BalanceReconciliationTest' test",
+        "expectedResult": "BUILD SUCCESS — đối soát cho sai lệch bằng 0 giữa balance đã lưu và tổng hiệu ứng tính từ lịch sử giao dịch.",
+        "explanation": "Đây là invariant R8 tuyên bố là vĩnh viễn đúng — test này sẽ được chạy lại ở mọi release sau như một hồi quy bắt buộc."
+      }
+    },
+    {
+      "id": "step-v05-balance-checkpoint",
+      "sessionId": "session-balance-projection",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: balance là projection có version, đối soát đúng",
+      "goal": "Xác nhận balance persisted, có @Version chặn ghi đè đồng thời, và đối soát đúng công thức openingBalance + tổng hiệu ứng có dấu, trước khi transfer nguyên tử được xây trên đúng nền tảng này."
+    },
+    {
+      "id": "step-v05-transfer-implement",
+      "sessionId": "session-atomic-transfer",
+      "order": 1,
+      "buildStepId": "step-atomic-transfer-01",
+      "type": "code-with-me",
+      "title": "Triển khai transfer là một @Transactional tạo cặp TRANSFER_OUT/TRANSFER_IN",
+      "goal": "Một public method @Transactional duy nhất trong TransferService tạo hai Transaction (TRANSFER_OUT ở account nguồn, TRANSFER_IN ở account đích) chia sẻ một transferRef, cập nhật cả hai balance projection trong cùng transaction — không có class Transfer nào tồn tại.",
+      "whyThisMatters": "R21: cặp giao dịch liên kết CHÍNH LÀ transfer — không có aggregate Transfer riêng lưu 'ý định chuyển tiền' rồi tách biệt khỏi ledger. R18: @Transactional chỉ đặt trên method public của service, không đặt trên private method hay trên controller. R20: cả hai row phải đi qua đúng một đường tạo giao dịch dùng chung (TransactionCreationService.create), không tạo row bằng save() rời rạc hai lần.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-20",
+          "note": "@Transactional, ranh giới transaction, và vì sao propagation mặc định (REQUIRED) là đủ cho một method gọi hai lần TransactionCreationService.create trong cùng một lời gọi."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/resources/db/migration/V3__transfer_ref.sql thêm cột transfer_ref VARCHAR vào bảng transaction — cặp giao dịch transfer ra đời SAU V1/V2, không sửa migration cũ.",
+        "Tạo TransferService.transfer(fromAccountId, toAccountId, amount) là public method duy nhất mang @Transactional.",
+        "Trong method đó: sinh một transferRef (ví dụ UUID string), gọi TransactionCreationService.create hai lần — một lần tạo TRANSFER_OUT ở account nguồn (amount dương, hiệu ứng trừ), một lần tạo TRANSFER_IN ở account đích (amount dương, hiệu ứng cộng) — cả hai row cùng transferRef.",
+        "Không tạo bất kỳ class Transfer/TransferEntity nào — cặp Transaction chia sẻ transferRef là toàn bộ mô hình."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=TransferServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — transfer thành công tạo đúng hai row TRANSFER_OUT/TRANSFER_IN chia sẻ một transferRef, cả hai balance được cập nhật.",
+        "explanation": "V3__transfer_ref.sql là migration thứ ba — V1 và V2 vẫn nguyên vẹn, đúng kỷ luật migration bất biến đã thực hành từ session Flyway."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Tạo một class Transfer(id, fromAccountId, toAccountId, amount, createdAt) lưu riêng vào một bảng transfer",
+          "likelyCause": "Trực giác thiết kế OOP thường muốn có một object đại diện cho 'hành động chuyển tiền' như một entity độc lập.",
+          "fix": "R21 cấm aggregate Transfer riêng — cặp TRANSFER_OUT/TRANSFER_IN chia sẻ transferRef trong chính bảng transaction hiện có LÀ transfer, không cần bảng thứ hai."
+        }
+      ]
+    },
+    {
+      "id": "step-v05-transfer-rollback",
+      "sessionId": "session-atomic-transfer",
+      "order": 2,
+      "buildStepId": "step-atomic-transfer-02",
+      "type": "your-turn",
+      "title": "Chứng minh lỗi giữa chừng rollback toàn bộ, không để lại row hay balance lệch nào",
+      "goal": "Một test buộc lỗi xảy ra giữa lúc ghi debit và credit (ví dụ account đích không tồn tại, hoặc ném exception thủ công sau bước debit) và xác nhận sau đó: không có Transaction row nào được tạo, balance cả hai account không đổi.",
+      "whyThisMatters": "Atomicity chỉ là lời hứa cho tới khi có test chứng minh KHÔNG CÓ residue khi thất bại giữa chừng — đây chính là lý do @Transactional được đặt trên toàn bộ method transfer thay vì hai lời gọi create() rời rạc không có ranh giới chung.",
+      "learnerAction": {
+        "goal": "Viết test gọi transfer() với một điều kiện khiến bước thứ hai (credit vào account đích) thất bại sau khi bước đầu (debit account nguồn) đã chạy trong cùng method — ví dụ toAccountId không tồn tại — rồi assert: repository.findAll() cho Transaction không có row transfer nào, và balance của account nguồn không đổi so với trước khi gọi transfer().",
+        "constraints": [
+          "Test phải buộc lỗi xảy ra SAU khi ít nhất một trong hai lời gọi TransactionCreationService.create bên trong method transactional đã chạy — nếu lỗi xảy ra trước khi bất kỳ ghi nào diễn ra, test không chứng minh được điều gì về rollback."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=TransferServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — sau lỗi giữa chừng, không có Transaction row nào của lần transfer thất bại tồn tại, balance hai account giữ nguyên như trước khi gọi.",
+        "explanation": "Đây là bằng chứng thực nghiệm cho R21 — không phải suy luận từ việc đọc annotation @Transactional."
+      }
+    },
+    {
+      "id": "step-v05-transfer-invariant",
+      "sessionId": "session-atomic-transfer",
+      "order": 3,
+      "buildStepId": "step-atomic-transfer-03",
+      "type": "your-turn",
+      "title": "Xác nhận balance không bao giờ đổi mà thiếu Transaction row tương ứng",
+      "goal": "Sau một transfer thành công, cả hai account đối soát đúng (balance == openingBalance + tổng hiệu ứng có dấu, dùng lại đúng phép kiểm ở session trước) và cả hai row TRANSFER_OUT/TRANSFER_IN mang đúng transferRef chung.",
+      "whyThisMatters": "Đây là điểm nối hai session lại với nhau: invariant đối soát balance (R8, session-balance-projection) phải tiếp tục đúng ngay cả khi nguồn ghi là transfer (R21), không chỉ đúng với INCOME/EXPENSE đơn giản.",
+      "learnerAction": {
+        "goal": "Sau khi gọi transfer() thành công trong test, chạy lại đúng phép đối soát balance == openingBalance + tổng hiệu ứng có dấu (như BalanceReconciliationTest) cho cả account nguồn và account đích, và assert cả hai Transaction row mới có transferRef bằng nhau.",
+        "constraints": [
+          "Test phải seed account nguồn/đích có lịch sử giao dịch từ trước (không chỉ mới tạo, balance = 0) để phép đối soát có ý nghĩa thật, không chỉ đúng vì mọi số đều là 0."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=TransferServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — cả hai account đối soát đúng sau transfer, hai row mới chia sẻ đúng một transferRef.",
+        "explanation": "Test này khép lại chuỗi bằng chứng cho R8+R21 hoạt động cùng nhau, không mâu thuẫn nhau."
+      }
+    },
+    {
+      "id": "step-v05-transfer-checkpoint",
+      "sessionId": "session-atomic-transfer",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: V0.5 hoàn tất — persistence thật, transfer nguyên tử, chưa có auth",
+      "goal": "Xác nhận toàn bộ domain sống được qua restart trên PostgreSQL thật, Flyway sở hữu schema, balance là projection có version đối soát đúng, và transfer là cặp giao dịch nguyên tử trong một @Transactional — trước khi V0.6 đưa Spring Security/JWT/ownership vào mà KHÔNG chạm domain nghiệp vụ này."
+    },
+    {
+      "id": "step-v06-auth-hash",
+      "sessionId": "session-auth-foundation",
+      "order": 1,
+      "buildStepId": "step-auth-foundation-01",
+      "type": "code-with-me",
+      "title": "Hash password khi register bằng PasswordEncoderFactories.createDelegatingPasswordEncoder()",
+      "goal": "AppUserService.register lưu user qua UserRepository với password đã hash bằng delegating encoder — không bao giờ lưu raw password; login xác minh bằng matches(raw, encoded).",
+      "whyThisMatters": "Đây là nguyên liệu duy nhất khiến database bị rò rỉ không đồng nghĩa với password bị rò rỉ. Delegating encoder (không tự viết SHA/MD5) là lựa chọn mặc định của Spring Security vì nó mang tiền tố thuật toán trong chuỗi hash, cho phép nâng cấp thuật toán về sau mà không phá vỡ hash cũ.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-22",
+          "note": "PasswordEncoder, delegating encoder, và vì sao không tự triển khai hàm hash."
+        }
+      ],
+      "instructions": [
+        "Thêm spring-boot-starter-security, spring-boot-starter-oauth2-resource-server, spring-security-test vào pom.xml — không khai version, kế thừa từ parent POM. KHÔNG thêm spring-boot-starter-oauth2-jose — nó không phải một Boot starter thật (không tồn tại trên Maven Central với artifactId đó); hỗ trợ JOSE (JWT encode/decode) tới kèm gián tiếp qua spring-security-oauth2-jose, vốn đã là dependency bắc cầu của spring-boot-starter-oauth2-resource-server.",
+        "Tạo com.spendwise.auth.AppUser (entity) và com.spendwise.auth.UserRepository (Spring Data JPA).",
+        "Tạo bảng users NGAY Ở BƯỚC NÀY qua một migration Flyway mới (V4__app_user_table.sql) với các cột tối thiểu cho đăng nhập (id kiểu UUID, username, password_hash) — dù việc gắn ownership (user_id trên account/transaction) chỉ tới ở task-user-migration kế tiếp. Lý do: spring.jpa.hibernate.ddl-auto=validate kiểm TOÀN BỘ @Entity đã map so với schema ngay khi EntityManagerFactory khởi động, không phải lười theo từng lần dùng repository — nên ngay khi AppUser trở thành một @Entity thật (chính là việc bước này yêu cầu), nó đã cần một bảng thật, nếu không MỌI @SpringBootTest trong cả suite (không chỉ AppUserServiceTest) sẽ fail lúc khởi động context, không riêng gì test của bước này. Migration ở task-user-migration kế tiếp (số thứ tự sẽ dịch thành V5) chỉ ALTER account/transaction thêm cột user_id — không được tạo lại bảng users.",
+        "Tạo AppUserService.register(rawPassword, ...) dùng PasswordEncoderFactories.createDelegatingPasswordEncoder().encode(rawPassword) rồi lưu qua UserRepository.",
+        "Viết AppUserServiceTest xác nhận giá trị lưu trong DB khác raw password, và encoder.matches(raw, encoded) trả true."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AppUserServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — user được lưu qua UserRepository với hash khác raw password; matches(raw, encoded) đúng.",
+        "explanation": "Test này chỉ kiểm tra hành vi hash/verify, chưa đụng tới HTTP hay JWT — đúng phạm vi của bước này."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Lưu password bằng String.valueOf(rawPassword) hoặc tự viết hàm hash MD5/SHA-256 thủ công",
+          "likelyCause": "Nghĩ rằng chỉ cần 'không lưu chữ thường' là đủ an toàn.",
+          "fix": "Dùng PasswordEncoderFactories.createDelegatingPasswordEncoder() — Spring Security đã chọn thuật toán mặc định an toàn (bcrypt) và tự quản version thuật toán qua tiền tố lưu trong hash."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-auth-filterchain",
+      "sessionId": "session-auth-foundation",
+      "order": 2,
+      "buildStepId": "step-auth-foundation-02",
+      "type": "code-with-me",
+      "title": "Cấu hình SecurityFilterChain không session (STATELESS)",
+      "goal": "SecurityConfig khai báo SecurityFilterChain với SessionCreationPolicy.STATELESS — mỗi request tự mang danh tính của nó, server không giữ session nào giữa các request.",
+      "whyThisMatters": "STATELESS là điều kiện tiên quyết để JWT có ý nghĩa: nếu server còn giữ HttpSession, token chỉ là lớp trang trí trên một cơ chế session cookie vẫn đang thực sự xác thực người dùng.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-22",
+          "note": "SecurityFilterChain, SessionCreationPolicy, và vì sao REST API không nên tạo HttpSession."
+        }
+      ],
+      "instructions": [
+        "Tạo SecurityConfig với @Bean SecurityFilterChain, gọi sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).",
+        "Đánh dấu route công khai (ví dụ /auth/register, /auth/login) là permitAll(); mọi route còn lại yêu cầu xác thực qua .oauth2ResourceServer(oauth2 -> oauth2.jwt(...)).",
+        "Spring Security's oauth2ResourceServer().jwt() cần một bean JwtDecoder tồn tại NGAY khi filter chain được xây (nó là tham số của method @Bean filterChain, không phải thứ có thể 'thêm sau'). Vì vậy bước này CŨNG phải khai báo một @Bean JwtDecoder tối thiểu — chưa xác minh chữ ký thật, chỉ cần LUÔN từ chối (ví dụ ném BadJwtException với mọi token) — đủ để mọi request tới route được bảo vệ (có token hay không) đều bị 401, và route công khai vẫn qua được permitAll(). 'Chưa cấu hình decoder/JWT thật' ở bước này nghĩa là CHƯA có logic xác minh chữ ký thật (NimbusJwtDecoder) — không có nghĩa là không cần bean JwtDecoder nào cả.",
+        "step-auth-foundation-03 (bước kế tiếp) sẽ thay bean JwtDecoder luôn-từ-chối này bằng một test double có thể trả về Jwt hợp lệ cho nhánh 200 — vẫn chưa phải bộ ký thật."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=SecurityConfigTest' test",
+        "expectedResult": "BUILD SUCCESS — request không xác thực tới route được bảo vệ bị từ chối; route công khai vẫn truy cập được.",
+        "explanation": "SecurityConfigTest ở bước này chỉ xác nhận policy STATELESS được áp dụng và route công khai/riêng tư được phân biệt đúng."
+      }
+    },
+    {
+      "id": "step-v06-auth-401-contract",
+      "sessionId": "session-auth-foundation",
+      "order": 3,
+      "buildStepId": "step-auth-foundation-03",
+      "type": "your-turn",
+      "title": "Chốt hợp đồng 401/401/200 bằng test",
+      "goal": "Một test bằng MockMvc xác nhận cả ba trường hợp trên cùng một route được bảo vệ: không token → 401, token sai/hỏng → 401, token hợp lệ → 200.",
+      "whyThisMatters": "Ba trường hợp phải được pin trong CÙNG một test để không ai âm thầm làm hỏng một nhánh trong khi sửa nhánh khác. Nhánh 'token hợp lệ' ở bước này dùng một JwtDecoder giả (test double) — chưa có bất kỳ code ký JWT thật nào tồn tại, vì việc đó bị dời tới sau day-36 (task-canonical-token-issuer).",
+      "learnerAction": {
+        "goal": "Viết SecurityConfigTest gọi một route được bảo vệ ba lần: không có header Authorization (assert 401), với header Authorization mang token rác/hỏng (assert 401), và với một JwtDecoder giả được inject để trả về một Jwt hợp lệ (assert 200).",
+        "constraints": [
+          "Không viết bất kỳ logic ký (sign) JWT nào ở bước này — nhánh 200 dùng test-only JwtDecoder double, không phải bộ ký thật.",
+          "Cả ba assertion phải nằm trong cùng file test, chạy trên cùng một route được bảo vệ, để không thể lặng lẽ vỡ một nhánh mà hai nhánh còn lại vẫn xanh.",
+          "JwtDecoder giả chỉ được khai báo cục bộ cho SecurityConfigTest (ví dụ @TestConfiguration lồng bên trong file test đó, chỉ @Import vào test này) — KHÔNG đặt nó thành một @Bean toàn cục nạp cho mọi @SpringBootTest. Các test không thuộc web layer (service/repository test chạy trên context riêng, không có filter chain) không cần và không được phụ thuộc vào double này; để nó rò rỉ ra ngoài SecurityConfigTest là nguồn gây xung đột context giữa các lớp test không liên quan tới nhau."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=SecurityConfigTest' test",
+        "expectedResult": "BUILD SUCCESS — không token: 401; token sai: 401; token hợp lệ (qua decoder giả): 200.",
+        "explanation": "Nhánh 200 sẽ được pin lại lần thứ hai với bộ ký JWT THẬT ở step-canonical-token-issuer-04, sau khi NimbusJwtEncoder ra đời — bước này chưa chạm tới ký JWT."
+      },
+      "commonErrors": [
+        {
+          "symptom": "JwtDecoder giả được khai báo @Bean ở một @TestConfiguration dùng chung (ví dụ trong một package test root), rồi các test không-phải-web (service test, repository test chạy @DataJpaTest hoặc plain unit test) bắt đầu load nhầm context có double này, hoặc ngược lại context của SecurityConfigTest bị các bean test khác chen vào",
+          "likelyCause": "Muốn tái dùng double cho 'tiện', khai báo nó ở phạm vi rộng hơn mức cần.",
+          "fix": "Giữ double làm một @TestConfiguration lồng bên trong chính SecurityConfigTest (static nested class), chỉ @Import hoặc @ContextConfiguration nó vào file test này. Mỗi lớp test khác dùng context Spring riêng của nó, không chia sẻ double."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-auth-foundation-checkpoint",
+      "sessionId": "session-auth-foundation",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: hash + filter chain STATELESS đã đúng, chưa có JWT thật",
+      "goal": "Xác nhận register/login hash-verify đúng và filter chain STATELESS từ chối request không hợp lệ trước khi bất kỳ thứ gì liên quan tới ký JWT xuất hiện trong codebase."
+    },
+    {
+      "id": "step-v06-migration-sql",
+      "sessionId": "session-user-migration",
+      "order": 1,
+      "buildStepId": "step-user-migration-01",
+      "type": "code-with-me",
+      "title": "Viết V5__user_identity.sql thêm user_id + FK vào mọi bảng thuộc user",
+      "goal": "V5__user_identity.sql ALTER mọi bảng owned (account, transaction — tên bảng thật từ V1__init.sql là số ít, không phải accounts/transactions) thêm cột user_id NOT NULL kèm FK về users.",
+      "whyThisMatters": "R26: không sửa V1__init.sql — ownership tới sau, nên nó phải là một migration mới, không phải một sửa đổi lịch sử. R25: mọi bảng thuộc về user phải có CỘT owner trực tiếp của chính nó — kể cả transaction, dù nó đã có account_id — vì suy ra ownership qua một join (transaction -> account -> user) nghĩa là mọi query lọc-theo-user của transaction phải join, không thể lọc trực tiếp trên transaction, và R25's mệnh đề 'mọi bảng owned có cột user_id' sẽ không còn đúng theo nghĩa đen. Migration không được TỰ ĐOÁN owner cho các hàng cũ: nếu account/transaction đã có dữ liệu trước V5, migration phải fail fast (ví dụ RAISE EXCEPTION trong một DO $$ block) thay vì gán một owner giả hoặc xoá dữ liệu — không có cơ sở nào để migration tự suy ra hàng cũ thuộc về ai. Lưu ý số thứ tự: bảng users tự thân đã được tạo sớm hơn, ở step-auth-hash (V4__app_user_table.sql) — bắt buộc vì ddl-auto=validate cần bảng đó tồn tại ngay khi AppUser trở thành @Entity; nên migration của bước này KHÔNG tạo lại bảng users, chỉ ALTER hai bảng owned.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-21",
+          "note": "Flyway versioned migration, tính bất biến của migration đã apply."
+        },
+        {
+          "lessonId": "day-22",
+          "note": "Vì sao ownership (cột user_id trên account/transaction) tới sau bảng users, không cùng lúc."
+        }
+      ],
+      "instructions": [
+        "Tạo src/main/resources/db/migration/V5__user_identity.sql — không sửa V1/V2/V3/V4 đã apply, và không tạo lại bảng users (đã có từ V4__app_user_table.sql ở step-auth-hash).",
+        "Tên bảng thật trong schema (từ V1__init.sql) là số ít: account, transaction — không phải accounts/transactions. Dùng đúng tên số ít trong mọi câu SQL của migration này.",
+        "Đầu migration, thêm một guard fail-fast: DO $$ ... IF EXISTS (SELECT 1 FROM account LIMIT 1) OR EXISTS (SELECT 1 FROM transaction LIMIT 1) THEN RAISE EXCEPTION ... END $$; — vì DDL của Postgres nằm trong transaction, một RAISE EXCEPTION khiến toàn bộ migration rollback sạch (không có gì được apply, version không được ghi nhận) thay vì để lại một trạng thái nửa vời.",
+        "ALTER TABLE account ADD COLUMN user_id UUID NOT NULL REFERENCES users(id) — và một cột user_id UUID NOT NULL REFERENCES users(id) TRỰC TIẾP trên transaction (không phải suy ra qua account_id) — mọi bảng owned phải có cột này, kể cả khi nó đã có một FK khác dẫn gián tiếp tới user. Khóa chính của account/transaction (đã tồn tại từ V1, kiểu VARCHAR(36)) giữ nguyên — migration này không sửa kiểu dữ liệu của các cột đã có từ migration trước.",
+        "Không giả định composite UNIQUE hai cột — corpus chỉ dạy inline UNIQUE một cột; nếu cần ràng buộc duy nhất theo user thì thiết kế lại thành một cột định danh gộp, không dùng UNIQUE(user_id, x) trực tiếp."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=SchemaValidationTest' test",
+        "expectedResult": "BUILD SUCCESS — Flyway apply V5 sạch trên schema mới (không có hàng cũ), ddl-auto=validate vẫn pass; và một lần chạy thủ công với dữ liệu account/transaction có sẵn từ trước phải FAIL với đúng thông báo của RAISE EXCEPTION, không migrate được phần nào.",
+        "explanation": "SchemaValidationTest xác nhận entity Java khớp với schema sau khi V5 apply — không có cột nào Hibernate mong đợi mà migration thiếu, và ngược lại. Nhánh fail-fast chứng minh migration không bao giờ âm thầm đoán hoặc xoá dữ liệu cũ."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Sửa trực tiếp V1__init.sql để thêm cột user_id ngay từ đầu",
+          "likelyCause": "Muốn schema 'gọn', không muốn có nhiều file migration nhỏ.",
+          "fix": "R26: migration đã apply là lịch sử bất biến. Ownership là một tính năng tới SAU, nên nó phải là một migration mới, không phải viết lại V1."
+        },
+        {
+          "symptom": "transaction.user_id được để nullable, hoặc bị bỏ qua với lý do 'đã suy ra được qua account_id rồi, thêm cột nữa là dư thừa'",
+          "likelyCause": "Nhầm 'có thể suy ra ownership qua join' với 'có cột owner trực tiếp' — R25 yêu cầu vế sau, không phải vế trước.",
+          "fix": "Thêm transaction.user_id NOT NULL REFERENCES users(id), gán từ account.ownerId() ngay khi tạo Transaction — mọi query lọc-theo-user của transaction (TransactionRepository.findByUserId...) lọc trực tiếp trên cột này, không join qua account."
+        },
+        {
+          "symptom": "Với database đã có sẵn account/transaction, migration tự gán user_id = một giá trị mặc định (ví dụ user hệ thống) hoặc xoá hết các hàng cũ để ALTER ... NOT NULL không lỗi",
+          "likelyCause": "Muốn migration 'chạy được' bằng mọi giá, không muốn dừng lại để hỏi.",
+          "fix": "Không có cơ sở nào để migration tự đoán owner của dữ liệu cũ. Migration phải RAISE EXCEPTION và dừng lại (transaction rollback, không mất gì) khi phát hiện có hàng cũ — quyết định ai sở hữu dữ liệu cũ là một quyết định nghiệp vụ, không phải một dòng SQL đoán bừa."
+        },
+        {
+          "symptom": "Đặt tên migration là V4__user_identity.sql, trùng với V4__app_user_table.sql đã tạo ở step-auth-hash",
+          "likelyCause": "Theo đúng số thứ tự cũ trong hướng dẫn gốc, không nhận ra bảng users đã được tạo sớm hơn dưới V4.",
+          "fix": "Đặt tên file này là V5__user_identity.sql — Flyway không cho hai migration trùng version; V4 đã được step-auth-hash dùng cho việc tạo bảng users."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-migration-scoped-queries",
+      "sessionId": "session-user-migration",
+      "order": 2,
+      "buildStepId": "step-user-migration-02",
+      "type": "code-with-me",
+      "title": "Lọc mọi query danh sách theo user hiện tại",
+      "goal": "AccountRepository/TransactionRepository có các phương thức nhận thêm userId, và không còn đường nào trả về danh sách không lọc theo user.",
+      "whyThisMatters": "R25's mệnh đề thứ hai: có cột user_id chưa đủ — nếu query danh sách vẫn là findAll() không lọc, cột đó chỉ là dữ liệu chết. Lớp tenancy phải nằm ở tầng query, không phải lọc thủ công sau khi đã tải hết dữ liệu về bộ nhớ.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-21",
+          "note": "Derived query method của Spring Data JPA nhận thêm tham số lọc."
+        },
+        {
+          "lessonId": "day-22",
+          "note": "Vì sao tầng nào enforce ownership sẽ được quyết định dứt điểm ở task-ownership-checks — bước này chỉ chuẩn bị query, chưa nối với SecurityContext."
+        }
+      ],
+      "instructions": [
+        "Đổi AccountRepository.findAll()-kiểu-danh-sách thành findByUserId(UUID userId, ...) (derived query method).",
+        "Đổi TransactionRepository tương tự — mọi phương thức trả về danh sách nhận userId làm tham số lọc.",
+        "Chưa nối các repository này với SecurityContextHolder ở bước này — đó là việc của task-ownership-checks; ở đây chỉ đảm bảo tầng query CÓ khả năng lọc theo user.",
+        "CurrentUser (lớp đọc SecurityContextHolder) CHƯA tồn tại ở bước này, nên test của bước này không có cách nào lấy userId từ một request thật. Thay vào đó: tự tạo một userId bằng cách lưu trực tiếp một AppUser qua UserRepository.save(...) ngay trong test (UserRepository đã có từ step-auth-hash), rồi dùng id của AppUser vừa lưu làm tham số userId khi gọi findByUserId(...) — account.user_id/transaction.user_id có FK NOT NULL về users(id), nên userId truyền vào PHẢI là id của một hàng users có thật, không phải một UUID.randomUUID() bất kỳ."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "test",
+        "expectedResult": "BUILD SUCCESS — mọi phương thức trả về danh sách của AccountRepository/TransactionRepository nhận userId, không còn phương thức nào trả về toàn bộ bảng không lọc.",
+        "explanation": "Chạy toàn bộ suite vì thay đổi signature ảnh hưởng tới mọi call site đang gọi các repository này."
+      }
+    },
+    {
+      "id": "step-v06-migration-checkpoint",
+      "sessionId": "session-user-migration",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: schema có ownership, query có khả năng lọc — chưa có ai enforce",
+      "goal": "Xác nhận V4 migration apply sạch, mọi bảng owned có user_id + FK, và query danh sách nhận userId — nhưng CHƯA có nơi nào tự động lấy user hiện tại từ request để enforce, đó là task-ownership-checks kế tiếp."
+    },
+    {
+      "id": "step-v06-ownership-currentuser",
+      "sessionId": "session-ownership-checks",
+      "order": 1,
+      "buildStepId": "step-ownership-checks-01",
+      "type": "code-with-me",
+      "title": "Đọc SecurityContextHolder trong đúng một class duy nhất",
+      "goal": "CurrentUser là class DUY NHẤT trong toàn bộ src/main/java chạm tới SecurityContextHolder; mọi nơi khác cần biết user hiện tại đều hỏi CurrentUser, không tự đọc SecurityContext.",
+      "whyThisMatters": "R24: nếu SecurityContextHolder bị đọc rải rác ở nhiều class, không có cách nào audit hay thay đổi cách lấy danh tính người dùng (ví dụ đổi từ JWT sang session) mà không phải sửa nhiều nơi cùng lúc — và rủi ro một chỗ đọc sai/đọc thiếu tăng theo số nơi đọc.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-22",
+          "note": "SecurityContextHolder, Authentication, principal."
+        },
+        {
+          "lessonId": "day-23",
+          "note": "Vì sao gom việc đọc identity vào một điểm duy nhất là một quyết định kiến trúc, không phải sở thích."
+        }
+      ],
+      "instructions": [
+        "Tạo com.spendwise.auth.CurrentUser với một method (ví dụ userId()) đọc SecurityContextHolder.getContext().getAuthentication().",
+        "Grep toàn bộ src/main/java để xác nhận SecurityContextHolder chỉ xuất hiện trong file CurrentUser.java."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "-q compile",
+        "expectedResult": "BUILD SUCCESS và không có kết quả grep 'SecurityContextHolder' nào ngoài CurrentUser.java.",
+        "explanation": "Đây là bằng chứng cấu trúc (grep), không phải test hành vi — R24 là một ràng buộc về VỊ TRÍ code, kiểm bằng cách tìm kiếm text trong repo."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Gọi SecurityContextHolder.getContext() trực tiếp trong TransactionService hoặc AccountController vì 'tiện, chỉ cần một dòng'",
+          "likelyCause": "Không thấy lý do phải tạo một class riêng cho một dòng code.",
+          "fix": "R24 không phải về độ dài code — nó về việc CHỈ MỘT NƠI biết 'user hiện tại' được lấy như thế nào, để đổi cơ chế xác thực chỉ cần sửa một file."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-ownership-service-reload",
+      "sessionId": "session-ownership-checks",
+      "order": 2,
+      "buildStepId": "step-ownership-checks-02",
+      "type": "code-with-me",
+      "title": "Enforce ownership ở tầng service bằng cách tải resource theo owner id — đúng một lớp, đúng một chỗ",
+      "goal": "Controller KHÔNG được tự tải resource để kiểm tra owner rồi mới gọi xuống service — làm vậy tạo ra một bản sao logic ownership thứ hai, dễ lệch khỏi bản chính khi service thay đổi. Thay vào đó controller chỉ truyền thẳng id thô (từ request) và ownerId (từ CurrentUser) xuống service; chính service ghi dữ liệu (ví dụ TransactionCreationService.create, TransferService.transfer) là nơi DUY NHẤT tải resource, bằng cả id VÀ ownerId trong cùng một query (ví dụ AccountRepository.findByIdAndOwnerId), và ném lỗi not-found nếu không khớp.",
+      "whyThisMatters": "R17+R24: ownership không phải là 'tải resource rồi so sánh owner sau' — cách đó vẫn tải được dữ liệu của người khác vào bộ nhớ trước khi kiểm tra, và dễ quên bước so sánh ở một call site nào đó. Ownership cũng không nên kiểm tra Ở HAI NƠI (controller và service) — hai bản sao logic là hai chỗ có thể lệch nhau theo thời gian, và R17 yêu cầu domain/ownership invariant chỉ sống ở MỘT tầng, không rải rác qua controller. Controller ở đây chỉ là I/O: nhận request, gọi service, trả response — nó không tải entity, không so sánh owner, không tự quyết định 404. Một id tồn tại nhưng thuộc người khác phải cho kết quả giống hệt id không tồn tại, và việc đó được đảm bảo bởi ĐÚNG MỘT lần kiểm tra trong service.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-23",
+          "note": "Service-layer authorization, vì sao kiểm tra ownership không đặt ở controller."
+        }
+      ],
+      "instructions": [
+        "Sửa các service ghi dữ liệu (ví dụ TransactionCreationService.create, TransferService.transfer) để nhận thêm tham số ownerId và tải resource qua repository method nhận cả id và ownerId trong một query (ví dụ AccountRepository.findByIdAndOwnerId) — không phải findById(id) rồi if (account.ownerId() != current).",
+        "Xoá mọi owner-scoped lookup thủ công còn lại trong controller (ví dụ một AccountService.findOwned riêng chỉ để controller rẽ nhánh 404) — controller chỉ truyền id thô và ownerId (từ CurrentUser) xuống service, không tự tải entity.",
+        "Not-found từ service (id không tồn tại HOẶC tồn tại nhưng sai chủ) phải là một exception riêng, được một @ExceptionHandler trung tâm ánh xạ sang HTTP 404 — controller không viết if/else để tự quyết định mã lỗi.",
+        "Viết OwnershipTest xác nhận: user A tạo account, user B gọi get(accountId) của chính A → không nhận được dữ liệu."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=OwnershipTest' test",
+        "expectedResult": "BUILD SUCCESS — service tải resource có điều kiện owner id ngay trong query, không tải rồi so sánh sau; controller không còn owner-scoped lookup riêng của nó.",
+        "explanation": "Test ở bước này xác nhận HÀNH VI tải đúng owner; bước kế tiếp mới chốt đúng MÃ LỖI HTTP (404) trả về."
+      }
+    },
+    {
+      "id": "step-v06-ownership-404-contract",
+      "sessionId": "session-ownership-checks",
+      "order": 3,
+      "buildStepId": "step-ownership-checks-03",
+      "type": "your-turn",
+      "title": "Chốt hợp đồng: truy cập chéo user trả 404, không phải 403",
+      "goal": "Trên mọi resource được bảo vệ (account, transaction), user A gọi API với id thuộc user B nhận đúng 404 — không phải 403, không phải 200 với dữ liệu rỗng.",
+      "whyThisMatters": "403 xác nhận với kẻ tấn công rằng resource đó CÓ TỒN TẠI (chỉ là không có quyền) — đó là một kênh rò rỉ thông tin (id nào hợp lệ, id nào không). 404 không tiết lộ điều đó: với user A, một account của user B và một account không tồn tại phải trông giống hệt nhau.",
+      "learnerAction": {
+        "goal": "Mở rộng OwnershipTest: với mỗi loại resource được bảo vệ (account, transaction), gọi endpoint GET (hoặc update/delete nếu có) bằng token của user A nhưng với id thuộc user B, và assert HTTP status là 404.",
+        "constraints": [
+          "Phải kiểm tra 404 (không phải 403) — nếu ownership check hiện đang trả 403, đó là một vi phạm R24 cần sửa, không phải một cách diễn đạt tương đương.",
+          "Phải chạy trên MỌI loại resource được bảo vệ, không chỉ account — bỏ sót transaction là một lỗ hổng ownership thật.",
+          "Transaction ở release này KHÔNG có endpoint GET/update/delete theo id (chỉ có POST tạo mới và GET danh sách của chính caller) — với transaction, hợp đồng 404 được chứng minh qua đường TẠO MỚI: user A gọi POST /transactions với accountId thuộc user B phải nhận 404 (account không tìm thấy đối với A), không phải qua một lookup-by-id không tồn tại."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=OwnershipTest' test",
+        "expectedResult": "BUILD SUCCESS — mọi resource được bảo vệ trả 404 khi user A truy cập id thuộc user B.",
+        "explanation": "Đây là test khép lại toàn bộ task-ownership-checks — nếu xanh, R24 được chứng minh bằng thực nghiệm, không chỉ bằng đọc code."
+      }
+    },
+    {
+      "id": "step-v06-ownership-checkpoint",
+      "sessionId": "session-ownership-checks",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: ownership enforce đúng ở service layer, 404 không phải 403",
+      "goal": "Xác nhận CurrentUser là điểm đọc SecurityContextHolder duy nhất, service tải resource có điều kiện owner ngay trong query, và truy cập chéo user luôn trả 404 trên mọi resource được bảo vệ."
+    },
+    {
+      "id": "step-v06-token-issuer-interface",
+      "sessionId": "session-token-lifecycle",
+      "order": 1,
+      "buildStepId": "step-token-lifecycle-01",
+      "type": "code-with-me",
+      "title": "Định nghĩa interface TokenIssuer — chưa có triển khai ký nào",
+      "goal": "TokenIssuer là một interface thuần (ví dụ issue(userId) -> String); KHÔNG có class nào trong src/main/java triển khai nó bằng logic ký JWT thật ở bước này.",
+      "whyThisMatters": "Kiến thức để ký JWT đúng cách (NimbusJwtEncoder, ImmutableSecret, JwtClaimsSet) chỉ xuất hiện ở day-33, còn bước này đang ở day-24. Định nghĩa interface trước, cắm triển khai thật sau, là cách duy nhất để login/logout có thể được xây và test NGAY BÂY GIỜ mà không phải viết một bộ ký JWT tạm bợ rồi vứt đi.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-24",
+          "note": "Tách interface khỏi triển khai; vì sao một seam (điểm nối) được định nghĩa trước khi công nghệ cụ thể phía sau nó được học."
+        }
+      ],
+      "instructions": [
+        "Tạo com.spendwise.auth.TokenIssuer — interface với một method issue(String userId) trả về String token (và tương ứng để verify/decode nếu cần cho bước sau).",
+        "KHÔNG viết bất kỳ class nào implements TokenIssuer bằng thuật toán ký thật (không HS256 tay, không Base64 giả) — nếu cần một implementation để test biên dịch, dùng test double trong src/test, không đặt trong src/main.",
+        "AuthService (class dùng TokenIssuer qua constructor injection) VẪN có thể là một @Service bình thường ngay ở bước này — vấn đề không nằm ở AuthService, mà ở việc TokenIssuer chưa có @Component/@Bean nào trong src/main. Vì vậy: bất kỳ @SpringBootTest nào load toàn bộ context ở giai đoạn này (chưa có NimbusTokenIssuer) phải tự cấp một bean TokenIssuer test-double qua @TestConfiguration cục bộ trong chính file test đó — cùng khuôn mẫu đã dùng cho JwtDecoder giả ở step-auth-foundation-03 — nếu không Spring sẽ báo lỗi 'no qualifying bean of type TokenIssuer' vì không có triển khai nào để autowire.",
+        "Grep toàn bộ src/main/java để xác nhận không có class nào implements TokenIssuer."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "-q compile",
+        "expectedResult": "BUILD SUCCESS và grep 'implements TokenIssuer' trong src/main/java không trả về kết quả nào.",
+        "explanation": "Bằng chứng cấu trúc: interface tồn tại, nhưng chưa có triển khai thật nào trong main — đúng như R23 yêu cầu ở giai đoạn này (JWT là seam, chưa là công nghệ cụ thể)."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Viết một class HardcodedTokenIssuer implements TokenIssuer trong src/main dùng chuỗi ký cứng 'to make it work'",
+          "likelyCause": "Muốn login/logout chạy được ngay, không muốn chờ tới task-canonical-token-issuer.",
+          "fix": "Một bộ ký tạm bợ trong src/main sẽ bị coi là 'đã xong' và dễ lẫn vào production. Dùng test double CHỈ trong src/test; interface trong src/main không có triển khai nào cho tới khi NimbusJwtEncoder thật xuất hiện ở task-canonical-token-issuer."
+        },
+        {
+          "symptom": "@SpringBootTest cho AuthService (hoặc bất kỳ context nào autowire TokenIssuer) fail khi khởi động với lỗi kiểu 'No qualifying bean of type TokenIssuer available'",
+          "likelyCause": "Chưa cấp bean TokenIssuer nào cho context test ở giai đoạn seam-only này — AuthService vẫn là @Service bình thường, nhưng không có ứng viên nào để Spring autowire.",
+          "fix": "Thêm một @TestConfiguration cục bộ trong file test đó khai báo test double làm @Bean TokenIssuer (cùng khuôn mẫu JwtDecoder giả ở SecurityConfigTest) — không biến TokenIssuer thành @Autowired(required = false), và không tạo implementation thật sớm chỉ để context boot được."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-token-login",
+      "sessionId": "session-token-lifecycle",
+      "order": 2,
+      "buildStepId": "step-token-lifecycle-02",
+      "type": "code-with-me",
+      "title": "Nối login với TokenIssuer",
+      "goal": "AuthService.login(username, password) xác minh password qua encoder, rồi trả về token do TokenIssuer.issue(userId) tạo ra.",
+      "whyThisMatters": "Login là nơi danh tính (userId đã xác thực) được chuyển hóa thành một token mang danh tính đó — R23: token chỉ mang identity, không mang dữ liệu authorization nào mà server không tự re-verify.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-24",
+          "note": "Luồng login: verify credential rồi issue token, không gộp hai bước hoặc bỏ qua verify."
+        }
+      ],
+      "instructions": [
+        "AuthService nhận TokenIssuer qua constructor (dependency injection), gọi passwordEncoder.matches(raw, stored) trước khi issue token.",
+        "Viết AuthServiceTest dùng một TokenIssuer test double (trả về chuỗi cố định hoặc giả lập) để xác nhận: sai password → không issue token; đúng password → gọi issue(userId) và trả token đó về caller."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AuthServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — sai password không issue token; đúng password gọi TokenIssuer.issue(userId) và trả kết quả về caller.",
+        "explanation": "Test dùng double cho TokenIssuer vì chưa có bộ ký thật — hành vi login/verify được chứng minh độc lập với công nghệ ký JWT cụ thể."
+      }
+    },
+    {
+      "id": "step-v06-token-logout",
+      "sessionId": "session-token-lifecycle",
+      "order": 3,
+      "buildStepId": "step-token-lifecycle-03",
+      "type": "your-turn",
+      "title": "Logout thu hồi token — cùng token bị từ chối sau đó",
+      "goal": "Sau khi gọi logout với một token, gọi lại một endpoint được bảo vệ bằng CHÍNH token đó phải nhận 401 — token không còn hợp lệ dù chưa hết hạn.",
+      "whyThisMatters": "JWT tự thân là stateless và không thể 'xóa' — nếu không có một cơ chế thu hồi (blacklist/deny-list), logout chỉ là ảo giác ở phía client trong khi token vẫn dùng được ở phía server.",
+      "learnerAction": {
+        "goal": "Thêm một cơ chế thu hồi (ví dụ TokenBlacklist) và một action logout ghi token vào đó; đặt điểm kiểm tra thu hồi ở một trong ba vị trí day-24 đã dạy: một filter riêng trước bước xác thực token, ngay trong decoder, hoặc một bước kiểm tra sau khi đã xác thực.",
+        "constraints": [
+          "Test phải dùng LẠI đúng token đã login để gọi logout, rồi dùng LẠI đúng token đó gọi endpoint được bảo vệ — không phải hai token khác nhau.",
+          "Không cần chọn đúng một trong ba vị trí kiểm tra cụ thể — bất kỳ vị trí nào trong ba vị trí day-24 dạy đều được chấp nhận, miễn nó chặn được token đã logout."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=AuthServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — cùng token: hợp lệ trước logout (200), bị từ chối sau logout (401).",
+        "explanation": "Đây là test khép lại task-token-lifecycle bằng thực nghiệm — chứng minh logout thật sự vô hiệu hóa token, không chỉ xóa token ở phía client."
+      }
+    },
+    {
+      "id": "step-v06-token-lifecycle-checkpoint",
+      "sessionId": "session-token-lifecycle",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng: login/logout hoạt động qua seam TokenIssuer, chưa có bộ ký JWT thật",
+      "goal": "Xác nhận toàn bộ vòng đời token (issue lúc login, thu hồi lúc logout) hoạt động đúng qua interface TokenIssuer và test double — sẵn sàng để cắm bộ ký thật vào mà không phải sửa lại luồng login/logout."
+    },
+    {
+      "id": "step-v06-canonical-window-check",
+      "sessionId": "session-canonical-token-issuer",
+      "order": 1,
+      "buildStepId": "step-canonical-token-issuer-01",
+      "type": "explanation",
+      "title": "Xác nhận cửa sổ thực hiện: chỉ sau day-36",
+      "goal": "Trước khi viết bất kỳ dòng code nào của bước này, ghi một dòng có ngày cụ thể vào README.md xác nhận đang thực hiện sau day-36 — day-33 mở khóa kiến thức NimbusJwtEncoder, nhưng việc build canonical issuer bị dời tới sau cửa sổ capstone chấm điểm (day-31..day-36).",
+      "whyThisMatters": "Nếu build bộ ký JWT thật ngay khi day-33 vừa dạy xong NimbusJwtEncoder, việc đó rơi vào giữa cửa sổ capstone chấm điểm (day-31..day-36) — trộn code ngoài chương trình vào bài tập đang được đánh giá. Ghi ngày thực hiện vào README buộc người học tạm dừng, xác nhận rõ đã ra khỏi cửa sổ đó, rồi mới tiếp tục.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-33",
+          "note": "NimbusJwtEncoder, ImmutableSecret, JwtClaimsSet — kiến thức được mở khóa ở đây."
+        },
+        {
+          "lessonId": "day-24",
+          "note": "TokenIssuer seam đã định nghĩa từ trước, chờ triển khai thật."
+        }
+      ],
+      "instructions": [
+        "Nếu project chưa có README.md, tạo file này ở gốc project (chỉ cần một dòng nội dung, không cần scaffold thêm). Thêm/ghi một dòng vào README.md ghi rõ ngày thực hiện bước này và xác nhận nó nằm sau day-36 (ví dụ: 'Canonical TokenIssuer implemented 2026-XX-XX, after day-36').",
+        "Không viết bất kỳ code NimbusJwtEncoder nào trước khi dòng ghi chú này tồn tại trên đĩa."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "-q compile",
+        "expectedResult": "Dòng ghi chú có định dạng ngày YYYY-MM-DD và cụm từ xác nhận 'after day-36' tồn tại trong README.md.",
+        "explanation": "Đây là một bước thủ tục, không phải test hành vi — mục đích là buộc một điểm dừng tường minh trước khi bắt đầu code canonical issuer."
+      }
+    },
+    {
+      "id": "step-v06-canonical-nimbus-impl",
+      "sessionId": "session-canonical-token-issuer",
+      "order": 2,
+      "buildStepId": "step-canonical-token-issuer-02",
+      "type": "code-with-me",
+      "title": "Triển khai NimbusTokenIssuer",
+      "goal": "NimbusTokenIssuer implements TokenIssuer, ký JWT bằng NimbusJwtEncoder + ImmutableSecret(secretBytes) + JwtClaimsSet — đây là triển khai DUY NHẤT của TokenIssuer trong toàn bộ codebase.",
+      "whyThisMatters": "Đây là điểm mà seam được định nghĩa từ task-token-lifecycle cuối cùng có nội dung thật — và app.jwt.secret không bao giờ được hardcode hay commit, vì nó là chìa khóa ký toàn bộ hệ thống token.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-33",
+          "note": "NimbusJwtEncoder.encode(JwtEncoderParameters), ImmutableSecret cho HS256, JwtClaimsSet.builder()."
+        }
+      ],
+      "instructions": [
+        "Tạo com.spendwise.auth.NimbusTokenIssuer implements TokenIssuer, dùng NimbusJwtEncoder(new ImmutableSecret<>(secretBytes)).encode(...) với JwtClaimsSet mang subject là userId (identity only — không nhúng role/permission chưa được server re-verify, R23).",
+        "Đọc app.jwt.secret từ configuration bên ngoài qua cú pháp placeholder của Spring: app.jwt.secret=${JWT_SECRET:<fallback>}. Giá trị SAU dấu hai chấm là một fallback CHỈ dùng cho local/course/test khi biến môi trường JWT_SECRET chưa được set — được PHÉP commit, miễn nó rõ ràng không phải bí mật thật (một chuỗi cố định, ghi chú 'local dev only' cạnh dòng cấu hình) và đủ dài (>=32 byte UTF-8, xem step-canonical-token-issuer-03). Điều KHÔNG BAO GIỜ được làm là commit một bí mật ký JWT THẬT (secret dùng cho một môi trường triển khai thật) — đó khác với việc có một fallback placeholder vô hại cho máy học/CI chạy được ngay không cần cấu hình gì thêm.",
+        "Viết NimbusTokenIssuerTest gọi encode() thật và decode lại để xác nhận subject đúng userId."
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=NimbusTokenIssuerTest' test",
+        "expectedResult": "BUILD SUCCESS — token ký bằng NimbusJwtEncoder thật, decode lại đúng subject=userId; app.jwt.secret trong application.properties là placeholder, không phải giá trị thật.",
+        "explanation": "Test này lần đầu tiên dùng bộ ký JWT THẬT, không còn test double — đây là điểm task-token-lifecycle và task-canonical-token-issuer nối lại thành một."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Hardcode một bí mật ký JWT THẬT (secret dự định dùng cho môi trường triển khai thật) trực tiếp trong application.properties hoặc trong code Java rồi commit — khác với việc có một fallback placeholder vô hại cho local/course/CI (xem hướng dẫn ở trên, được phép)",
+          "likelyCause": "Muốn test chạy được ngay mà không phải cấu hình biến môi trường, rồi vô tình dùng luôn giá trị đó cho môi trường thật.",
+          "fix": "app.jwt.secret đọc qua ${JWT_SECRET:<fallback local/course an toàn>} — biến môi trường JWT_SECRET ghi đè fallback ở bất kỳ môi trường thật nào; một bí mật ký JWT THẬT bị commit vào git là một khóa bị rò rỉ vĩnh viễn (lịch sử git không xóa được), nhưng một fallback placeholder rõ-ràng-không-phải-bí-mật-thật thì không phải vấn đề này."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-canonical-secret-length",
+      "sessionId": "session-canonical-token-issuer",
+      "order": 3,
+      "buildStepId": "step-canonical-token-issuer-03",
+      "type": "your-turn",
+      "title": "Secret HS256 phải ít nhất 32 byte UTF-8 — thất bại ở encode(), không phải ở startup",
+      "goal": "Một test xác nhận: secret ngắn hơn 32 byte UTF-8 khiến NimbusTokenIssuer.encode() ném lỗi ngay khi gọi, không phải một lỗi im lặng hay một lỗi chỉ xuất hiện lúc Spring context khởi động.",
+      "whyThisMatters": "HS256 yêu cầu khóa đủ dài để chống brute-force; Nimbus không validate độ dài secret lúc khởi tạo ImmutableSecret — lỗi chỉ lộ ra khi thực sự gọi encode(). Nếu không có test này, một secret yếu có thể lọt qua toàn bộ quá trình khởi động ứng dụng mà không ai biết.",
+      "learnerAction": {
+        "goal": "Viết một test dựng NimbusTokenIssuer với một secret ngắn hơn 32 byte UTF-8, gọi issue(...)/encode(...), và assert nó ném exception tại lời gọi đó — không phải lúc dựng object hay lúc Spring context khởi động.",
+        "constraints": [
+          "Test phải chứng minh cụ thể: lỗi xảy ra ở bước gọi encode(), không phải ở bước tạo ImmutableSecret hay ở bước khởi động ứng dụng.",
+          "Secret hợp lệ dùng trong các test khác của session này phải có độ dài >= 32 byte UTF-8 — không dùng chuỗi ngắn 'test-secret' làm secret thật."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "'-Dtest=NimbusTokenIssuerTest' test",
+        "expectedResult": "BUILD SUCCESS — secret ngắn hơn 32 byte ném lỗi ngay tại encode(); secret hợp lệ (>=32 byte) vẫn ký/decode đúng như bước trước.",
+        "explanation": "Cùng file test giờ pin cả hai nhánh: secret hợp lệ hoạt động, secret yếu thất bại đúng vị trí."
+      }
+    },
+    {
+      "id": "step-v06-canonical-swap-real-issuer",
+      "sessionId": "session-canonical-token-issuer",
+      "order": 4,
+      "buildStepId": "step-canonical-token-issuer-04",
+      "type": "your-turn",
+      "title": "Thay test double bằng bộ ký thật trong toàn luồng end-to-end",
+      "goal": "SecurityConfig và mọi nơi từng dùng JwtDecoder/TokenIssuer giả (từ step-auth-foundation-03) giờ dùng NimbusTokenIssuer thật; hợp đồng 401/401/200 từ session-auth-foundation vẫn phải xanh với bộ ký thật thay cho double.",
+      "whyThisMatters": "Đây là bước chốt: mọi test trước đó (401/401/200, login/logout, ownership 404) được xây trên một seam có test double — nếu thay double bằng bộ ký thật làm bất kỳ test nào trong số đó đỏ, nghĩa là seam đã bị thiết kế sai từ đầu. Bước này là bằng chứng cuối cùng rằng seam đúng.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-24",
+          "note": "Swap test double cho triển khai thật mà không sửa lại test — dấu hiệu một interface được thiết kế đúng."
+        }
+      ],
+      "learnerAction": {
+        "goal": "Đăng ký NimbusTokenIssuer làm bean thật cho interface TokenIssuer trong SecurityConfig (thay JwtDecoder giả bằng decoder xác minh chữ ký NimbusJwtEncoder thật); chạy lại toàn bộ SecurityConfigTest.",
+        "constraints": [
+          "KHÔNG sửa lại các assertion 401/401/200 đã viết ở step-auth-foundation-03 — chỉ thay nguồn cấp token/decoder từ double sang thật.",
+          "Login phải issue một JWT hợp lệ từ NimbusTokenIssuer thật, và endpoint được bảo vệ phải chấp nhận đúng token đó (200) — không dùng token giả ở bất kỳ đâu trong test này.",
+          "app.jwt.secret phải có một giá trị mặc định KHÔNG RỖNG, đủ dài cho HS256 (tối thiểu 32 byte), cấu hình trong application.properties trước khi swap — SecretKeySpec ném IllegalArgumentException ngay khi context khởi động nếu secret rỗng, và điều đó sẽ làm sập MỌI @SpringBootTest trong suite, không chỉ các test liên quan tới JWT.",
+          "Grep toàn bộ src/test để tìm mọi chuỗi token giả hardcode dạng tiền tố \"fake-jwt.\" (hoặc tương tự) còn sót lại từ các bước dùng test double trước đó (step-auth-foundation-03 và các bước ownership) — xoá hoặc thay các chuỗi này bằng token thật lấy từ NimbusTokenIssuer/luồng login thật; một chuỗi hardcode như vậy sẽ không bao giờ decode được với bộ ký thật và sẽ làm test đỏ vì lý do không liên quan tới lỗi thiết kế seam."
+        ]
+      },
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "test",
+        "expectedResult": "BUILD SUCCESS — toàn bộ suite (SecurityConfigTest, AuthServiceTest, OwnershipTest, NimbusTokenIssuerTest, cùng suite V0.5) đều xanh với bộ ký JWT thật, không còn test double nào cho TokenIssuer trong đường dẫn production.",
+        "explanation": "Chạy toàn bộ suite vì đây là điểm hội tụ của mọi tính năng V0.6 — hash password, filter chain STATELESS, ownership, và vòng đời token — nay chạy trên cùng một bộ ký JWT thật duy nhất."
+      },
+      "commonErrors": [
+        {
+          "symptom": "Toàn bộ @SpringBootTest trong suite đỏ đồng loạt ngay khi bean NimbusTokenIssuer/JwtDecoder thật được đăng ký, với lỗi từ SecretKeySpec (kiểu 'Empty key' hoặc key quá ngắn cho HmacSHA256)",
+          "likelyCause": "app.jwt.secret chưa có giá trị mặc định hợp lệ trong application.properties — nó chỉ được thêm 'khi cần' thay vì được cấu hình sẵn từ trước bước này.",
+          "fix": "Đặt một giá trị mặc định không rỗng, đủ dài (>=32 ký tự/byte) cho app.jwt.secret trong application.properties (ví dụ qua ${JWT_SECRET:...} với chuỗi mặc định), độc lập với bước swap double sang thật."
+        },
+        {
+          "symptom": "Một vài test cũ (viết từ step-auth-foundation-03 hoặc các bước ownership) vẫn đỏ sau khi swap, dù seam/logic không đổi, vì chúng gửi một chuỗi Authorization hardcode kiểu 'Bearer fake-jwt.xxx'",
+          "likelyCause": "Token giả được hardcode như một literal string trong test thay vì được lấy từ một double có thể swap; bộ ký thật không công nhận chuỗi đó.",
+          "fix": "Grep toàn bộ src/test tìm 'fake-jwt' (hoặc tiền tố double tương tự) và thay bằng token thật lấy được từ luồng login/NimbusTokenIssuer thật — đây không phải một test mới vỡ, mà là dư lượng của giai đoạn double cần dọn khi seam đóng lại."
+        }
+      ]
+    },
+    {
+      "id": "step-v06-canonical-checkpoint",
+      "sessionId": "session-canonical-token-issuer",
+      "order": 5,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Điểm dừng cuối V0.6: một bộ ký JWT thật duy nhất, mọi hợp đồng trước đó vẫn xanh",
+      "goal": "Xác nhận NimbusTokenIssuer là triển khai TokenIssuer duy nhất, secret luôn đọc từ configuration ngoài, và toàn bộ hợp đồng 401/401/200 + login/logout + ownership 404 vẫn đúng khi chạy trên bộ ký thật."
     }
   ],
   "guidedCheckpoints": [
@@ -2359,6 +3424,211 @@
       "whyNotYet": [
         "CHƯA CÓ DATABASE NÀO — toàn bộ dữ liệu vẫn sống trong InMemoryRepository của tiến trình JVM đang chạy; tắt app là mất dữ liệu (trừ phần đã ghi CSV thủ công từ V0.2). Spring Data JPA và một database thật chỉ xuất hiện từ V0.5 trở đi.",
         "Update/delete cho Account, và mọi ràng buộc kiểu UNIQUE/khoá ngoại cấp database, chưa tồn tại vì chưa có database nào để định nghĩa chúng."
+      ]
+    },
+    {
+      "id": "checkpoint-jpa-entities",
+      "sessionId": "session-jpa-entities",
+      "expectedFiles": [
+        "pom.xml",
+        "src/main/java/com/spendwise/account/Account.java",
+        "src/main/java/com/spendwise/account/Transaction.java",
+        "src/main/java/com/spendwise/category/Category.java",
+        "src/main/resources/application.properties",
+        "src/test/java/com/spendwise/account/AccountJpaTest.java"
+      ],
+      "understanding": [
+        "Vì sao annotation JPA gắn trực tiếp lên domain class hiện có thay vì tạo entity song sinh (R15).",
+        "Vì sao so sánh BigDecimal phải dùng compareTo(), không dùng equals()."
+      ],
+      "whatYouBuilt": "Account/Transaction/Category là JPA entity thật, tiền round-trip đúng qua PostgreSQL local.",
+      "whyNotYet": [
+        "Chưa có migration nào sở hữu schema — bảng hiện tại có thể vẫn do Hibernate tự sinh; Flyway vào cuộc ở session sau."
+      ]
+    },
+    {
+      "id": "checkpoint-jpa-relationships",
+      "sessionId": "session-jpa-relationships",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/Account.java",
+        "src/main/java/com/spendwise/account/Transaction.java"
+      ],
+      "understanding": [
+        "Vì sao fetch type mặc định của @ManyToOne (EAGER) thường không phải điều bạn muốn cho một bảng giao dịch lớn.",
+        "Cách xác nhận không N+1 bằng đếm/log số query SQL thực tế phát ra."
+      ],
+      "whatYouBuilt": "Quan hệ Account-Transaction, Transaction-Category với fetch LAZY có chủ đích, đường đọc chính không phát sinh N+1.",
+      "whyNotYet": [
+        "Schema vẫn chưa do Flyway sở hữu — session kế tiếp đưa V1__init.sql vào và chuyển ddl-auto sang validate."
+      ]
+    },
+    {
+      "id": "checkpoint-flyway-baseline",
+      "sessionId": "session-flyway-baseline",
+      "expectedFiles": [
+        "pom.xml",
+        "src/main/resources/db/migration/V1__init.sql",
+        "src/main/resources/application.properties",
+        "src/test/java/com/spendwise/account/SchemaValidationTest.java"
+      ],
+      "understanding": [
+        "flyway_schema_history ghi checksum từng migration đã apply — sửa một migration đã apply làm Flyway từ chối chạy tiếp ở lần khởi động sau.",
+        "Vì sao ddl-auto=validate an toàn hơn update: sai lệch schema làm boot fail rõ ràng thay vì bị Hibernate âm thầm tự vá."
+      ],
+      "whatYouBuilt": "V1__init.sql sở hữu toàn bộ schema hiện có, ddl-auto=validate khởi động sạch, kỷ luật không sửa migration đã apply đã được thực hành.",
+      "whyNotYet": [
+        "Service vẫn còn phụ thuộc InMemoryRepository ở nhiều chỗ — Spring Data JPA repository thay thế nó hoàn toàn ở session kế tiếp."
+      ]
+    },
+    {
+      "id": "checkpoint-spring-data-repositories",
+      "sessionId": "session-spring-data-repositories",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/AccountRepository.java",
+        "src/main/java/com/spendwise/account/TransactionRepository.java",
+        "src/main/java/com/spendwise/account/TransactionService.java",
+        "src/test/java/com/spendwise/account/TransactionRepositoryTest.java"
+      ],
+      "understanding": [
+        "Vì sao service chỉ cần đổi bean được Spring wire vào (InMemoryRepository -> JpaRepository) mà không đổi logic nghiệp vụ, nếu constructor injection vào interface đã đúng từ V0.2/V0.3.",
+        "Cách Pageable/Sort của Spring Data JPA đưa phân trang xuống tận query SQL, không tự cắt List đã load toàn bộ trong Java."
+      ],
+      "whatYouBuilt": "AccountRepository/TransactionRepository là JpaRepository thật, service trỏ hoàn toàn vào chúng, listing giao dịch có phân trang/sắp xếp.",
+      "whyNotYet": [
+        "balance vẫn chưa là stored projection có version — session kế tiếp đưa @Version vào để chặn ghi đè đồng thời."
+      ]
+    },
+    {
+      "id": "checkpoint-balance-projection",
+      "sessionId": "session-balance-projection",
+      "expectedFiles": [
+        "src/main/resources/db/migration/V2__balance_projection.sql",
+        "src/main/java/com/spendwise/account/Account.java",
+        "src/test/java/com/spendwise/account/BalanceReconciliationTest.java"
+      ],
+      "understanding": [
+        "@Version phát hiện (không ngăn) ghi đè đồng thời — hai transaction cùng load rồi cùng ghi, transaction ghi sau nhận lỗi optimistic-lock.",
+        "Vì sao test đối soát phải tính balance kỳ vọng độc lập từ lịch sử giao dịch, không lặp lại công thức production code."
+      ],
+      "whatYouBuilt": "Account.balance là cột persisted có @Version, đối soát đúng công thức openingBalance + tổng hiệu ứng có dấu qua V2__balance_projection.sql (V1 không bị sửa).",
+      "whyNotYet": [
+        "Transfer giữa hai account chưa tồn tại — session cuối của V0.5 xây nó trên đúng nền balance-projection này."
+      ]
+    },
+    {
+      "id": "checkpoint-atomic-transfer",
+      "sessionId": "session-atomic-transfer",
+      "expectedFiles": [
+        "src/main/resources/db/migration/V3__transfer_ref.sql",
+        "src/main/java/com/spendwise/account/TransferService.java",
+        "src/test/java/com/spendwise/account/TransferServiceTest.java"
+      ],
+      "understanding": [
+        "Vì sao cặp TRANSFER_OUT/TRANSFER_IN chia sẻ transferRef LÀ transfer, không cần một aggregate Transfer riêng (R21).",
+        "Vì sao @Transactional phải bọc toàn bộ method transfer (không phải hai lời gọi create() rời rạc) để rollback thật sự loại bỏ mọi residue khi lỗi giữa chừng."
+      ],
+      "whatYouBuilt": "TransferService.transfer() là một @Transactional tạo cặp giao dịch liên kết, rollback hoàn toàn khi lỗi, đối soát balance đúng ở cả hai phía sau khi thành công.",
+      "whyNotYet": [
+        "V0.5 hoàn tất nhưng CHƯA CÓ AUTH/OWNERSHIP NÀO — mọi account/transaction hiện tại không thuộc về user nào cả, bất kỳ ai gọi API đều thấy toàn bộ dữ liệu. V0.6 mới đưa Spring Security/JWT/user_id ownership vào, không chạm domain nghiệp vụ đã xây ở đây."
+      ]
+    },
+    {
+      "id": "checkpoint-auth-foundation",
+      "sessionId": "session-auth-foundation",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/auth/AppUser.java",
+        "src/main/java/com/spendwise/auth/UserRepository.java",
+        "src/main/java/com/spendwise/auth/AppUserService.java",
+        "src/main/java/com/spendwise/auth/SecurityConfig.java",
+        "src/test/java/com/spendwise/auth/AppUserServiceTest.java",
+        "src/test/java/com/spendwise/auth/SecurityConfigTest.java"
+      ],
+      "understanding": [
+        "Vì sao delegating password encoder được dùng thay vì tự viết hàm hash.",
+        "Vì sao SessionCreationPolicy.STATELESS là điều kiện để JWT có ý nghĩa thật.",
+        "Vì sao nhánh 200 của hợp đồng 401/401/200 dùng test double ở bước này, không dùng bộ ký JWT thật."
+      ],
+      "whatYouBuilt": "Register/login hash-verify password qua delegating encoder, và một SecurityFilterChain STATELESS trả đúng 401/401/200 trên route được bảo vệ (nhánh 200 qua decoder giả).",
+      "whyNotYet": [
+        "Chưa có bảng users hay cột user_id nào trên account/transaction — mọi dữ liệu hiện tại vẫn không thuộc về ai cả. task-user-migration mới thêm ownership vào schema.",
+        "Chưa có bộ ký JWT thật nào tồn tại — TokenIssuer interface (task-token-lifecycle) và NimbusJwtEncoder thật (task-canonical-token-issuer, sau day-36) đều chưa bắt đầu."
+      ]
+    },
+    {
+      "id": "checkpoint-user-migration",
+      "sessionId": "session-user-migration",
+      "expectedFiles": [
+        "src/main/resources/db/migration/V4__user_identity.sql",
+        "src/main/java/com/spendwise/account/AccountRepository.java",
+        "src/main/java/com/spendwise/account/TransactionRepository.java",
+        "src/test/java/com/spendwise/account/SchemaValidationTest.java"
+      ],
+      "understanding": [
+        "Vì sao ownership phải là một migration mới (V4), không phải sửa V1 (R26).",
+        "Vì sao có cột user_id chưa đủ — tầng query phải thật sự lọc theo nó (R25)."
+      ],
+      "whatYouBuilt": "V4__user_identity.sql tạo bảng users và thêm user_id + FK vào mọi bảng owned; các repository nhận userId để lọc danh sách.",
+      "whyNotYet": [
+        "Chưa có class nào đọc SecurityContextHolder để biết 'user hiện tại' là ai và truyền userId vào các query này — đó là task-ownership-checks, chưa bắt đầu ở đây."
+      ]
+    },
+    {
+      "id": "checkpoint-ownership-checks",
+      "sessionId": "session-ownership-checks",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/auth/CurrentUser.java",
+        "src/main/java/com/spendwise/account/AccountService.java",
+        "src/main/java/com/spendwise/account/TransactionService.java",
+        "src/test/java/com/spendwise/account/OwnershipTest.java"
+      ],
+      "understanding": [
+        "Vì sao SecurityContextHolder chỉ được đọc trong một class duy nhất (R24).",
+        "Vì sao tải lại có điều kiện owner trong query an toàn hơn tải rồi so sánh sau.",
+        "Vì sao 404 là mã lỗi đúng cho truy cập chéo user, còn 403 là một kênh rò rỉ thông tin."
+      ],
+      "whatYouBuilt": "CurrentUser tập trung việc đọc danh tính; AccountService/TransactionService enforce ownership bằng query có điều kiện owner; OwnershipTest chốt 404-không-403 trên mọi resource.",
+      "whyNotYet": [
+        "Chưa có JWT thật nào cấp danh tính đó — CurrentUser hiện đang dựa trên Authentication mà Spring Security tạo ra, nhưng cách tạo Authentication đó (từ đâu, ký bằng gì) là việc của task-token-lifecycle và task-canonical-token-issuer, chưa bắt đầu."
+      ]
+    },
+    {
+      "id": "checkpoint-token-lifecycle",
+      "sessionId": "session-token-lifecycle",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/auth/TokenIssuer.java",
+        "src/main/java/com/spendwise/auth/AuthService.java",
+        "src/main/java/com/spendwise/auth/TokenBlacklist.java",
+        "src/test/java/com/spendwise/auth/AuthServiceTest.java"
+      ],
+      "understanding": [
+        "Vì sao TokenIssuer là một interface không triển khai ở giai đoạn này (kiến thức ký JWT tới sau, ở day-33).",
+        "Vì sao JWT cần một cơ chế thu hồi tường minh để logout có ý nghĩa thật.",
+        "Vì sao token carry chỉ identity — không có dữ liệu authorization mà server không tự re-verify (R23)."
+      ],
+      "whatYouBuilt": "Login xác minh password rồi issue token qua TokenIssuer (test double); logout ghi token vào TokenBlacklist khiến cùng token bị từ chối 401 sau đó.",
+      "whyNotYet": [
+        "TokenIssuer vẫn chưa có triển khai ký JWT thật — NimbusJwtEncoder/ImmutableSecret/JwtClaimsSet là kiến thức day-33, được cắm vào ở task-canonical-token-issuer, thực hiện sau day-36."
+      ]
+    },
+    {
+      "id": "checkpoint-canonical-token-issuer",
+      "sessionId": "session-canonical-token-issuer",
+      "expectedFiles": [
+        "README.md",
+        "src/main/java/com/spendwise/auth/NimbusTokenIssuer.java",
+        "src/main/resources/application.properties",
+        "src/test/java/com/spendwise/auth/NimbusTokenIssuerTest.java",
+        "src/main/java/com/spendwise/auth/SecurityConfig.java"
+      ],
+      "understanding": [
+        "Vì sao canonical issuer bị dời tới sau day-36 dù kiến thức NimbusJwtEncoder mở khóa từ day-33.",
+        "Vì sao secret HS256 ngắn thất bại ở encode(), không phải lúc khởi tạo hay khởi động app.",
+        "Vì sao app.jwt.secret không bao giờ được hardcode hoặc commit — luôn đọc qua placeholder từ configuration ngoài.",
+        "Vì sao thay test double bằng bộ ký thật không cần sửa lại bất kỳ assertion cũ nào, nếu seam được thiết kế đúng từ task-token-lifecycle."
+      ],
+      "whatYouBuilt": "NimbusTokenIssuer — triển khai TokenIssuer duy nhất, ký JWT thật bằng NimbusJwtEncoder/ImmutableSecret/JwtClaimsSet, secret đọc từ configuration ngoài; toàn bộ luồng auth/ownership của V0.6 giờ chạy end-to-end trên bộ ký thật.",
+      "whyNotYet": [
+        "Refresh token rotation và replay detection KHÔNG có ở đây — chúng thuộc task-auth-hardening-review, một task tùy chọn (không chấm điểm) và không được đưa vào chương trình bắt buộc của V0.6."
       ]
     }
   ]
