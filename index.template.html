@@ -7659,7 +7659,7 @@
           routeRender();
           var guidedOverviewRoot = document.getElementById("route-view");
           var guidedCards = guidedOverviewRoot.querySelectorAll(".roadmap-list .roadmap-release");
-          var AUTHORED_GUIDED_RELEASES = ["#/guided-build/v0-1", "#/guided-build/v0-2", "#/guided-build/v0-3", "#/guided-build/v0-4"];
+          var AUTHORED_GUIDED_RELEASES = ["#/guided-build/v0-1", "#/guided-build/v0-2", "#/guided-build/v0-3", "#/guided-build/v0-4", "#/guided-build/v0-5", "#/guided-build/v0-6"];
           var authoredCardsAllReal = AUTHORED_GUIDED_RELEASES.every(function(href) {
             var card = Array.prototype.filter.call(guidedCards, function(c) { return c.getAttribute("href") === href; })[0];
             return !!card && !/Chưa biên soạn/.test(card.textContent);
@@ -7669,13 +7669,13 @@
               /Chưa biên soạn/.test(card.textContent);
           });
           var guidedNavActive = document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]');
-          assert("Guided Build overview renders all 10 releases: v0-1..v0-4 authored, the rest honestly unauthored, nav tab active",
+          assert("Guided Build overview renders all 10 releases: v0-1..v0-6 authored, the rest honestly unauthored, nav tab active",
             guidedCards.length === 10 && authoredCardsAllReal &&
             otherCardsAllPlanned && !!guidedNavActive);
 
           /* 72 — #/guided-build/v0-1 (production data, authored release)
              must render its real first session, not the unauthored state.
-             #/guided-build/v0-5 (still planned) must still render the
+             #/guided-build/v0-7 (still planned) must still render the
              honest "Chưa biên soạn" state, proving both branches coexist. */
           location.hash = "#/guided-build/v0-1";
           routeRender();
@@ -7683,10 +7683,10 @@
           assert("#/guided-build/v0-1 renders its real authored sessions, not the unauthored placeholder",
             !/Chưa biên soạn/.test(guidedReleaseRoot.textContent) &&
             /Tạo nền móng project Spendwise/.test(guidedReleaseRoot.textContent));
-          location.hash = "#/guided-build/v0-5";
+          location.hash = "#/guided-build/v0-7";
           routeRender();
           var guidedPlannedRoot = document.getElementById("route-view");
-          assert("#/guided-build/v0-5 (still planned) renders the honest unauthored-release state and shows no step content",
+          assert("#/guided-build/v0-7 (still planned) renders the honest unauthored-release state and shows no step content",
             /Chưa biên soạn/.test(guidedPlannedRoot.textContent) &&
             !guidedPlannedRoot.querySelector(".task-complete-toggle"));
 
