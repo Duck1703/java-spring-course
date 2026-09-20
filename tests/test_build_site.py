@@ -112,11 +112,11 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
             authored = json.load(fh)
         self.assertEqual(self.model["guidedBuild"], authored)
 
-    AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4", "v0-5", "v0-6", "v0-7", "v0-8"}
+    AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4", "v0-5", "v0-6", "v0-7", "v0-8", "v0-9", "v1-0"}
 
     def test_guided_build_v0_1_authored_shape(self):
-        # V0.1-V0.8 are authored content now; the remaining 2 releases stay
-        # planned with zero sessions until their own authoring work happens.
+        # All 10 releases (V0.1-V1.0) are authored content now; no release
+        # remains planned once the final V0.9+V1.0 authoring work completed.
         guided = self.model["guidedBuild"]
         self.assertEqual(len(guided["guidedReleases"]), 10)
         status_by_release = {r["releaseId"]: r["authoringStatus"] for r in guided["guidedReleases"]}

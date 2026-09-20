@@ -4942,9 +4942,9 @@
       // Guided Build overview — explains the three-concept model (theory /
       // project / architecture-roadmap), the example workspace paths, and
       // lists all 10 canonical releases joined against their guided
-      // authoringStatus. V0.1 is authored; the other 9 stay honestly
-      // "Chưa biên soạn" until their own content is written; the empty
-      // state is honest, never a fake "0% hoàn thành".
+      // authoringStatus. All 10 releases V0.1-V1.0 are authored now; the
+      // "Chưa biên soạn" empty state remains in the renderer as an honest
+      // fallback for any release whose content is ever absent.
       function renderGuidedOverview(container) {
         if (!guidedBuildData) { renderGuidedEmpty(container); return; }
         var header = renderProjectWorkspaceHeader(
@@ -6909,8 +6909,8 @@
           /* 32c — guided build data layer is embedded and indexed by stable
              id the same way the project layer is (task §14/§21): when present
              it exposes the fixed 10-release spine, and GUIDED_STEP_IDS is
-             indexed from whatever steps are actually authored (V0.1 ships 25;
-             the other 9 releases stay planned with zero); the renderer
+             indexed from whatever steps are actually authored (all 10
+             releases V0.1-V1.0 are authored now); the renderer
              degrades gracefully (empty set) if the artifact is absent. */
           var guidedLayerOk = guidedBuildData
             ? (guidedBuildData.guidedReleases.length === 10 &&
@@ -7652,31 +7652,31 @@
           assert("P4: collapsed unit lesson list is truly display:none ([hidden] beats the author display:grid via the companion rule)",
             lessonListOk);
 
-          /* 71 — Guided Build overview (production data). V0.1-V0.8 are
-             authored, the other 2 releases stay honestly "Chưa biên soạn",
-             and the nav tab lights up. */
+          /* 71 — Guided Build overview (production data). All 10 releases
+             (V0.1-V1.0) are authored now, so every card is real (none shows
+             "Chưa biên soạn") and the nav tab lights up. */
           location.hash = "#/guided-build";
           routeRender();
           var guidedOverviewRoot = document.getElementById("route-view");
           var guidedCards = guidedOverviewRoot.querySelectorAll(".roadmap-list .roadmap-release");
-          var AUTHORED_GUIDED_RELEASES = ["#/guided-build/v0-1", "#/guided-build/v0-2", "#/guided-build/v0-3", "#/guided-build/v0-4", "#/guided-build/v0-5", "#/guided-build/v0-6", "#/guided-build/v0-7", "#/guided-build/v0-8"];
+          var AUTHORED_GUIDED_RELEASES = ["#/guided-build/v0-1", "#/guided-build/v0-2", "#/guided-build/v0-3", "#/guided-build/v0-4", "#/guided-build/v0-5", "#/guided-build/v0-6", "#/guided-build/v0-7", "#/guided-build/v0-8", "#/guided-build/v0-9", "#/guided-build/v1-0"];
           var authoredCardsAllReal = AUTHORED_GUIDED_RELEASES.every(function(href) {
             var card = Array.prototype.filter.call(guidedCards, function(c) { return c.getAttribute("href") === href; })[0];
             return !!card && !/Chưa biên soạn/.test(card.textContent);
           });
-          var otherCardsAllPlanned = Array.prototype.every.call(guidedCards, function(card) {
-            return AUTHORED_GUIDED_RELEASES.indexOf(card.getAttribute("href")) !== -1 ||
-              /Chưa biên soạn/.test(card.textContent);
+          var everyCardAuthored = Array.prototype.every.call(guidedCards, function(card) {
+            return !/Chưa biên soạn/.test(card.textContent);
           });
           var guidedNavActive = document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]');
-          assert("Guided Build overview renders all 10 releases: v0-1..v0-8 authored, the rest honestly unauthored, nav tab active",
+          assert("Guided Build overview renders all 10 releases: v0-1..v1-0 all authored (none unauthored), nav tab active",
             guidedCards.length === 10 && authoredCardsAllReal &&
-            otherCardsAllPlanned && !!guidedNavActive);
+            everyCardAuthored && !!guidedNavActive);
 
           /* 72 — #/guided-build/v0-1 (production data, authored release)
              must render its real first session, not the unauthored state.
-             #/guided-build/v0-9 (still planned) must still render the
-             honest "Chưa biên soạn" state, proving both branches coexist. */
+             #/guided-build/v0-9 and #/guided-build/v1-0 are authored now too
+             and must likewise render real session content, never the
+             "Chưa biên soạn" placeholder. */
           location.hash = "#/guided-build/v0-1";
           routeRender();
           var guidedReleaseRoot = document.getElementById("route-view");
@@ -7685,10 +7685,16 @@
             /Tạo nền móng project Spendwise/.test(guidedReleaseRoot.textContent));
           location.hash = "#/guided-build/v0-9";
           routeRender();
-          var guidedPlannedRoot = document.getElementById("route-view");
-          assert("#/guided-build/v0-9 (still planned) renders the honest unauthored-release state and shows no step content",
-            /Chưa biên soạn/.test(guidedPlannedRoot.textContent) &&
-            !guidedPlannedRoot.querySelector(".task-complete-toggle"));
+          var guidedV09Root = document.getElementById("route-view");
+          assert("#/guided-build/v0-9 renders its real authored sessions, not the unauthored placeholder",
+            !/Chưa biên soạn/.test(guidedV09Root.textContent) &&
+            /Cache du lieu tham chieu/.test(guidedV09Root.textContent));
+          location.hash = "#/guided-build/v1-0";
+          routeRender();
+          var guidedV10Root = document.getElementById("route-view");
+          assert("#/guided-build/v1-0 renders its real authored sessions, not the unauthored placeholder",
+            !/Chưa biên soạn/.test(guidedV10Root.textContent) &&
+            /Hardening V1.0/.test(guidedV10Root.textContent));
 
           /* 73 — unknown ids at every Guided depth render the shared
              not-found state and never crash routeRender. */

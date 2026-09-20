@@ -479,7 +479,6 @@ def main() -> int:
             guided_routes = {
                 "guided-overview": ("#/guided-build", "roadmap-release"),
                 "guided-release-v01-authored": ("#/guided-build/v0-1", "Tạo nền móng project Spendwise"),
-                "guided-release-v09-planned": ("#/guided-build/v0-9", "Chưa biên soạn"),
                 "guided-session-first": (
                     "#/guided-build/v0-1/session-project-foundation", "Tạo nền móng project Spendwise",
                 ),
@@ -532,6 +531,32 @@ def main() -> int:
                 "guided-v08-step-last-in-release": (
                     "#/guided-build/v0-8/session-csv-export/step-v08-csv-export-checkpoint",
                     "Điểm dừng: export CSV escaping đúng",
+                ),
+                "guided-release-v09-authored": (
+                    "#/guided-build/v0-9", "Cache du lieu tham chieu",
+                ),
+                "guided-v09-session-first": (
+                    "#/guided-build/v0-9/session-v09-reference-data-cache",
+                    "Cache du lieu tham chieu",
+                ),
+                "guided-v09-step-your-turn": (
+                    "#/guided-build/v0-9/session-v09-reference-data-cache/step-v09-reference-data-cache-02",
+                    "Bat ConcurrentMapCacheManager",
+                ),
+                "guided-release-v10-authored": (
+                    "#/guided-build/v1-0", "Hardening V1.0",
+                ),
+                "guided-v10-session-first": (
+                    "#/guided-build/v1-0/session-v10-hardening-reconciliation",
+                    "Hardening V1.0",
+                ),
+                "guided-v10-step-your-turn": (
+                    "#/guided-build/v1-0/session-v10-hardening-reconciliation/step-v10-hardening-reconciliation-02",
+                    "Kiem toan SUM tay",
+                ),
+                "guided-v10-step-last-in-release": (
+                    "#/guided-build/v1-0/session-v10-defense-audit/step-v10-defense-audit-ck",
+                    "Checkpoint",
                 ),
                 "guided-not-found-release": ("#/guided-build/unknown-release", "Không tìm thấy nội dung"),
                 "guided-not-found-session": ("#/guided-build/v0-1/unknown-session", "Không tìm thấy nội dung"),

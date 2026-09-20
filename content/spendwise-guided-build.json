@@ -41,11 +41,11 @@
     },
     {
       "releaseId": "v0-9",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     },
     {
       "releaseId": "v1-0",
-      "authoringStatus": "planned"
+      "authoringStatus": "authored"
     }
   ],
   "guidedSessions": [
@@ -400,6 +400,102 @@
       "order": 7,
       "title": "Dashboard: mot read model tong hop thang, luon tinh lai, khong bao gio cache",
       "goal": "DashboardReadService lap rap mot response cho 'thang nay toi the nao' - tong income/expense, breakdown theo category, view so du tung tai khoan, trang thai cac budget trong thang - tat ca tu ledger tai request time, scoped theo dung nguoi dung, khong luu/cache bat ky con so nao."
+    },
+    {
+      "id": "session-v09-reference-data-cache",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-reference-data-cache",
+      "order": 1,
+      "title": "Cache du lieu tham chieu voi @Cacheable: chi cache category doc-nhieu, khong bao gio cache tien (R11)",
+      "goal": "Bat caching bang ConcurrentMapCacheManager (nen tang cuoi theo ADR-010), dat @Cacheable len cac read category va @CacheEvict len cac write, sao cho lan doc thu hai khong query lai repository con mot write da commit khong bao gio bi mot entry cu che khuat - va tuyet doi khong co gia tri tien, so du hay tong bao cao nao lot vao cache (R11)."
+    },
+    {
+      "id": "session-v09-scheduled-reconciliation",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-scheduled-reconciliation",
+      "order": 2,
+      "title": "Job reconciliation dinh ky co gioi han: phat hien drift balance (readOnly), khong bao gio tu sua",
+      "goal": "Xay mot @Scheduled job co gioi han (fixedDelay theo teaching day-25/day-27; zone chi khai bao neu lich la cron - day-25 blk-32) dinh ky tinh lai balance cua tung account tu transaction ledger va ghi nhan/log moi drift - phat hien read-only voi ket qua ro rang, khong bao gio sua balance im lang."
+    },
+    {
+      "id": "session-v09-recurring-scheduler",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-recurring-scheduler",
+      "order": 3,
+      "title": "Wiring scheduler cho recurring generation: @Scheduled fixedDelay, idempotent nho sourceRef",
+      "goal": "RecurringScheduler chay tren mot lich fixedDelay bounded, tu goi RecurringGenerationService.generateDue cho tung owner co template den han, khong ban thu tu; nho sourceRef pre-check cua V0.7 nen fire hai lan trong cung ky chi tao dung mot giao dich moi cho moi occurrence - rent tu hien ma khong ai mo app, khong double-bill."
+    },
+    {
+      "id": "session-v09-exchange-rate-client",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-exchange-rate-client",
+      "order": 4,
+      "title": "External exchange-rate WebClient voi retry va failure handling",
+      "goal": "Author the guided-build learning session for the single task task-exchange-rate-client in V0.9, producing exactly three step objects matching the brief, grounded in the dry-run source already implemented for this task and styled to the V0.8 exemplar (Vietnamese without diacritics)."
+    },
+    {
+      "id": "session-v09-invariant-test-suite",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-invariant-test-suite",
+      "order": 5,
+      "title": "Bo test bat bien kien truc: bien Constitution thanh assertion chay duoc, khong Spring khong DB",
+      "goal": "Mot bo JUnit thuan tren domain/service chot cac bat bien xuyen suot cua Constitution thanh test chay duoc (khong Spring context, khong database noi mot test thuan la du), de moi refactor tuong lai deu gap dung mot hang rao: R2 so sanh tien theo gia tri, R5 chia co scale/RoundingMode tuong minh, R7 so tien duong + huong typed, R10 khong luu figure suy dien tren Budget, R11 khong cache figure tien, R24 foreign-owner tra 404 chu khong 403."
+    },
+    {
+      "id": "session-v09-slice-test-suite",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-slice-test-suite",
+      "order": 6,
+      "title": "Slice test @WebMvcTest va @DataJpaTest: co lap tang web khoi tang persistence",
+      "goal": "Dung @WebMvcTest (MockMvc + service @MockBean) cho 3 controller Account/Transaction/Category va @DataJpaTest (TestEntityManager, query that) cho repository, sao cho mot regression o controller va mot regression o query khong con doi lot lan nhau; moi slice chi nap dung tang cua no, khong bao gio am tham boot @SpringBootTest."
+    },
+    {
+      "id": "session-v09-integration-test-suite",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-integration-test-suite",
+      "order": 7,
+      "title": "Bo integration test chay tren Postgres that: chung minh duong tien qua Testcontainers postgres:16-alpine",
+      "goal": "Dung mot @SpringBootTest + Testcontainers suite khoi dong ca ung dung tren container postgres:16-alpine that (day-29), chay dung cac migration Flyway voi ddl-auto: validate, roi chung minh cac bat bien nguy hiem nhat cua duong tien - tao giao dich canonical (R20), transfer nguyen tu (R21), idempotency khi re-import va trong tai dua UNIQUE (user_id, source_ref) (R22), doi soat so du (R8) - trên chinh engine se chay that, khong mock, khong H2 in-memory."
+    },
+    {
+      "id": "session-v09-production-packaging",
+      "releaseId": "v0-9",
+      "buildTaskId": "task-production-packaging",
+      "order": 8,
+      "title": "Dong goi production: OpenAPI, MDC traceId, Actuator, Docker Compose, async notification",
+      "goal": "Mot task dong goi duy nhat cho V0.9: springdoc OpenAPI tu mo ta API that, MDC traceId cho moi request trong structured logging, Actuator /actuator/health bao trang thai database qua DatabaseHealthIndicator, Dockerfile layered-jar + docker-compose.yml cho app + postgres voi cau hinh tu environment, duong async notification fire-and-forget bounded sau khi batch terminal voi AsyncUncaughtExceptionHandler, va sinh + doc report JaCoCo (indicator, khong gate)."
+    },
+    {
+      "id": "session-v10-hardening-reconciliation",
+      "releaseId": "v1-0",
+      "buildTaskId": "task-hardening-reconciliation",
+      "order": 1,
+      "title": "Hardening V1.0: chung minh reconciliation zero-drift tren lich su gieo qua duong chinh thong",
+      "goal": "Gieo mot lich su nhieu thang, it nhat hai account, co budget, co recurring generation va mot import batch - tat ca qua duong chinh thong (TransactionCreationService, ImportService, RecurringGenerationService) - roi chay BalanceReconciliationJob va kiem toan SUM tay de chung minh moi con so dan xuat khop tuyet doi va job bao ZERO drift, sua bat ky loi nao lo ra qua duong binh thuong voi regression test, khong them feature/endpoint/rule moi."
+    },
+    {
+      "id": "session-v10-portfolio-readme",
+      "releaseId": "v1-0",
+      "buildTaskId": "task-portfolio-readme",
+      "order": 2,
+      "title": "Portfolio README: chay duoc tu clone, roi ke that ve kien truc",
+      "goal": "Viet README.md bien Spendwise tu mot codebase thanh mot portfolio piece: phan run phai chay that (clone, cau hinh env, docker compose up, health xanh) va phan kien truc ke that ve hanh trinh V0.1 den V1.0, cac invariant Constitution kem rule id, cac quyet dinh ADR-level, va mo hinh danh tinh import kem GIOI HAN reordering cua tier fallback - khong them production code nao (R26)."
+    },
+    {
+      "id": "session-v10-final-demo",
+      "releaseId": "v1-0",
+      "buildTaskId": "task-final-demo",
+      "order": 3,
+      "title": "Kich ban demo cuoi cung tren app da dong goi: moi doan mot invariant duoc goi ten",
+      "goal": "Viet docs/demo-script.md di het money path tren app dang chay qua docker compose - tao account, chon category seed, ghi giao dich, import CSV co mot dong trung co y va mot dong hong co y, xem report, xem budget, xem dashboard, re-import chung minh idempotency, xem health/docs, va doan forced-failure cho thay rollback that - moi doan trich dung rule id (R20 duong tao, R22 idempotency, R24 ownership, R10 so lieu suy dien) va gon trong cua so demo 10-15 phut; sau do dien tap het dau den cuoi cho toi khi khong con fixup ngoai kich ban."
+    },
+    {
+      "id": "session-v10-defense-audit",
+      "releaseId": "v1-0",
+      "buildTaskId": "task-defense-audit",
+      "order": 4,
+      "title": "Kiem toan san sang bao ve: moi cau hoi \"tai sao\" co bo ba con tro code-test-rule",
+      "goal": "Xay docs/defense-audit.md phu het ma tran cau hoi bao ve Phase 2 §19: moi vung (money model, truth/projections, canonical path/identity, transfer, ownership, schema discipline, cache/async/scheduler, token-issuance, testing tiers, AI boundary) duoc tra loi bang mot bo ba con tro da kiem chung - duong dan code co that, test duoc trich chay pass, rule id trung ten hien thi cua suite - roi dong dung mot lo hong ma kiem toan phat hien bang mot regression test that va ghi cac muc \"khong xay - ngoai pham vi\" trung thuc cho bank sync/universal dedup, khong doi kien truc."
     }
   ],
   "guidedSteps": [
@@ -4774,6 +4870,1445 @@
       "type": "checkpoint",
       "title": "Diem dung: V0.7 hoan chinh - dashboard tong hop dung, khong cache, khong ro ri",
       "goal": "Xac nhan DashboardReadService lap rap dung mot read model tu ledger/so du/budget tai request time, scoped chinh xac theo user, va khong luu/cache bat ky con so nao - day la buildTask required cuoi cung cua V0.7 (task-advanced-aggregation la optional, khong bat buoc cho session nay)."
+    },
+    {
+      "id": "step-v09-reference-data-cache-01",
+      "sessionId": "session-v09-reference-data-cache",
+      "order": 1,
+      "buildStepId": "step-reference-data-cache-01",
+      "type": "code-with-me",
+      "title": "Viet test that bai: lan doc category thu hai trung cache, va write da commit lam evict entry cu",
+      "goal": "CategoryCacheTest chot hai tinh chat: goi categoryService.list() lan thu hai KHONG goi lai categoryRepository.findAll(Sort.by(\"code\")) (verify times(1)), va sau categoryService.add(\"SALARY\") thi lan list() ke tiep thay category moi (verify times(2)) - fail dung ly do vi CacheConfig va @Cacheable chua ton tai.",
+      "whyThisMatters": "Hai test nay khoa dung hai tinh chat lam nen mot cache dung o day: thieu test hit, mot loi cau hinh (sai ten cache, hoac test dung new CategoryService(mock) khien proxy khong duoc ap dung) se lam @Cacheable am tham khong an gi ma khong ai biet. Thieu test evict, mot category vua doi ten hay xoa van hien ban cu o lan doc ke tiep vi entry 'all' cu con nam trong cache. R11: chot tu bay gio rang chu the duoc cache chi la du lieu tham chieu, khoa hop dong truoc khi bat ky gia tri tien nao co co hoi len vao cache.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "Caching & Async Processing day @EnableCaching/@Cacheable/@CacheEvict va cache manager; o day test phai boot Spring context that de cac proxy cache duoc ap dung - dung y nghia cua bai la annotation cache chi hoat dong qua proxy, khong qua object tao bang new."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "Testing Spring Boot day @SpringBootTest + @MockBean; dung MockBean cho CategoryRepository roi verify(...).times(1)/times(2) la cach dem so lan repository thuc su bi goi, tu do chung minh cache co an hay khong."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=CategoryCacheTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao src/test/java/com/spendwise/category/CategoryCacheTest.java trong package com.spendwise.category; annotate @SpringBootTest(classes = {CacheConfig.class, CategoryService.class}) de Spring boot mot context toi thieu va ap dung proxy cache that - KHONG viet unit test kieu new CategoryService(mock) vi khi do @Cacheable khong bao gio duoc ap dung.",
+        "Khai bao @MockBean CategoryRepository, @Autowired CategoryService va @Autowired CacheManager; o dau moi test goi cacheManager.getCache(CacheConfig.CATEGORIES_CACHE).clear() de moi test bat dau voi cache sach.",
+        "Test hit: when(categoryRepository.findAll(Sort.by(\"code\"))).thenReturn(List.of(Category.FOOD, Category.SALARY)); goi categoryService.list() hai lan, assertEquals ket qua hai lan bang nhau, roi verify(categoryRepository, times(1)).findAll(Sort.by(\"code\")) - lan doc thu hai phai lay tu cache, khong query lai.",
+        "Test evict: stub findAll tra ve hai ket qua khac nhau qua hai lan goi (thenReturn(List.of(Category.FOOD)).thenReturn(List.of(Category.FOOD, Category.SALARY))), stub existsById(\"SALARY\") tra false va save(any) tra lai chinh argument; assert list() dau = [FOOD], goi categoryService.add(\"SALARY\"), assert list() ke tiep = [FOOD, SALARY], roi verify(categoryRepository, times(2)).findAll(Sort.by(\"code\")) - evict da xoa entry 'all' nen lan doc sau query lai va thay ket qua moi.",
+        "Chay verify command; test phai fail dung ly do: CacheConfig chua ton tai (loi bien dich) hoac @Cacheable chua duoc dat nen lan doc thu hai van goi lai findAll va verify times(1) that bai - KHONG duoc fail vi ly do khac."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Viet test kieu unit thuan: CategoryService service = new CategoryService(mockRepo); roi ngac nhien vi verify times(1) that bai (repository bi goi 2 lan) du da them @Cacheable.",
+          "likelyCause": "@Cacheable/@CacheEvict chi hoat dong qua proxy do Spring tao; tao object bang new bypass hoan toan proxy nen khong co cache nao an.",
+          "fix": "Boot context bang @SpringBootTest(classes = {CacheConfig.class, CategoryService.class}) va @Autowired CategoryService - chi khi do proxy cache moi bao quanh service that va verify times(1) moi co y nghia."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-reference-data-cache-02",
+      "sessionId": "session-v09-reference-data-cache",
+      "order": 2,
+      "buildStepId": "step-reference-data-cache-02",
+      "type": "your-turn",
+      "title": "Bat ConcurrentMapCacheManager va annotate read/evict cho du lieu tham chieu",
+      "goal": "CacheConfig bat @EnableCaching voi ConcurrentMapCacheManager(\"categories\"); CategoryService.list() va require(code) la @Cacheable voi key tuong minh; add(code)/remove(code) la @CacheEvict(allEntries = true); khong mot type mang tien nao duoc cache - CategoryCacheTest xanh va toan bo suite khong vo.",
+      "whyThisMatters": "ADR-010 chot nen tang cache la ConcurrentMapCacheManager, khong phai Redis (do la task-redis-cache-backend rieng). @CacheEvict phai dat tren duong write theo teaching eviction-before-commit cua day-25 blk-24: neu dat sai cho, mot write da commit van de lai entry 'all' cu va lan doc ke tiep tra danh sach category loi thoi. Key tuong minh ('all' cho list, #code cho require) tranh cai bay SimpleKeyGenerator o day-25 blk-22 - neu mot ngay argument la entity/object mutable, key mac dinh sinh tu equals/hashCode se bat on. R11: tuyet doi khong annotate dashboard hay statistics read vi chung mang so tien.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "Caching & Async Processing: @EnableCaching + ConcurrentMapCacheManager la nen tang base (ADR-010), @Cacheable tren read va @CacheEvict tren write voi key tuong minh (blk-22) va evict truoc lan read ke tiep (blk-24) - toan bo bo cong cu bai nay ap dung nguyen ven cho category o day."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=CategoryCacheTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Tao src/main/java/com/spendwise/category/CacheConfig.java voi @Configuration @EnableCaching, hang so public static final String CATEGORIES_CACHE = \"categories\" va mot bean CacheManager tra new ConcurrentMapCacheManager(CATEGORIES_CACHE); roi annotate CategoryService: list() va require(code) @Cacheable len region categories voi key tuong minh, add(code) va remove(code) @CacheEvict(allEntries = true).",
+        "constraints": [
+          "Cache manager la ConcurrentMapCacheManager (day-25, ADR-010 nen tang cuoi) - KHONG dung Redis, do la task-redis-cache-backend rieng.",
+          "Chi cache du lieu tham chieu (category): tuyet doi khong dat @Cacheable len dashboard, statistics, so du hay bat ky read nao mang gia tri tien/tong bao cao (R11).",
+          "list() dung key = \"'all'\" (SpEL hang chuoi) va require(code) dung key = \"#code\"; khong de SimpleKeyGenerator tu suy key khi argument la entity hay object mutable (day-25 blk-22).",
+          "add(code) va remove(code) dat @CacheEvict(value = CacheConfig.CATEGORIES_CACHE, allEntries = true) tren duong write, sao cho read sau mot write da commit khong bao gio thay gia tri cu (day-25 blk-24).",
+          "Read giu @Transactional(readOnly = true) (R18); object duoc cache la read model service da tra ve san (List<Category>), khong tao type cache rieng (R16).",
+          "Cache la phi-thuc-quyen: xoa han cache phai khong doi ket qua nghiep vu nao, chi doi latency."
+        ],
+        "hints": [
+          "@Cacheable(value = CacheConfig.CATEGORIES_CACHE, key = \"'all'\") cho list(); voi require dung them unless = \"#result == null\" de khong cache ket qua null.",
+          "allEntries = true xoa ca region 'categories' trong mot lan - vi write category hiem, xoa toan bo region don gian va an toan hon la tinh xem key nao can evict.",
+          "Muon chung cache la phi-thuc-quyen: tat @EnableCaching (hoac xoa bean) thi moi test phai van xanh tru dung assertion verify times(1) - do la acceptance criterion cuoi cua task."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Tien tay them @Cacheable len dashboard read hoac statistics read 'cho dong bo' vi chung cung doc-nhieu.",
+          "likelyCause": "Nghi rang cai gi doc nhieu thi nen cache; bo qua rang dashboard va statistics mang con so tien.",
+          "fix": "R11 cam cache bat ky gia tri tien, so du, ngan sach hay tong bao cao. Chu the cache o day chi la du lieu tham chieu (category) - de dashboard va statistics la read khong cache."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-reference-data-cache-ck",
+      "sessionId": "session-v09-reference-data-cache",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: @Cacheable reference-data cache for read-mostly categories da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-reference-data-cache deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-scheduled-reconciliation-01",
+      "sessionId": "session-v09-scheduled-reconciliation",
+      "order": 1,
+      "buildStepId": "step-scheduled-reconciliation-01",
+      "type": "code-with-me",
+      "title": "Viet test that bai chot hop dong drift: ledger nhat quan zero drift, mot balance lech bi phat hien dung account, va run khong ghi",
+      "goal": "BalanceReconciliationJobTest chot ba tinh chat: ledger nhat quan (account 100.00 + INCOME 40.00) bao khong drift cho account do; hai account voi mot balance bi lam lech o muc repository (jdbcTemplate.update tren accounts.balance_amount) bi detectDrift() phat hien dung account drifted va khong dinh account clean; sau reconcile() balance_amount stored van nguyen gia tri lech - tat ca fail dung ly do vi BalanceReconciliationJob chua ton tai/chua la bean.",
+      "whyThisMatters": "Balance la mot projection duoc luu (R8): no bang openingBalance cong tong co dau cua cac transaction cua account (R6). Neu khong khoa hop dong bang test truoc, mot job reconciliation rat de bi viet theo huong 'thay lech thi sua cho gon', va tu do khong ai con phat hien duoc drift that su nua. Ba test nay khoa dung ba tinh chat can bao ve: bao zero khi nhat quan, phat hien dung account khi lech, va tuyet doi khong ghi len balance stored. Chung phai fail vi thieu class BalanceReconciliationJob, khong fail vi seed sai hay lam lech nham cach.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "day-25 day @EnableScheduling + @Scheduled va cach mot background job chay. O day no giai thich vi sao logic phat hien phai tach ra thanh detectDrift() de test goi truc tiep, thay vi cho @Scheduled kich hoat theo lich moi kiem tra duoc."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "day-28 day TDD: viet test that bai truoc khi co implementation. O day ta chot hop dong (zero drift / detect dung account / khong ghi) TRUOC khi job ton tai, de sau nay khong ai 'sua' drift ngay trong job ma khong lam vo test."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao src/test/java/com/spendwise/account/BalanceReconciliationJobTest.java trong package com.spendwise.account; annotate @SpringBootTest va @Transactional - can DB that + cac repository/bean, moi test tu rollback.",
+        "Autowire cac bean can dung: AccountRepository, TransactionCreationService, BalanceReconciliationJob (chua ton tai - day chinh la ly do test fail o buoc nay), JdbcTemplate, UserRepository, va jakarta.persistence.EntityManager.",
+        "Viet helper saveAccount(String opening): tao chu so huu bang userRepository.save(new AppUser(\"owner-\" + UUID.randomUUID(), \"hash\")).id(), roi tra ve accountRepository.saveAndFlush(new Account(ownerId, \"Recon \" + UUID.randomUUID(), AccountType.CASH, new Money(opening))).",
+        "Test 1 (consistent): saveAccount(\"100.00\"), them mot giao dich INCOME 40.00 qua transactionCreationService.create(new TransactionCreationCommand(account, TransactionType.INCOME, new Money(\"40.00\"), Category.SALARY, \"TEST:job-income\"), account.userId()); assert job.detectDrift() khong co phan tu nao co accountId bang account.id() (ledger khop nen khong drift).",
+        "Test 2 (detect dung account): tao clean = saveAccount(\"50.00\") va drifted = saveAccount(\"200.00\"); lam lech NGOAI duong canonical bang jdbcTemplate.update(\"update accounts set balance_amount = ? where id = ?\", new BigDecimal(\"999.00\"), drifted.id()); goi entityManager.clear() de bo cache tang mot; assert danh sach mismatches co chua drifted.id() va KHONG chua clean.id().",
+        "Test 3 (khong ghi): saveAccount(\"100.00\"), lam lech balance_amount xuong 77.00 bang jdbcTemplate.update; entityManager.clear(); goi job.reconcile(); doc lai balance_amount bang jdbcTemplate.queryForObject(...) va assert no van la 77.00 (dung compareTo == 0) - job phat hien nhung khong sua.",
+        "Chay verify: .\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test - phai fail (compile hoac test) vi BalanceReconciliationJob chua ton tai / chua la bean, khong fail vi ly do khac."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Test 2/3 lam lech balance bang cach goi applyExpense hoac tao them mot transaction, thay vi jdbcTemplate.update tren accounts.balance_amount.",
+          "likelyCause": "Thoi quen thay doi balance qua API domain 'cho dung', khong nhan ra rang drift dinh nghia la lech GIUA balance stored va tong transactions.",
+          "fix": "Lam lech phai o muc repository/SQL (ngoai duong canonical) + entityManager.clear(): neu lech qua applyExpense hay them transaction thi balance van khop voi transactions nen khong con la drift, va test khong bao gio bat duoc gi."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-scheduled-reconciliation-02",
+      "sessionId": "session-v09-scheduled-reconciliation",
+      "order": 2,
+      "buildStepId": "step-scheduled-reconciliation-02",
+      "type": "your-turn",
+      "title": "Tu viet job @Scheduled(fixedDelay) co gioi han: tinh lai balance tu transactions (readOnly), ghi nhan drift, khong bao gio sua",
+      "goal": "SchedulingConfig bat @EnableScheduling mot lan cho toan app; BalanceReconciliationJob (@Component) co reconcile() gan @Scheduled(fixedDelayString = \"${app.reconciliation.fixed-delay-ms:3600000}\") delegate sang BalanceReconciliationService.findMismatches() da co (readOnly): rong thi log.info 'no drift', co thi log.warn tung account (reported, not repaired), va tach detectDrift() tra List<BalanceMismatch> de test goi truc tiep - dat toan bo BalanceReconciliationJobTest xanh, khong pha suite.",
+      "whyThisMatters": "Job phai la watchdog cho projection, khong phai cong cu sua. R18: no chay tren lich co gioi han @EnableScheduling + @Scheduled(fixedDelay) (day-25 blk-37), khong phai vong lap khong kiem soat; fixedDelay khien run ke tiep chi bat dau sau khi run truoc ket thuc nen mot run cham khong chong len chinh no (day-27 blk-28, mot scheduler don luong). R19: khong external call hay @Async ben trong transaction scheduled. R6/R8: job doc transactions va tinh lai balance readOnly roi ghi nhan drift - neu no tu sua balance thi vi pham R21 va xoa mat bang chung drift that su, con co the ghi de gia tri dung bang gia tri sai.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "day-25 blk-37: lich co gioi han qua @EnableScheduling + @Scheduled(fixedDelay), khong phai vong lap tu quay. blk-32: zone la thuoc tinh cron-only, nen mot lich fixedDelay KHONG khai bao zone - chi khai bao neu sau nay lich chuyen sang cron."
+        },
+        {
+          "lessonId": "day-27",
+          "note": "day-27 blk-28: mot scheduler don luong mac dinh, va fixedDelay chong overlap cho cac run lien tiep cua cung mot method - day chinh la dam bao hai run reconciliation khong chay chong len nhau ma ta dua vao."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=BalanceReconciliationJobTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet SchedulingConfig.java (@Configuration @EnableScheduling - dam bao chi mot @EnableScheduling toan app) va BalanceReconciliationJob.java (@Component) inject BalanceReconciliationService: method reconcile() gan @Scheduled(fixedDelayString = \"${app.reconciliation.fixed-delay-ms:3600000}\") goi detectDrift(), log.info khi khong drift va log.warn tung BalanceMismatch khi co drift (kem account, expected, stored, ghi ro reported-not-repaired); tach detectDrift() tra ve List<BalanceMismatch> = reconciliationService.findMismatches().",
+        "constraints": [
+          "@Scheduled dung fixedDelay/fixedDelayString (day-25 blk-37) - khong dung cron cho lich nay; vi la fixedDelay nen KHONG khai bao zone (zone chi la thuoc tinh cron - day-25 blk-32).",
+          "Job KHONG duoc sua balance, transaction hay budget nao - chi doc va ghi nhan (R21: balance chi doi qua transaction rows). Repair la quyet dinh cua nguoi dung / transaction bu, khong phai cua job.",
+          "Tinh lai balance = openingBalance + tong co dau transactions cua account (R6/R8) bang BalanceReconciliationService.findMismatches() da co san va da la @Transactional(readOnly = true) - khong tu viet lai vong tinh trong job, khong mo transaction ghi.",
+          "Khong external call hay @Async dispatch ben trong transaction scheduled (R19).",
+          "Chi mot @EnableScheduling toan ung dung (scheduler don luong mac dinh, day-27 blk-28) de cac job khong chong len nhau va khong lam doi nhau.",
+          "Run zero-drift phai phat tin hieu 'reconciled' duong tinh (vi du log.info), run co drift phai tao record/log phat hien duoc - khong pass im lang."
+        ],
+        "hints": [
+          "Tach reconcile() (co @Scheduled + log) khoi detectDrift() (chi tra List<BalanceMismatch>) de test o buoc truoc goi detectDrift()/reconcile() truc tiep khong can cho lich.",
+          "@Scheduled(fixedDelayString = \"${app.reconciliation.fixed-delay-ms:3600000}\") cho phep cau hinh gap thoi gian qua property nhung van co default 3600000ms.",
+          "BalanceReconciliationService.findMismatches() da tra ve List<BalanceMismatch>(accountId, expectedBalance, actualBalance) - job chi can goi va log, tu no da readOnly nen job khong can @Transactional ghi."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Trong job, khi phat hien mismatch thi goi accountRepository de set lai balance cho khop tong transactions.",
+          "likelyCause": "Ban nang 'thay lech thi sua luon cho gon' - coi job nhu cong cu tu chua.",
+          "fix": "R21: balance chi doi qua transaction rows. Job chi detect + report; repair la quyet dinh cua nguoi/transaction bu. Sua trong job xoa mat bang chung drift va co the ghi de gia tri dung bang gia tri sai."
+        },
+        {
+          "symptom": "Khai bao zone (vi du zone = \"...\") tren @Scheduled fixedDelay cho 'chac chan'.",
+          "likelyCause": "Nham lan zone la thuoc tinh chung cua @Scheduled.",
+          "fix": "day-25 blk-32: zone chi ap dung cho cron. Voi fixedDelay no vo nghia; chi khai bao zone tuong minh neu sau nay lich chuyen sang cron."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-scheduled-reconciliation-ck",
+      "sessionId": "session-v09-scheduled-reconciliation",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Scheduled balance-reconciliation job da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-scheduled-reconciliation deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-recurring-scheduler-01",
+      "sessionId": "session-v09-recurring-scheduler",
+      "order": 1,
+      "buildStepId": "step-recurring-scheduler-01",
+      "type": "code-with-me",
+      "title": "Viet test that bai: scheduler fire goi generation, double-fire cung ky chi tao dung mot giao dich",
+      "goal": "RecurringSchedulerTest chot hai tinh chat: (1) goi scheduler.generateDueForAllOwners() mot lan tao dung 1 giao dich cho template MONTHLY den han; (2) goi lien tiep hai lan cho cung ky van chi con dung 1 giao dich - ca hai fail dung ly do vi RecurringScheduler chua ton tai.",
+      "whyThisMatters": "R20 noi ro buoc nay la wiring, KHONG them logic ghi moi: idempotency khong duoc viet lai o scheduler ma phai duoc thua ke tu sourceRef pre-check ben trong generateOne. Neu ban chi assert 'sau mot lan fire co 1 giao dich' ma bo qua truong hop double-fire, thi mot scheduler tick hai lan cung ky se tao hai dong RECURRING:<id>:<dueDate> - dung nghia double-bill tien nha. Test phai khoa hop dong double-fire=mot-giao-dich TRUOC KHI co bat ky doan wiring nao, de khong ai 'toi uu' bang cach bo pre-check.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "@EnableScheduling va @Scheduled: mot phuong thuc khong tham so co the la entry point cho lich chay ngam - test goi thang phuong thuc do (generateDueForAllOwners) thay vi doi lich that tick, nen kiem chung duoc wiring ma khong cho hang gio."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "Viet test that bai truoc implementation (TDD): dong test hai tinh chat wiring lai truoc khi RecurringScheduler ton tai, de no fail dung vi thieu class chu khong vi ly do khac."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao src/test/java/com/spendwise/recurring/RecurringSchedulerTest.java trong package com.spendwise.recurring, danh dau @SpringBootTest va @Transactional (moi test rollback, khong ro ri du lieu sang test khac).",
+        "Pin thoi gian bang mot fixed Clock: khai bao static @TestConfiguration FixedClockConfig voi mot @Bean @Primary Clock tra ve Clock.fixed(...) tai mot ngay den han co dinh (vi du AS_OF = LocalDate.of(2026, 9, 1)) - de LocalDate.now(clock) trong scheduler luon roi vao ngay template den han, khong phu thuoc dong ho that.",
+        "Autowire RecurringScheduler scheduler, cung RecurringTransactionRepository, AccountRepository, TransactionRepository, UserRepository de seed va doc lai ket qua.",
+        "Viet mot helper seedDueTemplate(): luu mot AppUser, mot Account, roi save mot RecurringTransaction EXPENSE HOUSING tan suat MONTHLY voi nextDueDate = AS_OF (tuc dang den han), tra ve ownerId.",
+        "Test 1 scheduledFireInvokesGenerationForDueTemplates: seed template den han, goi scheduler.generateDueForAllOwners() DUNG mot lan, assertEquals(1, transactionRepository.findAllByUserIdWithReferences(ownerId).size()) - chung minh scheduler that su goi generation va tao occurrence, khong can ai goi generateDue thu cong.",
+        "Test 2 doubleFireForSamePeriodCreatesExactlyOneTransaction: seed template den han, goi scheduler.generateDueForAllOwners() HAI lan lien tiep, van assertEquals(1, ...size()) - chung minh idempotency: fire lai cung ky khong tao them dong nao vi sourceRef RECURRING:<id>:<dueDate> da co tren so.",
+        "Chay .\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test va xac nhan fail vi RecurringScheduler chua ton tai (loi bien dich hoac khong resolve duoc bean) - dung ly do, khong phai vi assertion sai."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Test chi goi scheduler mot lan roi assert count == 1, khong he co test double-fire.",
+          "likelyCause": "Nghi rang 'tao dung mot giao dich' la du, quen mat scheduler se tick nhieu lan trong doi that.",
+          "fix": "Idempotency la ly do ton tai cua task nay. Phai co test goi generateDueForAllOwners() hai lan lien tiep cho CUNG ky va van assert count == 1 - do la cai khoa chong double-bill."
+        },
+        {
+          "symptom": "Test dung dong ho that (LocalDate.now() khong Clock), template khi thi den han khi thi chua, test luc pass luc fail.",
+          "likelyCause": "Bo qua fixed Clock nen 'as of today' troi theo ngay chay test.",
+          "fix": "Dung @TestConfiguration + @Bean @Primary Clock.fixed(...) de ghim AS_OF; scheduler doc LocalDate.now(clock) nen se on dinh o dung ngay den han."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-recurring-scheduler-02",
+      "sessionId": "session-v09-recurring-scheduler",
+      "order": 2,
+      "buildStepId": "step-recurring-scheduler-02",
+      "type": "your-turn",
+      "title": "Tu wire @Scheduled(fixedDelay) goi generation, khong tao pool scheduler thu hai, ghi chu caveat non-overlap",
+      "goal": "RecurringScheduler la @Component khai bao mot phuong thuc @Scheduled fixedDelay (khong zone), tu do fan-out qua findDistinctOwnersWithDueTemplates(asOf) va goi generationService.generateDue(ownerId, asOf) cho tung owner; class khong tu lam I/O nao ngoai viec goi service, tai su dung SchedulingConfig san co va ghi chu caveat non-overlap cua single scheduler.",
+      "whyThisMatters": "R20: buoc nay chi wiring, moi dong ghi van di qua generateDue -> TransactionCreationService.create, scheduler khong viet lai idempotency. fixedDelay dam bao lan chay ke tiep bat dau mot khoang co dinh SAU khi lan truoc ket thuc, nen mot job khong bao gio chong len chinh no - neu ban dung fixedRate hoac tao mot task-scheduler pool thu hai, hai lan chay co the giao nhau, pre-check existsByUserIdAndSourceRef bi race va double-bill. fixedDelay khong nhan zone (zone chi danh cho cron, day-25 blk-32); them zone la loi cau hinh vo nghia.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "blk-32: fixedDelay la lich bounded khong khai bao zone - zone la ky luat rieng cua cron. Chon fixedDelay (co the doc bang property) thay vi mot cron ma nguoi hoc khong giai thich duoc."
+        },
+        {
+          "lessonId": "day-27",
+          "note": "blk-28: mot single-threaded scheduler nghia la cac job khong bao gio chong len chinh no - do la dam bao non-overlap ma task nay dua vao. Dam bao chi giu cho cac lan chay lien tiep cua MOT phuong thuc tren MOT scheduler; deploy nhieu instance se can distributed lock va nam ngoai pham vi."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=RecurringSchedulerTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet src/main/java/com/spendwise/recurring/RecurringScheduler.java: mot @Component nhan RecurringGenerationService, RecurringTransactionRepository va Clock qua constructor, khai bao mot phuong thuc @Scheduled fixedDelay ten generateDueForAllOwners() lam ca hai test o buoc truoc pass.",
+        "constraints": [
+          "Dung @Scheduled voi fixedDelay (vi du @Scheduled(fixedDelayString = \"${app.recurring.fixed-delay-ms:3600000}\")) - lich bounded ma nguoi hoc giai thich duoc; KHONG cron, KHONG fixedRate, KHONG vong lap tu che.",
+          "KHONG khai bao zone tren @Scheduled: fixedDelay khong nhan zone, zone chi danh cho cron (day-25 blk-32).",
+          "Tai su dung @EnableScheduling san co trong com.spendwise.account.SchedulingConfig - KHONG tao them mot @Configuration hay TaskScheduler/thread pool thu hai; mot scheduler duy nhat cho ca hai job (reconciliation + recurring) la cach dam bao non-overlap (day-27 blk-28).",
+          "Scheduler chi la wiring (R20): phuong thuc lay asOf = LocalDate.now(clock), duyet findDistinctOwnersWithDueTemplates(asOf) va goi generationService.generateDue(ownerId, asOf) cho tung owner; KHONG viet lai kiem tra sourceRef hay chen giao dich truc tiep.",
+          "Phuong thuc scheduling khong lam I/O nao khac ngoai goi repository de lay danh sach owner va goi service (R19: khong external call ben trong duong sinh giao dich)."
+        ],
+        "hints": [
+          "generateDue tra ve List<String> cac sourceRef moi tao - co the cong don size() de log so occurrence da sinh, day la I/O 'nhe' hop le (chi logging), khong phai external call.",
+          "findDistinctOwnersWithDueTemplates la cho DUY NHAT mot doc cross-user hop le vi scheduler la system actor, nhung no van goi generateDue theo tung owner nen ownership scoping duoc giu ben trong generation.",
+          "Idempotency da nam san trong generateOne (existsByUserIdAndSourceRef tren RECURRING:<templateId>:<dueDate>); ban khong can lam gi them - double-fire tu dong tao 0 dong o lan thu hai.",
+          "Them mot comment ngan ngay tren phuong thuc ghi caveat non-overlap: dam bao chi dung cho cac lan chay lien tiep cua mot scheduler; multi-instance deployment can distributed lock va ngoai pham vi."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Dung @Scheduled(fixedRate = ...) thay vi fixedDelay 'cho chay dung nhip hon'.",
+          "likelyCause": "Nham fixedRate voi fixedDelay - tuong ca hai deu an toan.",
+          "fix": "fixedRate do khoang giua cac lan BAT DAU, neu mot lan chay lau hon khoang do thi lan sau chong len -> pre-check sourceRef bi race, double-bill. fixedDelay do khoang giua ket thuc lan truoc va bat dau lan sau, khong bao gio stack (day-27 blk-28)."
+        },
+        {
+          "symptom": "Tao mot @Configuration + ThreadPoolTaskScheduler moi rieng cho recurring job.",
+          "likelyCause": "Nghi moi job can pool rieng.",
+          "fix": "Tai su dung SchedulingConfig cua task-scheduled-reconciliation: mot scheduler, hai job bounded. Pool thu hai pha vo dam bao non-overlap va khong can thiet o pham vi nay."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-recurring-scheduler-ck",
+      "sessionId": "session-v09-recurring-scheduler",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Scheduler wiring for recurring generation (idempotent by sourceRef) da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-recurring-scheduler deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-exchange-rate-client-01",
+      "sessionId": "session-v09-exchange-rate-client",
+      "order": 1,
+      "buildStepId": "step-exchange-rate-client-01",
+      "type": "code-with-me",
+      "title": "Them spring-boot-starter-webflux vao pom.xml va viet test that client THAT bai",
+      "goal": "pom.xml mang spring-boot-starter-webflux (khong so version); ExchangeRateClientTest chot 3 tinh chat: happy-path tra ve rate dc map, 500-then-success phuc hoi trong retry bound, permanent-failure thi xuong thanh base currency - het test deu FAIL dung ly do vi chua co class ExchangeRateClient.",
+      "whyThisMatters": "Buoc nay la diem kho khan cua ca pipeline FX: dependency moi (WebClient) chi duoc them khi co test dinh nghia hop dong. Neu them dependency truoc test, nguoi hoc se quen voi mot API xa la ma khong ro tai sao. R4/R19: test phai khoa 3 dieu truoc khi co implementation - rate chi la display khong phai ledger entry (R4), rate fetch xuat hien o day vi R19 can chung minh client khong duoc goi tu trong @Transactional, va giao cua retry-bound voi graceful-degradation phai duoc test truoc khi code chay.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-26",
+          "note": "day-26 'File Upload/Download & External API' la buoc dau tien cua mot integration ben ngoai - dependency webflux/WebClient duoc them vao day, khong front-load, de nguoi hoc thay dependency va external call xuat hien cung luc voi test that."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "day-28 'Testing Spring Boot' cung cap stub ExchangeFunction de dieu khien response cua provider ma khong can network - day la ky thuat cho phep test 500-then-success va always-500 ma khong cham server that."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=ExchangeRateClientTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Mo pom.xml, them spring-boot-starter-webflux ngay sau spring-boot-starter-cache - khong ghi so version vi Boot quan ly version.",
+        "Tao package com.spendwise.fx moi trong src/test/java (day la lan dau package fx xuat hien).",
+        "Tao ExchangeRateClientTest.java trong package do, dung stub ExchangeFunction (lambda tra ve Mono.just(ClientResponse)) va dung new ExchangeRateClient(builder, baseUrl, apiKey, 2000, 2) de dieu khien provider khong can network.",
+        "Viet test happyPathReturnsMappedRate: body JSON {\"base\":\"USD\",\"rates\":{\"EUR\":0.90}} -> fetchRate(\"USD\",\"EUR\") tra ve Optional co gia tri compareTo 0.90.",
+        "Viet test recoversWithinRetryBoundOnTransientFailure: dung AtomicInteger, lan goi dau tra ve HttpStatus 500, cac lan sau tra ve OK body. Assert rate.isPresent() va calls.get() >= 2 (retry da re-issue request).",
+        "Viet test degradesToEmptyOnPermanentFailure: luon tra ve 500. Assert rate.isEmpty() (degrade khong throw) va calls.get() >= 3 (initial + maxRetries=2).",
+        "Chay .\\mvnw.cmd -Dtest=ExchangeRateClientTest test - het 3 test FAIL vi chua co class ExchangeRateClient, fail dung ly do la thieu class, khong fail vi ly do khac."
+      ]
+    },
+    {
+      "id": "step-v09-exchange-rate-client-02",
+      "sessionId": "session-v09-exchange-rate-client",
+      "order": 2,
+      "buildStepId": "step-exchange-rate-client-02",
+      "type": "your-turn",
+      "title": "Tu viet ExchangeRateClient voi WebClient, bounded retry va external config",
+      "goal": "WebClient builder co explicit timeout + bounded retry/backoff (Retry.backoff voi filter isTransient chi retry 5xx/timeout); API key va base URL tu config placeholder app.fx.* (khong commit gia tri that); response map vao record ExchangeRateResponse. Khong @Transactional method nao goi client.",
+      "whyThisMatters": "day-26 khien: mot integration ben ngoai phai co timeout han che, retry bounded voi backoff, va degradation tren permanent failure - neu khong, mot provider cham hoac down se treo ca app. R19: external call khong bao gio duoc cho vao @Transactional, vi mot client call giu DB connection mo la anti-pattern day-26 canh bao; caller fetch rate o NGOAI transaction roi truyen gia tri plain vao. R4: client chi tra ve mot factor, khong price gi - conversion la viec cua FxConversionDecorator ha luu.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-26",
+          "note": "day-26 'File Upload/Download & External API' day resilience: timeout tren tung request, Retry.backoff voi explicit maxAttempts/backoff, filter chi retry transient (5xx/timeout). Client khong @Transactional, fetch ngoai transaction va truyen gia tri vao."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=ExchangeRateClientTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Tao ExchangeRateClient.java (@Component) trong com.spendwise.fx: constructor nhan WebClient.Builder + 4 @Value placeholder (app.fx.base-url, app.fx.api-key, app.fx.timeout-ms, app.fx.max-retries), build WebClient tu builder.baseUrl. Viet fetchRate(String base, String target) tra ve Optional<BigDecimal>. Tao them record ExchangeRateResponse va cap nhat application.properties voi 4 dong app.fx.* dung ${SPENDWISE_FX_...:default}.",
+        "constraints": [
+          "Moi request phai co .timeout(Duration) tuong minh - khong blocking call khong timeout tren request path.",
+          "Retry phai bounded: .retryWhen(Retry.backoff(maxRetries, Duration.ofMillis(100)).filter(isTransient)) - khong unbounded, khong retry 4xx.",
+          "API key va base URL phai tu config placeholder app.fx.* voi ${SPENDWISE_FX_...:default}, khong bao gio commit gia tri that (cung ky luat nhu JWT secret).",
+          "fetchRate tra ve Optional.empty() tren moi RuntimeException (retry het, non-transient status, timeout) - degrade chu khong throw.",
+          "Client KHONG chu thich @Transactional va KHONG @Transactional method nao trong project duoc goi no (R19).",
+          "Map body vao record ExchangeRateResponse(String base, Map<String,BigDecimal> rates) - khong leak raw Map vao domain."
+        ],
+        "hints": [
+          "isTransient chi tra true khi Throwable la WebClientResponseException co statusCode().is5xxServerError(), hoac khong phai WebClientResponseException (timeout/network) - 4xx tra false, khong retry.",
+          "block() o cuoi chuoi la co chu dinh vi caller la report path thuong khong phai reactive chain - dieu quan trong la client nay khong duoc goi tu trong @Transactional.",
+          "rate lay ra la response.rates().get(target) - target-per-base factor, vi du 1 USD = 0.90 EUR."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Fetch rate ngay ben trong @Transactional read cua report service",
+          "likelyCause": "Nghi rang lay rate cung luc doc du lieu report cho tien, gop het vao mot transaction.",
+          "fix": "R19 cam external call trong transaction - mot HTTP call cham se giu DB connection mo. Fetch rate o NGOAI transaction roi truyen gia tri plain vao service."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-exchange-rate-client-03",
+      "sessionId": "session-v09-exchange-rate-client",
+      "order": 3,
+      "buildStepId": "step-exchange-rate-client-03",
+      "type": "your-turn",
+      "title": "Expose display-only FX conversion tren report layer, chung minh ledger khong bi cham vao",
+      "goal": "FxConversionDecorator.convert(Money, target) tra ve ConvertedFigure(base, targetCurrency, converted, isConverted). Khi rate mat, isConverted=false va converted=base.amount(). FxConversionTest chung minh: rate co mat thi convert dung va base khong doi; convert KHONG tao/sua Transaction va KHONG doi balance; rate mat thi isConverted=false, converted=base.",
+      "whyThisMatters": "R4: FX ket thuc o day - lam mot display figure tren report response, khong o dau khac. FxConversionDecorator co NO repository va NO write path nen cau truc khong the cham toi ledger. R6: decorator khong mutate Money dau vao (Money bat bien), base luon duoc giu tren ConvertedFigure. R1: khi provider down (rate absent) report hien base figure voi isConverted=false - khong exception page, khong so lieu gia lap.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-10",
+          "note": "day-10 'Lambda & Stream API Chuyen Sau' cung co kien thuc ve immutability - Money bat bien va ConvertedFigure record giu base nguyen goc, conversion chi tao mot gia tri display moi chu khong sua base."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "day-28 'Testing Spring Boot' cung cap @SpringBootTest + @MockBean ExchangeRateClient + @Transactional rollback + JdbcTemplate query count/balance, de chung minh convert khong doi ledger (so dong transactions va balance_amount giong het truoc va sau)."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=FxConversionTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Tao FxConversionDecorator.java (@Component) trong com.spendwise.statistics voi nested record ConvertedFigure(Money base, String targetCurrency, BigDecimal converted, boolean isConverted). Ham convert(Money base, String target) dung ExchangeRateClient.fetchRate; khi rate co mat nhan base.amount() * rate roi setScale(2, HALF_UP). Viet FxConversionTest.java chung minh 3 tinh chat ledger-untouched.",
+        "constraints": [
+          "Decorator KHONG co repository va KHONG method write - chi doc Money, tra ve ConvertedFigure (R4).",
+          "R6: khong mutate Money dau vao - base goc luon duoc giu tren ConvertedFigure.",
+          "R4: convert KHONG tao/sua Transaction va KHONG doi balance - phai co test chung minh bang count(*) va balance_amount.",
+          "Khi baseCode.equals(target) thi tra ve ConvertedFigure(base, target, base.amount(), true) - khong can fetch.",
+          "Khi fetchRate tra ve empty -> ConvertedFigure(base, target, base.amount(), false): degrade ve base voi indicator ro rang (R1)."
+        ],
+        "hints": [
+          "@MockBean ExchangeRateClient trong test de dieu khien ket qua convert ma khong can network.",
+          "So sanh before/after bang JdbcTemplate: select count(*) from transactions va select balance_amount from accounts where id=? - phai bang nhau.",
+          "So sanh BigDecimal bang compareTo (khong equals) de tranh khac scale; ConvertedFigure la nested record trong decorator giu base Money goc."
+        ]
+      }
+    },
+    {
+      "id": "step-v09-exchange-rate-client-ck",
+      "sessionId": "session-v09-exchange-rate-client",
+      "order": 4,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: External exchange-rate WebClient with retry and failure handling da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-exchange-rate-client deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-invariant-test-suite-01",
+      "sessionId": "session-v09-invariant-test-suite",
+      "order": 1,
+      "buildStepId": "step-invariant-test-suite-01",
+      "type": "code-with-me",
+      "title": "Viet test that bai chot R2/R5/R7 tren Money va Transaction - JUnit thuan, khong Spring, khong DB",
+      "goal": "ArchitectureInvariantTest chot ba bat bien tien te, moi test mot @DisplayName mang ten rule: R2 Money so sanh theo gia tri (compareTo == 0), khong theo scale cua BigDecimal.equals; R5 phep chia phai khai bao scale + RoundingMode tuong minh (dang khong lam tron nem ArithmeticException) va moi Money mang dung scale 2; R7 Transaction doi so tien duong that su + huong la enum TransactionType (0 va am bi tu choi bang InvalidAmountException). Tat ca chay bang mili-giay, khong Spring context, khong database.",
+      "whyThisMatters": "Hien gio cac bat bien nay chi song trong van xuoi cua Constitution va vai test rai rac - mot refactor lam Money.equals quay ve so sanh scale cua BigDecimal se lam '10.0' != '10.00' va lang le lam sai moi phep gop so du, ma suite hom nay khong bat duoc. R2/R5/R7 phai la assertion chay duoc: mot phep chia thieu RoundingMode se nem ArithmeticException tren thuong vo han tuan hoan (10/3) va am tham ship neu khong ai chot no; con R7 neu ai do de dau am cua so tien ma hoa huong thi zero/am se lot qua construction. Dat rule id thang vao @DisplayName de mot vach do goi dung ten rule bi pha, khong bat ai phai doan.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-04",
+          "note": "Money va Transaction la class dong goi: equals/hashCode cua Money va validation trong constructor Transaction chinh la phan hop dong ma test nay chot. day-04 day constructor chained qua this() va tinh bat bien - la nen tang cua R2 (equals theo gia tri) va R7 (validation o constructor)."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "Nen tang JUnit 5 (@Test, @DisplayName, assertEquals/assertThrows). Test nay o tier thap nhat: khong dung slice test nao (@WebMvcTest/@DataJpaTest/@SpringBootTest deu khong can) vi bat bien tien te bieu dat duoc thuan Java, nen chay trong mili-giay."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=ArchitectureInvariantTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao file src/test/java/com/spendwise/shared/ArchitectureInvariantTest.java trong package com.spendwise.shared - dung JUnit 5 (org.junit.jupiter.api.Test, org.junit.jupiter.api.DisplayName), tuyet doi khong @SpringBootTest, khong @Autowired, khong context nao.",
+        "R2: viet test @DisplayName(\"R2: Money equality is value-based (compareTo == 0), not BigDecimal.equals scale-sensitivity\"). Tao new Money(\"10.0\") va new Money(\"10.00\"); truoc het assertNotEquals(new BigDecimal(\"10.0\"), new BigDecimal(\"10.00\")) de chung minh cai bay scale cua BigDecimal that su ton tai; roi assertEquals(hai Money) va assertEquals(hashCode cua chung); cuoi cung assertNotEquals(new Money(\"10.00\"), new Money(\"10.01\")). Money.equals hien so sanh currency + amount.compareTo == 0 nen test pass - muc dich la KHOA hop dong do lai.",
+        "R5: viet test @DisplayName(\"R5: division pins an explicit scale AND RoundingMode - the unrounded form throws\"). Lay BigDecimal ten = new BigDecimal(\"10.00\") va three = new BigDecimal(\"3\"); assertThrows(ArithmeticException.class, () -> ten.divide(three)) - chia khong scale/mode tren thuong vo han tuan hoan phai nem; roi ten.divide(three, 2, RoundingMode.HALF_UP) phai compareTo == 0 voi new BigDecimal(\"3.33\"); cuoi cung assertEquals(2, new Money(\"5\").amount().scale()) va cho new Money(\"5.1\") vi Money setScale(2, HALF_UP) o constructor.",
+        "R7: viet test @DisplayName(\"R7: a Transaction needs a strictly positive amount and a TYPED direction; zero/negative rejected\"). Tao Account account = new Account(UUID.randomUUID(), \"Cash\", AccountType.CASH, new Money(\"100.00\")); tao Transaction income = new Transaction(account, TransactionType.INCOME, new Money(\"40.00\")), assert income.type() == INCOME va income.amount().amount().signum() > 0; lam tuong tu cho TransactionType.EXPENSE (so tien van luu duong, khong bi phu dinh). Roi assertThrows(InvalidAmountException.class, () -> new Transaction(account, EXPENSE, new Money(\"0.00\"))) va cho new Money(\"-5.00\").",
+        "Chay verify - hau het assertion se pass vi code da dung: day khong phai TDD cho code moi ma la chot bat bien len code san co. Dieu quan trong la neu ban tam thoi lam hong mot rule trong nhanh nhap (vi du sua Money.equals thanh this.amount.equals(other.amount)) thi dung mot test R2 do fail, khong phai test khac. Suite khong them mot dong production code nao."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Test R2 duoc viet bang assertEquals tren BigDecimal (hoac dung new Money(\"10.0\").amount().equals(...)) va ket qua fail bat ngo tren '10.0' vs '10.00'.",
+          "likelyCause": "Quen rang BigDecimal.equals nhay cam voi scale: '10.0' co scale 1, '10.00' co scale 2 nen equals tra false du gia tri bang nhau.",
+          "fix": "Chot R2 tren Money (so sanh theo gia tri qua compareTo == 0), va giu assertNotEquals tren BigDecimal tho lam bang chung cho chinh cai bay ma R2 ne tranh. So sanh tien te luon qua Money/compareTo, khong bao gio qua BigDecimal.equals."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-invariant-test-suite-02",
+      "sessionId": "session-v09-invariant-test-suite",
+      "order": 2,
+      "buildStepId": "step-invariant-test-suite-02",
+      "type": "your-turn",
+      "title": "Tu mo rong suite sang R10/R11/R24: khong luu figure suy dien, khong cache tien, foreign-owner tra 404",
+      "goal": "ArchitectureInvariantReadSideTest chot R10 (Budget khong luu spent/remaining/percentage/status - chi luu limitAmount), R11 (khong type nao duoc cache mang figure tien: Category khong co truong BigDecimal/Money, CacheConfig chi khai bao cache 'categories'), va R24 (SecurityContextHolder chi doc o dung mot class la auth/CurrentUser, va foreign-owner tra 404 chu khong 403) - moi test mot @DisplayName mang ten rule, dung reflection cho R10/R11 va Files.walk tren cay nguon cho R24.",
+      "whyThisMatters": "R10/R11/R24 la cac bat bien cau truc chu khong phai hanh vi runtime, nen chung duoc chot bang reflection tren type that va scan cay nguon that - chay nhanh, khong Spring. Neu ai do them truong 'spent' vao Budget de 'cho nhanh', figure suy dien se lech voi giao dich that va R10 vo hinh bi pha; neu mot dashboard total lot vao cache, so du cu se phuc vu sai (R11); neu mot controller thu hai doc SecurityContextHolder hoac tra 403 cho tai nguyen cua nguoi khac, no ro ri su ton tai cua resource (R24). Test cau truc bien moi vi pham do thanh mot vach do goi dung ten rule.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-10",
+          "note": "Stream API la cong cu chinh cua ca ba test: Stream.of(Budget.class.getDeclaredFields()).map(Field::getName).toList() cho R10, va Files.walk(...).filter(...).toList() cho R24. day-10 cung day parallel stream - o day phai dung stream tuan tu de dem chinh xac so class doc SecurityContextHolder."
+        },
+        {
+          "lessonId": "day-23",
+          "note": "R24 chinh la ket tinh cua day-23 Authorization: foreign-owner phai tra 404 chu khong 403 (khong ro ri su ton tai cua resource), va viec doc danh tinh nguoi dung tap trung mot cho (CurrentUser) la mo hinh authorization dung - test scan nguon de chung minh khong controller nao ro ri 403."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "day-28 day coverage la chi bao chu khong phai cong (JaCoCo chi bao cao, khong gate): suite nay chot bat bien bang assertion cu the, khong dat nguong phan tram nao, va van la JUnit tier thap khong can Spring context."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=ArchitectureInvariantReadSideTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet src/test/java/com/spendwise/shared/ArchitectureInvariantReadSideTest.java (JUnit thuan, khong Spring, khong DB) chot R10, R11, R24 - moi test mot @DisplayName mang ten rule; dung reflection cho R10/R11 va Files.walk tren Path.of(\"src\",\"main\",\"java\",\"com\",\"spendwise\") cho R24.",
+        "constraints": [
+          "R10: dung Budget.class.getDeclaredFields() liet ke ten truong, assert khong chua bat ky ten suy dien nao trong {spent, remaining, percentage, status, used, available}, va assert co chua 'limitAmount' (thu Budget duoc phep luu). Dung getDeclaredFields, khong phai getFields - chi truong khai bao trong Budget.",
+          "R11: bang chung chinh la reflection - duyet Category.class.getDeclaredFields(), bo qua truong synthetic va static (Modifier.isStatic), assert khong truong nao co type BigDecimal hay Money (kieu duy nhat duoc cache khong mang tien). Sau do, khi doc CacheConfig.java bang Files.readString de xac nhan chi co region \"categories\", hay so khop TEN CACHE dat trong dau ngoac kep (chuoi literal \"balances\"/\"dashboard\"/\"totals\"/\"budgetSpent\" ke ca dau ngoac) - KHONG so khop tu tran nhu balances/dashboard, vi chinh comment cua file co the noi ve chung ma khong khai bao cache tien nao.",
+          "R24: Files.walk cay src/main/java/com/spendwise, loc file .java chua chuoi 'SecurityContextHolder', assert dung mot ket qua va no ket thuc bang auth/CurrentUser.java; roi Files.readString AccountController.java assert chua 'notFound()', va assert khong file *Controller.java nao chua 'FORBIDDEN'/'HttpStatus.FORBIDDEN'/'status(403)'.",
+          "Khong them mot dong production code nao. Neu mot bat bien can hook production moi test duoc thi do la design smell can ghi lai, khong phai hook can them.",
+          "Khong dua ra cong (gate) phan tram coverage - coverage la chi bao, khong phai cong (day-28 blk-32 / JaCoCo chi bao cao)."
+        ],
+        "hints": [
+          "Path co san: Path.of(\"src\",\"main\",\"java\",\"com\",\"spendwise\") tinh tuong doi tu goc module (noi chay Maven) - Files.walk tren no de tim reader va controller.",
+          "Duong dan Windows dung dau '\\\\'; khi so sanh duoi cuoi hay chuan hoa replace('\\\\','/') roi endsWith(\"auth/CurrentUser.java\").",
+          "Bo qua field.isSynthetic() va Modifier.isStatic(field.getModifiers()) khi duyet Category, neu khong cac hang so static VALUES/BY_CODE/FOOD... se gay nhieu cho test R11."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Test R10/R11 fail vi getFields() tra ca truong ke thua/public tu noi khac, hoac R11 bao loi vi cac hang so static cua Category (FOOD, VALUES, BY_CODE) bi dem la truong tien te.",
+          "likelyCause": "Dung getFields() thay vi getDeclaredFields(), va quen bo qua truong static/synthetic khi duyet reflection.",
+          "fix": "Dung getDeclaredFields() de chi lay truong khai bao ngay trong class, va bo qua Modifier.isStatic + isSynthetic - chi con truong thuc the that su duoc kiem tra."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-invariant-test-suite-ck",
+      "sessionId": "session-v09-invariant-test-suite",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Architecture-invariant unit test suite da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-invariant-test-suite deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-slice-test-suite-01",
+      "sessionId": "session-v09-slice-test-suite",
+      "order": 1,
+      "buildStepId": "step-slice-test-suite-01",
+      "type": "code-with-me",
+      "title": "Viet @WebMvcTest cho Account, Transaction, Category: MockMvc + service gia lap, chot status/hinh dang record/404 chu so huu",
+      "goal": "Ba lop AccountControllerSliceTest, TransactionControllerSliceTest, CategoryControllerSliceTest dung @WebMvcTest(controllers = X.class) + @AutoConfigureMockMvc(addFilters = false) voi service @MockBean: chot 201 kem hinh dang record JSON, 400 khi bean-validation fail, va 404 khi lookup theo chu so huu tra Optional.empty - khong cham DB, khong nap context day du.",
+      "whyThisMatters": "R16 dat hop dong HTTP cua controller: status code dung, hinh dang record JSON dung, va 404 khi khong tim thay - @WebMvcTest chot chung ma khong can DB hay context day du. Neu khong tach tang web, mot loi map response record hoac mot 404 bi doi thanh 403 chi lo ra o test E2E cham va kho doc, hoac te hon la bi lop persistence che giau. R24: account cua chu khac phai tra 404 (khong phan biet duoc voi missing), khong bao gio 403 - test gia lap accountService.find(...) tra Optional.empty de khoa dung hanh vi nay truoc khi ai do vo tinh 'sua' controller thanh 403.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-16",
+          "note": "@RestController/@RequestMapping, ResponseEntity va cac builder tinh (created/ok/notFound), status code va hinh dang response record - day chinh la hop dong HTTP ma AccountController/TransactionController/CategoryController phoi bay va slice nay chot lai bang jsonPath."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "@WebMvcTest la slice chi nap tang web: MockMvc goi controller, @MockBean thay service that, khong DB. addFilters=false tat security filter de test chi do hop dong HTTP - dung viec cua slice web theo blk-6/7/8."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=AccountControllerSliceTest' test; .\\mvnw.cmd '-Dtest=TransactionControllerSliceTest' test; .\\mvnw.cmd '-Dtest=CategoryControllerSliceTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao src/test/java/com/spendwise/account/AccountControllerSliceTest.java: danh dau @WebMvcTest(controllers = AccountController.class) va @AutoConfigureMockMvc(addFilters = false), @Autowired MockMvc, @MockBean AccountService, @MockBean CurrentUser; trong @BeforeEach set when(currentUser.id()).thenReturn(ownerId) voi ownerId = UUID.randomUUID().",
+        "Account test 201: mock when(accountService.create(any())).thenReturn(new Account(ownerId, \"Cash\", AccountType.CASH, new Money(\"100.00\"))), POST /api/accounts voi body JSON {name,type,openingBalance,currency}, assert status().isCreated() va jsonPath $.name / $.type / $.currency / $.balance khop hinh dang record (R16).",
+        "Account test 400: POST /api/accounts voi name rong \"\" - assert status().isBadRequest(); bean-validation chan truoc khi cham service, nen khong can mock gi.",
+        "Account test 404 chu so huu: when(accountService.find(eq(foreignId), eq(ownerId))).thenReturn(Optional.empty()), GET /api/accounts/{foreignId}, assert status().isNotFound() - account cua chu khac la Optional rong nen ra 404, khong phai 403 (R24).",
+        "Tao src/test/java/com/spendwise/account/TransactionControllerSliceTest.java: @WebMvcTest(controllers = TransactionController.class), @MockBean cho ca AccountService, TransactionCreationService, TransactionService va CurrentUser (constructor controller nhan du 4). Viet 4 test: 201 kem hinh dang record ($.type/$.amount/$.category) khi accountService.find tra Optional.of(account) va transactionCreationService.create(...) tra Transaction; 400 khi amount=0.00 (@DecimalMin inclusive=false chan truoc service); 404 khi accountService.find(eq(foreignAccount), eq(ownerId)) tra Optional.empty; 200 va jsonPath $ isArray khi GET /api/transactions khong co accountId (transactionService.search(...) tra List.of()).",
+        "Tao src/test/java/com/spendwise/category/CategoryControllerSliceTest.java: @WebMvcTest(controllers = CategoryController.class), @MockBean CategoryService; when(categoryService.list()).thenReturn(List.of(Category.FOOD, Category.SALARY)); GET /api/categories, assert 200, hasSize(2), $[0].value = \"FOOD\", $[1].value = \"SALARY\" - chot dung hinh dang record CategoryResponse ({\"value\": ...}).",
+        "Chay verifyCommand cho tung lop: vi controller da co tu V0.4, cac assertion phai xanh; quan trong la log khoi dong chi cho thay slice tang web (khong co dong nap @SpringBootTest / toan bo bean), xac nhan slice khong am tham boot context day du."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Test tra 401 hoac 302 (redirect toi trang login) thay vi 200/201/404 mong doi",
+          "likelyCause": "@WebMvcTest van nap security filter chain, request bi chan truoc khi toi controller",
+          "fix": "Them @AutoConfigureMockMvc(addFilters = false) de slice chi do hop dong HTTP cua controller; phan security thuoc test khac, khong phai slice web nay."
+        },
+        {
+          "symptom": "Ky vong 403 cho account cua chu khac nhung thuc te ra 404 (hoac ban assert 403 va test fail)",
+          "likelyCause": "Nham lan giua khong-co-quyen va khong-tim-thay",
+          "fix": "R24: lookup theo (id, userId) tra Optional.empty cho chu khac; controller map empty thanh 404, khong bao gio 403 - khong tiet lo su ton tai cua tai nguyen nguoi khac."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-slice-test-suite-02",
+      "sessionId": "session-v09-slice-test-suite",
+      "order": 2,
+      "buildStepId": "step-slice-test-suite-02",
+      "type": "your-turn",
+      "title": "Tu viet @DataJpaTest cho repository: TestEntityManager + JdbcTemplate, chot query owner-scoped va rang buoc UNIQUE(user_id, source_ref)",
+      "goal": "Ba lop TransactionRepositorySliceTest, AccountRepositorySliceTest, TransactionSourceRefSliceTest dung @DataJpaTest + @AutoConfigureTestDatabase(replace = NONE): chung minh @Query owner-scoped chi tra hang cua chu, findByIdAndUserId rong voi chu khac, va lan insert (user_id, source_ref) trung thu hai bi uq_txn_source_ref tu choi - chay tren schema di cu that, khong nap context day du.",
+      "whyThisMatters": "R24/R25: moi query owner-scoped la ranh gioi bao mat - findByIdAndUserId va findAllByUserIdWithReferences chi duoc tra hang cua chu goi. Mot regression lam roi mat menh de where userId van pass o test E2E mot-nguoi-dung roi leak du lieu cross-user tren production; slice ep co hang cua chu khac trong DB de menh de scoping bi kiem chung that. R22: danh tinh giao dich la (user_id, source_ref) do uq_txn_source_ref (V10) enforce - test phai chay tren schema Flyway that (replace=NONE) va tu insert 2 hang de chung minh rang buoc; neu roi vao embedded mac dinh thi rang buoc bien mat va phep thu tro nen vo nghia.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-20",
+          "note": "@Query va JOIN FETCH dich xuong dung cau SELECT/WHERE/JOIN database that su chay: menh de where transaction.userId = :userId la thu quyet dinh query co leak cross-user hay khong, va slice nay do dung menh de do bang hang cua nhieu chu."
+        },
+        {
+          "lessonId": "day-21",
+          "note": "Mau @DataJpaTest cho repository query nghiep vu (Assignment 7) chay tren schema Flyway - o day repository Spendwise cung duoc kiem thu tren schema di cu that (co uq_txn_source_ref tu V10), khong phai schema ddl-auto dung."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "@DataJpaTest + TestEntityManager la slice tang persistence (blk-9/10); @AutoConfigureTestDatabase(replace = NONE) giu datasource cau hinh thay vi thay bang embedded tran, va slice tu insert du lieu no can nen khong dua vao seed row."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=AccountRepositorySliceTest' test; .\\mvnw.cmd '-Dtest=TransactionSourceRefSliceTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet 3 lop test slice tang persistence: TransactionRepositorySliceTest va AccountRepositorySliceTest trong com.spendwise.account, TransactionSourceRefSliceTest trong com.spendwise.imports - moi lop @DataJpaTest + @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) de giu schema H2 da chay Flyway (co uq_txn_source_ref tu V10), chung minh query owner-scoped, findByIdAndUserId rong voi chu khac, va rang buoc UNIQUE(user_id, source_ref).",
+        "constraints": [
+          "Moi lop danh dau @DataJpaTest + @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) - khong duoc de slice am tham boot @SpringBootTest; acceptance yeu cau slice khong nap context day du.",
+          "TransactionRepositorySliceTest: @Autowired TestEntityManager, TransactionRepository, UserRepository; persist qua entityManager 2 giao dich cua owner + 1 cua stranger, goi flush() roi clear(), sau do assert findAllByUserIdWithReferences(owner) tra dung 2 hang va tat ca t.userId().equals(owner) (R24); them test findAllByAccountIdAndUserIdWithReferences(accountId, owner) scope dung 1 account cua owner.",
+          "AccountRepositorySliceTest: @Autowired TestEntityManager, AccountRepository, UserRepository; assert findByIdAndUserId(id, owner) isPresent nhung findByIdAndUserId(id, stranger) isEmpty (R25: chu khac khong phan biet duoc voi missing - nen tang cua 404 chu khong 403), va findAllByUserId(owner) chi liet ke account cua owner (R24).",
+          "TransactionSourceRefSliceTest o package com.spendwise.imports: @Autowired JdbcTemplate, UserRepository, AccountRepository; insert 2 hang cung (user_id, source_ref) qua JdbcTemplate, assertThrows(DataIntegrityViolationException.class) cho hang thu hai; insert cung source_ref voi 2 user khac nhau roi dem select count(*) ... where source_ref = ... phai bang 2 (R22: danh tinh la per-user, khong per-string toan cuc).",
+          "Dung saveAndFlush cho AppUser va Account truoc khi insert bang JdbcTemplate: JdbcTemplate ghi thang xuong DB nen hang FK phai da duoc flush ra khoi persistence context, khong chi staged.",
+          "Slice tu insert du lieu no can (day-28 blk-9), khong dua vao seed row nao co san; test can schema di cu that nhung tuyet doi khong duoc goi Testcontainers - do la task-integration-test-suite cua day-29."
+        ],
+        "hints": [
+          "Transaction co ctor package-private nhan sourceRef: new Transaction(UUID.randomUUID(), account, TransactionType.EXPENSE, new Money(\"10.00\"), Category.FOOD, sourceRef) - dung duoc vi TransactionRepositorySliceTest o cung package com.spendwise.account.",
+          "Trong TransactionSourceRefSliceTest insert bang cau SQL tho vao bang transactions (cot id, account_id, user_id, type, amount, currency, category_code, source_ref, occurred_on) de chinh rang buoc DB - khong phai mot service guard - la thu nem loi.",
+          "findAllByUserIdWithReferences la @Query join fetch co where transaction.userId = :userId; muon thay no leak (neu bi hong) thi phai co hang cua stranger trong DB, nen luon persist ca hang cua chu khac trong test scoping."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Test rang buoc UNIQUE khong bao gio nem DataIntegrityViolationException, ca 2 lan insert deu qua",
+          "likelyCause": "Khong dat replace=NONE nen @DataJpaTest thay datasource bang embedded tran, schema dung khong co uq_txn_source_ref cua V10",
+          "fix": "Them @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) de giu schema H2 da chay Flyway - rang buoc that moi ton tai de nem loi."
+        },
+        {
+          "symptom": "Insert JdbcTemplate nem loi khoa ngoai (account_id/user_id khong ton tai) thay vi loi UNIQUE mong doi",
+          "likelyCause": "AppUser/Account moi save nhung chua flush ra DB, JdbcTemplate ghi thang khong thay chung",
+          "fix": "Dung saveAndFlush cho user va account truoc khi insert bang JdbcTemplate de hang FK da nam trong DB."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-slice-test-suite-ck",
+      "sessionId": "session-v09-slice-test-suite",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: @WebMvcTest and @DataJpaTest slice suites da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-slice-test-suite deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-integration-test-suite-01",
+      "sessionId": "session-v09-integration-test-suite",
+      "order": 1,
+      "buildStepId": "step-integration-test-suite-01",
+      "type": "code-with-me",
+      "title": "Them dependency Testcontainers va boot ca app tren postgres:16-alpine that voi ddl-auto: validate",
+      "goal": "pom.xml mang spring-boot-testcontainers + org.testcontainers:junit-jupiter + org.testcontainers:postgresql (deu version do Boot BOM quan ly, khong tu ghi <version>); IntegrationTestBase la @SpringBootTest + @Testcontainers, co static @Container PostgreSQLContainer<>(\"postgres:16-alpine\"), bom toa do JDBC qua @DynamicPropertySource, giu spring.jpa.hibernate.ddl-auto la validate, va mang mot smoke @Test kiem tra bang transactions co trong information_schema sau khi Flyway migrate - de lan chay Surefire chung minh base boot duoc chu khong fail vi 'no tests'.",
+      "whyThisMatters": "R26: bat bien duong tien phai duoc kiem chung tren dung engine production chay - Postgres that, migration Flyway that, ddl-auto: validate soi mapping JPA vao schema da migrate. H2 in-memory noi doi ve nhung thu quan trong nhat o day: ten constraint (uq_txn_source_ref), kieu SQL, hanh vi UNIQUE trong tai - neu boot tren H2 thi cac test o buoc sau se pass gia. Neu quen smoke @Test, lenh chay loc -Dtest=IntegrationTestBase se fail vi 'no tests' va ban khong bao gio biet base co thuc su boot len duoc container hay khong.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-29",
+          "note": "Testcontainers (blk-13/32/33): mot PostgreSQLContainer khai bao static @Container chay len mot lan, va toa do JDBC cua no (getJdbcUrl/getUsername/getPassword) duoc bom qua @DynamicPropertySource TRUOC khi Spring context dung len - day la cach trung thuc dau tien chay Postgres that trong test."
+        },
+        {
+          "lessonId": "day-30",
+          "note": "Coverage la moi quan tam chi-bao-cao (JaCoCo report-only, khong co cong % coverage): integration suite nam o dinh kim tu thap test va chung minh hanh vi, no khong ton tai de nang mot con so coverage; vi vay base chi can mot smoke test that de chung minh no boot."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=IntegrationTestBase' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Mo pom.xml va xac nhan (hoac them neu thieu) ba dependency scope test: org.springframework.boot:spring-boot-testcontainers, org.testcontainers:junit-jupiter, org.testcontainers:postgresql - deu KHONG ghi the <version>, de Spring Boot BOM quan ly phien ban tuong thich (giong cach spring-boot-starter-test da lam).",
+        "Tao src/test/java/com/spendwise/IntegrationTestBase.java trong package com.spendwise, gan @SpringBootTest va @Testcontainers len class.",
+        "Khai bao mot truong static @Container: static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(\"postgres:16-alpine\") - static de container chay len mot lan va cac subclass dung chung (day-29), image chot dung postgres:16-alpine theo constraint.",
+        "Viet mot static method gan @DynamicPropertySource nhan DynamicPropertyRegistry: registry.add(\"spring.datasource.url\", POSTGRES::getJdbcUrl), va tuong tu username/password - dang truyen method-reference nen Spring goi chung SAU khi container start, dung luc dung context.",
+        "Trong cung method do, giu spring.jpa.hibernate.ddl-auto la \"validate\" (khong doi thanh create/update): mapping JPA phai duoc doi soat vao schema Flyway da migrate, khong bao gio de Hibernate tu sinh schema. Va bom app.jwt.secret mot gia tri du dai (>=32 byte cho HS256) vi context can no de boot du suite nay khong dung toi JWT.",
+        "Them mot smoke @Test: autowire JdbcTemplate, queryForObject dem tu information_schema.tables where table_schema='public' and table_name='transactions', assertEquals(1, ...) - chung minh Flyway da tao bang transactions tren engine that.",
+        "Chay .\\mvnw.cmd '-Dtest=IntegrationTestBase' test: lan dau se keo image postgres:16-alpine (can Docker daemon dang chay), container start, Flyway migrate, ddl-auto: validate pass, smoke test xanh."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Chay -Dtest=IntegrationTestBase bao 'No tests were executed' hoac Surefire fail vi khong tim thay test nao.",
+          "likelyCause": "IntegrationTestBase chi la lop nen (@SpringBootTest + @Container) ma khong co @Test nao, nen khi loc dung ten no thi Surefire khong co gi de chay.",
+          "fix": "Giu dung smoke @Test schemaExposesTheTransactionsTableAfterMigrations trong base: no vua chung minh base thuc su boot len container va migrate xong, vua khien lan chay loc co it nhat mot test."
+        },
+        {
+          "symptom": "Test bao loi kieu 'Could not find a valid Docker environment' hoac treo o buoc keo image.",
+          "likelyCause": "Docker daemon chua chay - Testcontainers can mot Docker engine that de dung container postgres:16-alpine.",
+          "fix": "Khoi dong Docker Desktop truoc khi chay; day chinh la cai gia cua su trung thuc - khac voi H2, suite nay chay dung engine that nen phu thuoc Docker."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-integration-test-suite-02",
+      "sessionId": "session-v09-integration-test-suite",
+      "order": 2,
+      "buildStepId": "step-integration-test-suite-02",
+      "type": "your-turn",
+      "title": "Tu chung minh cac bat bien R20/R21/R22 cua duong tien tren database that",
+      "goal": "MoneyPathIntegrationTest (extends IntegrationTestBase) chung minh bon tinh chat qua chinh cac service canonical, khong mock: TransactionCreationService.create luu dung mot dong voi sourceRef cua no (R20); mot transfer that bai giua chung (dich khac loai tien) de lai ZERO dong va so du khong doi (R21); re-import cung mot statement them ZERO giao dich va bao ca hai dong la DUPLICATE (R22 idempotency); hai thread dua cung (user_id, source_ref) chi commit dung mot dong (R22 arbitration tai constraint).",
+      "whyThisMatters": "Slice test chung minh tung tang rieng le, nhung duong tien - creation service, transfer, import idempotency, phan xu constraint - chinh la hanh vi lien-tang ma thay the in-memory noi doi. R21: neu transfer khong nguyen tu, chan no (debit) da tru so du con chan co (credit) fail thi tien bi pha huy am tham; test buoc dich phai la EUR de credit fail SAU debit, chung minh rollback keo ca hai chan ve. R22: neu khong co UNIQUE (user_id, source_ref) lam chot cuoi, khe hop check-then-act cho hai thread cung sourceRef commit ca hai, nhan doi giao dich - chi engine that voi UNIQUE that moi bay lo dieu nay.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-29",
+          "note": "Testcontainers cho phep chay duong tien tren Postgres that: chi engine that co UNIQUE (user_id, source_ref) va ten constraint uq_txn_source_ref moi phan xu duoc cuoc dua hai thread mot cach trung thuc - H2/in-memory khong tai hien dung, nen R22 chi co the chung minh o day."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "Kim tu thap test: integration test o dinh chay ca stack qua service that; seed du lieu qua fixture hoac dung service canonical (TransactionCreationService, ImportService.importCsv), tuyet doi khong mock chinh duong minh dang di kiem chung."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=MoneyPathIntegrationTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet src/test/java/com/spendwise/MoneyPathIntegrationTest.java extends IntegrationTestBase, autowire cac repository va service that (UserRepository, AccountRepository, TransactionRepository, TransactionCreationService, TransferService, ImportService, ImportRowRepository), va viet bon @Test chung minh R20 tao canonical, R21 transfer rollback khi fail, R22 re-import them zero va bao DUPLICATE, R22 dua hai thread commit dung mot dong - moi test seed owner+account qua service/repository that.",
+        "constraints": [
+          "KHONG mock TransactionCreationService, TransferService hay ImportService trong suite nay - suite ton tai chinh xac de kiem chung duong that; seed du lieu qua fixture hoac qua chinh service canonical, khong bao gio bypass.",
+          "Test R20: goi transactionCreationService.create(new TransactionCreationCommand(account, TransactionType.EXPENSE, new Money(\"40.00\"), Category.FOOD, \"TEST:canonical-1\"), ownerId) roi assert transactionRepository.findAllByAccountIdWithReferences(account.id()) co dung 1 dong va sourceRef() bang \"TEST:canonical-1\".",
+          "Test R21: tao source la USD va destination la EUR, goi transferService.transfer voi Money USD; assertThrows CurrencyMismatchException, roi assert ca hai account co 0 dong giao dich VA so du hai ben giu nguyen (100.00 USD / 20.00 EUR) - dich phai khac loai tien de credit fail SAU debit, chung minh rollback nguyen tu.",
+          "Test R22 idempotency: ghi mot file CSV (header occurredOn,amount,currency,description,sourceTxnId + 2 dong) qua @TempDir, goi importService.importCsv HAI lan; assert lan dau co 2 dong OK, lan hai co 2 dong DUPLICATE (dem qua importRowRepository.findAllByBatchIdOrderByRowNumberAsc + ImportRow::status), va tong so giao dich van la 2.",
+          "Test R22 concurrency: dung ExecutorService 2 luong submit hai lan goi create() cung mot contendedRef; sau khi ca hai xong, assert dung 1 dong co sourceRef do trong DB, dung 1 lan thanh cong va it nhat 1 lan bi tu choi (RuntimeException/SourceRefConflictException) - khong am tham nhan doi.",
+          "R8: sau moi thao tac, doi soat so du la nguon su that duy nhat - o test R21 phai assert lai balance() cua ca hai account, khong chi dem so dong."
+        ],
+        "hints": [
+          "seedOwner() gon: userRepository.save(new AppUser(\"user-\" + UUID.randomUUID(), \"hash\")).id() - moi test mot owner rieng de trong container dung chung khong dam vao nhau.",
+          "Vi transferService.transfer goi TransactionCreationService.create hai lan trong CUNG mot @Transactional, khi chan credit nem CurrencyMismatchException thi ca transaction Spring rollback - do chinh la R21; ban chi can assert trang thai sau, khong can tu quan ly transaction.",
+          "Cuoc dua R22: bat RuntimeException chung trong Runnable (ke thua se la SourceRefConflictException hoac wrapper), dem successes vs rejections bang AtomicInteger, va goi Future.get() cho ca hai truoc khi assert de chac ca hai luong da chay xong.",
+          "Dem DUPLICATE bang cach loc status cua cac ImportRow theo batchId, khong dem giao dich - vi lan re-import van tao ImportRow (voi status DUPLICATE) nhung KHONG tao Transaction moi."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Test setup mock TransactionCreationService (hoac ImportService) de 'do phai dung Postgres' cho nhanh, roi test van xanh nhung khong chung minh gi.",
+          "likelyCause": "Thoi quen slice test - mock collaborator de co lap tang can kiem tra.",
+          "fix": "Suite nay ton tai dung de chay duong that tren engine that; mock chinh service dang kiem chung lam rong nghia bai test. Seed qua fixture hoac service canonical, khong bao gio bypass (day-28)."
+        },
+        {
+          "symptom": "Test R21 dung account NGUON la loai tien khac (thay vi dich), roi that vong vi khong thay chung co rollback ro rang.",
+          "likelyCause": "Neu chan debit (nguon) fail truoc thi chua co gi duoc ghi nen khong co trang thai do dang de chung minh atomicity.",
+          "fix": "Dat DICH khac loai tien: chan debit chay truoc va tru so du, roi chan credit moi fail voi CurrencyMismatch - luc do rollback phai keo ca hai chan ve zero, dung day moi la bang chung R21."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-integration-test-suite-ck",
+      "sessionId": "session-v09-integration-test-suite",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Testcontainers-backed integration suite da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-integration-test-suite deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v09-production-packaging-01",
+      "sessionId": "session-v09-production-packaging",
+      "order": 1,
+      "buildStepId": "step-production-packaging-01",
+      "type": "code-with-me",
+      "title": "Them springdoc OpenAPI + spring-boot-starter-actuator, de API tu mo ta va bao suc khoe database",
+      "goal": "pom.xml co springdoc-openapi-starter-webmvc-ui voi version ghim tuong minh (dry-run dung 2.8.17) va spring-boot-starter-actuator; OpenApiConfig cung cap metadata tai lieu; DatabaseHealthIndicator chay SELECT 1 nen /actuator/health bao db UP; application.properties expose health,info va show-details=always. Kiem tra tren app that: /swagger-ui.html, /v3/api-docs va /actuator/health hien db UP.",
+      "whyThisMatters": "R26: Actuator chi xuat hien o day va khong o bat ky release truoc do - dong goi khong duoc keo them ky thuat sau day-30. Neu spec API duoc viet tay thay vi de springdoc quet cac @RestController that, spec se troi (drift) khoi endpoint that ngay lan sua controller dau tien. Neu khong co HealthIndicator cho database, mot probe suc khoe khong the phan biet \"app song nhung db chet\" voi \"app chet\" - dung thu ma van bao khoe.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-29",
+          "note": "springdoc tu quet cac @RestController that de sinh /v3/api-docs va /swagger-ui.html - blk-3 nhan manh phai ghim version springdoc tuong minh vi Boot KHONG quan ly starter nay; bo the <version> thi build khong resolve."
+        },
+        {
+          "lessonId": "day-30",
+          "note": "Actuator khep phan observability: /actuator/health tong hop moi HealthIndicator bean, o day DatabaseHealthIndicator bao db leg qua SELECT 1 - day la co che duoc day chinh thuc, khong phai endpoint tu che."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Trong pom.xml, them dependency org.springdoc:springdoc-openapi-starter-webmvc-ui voi the <version> tuong minh (dry-run ghim 2.8.17) - day-29 blk-3: Boot khong quan ly starter nay nen phai tu ghim, thieu <version> thi Maven khong resolve.",
+        "Trong pom.xml, them spring-boot-starter-actuator (starter nay Boot quan ly, khong can version).",
+        "Tao src/main/java/com/spendwise/shared/OpenApiConfig.java: mot lop @Configuration voi mot @Bean tra ve new OpenAPI().info(new Info().title(\"Spendwise API\").version(\"v0.9\")...) - bean nay chi cung cap metadata cap tai lieu; springdoc tu quet endpoint that, khong can annotation tren tung endpoint.",
+        "Tao src/main/java/com/spendwise/shared/DatabaseHealthIndicator.java implements HealthIndicator, @Component: nhan DataSource qua constructor, dung JdbcTemplate chay queryForObject(\"SELECT 1\", Integer.class); thanh cong tra Health.up().withDetail(\"database\", productName).build(), that bai bat RuntimeException va tra Health.down(exception).withDetail(...).build().",
+        "Trong src/main/resources/application.properties, dat management.endpoints.web.exposure.include=health,info va management.endpoint.health.show-details=always de /actuator/health hien chi tiet component db UP/DOWN.",
+        "Xac minh khi app dang chay (.\\mvnw.cmd spring-boot:run): mo /swagger-ui.html va /v3/api-docs thay cac endpoint that, /actuator/health bao db UP - roi dung app. Cuoi cung chay .\\mvnw.cmd test de chac chan suite van xanh."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Build bao khong resolve duoc springdoc-openapi-starter-webmvc-ui, hoac Maven doi mot version.",
+          "likelyCause": "Bo the <version> vi tuong Boot parent quan ly moi starter giong spring-boot-starter-*.",
+          "fix": "Ghim <version> tuong minh cho springdoc (dry-run dung 2.8.17) - day-29 blk-3: springdoc KHONG nam trong dependencyManagement cua Boot parent."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-production-packaging-02",
+      "sessionId": "session-v09-production-packaging",
+      "order": 2,
+      "buildStepId": "step-production-packaging-02",
+      "type": "your-turn",
+      "title": "Them MDC traceId cho log moi request qua servlet filter chay mot lan",
+      "goal": "TraceIdFilter extends OncePerRequestFilter dat mot traceId (UUID) vao MDC dau moi request va clear trong finally; application.properties co logging.pattern.level chua %X{traceId}; TraceIdFilterTest chung minh hai dong log trong mot request chia se cung traceId va id da bi xoa sau request.",
+      "whyThisMatters": "Mot request, mot traceId: structured logging chi thuc su dung duoc khi moi dong log cua cung mot request mang cung correlation id. Neu MDC.remove khong nam trong finally, worker thread trong thread-pool tai su dung se giu traceId cu va gan nham no cho request tiep theo - do la kieu ro ri MDC kinh dien lam sai ca chuoi truy vet. Neu pattern log khong chua %X{traceId} thi id sinh ra chang bao gio duoc in ra.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-29",
+          "note": "MDC traceId cho moi request qua filter/interceptor duoc day o blk-4-7: dat id vao MDC dau request, in qua %X{traceId}, va clear cuoi request de id khong ro ri sang request ke."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=TraceIdFilterTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet src/main/java/com/spendwise/shared/TraceIdFilter.java extends OncePerRequestFilter dat traceId (UUID) vao MDC dau moi request va clear trong finally; them logging.pattern.level=%5p [traceId=%X{traceId}] vao application.properties; viet src/test/java/com/spendwise/shared/TraceIdFilterTest.java chung minh hai dong log trong mot request chia se cung traceId va MDC da rong sau request.",
+        "constraints": [
+          "Filter phai extends OncePerRequestFilter (chay dung mot lan moi request), gan @Component va @Order(Integer.MIN_VALUE) de chay dau tien nen traceId co mat cho moi thu downstream.",
+          "MDC.remove(TRACE_ID) phai nam trong finally block bao quanh filterChain.doFilter(...) - neu khong, thread tai su dung giu traceId cu va gan nham cho request sau (ro ri MDC).",
+          "Khai bao hang so public static final String TRACE_ID = \"traceId\" de test va logging pattern cung tham chieu dung mot key.",
+          "logging.pattern.level phai chua %X{traceId} thi id moi xuat hien tren moi dong log.",
+          "Test la unit thuan (khong @SpringBootTest, khong DB): dung MockHttpServletRequest/MockHttpServletResponse va mot MockFilterChain doc MDC.get(TraceIdFilter.TRACE_ID) hai lan trong mot request."
+        ],
+        "hints": [
+          "Cai dat logic vao doFilterInternal: MDC.put dau, filterChain.doFilter o giua, MDC.remove trong finally.",
+          "Override MockFilterChain.doFilter de add MDC.get(TraceIdFilter.TRACE_ID) hai lan vao mot List - mo phong hai statement log trong cung mot request.",
+          "Assert hai gia tri quan sat bang nhau va non-null trong request, roi assertNull(MDC.get(TRACE_ID)) sau khi filter tra ve; UUID.randomUUID().toString() la cach don gian sinh traceId."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Log cua request sau in ra traceId cua request truoc, hoac hai request khac nhau lai cung mot traceId.",
+          "likelyCause": "Dat MDC.put nhung khong clear, hoac clear ngoai finally nen khi doFilter nem exception thi id khong bi xoa - thread tai su dung mang id cu.",
+          "fix": "Bao filterChain.doFilter trong try va MDC.remove(TRACE_ID) trong finally - id luon duoc xoa cuoi moi request du thanh cong hay loi."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-production-packaging-03",
+      "sessionId": "session-v09-production-packaging",
+      "order": 3,
+      "buildStepId": "step-production-packaging-03",
+      "type": "your-turn",
+      "title": "Viet Dockerfile layered-jar va docker-compose.yml cho app + postgres",
+      "goal": "Dockerfile hai stage dung ky thuat layered-jar day-30 (extract layers, copy dependencies truoc); docker-compose.yml wiring app + postgres:16-alpine voi SPRING_DATASOURCE_* tu environment va secret placeholder dang :?; .dockerignore giu context nho va sach secret; README ghi cach chay. docker compose up --build ket thuc khi health check cua app pass.",
+      "whyThisMatters": "Day la lan chay tai lap duoc: mot may thu hai doc README chay docker compose up --build va co cung wiring app + database. R26 gioi han dong goi o mot compose file - khong Kubernetes, khong message broker. Neu bake mot secret that hay JWT key vao image, no ro ri trong cac layer image va lich su git; neu bien secret khong bat buoc (bo dang :?), app boot voi cau hinh sai am tham thay vi fail ngay.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-29",
+          "note": "healthcheck cua app trong compose goi chinh /actuator/health (day-29): compose coi app \"healthy\" chi khi db leg bao UP, nen depends_on service_healthy that su cho database san sang."
+        },
+        {
+          "lessonId": "day-30",
+          "note": "blk-11/12: Dockerfile layered-jar (extract layers, copy layer it-thay-doi-truoc de cache song sot khi chi sua code); blk-13/14: docker-compose noi app + postgres, cau hinh tu environment."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "docker compose up --build -d; docker compose ps",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet Dockerfile layered-jar hai stage (builder extract layers, runtime copy dependencies-first), docker-compose.yml noi app + postgres:16-alpine voi SPRING_DATASOURCE_* tu environment va secret placeholder :?, .dockerignore giu context sach, va README ghi lai cach chay. docker compose up --build -d + docker compose ps ket thuc voi app healthy.",
+        "constraints": [
+          "Dockerfile hai stage: builder chay RUN java -Djarmode=layertools -jar application.jar extract; runtime COPY --from=builder theo dung thu tu it-thay-doi-truoc: dependencies/ roi spring-boot-loader/ roi snapshot-dependencies/ roi application/ (layer cache song sot khi chi sua code app).",
+          "ENTRYPOINT dung org.springframework.boot.loader.launch.JarLauncher (Boot 3.2+), khong chay java -jar app.jar; can spring-boot-maven-plugin bat <layers><enabled>true</enabled> thi layertools moi extract duoc.",
+          "compose: service db la postgres:16-alpine voi POSTGRES_* tu ${SPENDWISE_DB_USERNAME:?...}; service app depends_on db condition service_healthy; SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/spendwise (host la ten service \"db\"), SPRING_DATASOURCE_USERNAME/PASSWORD va APP_JWT_SECRET tu placeholder :? (fail loudly neu chua set).",
+          "KHONG ghi gia tri secret that vao Dockerfile, compose hay commit - chi environment placeholder; cung ky luat nhu JWT secret.",
+          "healthcheck cua app goi /actuator/health va grep UP nen docker compose up chi thanh cong khi db leg UP.",
+          "Chi mot compose file, khong Kubernetes/microservices/message broker (R26: khong gi sau ky thuat day-30)."
+        ],
+        "hints": [
+          "ARG JAR_FILE=target/spendwise-0.1.0-SNAPSHOT.jar tro toi jar da build; build jar truoc bang .\\mvnw.cmd -DskipTests package.",
+          "Dung dang ${VAR:?message} trong compose de fail ngay neu bien chua set - tot hon la chay len roi loi mo ho ve datasource.",
+          ".dockerignore loai target/* (tru chinh jar), .git, .env, .idea, *.iml de context nho va khong lot secret vao image.",
+          "README ghi 3-4 dong: build jar, export bien SPENDWISE_DB_USERNAME/PASSWORD/JWT_SECRET, docker compose up --build -d, docker compose ps."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Secret that (mat khau db hoac JWT key) nam trong Dockerfile/compose va bi commit hoac dinh vao layer image.",
+          "likelyCause": "Hardcode gia tri \"cho tien chay thu\" thay vi tro toi environment.",
+          "fix": "Chi dung environment placeholder dang ${VAR:?...}, dua secret qua host env hoac .env khong-commit; .dockerignore loai .env - cung ky luat nhu JWT secret."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-production-packaging-04",
+      "sessionId": "session-v09-production-packaging",
+      "order": 4,
+      "buildStepId": "step-production-packaging-04",
+      "type": "your-turn",
+      "title": "Lam duong async notification bounded voi AsyncUncaughtExceptionHandler sau khi batch terminal",
+      "goal": "AsyncConfig co bean ThreadPoolTaskExecutor bounded (queueCapacity tuong minh, CallerRunsPolicy) va AsyncUncaughtExceptionHandler log that bai; ImportNotification.notifyBatchComplete la @Async void tren executor do; ImportService.importCsv goi no SAU vong lap ghi row (batch terminal), khong trong transaction row, va van return ImportBatch dong bo 200; ImportNotificationTest chung minh notification fire ma khong doi batch state.",
+      "whyThisMatters": "Chu de async day-25 tim thay artifact cua no: mot side effect fire-and-forget sau khi batch finalize. R19 giu side effect ngoai transaction row - neu dispatch trong vong lap/trong transaction cua mot row thi notification bi ghep vao commit va co the giu DB connection qua ranh gioi async. R22 giu import tuan tu. Queue vo han bien fire-and-forget thanh nguy co OOM duoi tai; thieu AsyncUncaughtExceptionHandler thi exception trong task void bien mat khong dau vet.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-25",
+          "note": "@Async can executor BOUNDED tuong minh va AsyncUncaughtExceptionHandler bat buoc cho method void - khong co handler thi loi trong task fire-and-forget bi nuot im lang."
+        },
+        {
+          "lessonId": "day-27",
+          "note": "after-commit ordering: notification chi dispatch khi batch da terminal (het vong lap, moi row da commit rieng), khong bao gio ben trong transaction cua mot row (R19)."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=ImportNotificationTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet AsyncConfig (@Configuration @EnableAsync implements AsyncConfigurer) voi mot @Bean ThreadPoolTaskExecutor bounded ten NOTIFICATION_EXECUTOR va getAsyncUncaughtExceptionHandler log that bai; ImportNotification @Component voi @Async(NOTIFICATION_EXECUTOR) void notifyBatchComplete(UUID batchId) + dispatchedCount() de test await; goi importNotification.notifyBatchComplete(batch.id()) trong ImportService.importCsv SAU vong lap ghi row roi van return batch; ImportNotificationTest @SpringBootTest chung minh 3 tinh chat.",
+        "constraints": [
+          "Executor phai BOUNDED: setQueueCapacity tuong minh (dry-run dung 50), core/max pool huu han, setRejectedExecutionHandler CallerRunsPolicy tao backpressure thay vi drop viec am tham - queue vo han la nguy co OOM.",
+          "@Async method tra void, KHONG viet gi vao DB; phai cai getAsyncUncaughtExceptionHandler (log.warn) vi khong co handler thi exception trong task void bien mat khong dau vet (day-25).",
+          "Dispatch notifyBatchComplete SAU khi batch terminal (het vong lap row) trong ImportService.importCsv, KHONG BAO GIO ben trong transaction cua mot row (R19; day-27 after-commit).",
+          "Khong doi hop dong HTTP: importCsv van return ImportBatch dong bo (200 summary), khong 202 (ADR-012).",
+          "Async side effect khong duoc doi batch state - test assert so row va status khong doi sau khi notification fire.",
+          "dispatchedCount qua AtomicInteger chi de test await deterministic, khong dung cho business logic."
+        ],
+        "hints": [
+          "@Async(AsyncConfig.NOTIFICATION_EXECUTOR) tro dung ten bean executor da khai bao.",
+          "Test @SpringBootTest await bang vong poll dispatchedCount() den mot deadline (vi du 5s), tranh Thread.sleep co dinh gay flaky.",
+          "AsyncUncaughtExceptionHandler la lambda (throwable, method, params) -> log.warn(...) - log roi khong lan xa hon nen batch da commit khong the roll back."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Notification fire nhieu lan (moi row mot lan) hoac giu DB connection qua lau, hoac roll back anh huong batch.",
+          "likelyCause": "Goi notifyBatchComplete ben trong vong lap ghi row / ben trong transaction row thay vi sau khi batch terminal.",
+          "fix": "Goi mot lan duy nhat SAU vong lap khi batch da terminal (R19; day-27 after-commit) - side effect nam ngoai moi transaction row."
+        },
+        {
+          "symptom": "Mot loi trong task notification bien mat khong log, khong dau vet.",
+          "likelyCause": "Khong cai getAsyncUncaughtExceptionHandler cho method @Async void.",
+          "fix": "Cai AsyncUncaughtExceptionHandler trong AsyncConfig de log that bai (day-25) - task void khong co return de propagate exception."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-production-packaging-05",
+      "sessionId": "session-v09-production-packaging",
+      "order": 5,
+      "buildStepId": "step-production-packaging-05",
+      "type": "your-turn",
+      "title": "Sinh va doc report JaCoCo (indicator, khong phai gate)",
+      "goal": "jacoco-maven-plugin (version Boot quan ly) sinh target/site/jacoco/index.html o phase verify; README ghi mot quan sat trung thuc tu viec doc report (mot diem yeu coverage va vi sao), khong dua vao percentage gate.",
+      "whyThisMatters": "Ky luat khep cua day-30: sinh report coverage, doc no de thay cac lo hong, va khong bien no thanh percentage gate. R26 gioi han dong goi o ky thuat day-30. Neu gate coverage bang mot nguong phan tram, build se bi chan boi code bao cao read-side va khuyen khich viec game so lieu; nguoc lai neu khong sinh va doc report, cac diem mu coverage se mai vo hinh.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-30",
+          "note": "lab table day-30 sinh va mo target/site/jacoco/index.html; blk-7 ghi cau hinh threshold la mot knowledge gap - o day report chi la indicator, khong dat percentage gate."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd verify; if (-not (Test-Path 'target\\site\\jacoco\\index.html')) { Write-Host 'JaCoCo report missing'; exit 1 }; Write-Host 'JaCoCo report generated'",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Cau hinh jacoco-maven-plugin trong pom.xml (version de Boot parent quan ly) voi execution prepare-agent + execution report gan vao phase verify de .\\mvnw.cmd verify sinh target/site/jacoco/index.html; doc report va ghi vao README mot quan sat trung thuc (mot diem yeu coverage va vi sao), khong dat percentage gate.",
+        "constraints": [
+          "jacoco-maven-plugin co goal prepare-agent va goal report gan phase verify - report duoc sinh khi chay .\\mvnw.cmd verify.",
+          "KHONG them goal check hay percentage threshold - day-30 blk-7 ghi threshold la knowledge gap; day la indicator, khong phai gate (R26).",
+          "README ghi mot quan sat that tu viec DOC report (class coverage thap nhat va ly do khong bien no thanh gate), khong bia so.",
+          "Khong them dependency/plugin nao khac \"cho sau nay\" (R26: khong gi sau ky thuat day-30)."
+        ],
+        "hints": [
+          "De version plugin cho Boot parent quan ly - khong ghi <version> cho jacoco-maven-plugin.",
+          "Chay .\\mvnw.cmd verify roi mo target/site/jacoco/index.html, tim class co instruction/branch coverage thap nhat.",
+          "Dry-run README ghi AdvancedStatisticsService khoang 60% instruction / 43% branch la diem yeu, ly do la code read-side (R10, khong persist gi) nen mot defect chi misreport con so chu khong lam hong ledger - do do khong gate."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Build fail vi coverage duoi mot nguong phan tram, chan ca cac thay doi khong lien quan.",
+          "likelyCause": "Them jacoco goal check voi <rule> nguong bien report thanh gate.",
+          "fix": "Bo goal check - chi giu prepare-agent + report; day-30 blk-7 coi threshold la knowledge gap, coverage o day la indicator (R26)."
+        }
+      ]
+    },
+    {
+      "id": "step-v09-production-packaging-ck",
+      "sessionId": "session-v09-production-packaging",
+      "order": 6,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Production packaging: OpenAPI, MDC traceId, Actuator, Docker Compose, async notification da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-production-packaging deu pass verify va tuan dung cac rule kien truc cua no truoc khi sang task tiep theo."
+    },
+    {
+      "id": "step-v10-hardening-reconciliation-01",
+      "sessionId": "session-v10-hardening-reconciliation",
+      "order": 1,
+      "buildStepId": "step-hardening-reconciliation-01",
+      "type": "code-with-me",
+      "title": "Dung fixture lich su nhieu-feature qua duong chinh thong va test that bai doi zero drift",
+      "goal": "SeedHistoryFixture gieo giao dich nhieu thang tren >=2 account, budget, recurring generation va mot import batch - moi hang tai chinh chi sinh qua TransactionCreationService.create, ImportService.importCsv va RecurringGenerationService.generateDue, khong mot raw insert nao - va HardeningReconciliationTest chot mot test hien dang fail vi khang dinh BalanceReconciliationJob.detectDrift() khong bao drift tren toan bo lich su do.",
+      "whyThisMatters": "V1.0 la ban portfolio cuoi: bang chung dong cua no la job reconciliation bao zero drift tren mot lich su dang ke, khong phai tren vai vi du. R20 doi moi hang tai chinh di qua duong chinh thong; o day con nghiem hon R20's test allowance - fixture cung khong duoc raw-insert su that tai chinh, de chinh cac duong chinh thong bi kiem chung. Neu fixture lay tat khap R8 projection bang raw insert thi bang chung dong se rong tue, vi vay phai gieo that qua create/import/generate.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-28",
+          "note": "JUnit 5 + @SpringBootTest tren Testcontainers postgres that (nhu IntegrationTestBase): boot ca app, Flyway chay het migration, ddl-auto=validate - nen tang de fixture gieo va test doc lai tren dung engine production."
+        },
+        {
+          "lessonId": "day-29",
+          "note": "BalanceReconciliationJob.reconcile() log 'no drift' hoac WARN tung account drift; detectDrift() la diem test doc truc tiep semantics ma khong cho lich chay hay mutate gi - observability lam bang chung zero-drift kiem duoc."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=HardeningReconciliationTest' test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao src/test/java/com/spendwise/SeedHistoryFixture.java: mot lop test-only gieo lich su qua duong chinh thong, khong extends gi bat buoc nhung dung chung cac bean da autowired (TransactionCreationService, ImportService, RecurringGenerationService, AccountRepository, BudgetService/BudgetRepository, UserRepository).",
+        "Trong fixture: tao mot owner qua UserRepository.save, roi >=2 Account qua accountRepository.saveAndFlush (nhu BalanceReconciliationTest lam) voi openingBalance ro rang - reconciliation nhom theo account nen phai co it nhat hai account de chung minh khong lan so giua chung.",
+        "Gieo giao dich thu cong nhieu thang qua transactionCreationService.create(new TransactionCreationCommand(account, type, new Money(...), Category..., sourceRef, occurredOn), ownerId): moi command dat occurredOn tuong minh (dung constructor co LocalDate occurredOn) trai dai qua vai thang, moi sourceRef duy nhat (vi du TEST:seed:<n>), khong bao gio raw insert vao bang transactions.",
+        "Gieo mot import batch qua ImportService.importCsv(ownerId, accountId, fileName, csvFile): viet mot file CSV tam (@TempDir) vai dong hop le (co header, cot signed amount, mot vai dong co sourceTxnId de vao tier-1, vai dong khong de vao tier-2) - de import pipeline that tao cac hang, khong tu goi create thay no.",
+        "Gieo recurring qua recurringTransactionRepository.save mot RecurringTransaction co nextDueDate trong qua khu, roi goi recurringGenerationService.generateDue(ownerId, asOf) voi asOf = hom nay de sinh nhieu occurrence dung qua duong chinh thong (moi occurrence co sourceRef RECURRING:<id>:<dueDate>).",
+        "Gieo it nhat mot Budget qua duong binh thuong (BudgetService/repository) cho mot category va period trong khoang lich su, de buoc kiem toan SUM sau nay co budget that de doi chieu (R10 derived).",
+        "Tao src/test/java/com/spendwise/HardeningReconciliationTest.java: @SpringBootTest @Transactional, autowire fixture (hoac goi truc tiep cac buoc gieo) + BalanceReconciliationJob job; goi fixture gieo toan bo lich su roi assertTrue(job.detectDrift().isEmpty()) tren cac account vua gieo.",
+        "Chay verifyCommand: test nay phai fail dung ly do - hoac vi SeedHistoryFixture chua ton tai, hoac vi detectDrift() bao drift lo ra loi that trong duong chinh thong - KHONG duoc pass ngay bang cach raw-insert balance cho khop.",
+        "Tuyet doi khong sua production code o buoc nay va khong raw-insert su that tai chinh: fixture chi dung create/importCsv/generateDue; chinh sua projection (drift probe) neu can chi lam o repository-level trong test, giong task-scheduled-reconciliation, khong bao gio trong production."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Test pass ngay lap tuc vi fixture insert thang vao bang transactions hoac update balance_amount cho khop",
+          "likelyCause": "Muon 'cho nhanh xanh' bang raw insert - nhung the la bo qua chinh cac duong chinh thong ma bang chung V1.0 phai kiem.",
+          "fix": "Gieo qua transactionCreationService.create / importService.importCsv / recurringGenerationService.generateDue - nghiem hon R20's test allowance. Raw update balance chi duoc dung lam drift PROBE o repository-level trong test, khong phai de gieo su that."
+        },
+        {
+          "symptom": "Reconciliation bao drift tren account co import/recurring du du lieu 'trong dung'",
+          "likelyCause": "Import/recurring co the sinh EXPENSE/INCOME theo signedEffect ma balance projection cap nhat khac ky vong cua ban - do la loi that lich su lo ra, khong phai loi test.",
+          "fix": "Day chinh la muc dich buoc 02: dung tay tinh SUM openingBalance +/- theo signedEffect, tim hang lech, va sua qua duong binh thuong voi regression test - khong va bang cach update balance truc tiep."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-hardening-reconciliation-02",
+      "sessionId": "session-v10-hardening-reconciliation",
+      "order": 2,
+      "buildStepId": "step-hardening-reconciliation-02",
+      "type": "your-turn",
+      "title": "Kiem toan SUM tay doi chieu dashboard/statistics/budget va sua loi lo ra qua duong binh thuong",
+      "goal": "HardeningSumAuditTest tinh SUM tay tren lich su da gieo va khang dinh khop tuyet doi voi StatisticsService (totalIncome/totalExpense/spendingByCategory), DashboardReadService.forMonth va BudgetCalculationService.calculate; BalanceReconciliationJob bao zero drift; moi defect lo ra duoc sua qua duong binh thuong kem regression test; khong feature/endpoint/rule/architecture moi nao xuat hien.",
+      "whyThisMatters": "Day la muc dich V1.0 goi trong mot buoc: chung minh moi con so dan xuat khop su that tinh tay tren lich su that, roi sua bat ky gi bang chung tim ra - chi qua duong binh thuong. R1 giu amount BigDecimal scale 2, R6 giu figures dan xuat tu ledger, R8 giu balance la projection (job doc lai, khong ghi de), R10 giu budget figures dan xuat khong luu. Mot nha tuyen dung soi portfolio se hoi 'lam sao ban biet no dung o quy mo?' - cau tra loi la day: SUM tay = dashboard = statistics = budget, va reconciliation zero drift.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-10",
+          "note": "Stream API - filter theo TransactionType, groupingBy(Category), va BigDecimal reduce - la chinh engine StatisticsService dung; ban tay tinh lai bang cung phep de doi chieu totalIncome/totalExpense/spendingByCategory."
+        },
+        {
+          "lessonId": "day-20",
+          "note": "@Transactional(readOnly=true) va cac query repository theo khoang thoi gian/category (findAllByUserIdAndOccurredOnBetweenWithReferences, findAllByUserIdAndCategoryAndOccurredOnBetween) la nen cua BudgetCalculationService/DashboardReadService - hieu chung de tinh tay SUM cung pham vi period/category."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=HardeningSumAuditTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet src/test/java/com/spendwise/HardeningSumAuditTest.java (@SpringBootTest @Transactional) tai su dung SeedHistoryFixture cua buoc 01 de gieo lich su, roi TU TINH TAY cac SUM ky vong (openingBalance +/- theo signedEffect cho tung account, tong income/expense theo thang, spend theo category cho period cua budget) va assert chung khop tuyet doi voi StatisticsService, DashboardReadService.forMonth va BudgetCalculationService.calculate; ket thuc bang assert BalanceReconciliationJob.detectDrift() rong. Neu bat cu doi chieu nao lech, chan doan nguon goc, sua qua duong binh thuong va them regression test khoa lai loi do.",
+        "constraints": [
+          "So tay tinh phai la BigDecimal scale 2 (R1) - dung new BigDecimal(\"...\") / Money va so sanh bang compareTo hoac Money.equals, khong dung double, khong lam tron o buoc trung gian.",
+          "Doi chieu dung con so DAN XUAT (R6): goi StatisticsService/DashboardReadService/BudgetCalculationService that de lay figures, khong doc mot cot 'tong' luu san nao - vi khong ton tai cot nhu vay va khong duoc tao ra.",
+          "Balance van la projection (R8): xac nhan zero drift qua BalanceReconciliationJob.detectDrift(); neu drift, KHONG update balance_amount de va - tim hang giao dich sai va sua qua duong tao/su binh thuong.",
+          "Budget figures van dan xuat (R10): spent/remaining/percentage lay tu BudgetCalculationService.calculate, doi chieu voi SUM tay cua rieng category+period+currency do - khong luu spent len Budget.",
+          "Moi fix la data/bug fix qua duong binh thuong: khong endpoint moi, khong rule moi, khong capability moi, khong architecture moi (blueprint V1.0: none new). Moi fix phai co it nhat mot regression test.",
+          "Drift probe (neu dung de tai hien loi projection) chi o repository-level trong test, khong bao gio trong production code - giong task-scheduled-reconciliation."
+        ],
+        "hints": [
+          "Tinh balance ky vong tung account nhu BalanceReconciliationService lam: bat dau openingBalance, cong amount neu type.signedEffect() > 0 (INCOME/TRANSFER_IN), tru neu < 0 (EXPENSE/TRANSFER_OUT) - so nay phai khop account.balance() va khien detectDrift() rong.",
+          "Cho spendingByCategory chi tinh EXPENSE co category != null va cung mot currency (StatisticsService requireSingleCurrency); gieo lich su mot currency thong nhat cho phan doi chieu nay de tranh CurrencyMismatchException lam nhieu bang chung.",
+          "Budget percentage la spent.multiply(100).divide(limit, 2, HALF_UP) va chi dem EXPENSE cung currency voi limit - tinh tay dung cong thuc do de khop tuyet doi.",
+          "Neu mot doi chieu lech, dung systematic-debugging: tim hang giao dich cu the (sourceRef nao, account nao) gay lech truoc khi cham vao bat ky code nao; phan lon 'drift' o day la mot hang gieo sai gia dinh, khong phai loi trong service.",
+          "verifyCommand chay HardeningSumAuditTest roi ca suite (.\\mvnw.cmd test): ca invariant, slice va integration deu phai xanh sau pass - day la tieu chi acceptance cua task."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "So SUM tay khop 'gan dung' nhung lech vai cent so voi dashboard/budget",
+          "likelyCause": "Tinh trung gian bang double hoac lam tron som, hoac tinh tay tren TAT CA transaction thay vi loc dung type/category/currency/period ma service loc.",
+          "fix": "Tinh bang BigDecimal scale 2 tu dau (R1), va sao chep dung bo loc cua service: BudgetCalculationService chi dem EXPENSE cung currency voi limit trong dung period; StatisticsService loc theo type va single-currency."
+        },
+        {
+          "symptom": "Sua drift bang cach update balance_amount cho khop SUM",
+          "likelyCause": "Xem balance nhu su that doc lap thay vi projection - nen 'sua so cho dep'.",
+          "fix": "R8: balance la projection sinh tu transaction rows; job chi bao drift, khong bao gio ghi de. Sua nguon goc (hang giao dich sai qua duong tao binh thuong) roi de projection tu dung, kem regression test."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-hardening-reconciliation-ck",
+      "sessionId": "session-v10-hardening-reconciliation",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Hardening pass: zero-drift reconciliation proof over seeded history da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-hardening-reconciliation deu pass verify va tuan dung cac rule kien truc cua no."
+    },
+    {
+      "id": "step-v10-portfolio-readme-01",
+      "sessionId": "session-v10-portfolio-readme",
+      "order": 1,
+      "buildStepId": "step-portfolio-readme-01",
+      "type": "code-with-me",
+      "title": "Viet phan Run va chung minh no chay tu mot clone sach",
+      "goal": "README.md co day du chuoi lenh clone/cau-hinh/compose-up khop chinh xac voi docker-compose.yml va toolchain da build o task-production-packaging: ./mvnw.cmd -DskipTests package, dat SPENDWISE_DB_USERNAME/SPENDWISE_DB_PASSWORD/SPENDWISE_JWT_SECRET, docker compose up --build -d, roi docker compose ps xac nhan app healthy khi /actuator/health bao db UP; tham chieu ban ghim Spring Boot 3.5.16 tro dung docs/decisions/spring-boot-pin.md.",
+      "whyThisMatters": "Nghia vu dau tien cua mot README la lenh cua no phai chay - mot nha tuyen dung hay giam khao clone repo, lam theo, va phai toi duoc app healthy chi bang nhung gi repo chua san. Neu chuoi lenh sai mot bien env hay mot lenh, README sai va portfolio mat diem tin cay. R26 buoc phan nay chi la tai lieu: khong them endpoint, khong them ky thuat nao sau day-30 - chi chep lai dung cach chay da duoc build va chung minh.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-30",
+          "note": "Lab 10 Production Readiness day chinh cai run tai lap duoc: docker compose up tren may thu hai cho ra dung app + database wiring, /actuator/health bao db UP, moi secret la placeholder moi truong (dang :? fail loud). Phan Run cua README chep lai chinh xac hop dong nay."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (-not (Test-Path 'README.md')) { Write-Host 'README.md missing'; exit 1 }; $c = Get-Content 'README.md' -Raw; if ($c -notmatch 'docker compose up') { Write-Host 'run section incomplete'; exit 1 }; foreach ($k in 'SPRING_DATASOURCE','compose') { if ($c -notmatch $k) { Write-Host \"README lacks: $k\"; exit 1 } }; Write-Host 'README run section present'",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Mo README.md o goc repo. Them (hoac cung co) mot muc Run mo dau bang chuoi tu clone: git clone <repo>, cd vao thu muc, roi ./mvnw.cmd -DskipTests package de tao layered jar trong target/ - chinh xac lenh package da dung o task-production-packaging.",
+        "Ghi buoc dat bien moi truong TRUOC compose: SPENDWISE_DB_USERNAME, SPENDWISE_DB_PASSWORD, SPENDWISE_JWT_SECRET (JWT secret >= 32 bytes UTF-8). Ba bien nay la nhung bien docker-compose.yml doc qua dang ${...:?...}, se fail loud neu thieu - dung bia them bien khong co trong compose.",
+        "Ghi lenh docker compose up --build -d roi docker compose ps, kem chu thich rang app chi healthy khi /actuator/health bao db UP (healthcheck cua service app trong compose dung wget /actuator/health | grep -q UP). Nhac /swagger-ui.html va /v3/api-docs do springdoc phuc vu.",
+        "Giai thich ngan rang compose map SPRING_DATASOURCE_URL/SPRING_DATASOURCE_USERNAME/SPRING_DATASOURCE_PASSWORD (relaxed binding cua Boot cho spring.datasource.*) tu host vao service app, va host db trong mang compose la ten service 'db'. Dung ten bien SPRING_DATASOURCE dung nhu compose ghi, khong doi ten.",
+        "Them mot dong tro toi docs/decisions/spring-boot-pin.md cho ban ghim Spring Boot 3.5.16 (khop <version>3.5.16</version> trong pom.xml) - ghi dung quyet dinh da chep, khong papering over SPRING_BOOT_EXACT_PIN_PENDING.",
+        "Xac minh that: tu mot checkout sach, lam theo chinh phan Run vua viet, chay tron chuoi lenh, va xac nhan docker compose ps ket thuc voi app o trang thai healthy - neu health khong xanh thi README sai, sua chuoi lenh cho khop compose thuc te truoc khi coi la xong."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "docker compose up fail ngay voi thong bao dang 'set SPENDWISE_DB_USERNAME' truoc khi container nao khoi dong",
+          "likelyCause": "Chua export ba bien SPENDWISE_DB_USERNAME/SPENDWISE_DB_PASSWORD/SPENDWISE_JWT_SECRET; compose dung dang ${VAR:?...} nen fail loud khi thieu bat ky bien bat buoc nao.",
+          "fix": "Export du ba bien TRUOC docker compose up (dung buoc 2). README phai liet ke chinh xac ba bien nay, khong it hon, va JWT secret phai >= 32 bytes."
+        },
+        {
+          "symptom": "docker compose ps hien app 'health: starting' hoac 'unhealthy' mai khong len healthy",
+          "likelyCause": "Chua ./mvnw.cmd -DskipTests package truoc nen chua co jar cho image build, hoac db chua UP nen leg database cua /actuator/health con DOWN.",
+          "fix": "Package jar truoc, roi compose up; app depends_on db o dieu kien service_healthy va co start_period 40s - doi health cua db xanh truoc, dung ket luan README sai qua som."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-portfolio-readme-02",
+      "sessionId": "session-v10-portfolio-readme",
+      "order": 2,
+      "buildStepId": "step-portfolio-readme-02",
+      "type": "your-turn",
+      "title": "Ke kien truc: invariant, quyet dinh, va mo hinh danh tinh import kem gioi han cua no",
+      "goal": "README.md ke hanh trinh V0.1 den V1.0, liet ke cac invariant Constitution khop mot-doi-mot voi display name cua rule suite (R2/R5/R7/R10/R11/R24 trong ArchitectureInvariantTest va ArchitectureInvariantReadSideTest), chep cac quyet dinh chinh (canonical path la duong ghi duy nhat, per-row atomicity, no-202 dong bo, 404-khong-403, AI boundary ADR-016 - advisory/deferred, ship la RuleEngine tat dinh), va mo ta mo hinh danh tinh import hai tier VOI gioi han reordering cua tier fallback - dong thoi dat cac ghi chu ADR dai hon vao docs/architecture-notes.md.",
+      "whyThisMatters": "Portfolio ke su that ve cach he thong duoc xay: rule id thuc, quyet dinh o muc ADR, va gioi han dedup neu ra thang nhu code ghi. Mot reviewer khong doc code phai thay duoc invariant nao dang giu tien va huong giao dich, va phai thay README KHONG oversell chong trung. R22 la truc cua phan concurrency: tier-2 occurrence counter la order-derived nen parallelStream bi cam tren duong import - neu README hua stable dedup qua reordering thi no noi doi ve chinh code minh dang bao ve.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-30",
+          "note": "Lab 10 khep production readiness thanh mot deliverable: README nhu artifact cuoi la mot phan cua san sang van hanh - test pyramid (unit/invariant/slice/Testcontainers) va JaCoCo report-as-indicator (khong phai gate) duoc ke o day dung nhu da build."
+        },
+        {
+          "lessonId": "day-36",
+          "note": "Final Defense: README la ban tu bao ve. Cac quyet dinh ADR-level (canonical path, per-row atomicity, no-202, 404-khong-403, AI boundary ADR-016 - advisory/deferred, ship la RuleEngine tat dinh) va gioi han reordering cua tier fallback la chinh nhung cau hoi giam khao se hoi - ghi truoc, trung thuc, kem rule id thuc."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (-not (Select-String -Path 'README.md' -Pattern 'parallelStream|UNIQUE \\(user_id, source_ref\\)|reorder' -Quiet)) { Write-Host 'README lacks the import-identity narrative'; exit 1 }",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Viet phan kien truc trong README.md (va dat cac ghi chu ADR chi tiet hon vao docs/architecture-notes.md): (1) ke hanh trinh V0.1 den V1.0; (2) liet ke invariant Constitution khop dung display name cua rule suite; (3) chep cac quyet dinh chinh; (4) mo ta mo hinh danh tinh import hai tier KEM gioi han reordering cua tier fallback - dung nhu code cong bo.",
+        "constraints": [
+          "Danh sach invariant phai khop mot-doi-mot display name cua rule suite trong src/test/java/com/spendwise/shared/: R2 (Money equality value-based, khong BigDecimal.equals scale-sensitivity), R5 (division pin explicit scale VA RoundingMode, dang unrounded nem loi), R7 (Transaction can amount duong that su va huong typed; zero/negative bi tu choi), R10 (Budget chi luu limit, khong luu spent/remaining/percentage/status), R11 (chi Category duoc cache va no khong mang money figure), R24 (SecurityContextHolder doc o dung mot class CurrentUser, va foreign-owner la 404 khong 403). Moi rule da ghim phai duoc ke - khong bo sot, khong bia rule khong ton tai.",
+          "Chi cite rule id THUC (R1-R26) va quyet dinh ADR THUC. Khong bia kien truc: KHONG microservices, KHONG bank sync, KHONG claim universal dedup. App la single-user-per-deployment voi cot user_id tren moi bang so huu.",
+          "Mo hinh danh tinh import phai neu KEM GIOI HAN: tier-2 (fallback, khi row khong co source reference) dung baseFingerprint + occurrenceIndex 1-based dem theo THU TU FILE, ra sourceRef dang IMPORT:<baseFingerprint>|OCC:<index>. No stable khi re-import CUNG mot statement (cung thu tu file), NHUNG khong stable qua reordering tuy y cua mot file duoc dung lai - occurrenceIndex duoc recompute theo thu tu moi. Ghi thang cai gia nay, dung oversell dedup.",
+          "Tier-1 (uu tien, khi row co source reference on dinh) dung sourceRef = IMPORT:SRC:<sourceKey>:<accountId>:<normalize(sourceTxnId)> va la order-independent - phai phan biet ro voi tier-2. Constraint database do la V10__transaction_source_ref.sql: UNIQUE (user_id, source_ref) global tren toan ledger, kem backfill legacy sang MANUAL:<uuid>.",
+          "Concurrency model phai ghi R22: vong lap import la for-each tuan tu, cam parallelStream/parallel executor tren duong import vi occurrence counter cua RowIdentityService la order-derived (ImportService.importCsv nuoi RowIdentityService theo dung thu tu file).",
+          "Chi tai lieu: task nay khong doi production code nao ngoai README.md (va docs/architecture-notes.md, cac link/anh no tham chieu), khong them endpoint (R26: khong gi sau ky thuat cua day-30)."
+        ],
+        "hints": [
+          "Lay display name invariant tu @DisplayName trong ArchitectureInvariantTest (R2/R5/R7) va ArchitectureInvariantReadSideTest (R10/R11/R24) - chep dung y, dung tom tat lai thanh rule khac. Sau khi khop, doi chieu tung dong invariant voi tung @DisplayName de chac chan mot-doi-mot.",
+          "Cho quyet dinh no-202: ImportService KHONG @Transactional, moi row la mot transaction rieng qua ImportRowProcessor, response dong bo doi het cac row, chi co mot leg async la thong bao fire-and-forget dispatch SAU vong lap (khong bao gio trong row transaction - R19).",
+          "Cho AI boundary (ADR-016): day la ranh gioi advisory/hoan lai, KHONG phai tinh nang da ship - grep src/main khong co lop AI nao. Categorization that su la RuleEngine tat dinh (com.spendwise.rule.RuleEngine, priority-ordered CategorizationRule): TransactionCreationService.create chi tu gan category qua ruleEngine.categorize khi caller khong truyen category, category thu cong luon thang, va ket qua duoc gan inline ngay trong create() - khong co buoc AI goi y hay user accept.",
+          "Cho gioi han reordering: dien dat dung cai code cong bo - hai row du lieu giong het trong mot statement nhan OCC:1 va OCC:2 (hai danh tinh, nen hai giao dich); re-import cung statement recompute ca hai, va them 0 bao 2 DUPLICATE; nhung mot file dung lai theo thu tu khac thi OCC index recompute va co the khac - do la cai stable trong-statement nhung khong order-independent nhu tier-1.",
+          "docs/architecture-notes.md la file moi - dat o day cac ADR dai (canonical path la duong ghi duy nhat, per-row atomicity, no-202, 404-khong-403, AI boundary, mo hinh danh tinh) de README goc gon, README link toi no."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "README hua 'chong trung on dinh qua moi lan import' hoac mo ta dedup nhu la universal, khong neu gioi han reordering",
+          "likelyCause": "Muon phan portfolio nghe manh me hon, oversell kha nang dedup ma code khong co.",
+          "fix": "Ghi dung nhu code cong bo: tier-2 stable khi re-import CUNG file (cung thu tu), nhung occurrenceIndex la order-derived nen khong stable qua reordering tuy y. Neu ngon ngu nghe nhu universal dedup, README dang noi doi ve code - viet cai gia ra thang."
+        },
+        {
+          "symptom": "Danh sach invariant trong README khong khop rule suite: thieu mot rule da ghim, hoac them mot rule khong co @DisplayName tuong ung",
+          "likelyCause": "Viet invariant tu tri nho thay vi doi chieu tung @DisplayName trong ArchitectureInvariantTest/ArchitectureInvariantReadSideTest.",
+          "fix": "Acceptance criteria doi khop mot-doi-mot: moi rule ghim (R2/R5/R7/R10/R11/R24) phai duoc ke, dung nhieu dung it. Doc lai hai file test va doi chieu tung dong."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-portfolio-readme-ck",
+      "sessionId": "session-v10-portfolio-readme",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Portfolio README with architecture narrative and run instructions da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-portfolio-readme deu pass verify va tuan dung cac rule kien truc cua no."
+    },
+    {
+      "id": "step-v10-final-demo-01",
+      "sessionId": "session-v10-final-demo",
+      "order": 1,
+      "buildStepId": "step-final-demo-01",
+      "type": "code-with-me",
+      "title": "Viet docs/demo-script.md di het money path, moi doan goi ten invariant no chung minh",
+      "goal": "docs/demo-script.md di qua: setup app qua docker compose up, tao account va chon category seed (FOOD/TRANSPORT/HOUSING/ENTERTAINMENT/SALARY), ghi giao dich qua POST /api/transactions, import CSV co mot dong trung co y va mot dong hong co y qua POST /api/imports, xem GET /api/imports/{id}, xem budget qua /api/budgets/{id}/calculation, xem GET /api/dashboard?month=YYYY-MM, re-import chung minh cong them zero, xem /actuator/health va /swagger-ui.html, va mot doan forced-failure cho thay rollback - moi doan trich rule id va gon trong 10-15 phut.",
+      "whyThisMatters": "Trong buoi bao ve day-36 Final Defense ban co phut chu khong co gio, va chieu sau cua project - duong tao chinh tac, mo hinh danh tinh hai tang, thap test - vo hinh neu demo khong duoc dan dung de phoi bay no; mot demo ngau hung chi cho thay CRUD. Moi doan goi dung ten invariant (R20 duong tao chinh tac qua TransactionCreationService.create, R22 idempotency va terminal state OK/DUPLICATE/FAILED, R24 ownership tra 404 chu khong 403) de nguoi cham thay ban hieu vi sao code lam vay, khong chi lam gi. Doan forced-failure la doan quan trong nhat: no chung minh rollback that thay vi noi suong.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-36",
+          "note": "day-36 Final Defense - kich ban demo la san pham cua buoi bao ve: di het money path va goi ten tung invariant chinh la cach chung minh do sau trong vai phut."
+        },
+        {
+          "lessonId": "day-30",
+          "note": "day-30 Lab 10 Production Readiness - doan setup cua kich ban dua tren docker compose up va /actuator/health bao db UP truoc khi bat dau, dung nhu README V0.9 mo ta."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (-not (Test-Path 'docs\\demo-script.md')) { Write-Host 'demo script missing'; exit 1 }; $c = Get-Content 'docs\\demo-script.md' -Raw; foreach ($k in 'DUPLICATE','rollback','R20','dashboard') { if ($c -notmatch $k) { Write-Host \"demo script lacks segment: $k\"; exit 1 } }; Write-Host 'demo script present'",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao docs/demo-script.md (Markdown, khong phai production code - V1.0 chi chung minh va tai lieu hoa nhung gi da xay tu V0.1-V0.9, khong them endpoint moi theo R26).",
+        "Mo dau bang doan Setup: ghi lenh ./mvnw.cmd -DskipTests package roi docker compose up --build -d va docker compose ps, ghi ro app chi bat dau demo khi /actuator/health bao leg db UP; dat moc thoi gian du kien cho doan nay (vi du 0:00-1:30).",
+        "Doan Auth va Account: POST /api/auth/register roi POST /api/auth/login lay token, POST /api/accounts tao mot account; talking point ghi R24 - ownership doc SecurityContextHolder o dung mot class CurrentUser va moi query deu scope theo owner id.",
+        "Doan Category: chi ro category la danh sach seed co dinh (FOOD, TRANSPORT, HOUSING, ENTERTAINMENT, SALARY) doc qua GET /api/categories - KHONG co endpoint tao category, nen demo chon mot code seed san chu khong tao moi (trung thuc voi cai app that lam).",
+        "Doan Transactions: POST /api/transactions vai giao dich (income va expense) qua CreateTransactionRequest; talking point ghi R20 - moi Transaction di qua duong tao chinh tac TransactionCreationService.create va mang mot sourceRef (vi du MANUAL:<uuid>), khong bao gio insert thang vao repository.",
+        "Doan Import: chuan bi mot file CSV co (a) mot dong trung co y voi mot giao dich da co (dong nay phai mang CUNG sourceTxnId voi mot giao dich da co - chi tier 1 moi cho ket qua DUPLICATE; hai dong cung noi dung ma khong co sourceTxnId se vao tier 2 va CA HAI deu duoc import voi OCC index khac nhau) va (b) mot dong hong co y (thieu cot / so tien khong parse duoc); POST /api/imports voi accountId va file; talking point ghi R22 - moi dong la mot don vi atomic rieng, ket qua la dung mot trong OK/DUPLICATE/FAILED, dong hong ghi FAILED va khong chan dong khac.",
+        "Doan Import Report: GET /api/imports/{id} de doc summary OK/DUPLICATE/FAILED theo tung dong; noi ro batchId va rowNo chi de hien thi va bao loi, khong bao gio tham gia danh tinh dong (R22).",
+        "Doan Two-tier honesty: giai thich thang - mot dong co tham chieu nguon on dinh trung se bao DUPLICATE (tier 1), con hai dong noi dung y het nhau ma khong co tham chieu nguon thi CA HAI deu duoc import voi occurrence index khac nhau (OCC, tier 2), dung nhu ReImportIdempotencyTest chung minh.",
+        "Doan Budget: GET /api/budgets/{id}/calculation cho thay spent/remaining/percentage/status; talking point ghi R10 - cac so lieu nay duoc suy dien luc doc, khong bao gio luu tru.",
+        "Doan Dashboard: GET /api/dashboard?month=YYYY-MM cho thay tong income/expense, breakdown theo category, balance theo account, trang thai budget; talking point ghi R10 va R24 - moi so la derived va moi query scope theo owner.",
+        "Doan Re-import (idempotency): POST /api/imports lai dung file CSV do; talking point ghi R22 - lan re-import cong them ZERO giao dich, cac dong OK truoc gio bao DUPLICATE vi danh tinh duoc tai tao giong het (batchId/rowNo khong tham gia danh tinh); danh chu DUPLICATE ro rang trong tai lieu.",
+        "Doan Health/Docs: mo /actuator/health (bao db UP), /swagger-ui.html va /v3/api-docs do springdoc phuc vu - chung minh app san sang van hanh (day-30).",
+        "Doan Forced-failure (rollback): transfer la thao tac service-level @Transactional va KHONG co endpoint HTTP rieng trong ban build nay (R26 cam them endpoint moi), nen doan nay chung minh rollback bang cach CHAY TEST truc tiep truoc mat nguoi cham - .\\mvnw.cmd '-Dtest=TransferServiceTest#rollsBackDebitWhenCreditLegFails' test (va MoneyPathIntegrationTest) - cho thay transfer khac tien te nem CurrencyMismatchException, cap TRANSFER_OUT/TRANSFER_IN chia chung mot transferRef, ca hai leg rollback trong MOT don vi @Transactional (R21/R20), so du hai account KHONG doi va khong co dong nao duoc ghi, dung nhu TransferServiceTest.rollsBackDebitWhenCreditLegFails khang dinh; ghi ro chu rollback va ghi chu 'transfer khong co REST endpoint - chung minh bang test' trong tai lieu. Thanh phan that bai kha kien qua HTTP tren app da dong goi la dong CSV hong o doan Import (FAILED, per-row R22).",
+        "Cuoi tai lieu: ghi bang moc thoi gian tong (moi doan may phut) sao cho tong khop cua so 10-15 phut, va mot dong ket noi bat: demo nay lam chieu sau cua project hien ra trong vai phut."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Kich ban ghi doan 'tao category moi' qua mot POST /api/categories, hoac giai thich rang hai dong noi dung giong het se bao DUPLICATE.",
+          "likelyCause": "Gia dinh category la CRUD nhu account, va gia dinh 'giong het thi la trung' ma khong doc ky mo hinh hai tang.",
+          "fix": "Category la seed co dinh, chi co GET /api/categories - chon code seed san. Hai dong giong het khong co tham chieu nguon deu duoc import (tier 2, OCC index khac nhau); chi dong co tham chieu nguon on dinh trung moi bao DUPLICATE (tier 1). Ke dung cau chuyen ReImportIdempotencyTest da chung minh."
+        },
+        {
+          "symptom": "Doan forced-failure viet kieu 'gia su o day co mot bug' hoac chi mo ta rollback bang loi ma khong chay that.",
+          "likelyCause": "Nghi rang chi can noi ve rollback la du cho buoi bao ve.",
+          "fix": "Ep mot that bai THAT bang cach chay TransferServiceTest.rollsBackDebitWhenCreditLegFails truc tiep: transfer khac tien te nem CurrencyMismatchException, R21 - transfer la mot don vi @Transactional nen ca hai leg rollback, so du khong doi. Transfer khong co REST endpoint (R26 cam them) nen chung minh bang test chay truoc mat, khong hand-waving; thanh phan failure kha kien qua HTTP la dong CSV hong (FAILED, R22)."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-final-demo-02",
+      "sessionId": "session-v10-final-demo",
+      "order": 2,
+      "buildStepId": "step-final-demo-02",
+      "type": "your-turn",
+      "title": "Dien tap kich ban het dau den cuoi tren app dang chay qua docker compose",
+      "goal": "Chay docker compose up --build -d, roi thuc thi docs/demo-script.md tu doan setup den doan forced-failure ma khong co fixup nao ngoai kich ban; doan re-import phai hien ro cac dong DUPLICATE; doan forced-failure phai cho thay so du KHONG doi; ghi lai moc thoi gian that vao tai lieu.",
+      "whyThisMatters": "Mot demo chua tung chay la mot loi cau chuc, khong phai bang chung; dien tap moi chung minh moi buoc thuc thi duoc va doan forced-failure that su rollback. R22 idempotency chi dang tin khi ban tan mat thay lan re-import cong them zero va bao DUPLICATE tren app that; R21 rollback chi dang tin khi ban thay so du hai account khong doi sau khi transfer fail. Moc thoi gian ghi lai bao dam demo gon trong cua so bao ve day-36 chu khong tran gio.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-36",
+          "note": "day-36 Final Defense - dien tap la buoc bien kich ban thanh mot demo thuc su chay duoc trong cua so bao ve; ghi moc thoi gian that de chung minh no vua khung 10-15 phut."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "docker compose ps; if (-not (Select-String -Path 'docs\\demo-script.md' -Pattern 'timing|DUPLICATE|rollback' -Quiet)) { Write-Host 'script lacks rehearsal evidence'; exit 1 }",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Bring stack len bang docker compose up --build -d va xac nhan docker compose ps cho thay app healthy (/actuator/health bao db UP), roi chay tung doan cua docs/demo-script.md dung thu tu tren app that - dac biet chay doan import + re-import de thay DUPLICATE, va doan forced-failure chay .\\mvnw.cmd '-Dtest=TransferServiceTest#rollsBackDebitWhenCreditLegFails' test truc tiep de thay ca hai leg rollback va so du khong doi (transfer khong co REST endpoint tren app da dong goi) - cuoi cung ghi moc thoi gian that cho tung doan vao tai lieu.",
+        "constraints": [
+          "Kich ban phai chay het dau den cuoi tren app da dong goi (docker compose up) ma khong co fixup nao ngoai kich ban - neu mot buoc phai sua tay thi sua kich ban roi dien tap lai, khong vpatch mieng khi dang demo.",
+          "Doan re-import phai hien RO cac dong DUPLICATE tren response that va lan re-import cong them zero giao dich (R22 idempotency, terminal state DUPLICATE).",
+          "Doan forced-failure chung minh R21 bang cach chay TransferServiceTest.rollsBackDebitWhenCreditLegFails (va MoneyPathIntegrationTest) truc tiep - transfer la @Transactional service-level, KHONG co REST endpoint tren app da dong goi (R26 cam them) nen khong GET so du qua HTTP; test cho thay transfer khac tien te nem CurrencyMismatchException va ca hai leg rollback trong mot don vi @Transactional, so du khong doi.",
+          "Khong sua production code, khong them endpoint moi (R26) - day chi la dien tap va ghi chu thoi gian vao docs/demo-script.md.",
+          "Ghi moc thoi gian that (timing) vao tai lieu sao cho tong khop cua so 10-15 phut."
+        ],
+        "hints": [
+          "Neu docker compose ps chua healthy, cho /actuator/health bao db UP roi moi bat dau - dung dem thoi gian setup vao ngan sach demo.",
+          "De thay DUPLICATE ro rang, dung dung file CSV o lan import dau va lan re-import; danh tinh duoc tai tao giong het nen cac dong OK truoc gio bao DUPLICATE.",
+          "Doan forced-failure: chay .\\mvnw.cmd '-Dtest=TransferServiceTest#rollsBackDebitWhenCreditLegFails' test - transfer hai account khac tien te (USD/EUR) nem CurrencyMismatchException va ca hai leg rollback; test tu assert so du khong doi, khong can GET qua HTTP vi transfer khong co REST endpoint.",
+          "Ghi moc thoi gian ngay khi dien tap that (vi du Setup 1:30, money path 6:00, import+re-import 3:00, failure 2:00) chu dung uoc luong sau."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Dien tap gap mot buoc phai sua tay (thieu category code, sai accountId, token het han) va ban sua ngay tai cho roi tiep tuc.",
+          "likelyCause": "Coi dien tap la thao tac mot lan chu khong phai vong lap sua kich ban.",
+          "fix": "Moi fixup ngoai kich ban la mot loi trong kich ban: quay lai sua docs/demo-script.md (vi du chot truoc category seed code, luu accountId tra ve, thu tu login truoc) roi dien tap lai tu dau cho toi khi chay mot mach - do la tieu chi chap nhan cua task."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-final-demo-ck",
+      "sessionId": "session-v10-final-demo",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Final demo script and rehearsed walkthrough da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-final-demo deu pass verify va tuan dung cac rule kien truc cua no."
+    },
+    {
+      "id": "step-v10-defense-audit-01",
+      "sessionId": "session-v10-defense-audit",
+      "order": 1,
+      "buildStepId": "step-defense-audit-01",
+      "type": "code-with-me",
+      "title": "Dung bang bo ba con tro (code path - test - rule id) tren toan ma tran cau hoi bao ve",
+      "goal": "Tao docs/defense-audit.md: moi vung phong thu (money model R1/R2/R5, truth/projections R6/R7/R8, canonical path/identity R20/R22 + ADR-007, transfer R21, ownership R24/R25, schema discipline R3/R26, cache/async/scheduler R11/R19, token-issuance §6/R-DAY33, testing tiers ADR-014, AI boundary ADR-016) la mot hang co bo ba da kiem chung - duong dan code ton tai, test duoc trich chay pass, rule id trung dung ten hien thi @DisplayName cua suite.",
+      "whyThisMatters": "Buoi bao ve cuoi hoi 'tai sao': tai sao Money so sanh bang compareTo chu khong BigDecimal.equals, tai sao import tra 201 dong bo chu khong 202, tai sao chu so hoi cham tai khoan nguoi khac tra 404 chu khong 403. Tra loi tu tri nho duoi ap luc thi hong; tra loi bang cach chi thang vao src/main/java/com/spendwise/shared/Money.java va test MoneyTest.treatsEquivalentScalesAsEqualMoney dang pass thi vung. R20 (moi duong tao giao dich la TransactionCreationService.create()), R22 (khong parallelStream tren duong import) va R24 (doc SecurityContextHolder o dung mot noi, foreign-owner ra 404) chinh la nhung 'tai sao' hay bi hoi nhat - bang nay bien Hien Phap tu thu duoc tuan theo thanh thu tu minh bao ve duoc.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-36",
+          "note": "Final Defense: bang bo ba con tro nay chinh la vat pham chuan bi bao ve - moi cau hoi ma tran §19 co san mot vi tri tra loi da kiem chung thay vi mot cau tra loi thuoc long."
+        },
+        {
+          "lessonId": "day-28",
+          "note": "Testing Spring Boot: cot 'proving test' cua moi hang phai la mot test co that trong suite (vi du MoneyTest, TransferServiceTest, OwnershipTest, ReImportIdempotencyTest) da tung chay pass, khong phai mot cau mo ta chung chung."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": "if (-not (Test-Path 'docs\\defense-audit.md')) { Write-Host 'audit missing'; exit 1 }; $c = Get-Content 'docs\\defense-audit.md' -Raw; foreach ($k in 'R20','R22','R24','ADR-016') { if ($c -notmatch $k) { Write-Host \"audit lacks area: $k\"; exit 1 } }; Write-Host 'defense audit present'",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "instructions": [
+        "Tao file docs/defense-audit.md trong repo hoc (khong phai src) - day la vat pham san sang cuoi cung, viet sau buoi tap demo. Dat tieu de va mot bang co it nhat 4 cot: Vung (defense area), Code path, Proving test, Rule id / ADR.",
+        "Hang money model: code path src/main/java/com/spendwise/shared/Money.java; proving test src/test/java/com/spendwise/shared/MoneyTest.java (treatsEquivalentScalesAsEqualMoney chung minh so sanh bang compareTo == 0, rejectsCrossCurrencyArithmetic chan cong tru khac tien te); rule id R2 va R5 - lay dung ten hien thi tu ArchitectureInvariantTest @DisplayName ('R2: Money equality is value-based (compareTo == 0)...' va 'R5: division pins an explicit scale AND RoundingMode...').",
+        "Hang truth/projections: R7 (Transaction can amount duong that su + huong TYPED, zero/am bi tu choi) - code path src/main/java/com/spendwise/account/Transaction.java, proving test ArchitectureInvariantTest @DisplayName 'R7: a Transaction needs a strictly positive amount and a TYPED direction...'; bo sung hang R10 tu ArchitectureInvariantReadSideTest ('R10: Budget persists ONLY the limit...') cho ranh gioi 'khong luu figure phai suy dien'.",
+        "Hang canonical path va identity: code path src/main/java/com/spendwise/account/TransactionCreationService.java - method create() la duong tao giao dich duy nhat (R20), va rang buoc uq_txn_source_ref bat SourceRefConflictException; proving test src/test/java/com/spendwise/imports/SourceRefConstraintTest.java. Identity import: code path src/main/java/com/spendwise/imports/RowIdentityService.java (dinh dang IMPORT:<fingerprint>|OCC:<n>, occurrence counter la order-derived nen R22 cam parallelStream), proving test ReImportIdempotencyTest.tierTwoOccurrencePairStillDedupesWhenReimportedInReverseOrder va RowIdentityServiceTest.tier2AssignsDistinctSequentialOccurrenceIndicesInFileOrder; ghi kem ADR-007 (idempotency theo sourceRef).",
+        "Hang transfer model (R21): code path src/main/java/com/spendwise/account/TransferService.java - method transfer() la @Transactional, hai leg cung mot chu; proving test TransferServiceTest.rollsBackDebitWhenCreditLegFails (leg credit hong thi leg debit roll back) va createsLinkedTransferLegsAndMovesBothStoredBalances; ghi kem ADR-013.",
+        "Hang ownership (R24/R25): code path SecurityContextHolder doc o dung mot lop, truy cap tai khoan nguoi khac tra 404 chu khong 403; proving test src/test/java/com/spendwise/account/OwnershipTest.java (strangerGetsNotFoundForAnotherUsersAccount, accountListNeverIncludesAnotherUsersAccounts) va ArchitectureInvariantReadSideTest @DisplayName 'R24: SecurityContextHolder is read in exactly one class, and foreign-owner access is 404 not 403'.",
+        "Hang schema discipline (R3/R26): code path src/main/resources/db/migration (V1__init.sql toi V10__transaction_source_ref.sql, chi Flyway - khong ddl-auto sinh schema); proving test src/test/java/com/spendwise/account/SchemaValidationTest.java (bootsAgainstFlywayMigratedSchemaUnderDdlAutoValidate chung minh entity khop schema Flyway duoi validate, v4UserIdentityMigrationAppliedAndOwnershipColumnsAreForeignKeyed).",
+        "Hang cache/async/scheduler (R11/R19): R11 chi Category duoc cache va no khong mang figure tien te - proving test ArchitectureInvariantReadSideTest @DisplayName 'R11: the only cached type (Category) carries no money figure...' va CategoryCacheTest; R19 executor @Async phai bi chan bien (bounded) - code path src/main/java/com/spendwise/shared/AsyncConfig.java; scheduler la wiring thuan tren lich bounded - code path src/main/java/com/spendwise/recurring/RecurringScheduler.java (@Scheduled fixedDelayString, R20 khong them logic ghi moi).",
+        "Hang token-issuance timing (§6, R-DAY33, ADR-008): code path src/main/java/com/spendwise/auth/NimbusTokenIssuer.java, goi qua AuthService.tokenIssuer.issue(user); proving test src/test/java/com/spendwise/auth/NimbusTokenIssuerTest.java (issuesAVerifiableHs256JwtCarryingSubjectAndRoles va aSubThirtyTwoByteSecretFailsAtEncodeNotAtConstruction chung minh secret < 32 byte fail luc encode chu khong luc construct).",
+        "Hang 'no 202' (per-row atomicity + phan hoi dong bo): code path src/main/java/com/spendwise/imports/ImportController.java tra ResponseEntity.created(...) tuc 201 dong bo chu khong 202 Accepted; va src/main/java/com/spendwise/imports/ImportRowProcessor.java co chu thich giai thich vi sao KHONG @Transactional (moi row co transaction rieng qua create(), row 42 hong khong roll back row 1-41); proving test src/test/java/com/spendwise/imports/ImportRowProcessorTest.java.",
+        "Hang AI advisory boundary (ADR-016): kiem tra thuc te bang grep tren src/main - khong co lop AI/advisory nao ton tai. Ghi day la mot muc 'KHONG xay - ngoai pham vi V1.0', voi ly do pham vi ro rang, KHONG che ma gia de co ve co tra loi. Buoc 2 se mo rong cac muc not-built kieu nay.",
+        "Kiem chung tung hang truoc khi chot: moi code path phai la file co that (mo len xem), moi proving test phai la method/DisplayName co that trong suite, moi rule id phai trung dung chuoi @DisplayName. Neu mot vung co code nhung thieu test, buoc 2 se them test; neu thieu ca code thi ghi not-built."
+      ],
+      "commonErrors": [
+        {
+          "symptom": "Mot hang trong bang ghi rule id la 'R2' nhung khong khop chuoi @DisplayName that, hoac trich mot ten test khong ton tai trong suite.",
+          "likelyCause": "Viet bo ba tu tri nho thay vi mo file test va migration ra kiem chung - dung cai kiem toan nay co gang chong lai.",
+          "fix": "Voi moi hang, mo file test va copy dung ten method (vi du treatsEquivalentScalesAsEqualMoney) va dung chuoi @DisplayName ('R24: SecurityContextHolder is read in exactly one class...'). Bo ba nao khong kiem chung duoc thi phai xu ly o buoc 2, khong duoc de nguyen."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-defense-audit-02",
+      "sessionId": "session-v10-defense-audit",
+      "order": 2,
+      "buildStepId": "step-defense-audit-02",
+      "type": "your-turn",
+      "title": "Dong mot lo hong kiem toan bang regression test that; ghi cac muc 'khong xay' trung thuc",
+      "goal": "Kiem toan phai 'can': chon mot cau hoi ma bang buoc 1 cho thay co code nhung thieu proving test, viet DefenseAuditRegressionTest.java lam no pass; dong thoi ghi vao docs/defense-audit.md cac muc 'khong xay - ngoai pham vi' cho bank sync va universal dedup kem ly do pham vi - khong doi hanh vi production ngoai viec them test.",
+      "whyThisMatters": "Mot kiem toan khong bao gio can la kiem toan trang tri. Muc tieu la chung minh no bat duoc mot diem yeu that va bien no thanh mot regression test dang pass, nen cau hoi do o buoi bao ve co the tra bang mot test chay truoc mat giam khao. R26 (schema discipline / khong retrofit ma de tra loi de hon) buoc phai trung thuc: cau hoi 'co dong bo ngan hang khong', 'co chong trung universal khong' phai duoc ghi la KHONG xay voi ly do pham vi, khong duoc voi va che mot capability moi chi de bang trong dep. V1.0 la ban cuoi - dieu can la phong thu duoc cai da co, khong phai them kien truc.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-28",
+          "note": "Testing Spring Boot: chon dung tier test cho lo hong duoc dong - neu la bat bien thuan Java thi unit test, neu can boot Flyway/DB thi slice/integration; DefenseAuditRegressionTest mo rong dung mot suite phu hop chu khong dung khung moi."
+        },
+        {
+          "lessonId": "day-36",
+          "note": "Final Defense: muc 'khong xay - ngoai pham vi' cho bank sync/universal dedup la cau tra loi trung thuc cho cau hoi ngoai pham vi, gia tri o buoi bao ve khong kem gi mot dong code - no cho thay ban biet ranh gioi he thong."
+        }
+      ],
+      "run": {
+        "cwd": "D:\\spendwise-learning",
+        "command": ".\\mvnw.cmd '-Dtest=DefenseAuditRegressionTest' test; .\\mvnw.cmd test",
+        "expectedResult": "BUILD SUCCESS - toan bo test/kiem tra trong scope cua buoc nay pass; khong test nao khac trong suite bi vo.",
+        "explanation": "Chay verify command canonical cua buildStep trong learner workspace de xac nhan buoc da xong dung."
+      },
+      "learnerAction": {
+        "goal": "Chon mot vung ma bang buoc 1 lo ra co code path nhung proving test con yeu hoac thieu (vi du mot canh cua per-row atomicity, cua source_ref conflict, hoac cua ranh gioi 404-not-403 chua co test truc tiep), viet src/test/java/com/spendwise/shared/DefenseAuditRegressionTest.java trong package com.spendwise.shared de dong dung lo hong do va lam no pass; dong thoi cap nhat docs/defense-audit.md: hang do tro toi test moi, va them cac muc 'khong xay - ngoai pham vi' cho bank sync va universal dedup kem ly do pham vi.",
+        "constraints": [
+          "It nhat mot lo hong ma buoc 1 phat hien phai duoc dong bang mot regression test that su chay pass - test phai fail neu hanh vi bi lam hong, khong phai mot test luon-xanh vo nghia.",
+          "Khong doi hanh vi production nao ngoai viec them test: chi tao/mo rong file test, khong sua lop trong src/main de 'tra loi de hon' (R26 - khong retrofit, khong them capability/dependency/rule moi; blueprint V1.0: none new).",
+          "Cac cau hoi ngoai pham vi hop le (bank sync, universal bank dedup) phai duoc ghi la muc 'khong xay' kem ly do pham vi cu the trong docs/defense-audit.md - khong duoc che ma gia de bang co ve day du.",
+          "DefenseAuditRegressionTest dat trong com.spendwise.shared va chon dung tier: neu lo hong la bat bien thuan Java thi test khong can Spring context; neu can schema/DB that thi ke thua ha tang integration/slice da co (vi du IntegrationTestBase) thay vi dung moi.",
+          "Sau khi them test, chay ca suite mot lan de xac nhan khong pha vo bat cu test V0.1-V0.9 nao dang xanh."
+        ],
+        "hints": [
+          "Cach tim lo hong nhanh: quet lai bang buoc 1, tim hang nao cot 'proving test' de trong hoac chi mo ta bang loi chu chung chung - do la ung vien so mot. Vi du neu ranh gioi 404-not-403 chi duoc phu boi mot @DisplayName kien truc chu chua co test HTTP truc tiep cho dung endpoint ban se noi o buoi bao ve, do la mot lo hong dang dong.",
+          "Muc 'khong xay' viet duoc ba dong: (1) cau hoi la gi, (2) tai sao ngoai pham vi V1.0 (vi du: import doc file CSV nguoi dung tu tai len, khong ket noi API ngan hang; identity la per-import fingerprint+OCC theo ADR-007, khong phai universal cross-bank dedup), (3) neu can lam trong tuong lai thi cham vao dau.",
+          "Neu lo hong ban chon la per-row atomicity, ImportRowProcessorTest da co san - hay dam bao co dung mot test khang dinh 'row hong o giua khong roll back cac row truoc no', neu chua co thi do chinh la regression test ban them vao DefenseAuditRegressionTest."
+        ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "De 'dong lo hong' bang cach sua mot lop trong src/main hoac them mot co che moi (vi du them endpoint hay flag) roi moi viet test cho no.",
+          "likelyCause": "Hieu nham 'dong lo hong' la 'them tinh nang' - trong khi V1.0 la ban cuoi va acceptance criteria cam doi hanh vi production ngoai viec them test.",
+          "fix": "R26: khong retrofit. Neu mot cau hoi that su thieu code thi no la muc 'khong xay - ngoai pham vi', khong phai co de viet code moi. Chi lo hong nao la 'code da co nhung chua co test chung minh' moi duoc dong, va dong bang test - khong sua src/main."
+        }
+      ]
+    },
+    {
+      "id": "step-v10-defense-audit-ck",
+      "sessionId": "session-v10-defense-audit",
+      "order": 3,
+      "buildStepId": null,
+      "type": "checkpoint",
+      "title": "Checkpoint: Defense-readiness audit against the question matrix da xong dung yeu cau",
+      "goal": "Xac nhan moi buildStep cua task-defense-audit deu pass verify va tuan dung cac rule kien truc cua no."
     }
   ],
   "guidedCheckpoints": [
@@ -5615,6 +7150,273 @@
       "whyNotYet": [
         "task-advanced-aggregation (trend nhieu thang, top-N category) la buildTask khong bat buoc cua V0.7 va khong duoc author trong Guided Rebuild nay - dashboard hien tai chi la mot thang, khong phai xu huong nhieu thang.",
         "Dashboard nay chua duoc cache - V0.9 se them mot lop cache TUY CHON cho du lieu tham chieu, nhung R11 giu nguyen vinh vien: khong con so tien nao tung duoc cache, ke ca sau V0.9."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-reference-data-cache",
+      "sessionId": "session-v09-reference-data-cache",
+      "expectedFiles": [
+        "src/test/java/com/spendwise/category/CategoryCacheTest.java",
+        "src/main/java/com/spendwise/category/CacheConfig.java",
+        "src/main/java/com/spendwise/category/CategoryService.java"
+      ],
+      "understanding": [
+        "Vi sao test phai boot Spring context that (@SpringBootTest) chu khong new CategoryService(mock) - @Cacheable/@CacheEvict chi hoat dong qua proxy do Spring tao.",
+        "Vi sao @CacheEvict dat tren add/remove voi allEntries = true - mot write da commit phai xoa entry 'all' cu de read ke tiep khong thay category loi thoi (day-25 blk-24).",
+        "Vi sao key la tuong minh ('all', #code) chu khong de SimpleKeyGenerator tu suy - tranh key bat on khi argument la entity hay object mutable (day-25 blk-22).",
+        "Vi sao chi category duoc cache ma khong phai dashboard/statistics - R11 cam moi gia tri tien vao cache, va cache la phi-thuc-quyen nen xoa no chi doi latency."
+      ],
+      "whatYouBuilt": "Mot cache du lieu tham chieu nen ConcurrentMapCacheManager: read category duoc @Cacheable voi key tuong minh, write category @CacheEvict(allEntries=true), khong gia tri tien nao lot vao cache, va lan doc thu hai trung cache duoc chung minh bang test.",
+      "whyNotYet": [
+        "Chua thay ConcurrentMapCacheManager bang Redis - do la task-redis-cache-backend rieng, chay sau nen tang @Cacheable/@CacheEvict nay ma khong doi mot annotation nao.",
+        "Chua cache bat ky dashboard, statistics hay so du nao - R11 cam va se mai cam; chu the cache chi la du lieu tham chieu."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-scheduled-reconciliation",
+      "sessionId": "session-v09-scheduled-reconciliation",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/account/SchedulingConfig.java",
+        "src/main/java/com/spendwise/account/BalanceReconciliationJob.java",
+        "src/test/java/com/spendwise/account/BalanceReconciliationJobTest.java"
+      ],
+      "understanding": [
+        "Vi sao job chi detect + report chu khong sua: balance chi doi qua transaction rows (R21); tu sua trong background job xoa mat bang chung drift va co the ghi de gia tri dung bang gia tri sai.",
+        "Vi sao dung fixedDelay va KHONG khai bao zone: fixedDelay chong overlap cho cac run lien tiep tren mot scheduler don luong (day-27 blk-28), con zone chi la thuoc tinh cron (day-25 blk-32).",
+        "Vi sao test lam lech balance o muc repository (jdbcTemplate.update) roi entityManager.clear(): lech qua duong canonical se van khop transactions nen khong con la drift, test se khong bat duoc gi.",
+        "Vi sao job la readOnly va delegate sang BalanceReconciliationService: R19 cam external call/@Async trong transaction scheduled, R6/R8 yeu cau tinh lai balance tu tong co dau transactions."
+      ],
+      "whatYouBuilt": "Mot @Scheduled(fixedDelay) job co gioi han dinh ky tinh lai balance tung account tu transaction ledger (readOnly) va ghi nhan/log drift theo tung account, khong bao gio sua balance - kem bo test khoa hop dong zero-drift / detect-dung-account / khong-ghi.",
+      "whyNotYet": [
+        "Chua co auto-repair hay transaction bu nao - repair van la quyet dinh cua nguoi dung, job chi phat hien va bao cao.",
+        "Chua co endpoint, alert hay metric xuat drift ra ngoai - hien tai drift chi di vao log.",
+        "Chua chuyen lich sang cron nen chua co zone; neu doi sang cron thi moi khai bao zone tuong minh (day-25 blk-32)."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-recurring-scheduler",
+      "sessionId": "session-v09-recurring-scheduler",
+      "expectedFiles": [
+        "src/test/java/com/spendwise/recurring/RecurringSchedulerTest.java",
+        "src/main/java/com/spendwise/recurring/RecurringScheduler.java"
+      ],
+      "understanding": [
+        "Vi sao scheduler chi la wiring (R20): moi dong ghi van di qua generateDue -> TransactionCreationService.create, idempotency khong duoc viet lai o day ma thua ke tu sourceRef pre-check cua V0.7.",
+        "Vi sao fixedDelay chu khong fixedRate hay cron: fixedDelay khong bao gio cho hai lan chay chong len nhau, nen pre-check sourceRef khong bi race va rent khong bi double-bill (day-27 blk-28).",
+        "Vi sao khong khai bao zone tren @Scheduled: fixedDelay khong nhan zone, zone chi la chuyen cua cron (day-25 blk-32).",
+        "Vi sao tai su dung SchedulingConfig thay vi tao pool thu hai: mot single scheduler la nen tang cua dam bao non-overlap cho ca reconciliation lan recurring."
+      ],
+      "whatYouBuilt": "RecurringScheduler chay tren lich fixedDelay bounded, fan-out qua findDistinctOwnersWithDueTemplates va goi generateDue cho tung owner, tao occurrence den han ma khong ai mo app va khong tao them gi khi fire lai cung ky.",
+      "whyNotYet": [
+        "Chua co distributed lock: dam bao non-overlap chi dung cho cac lan chay lien tiep cua mot scheduler; deploy nhieu instance se can khoa phan tan va nam ngoai pham vi V0.9.",
+        "Khong tao/sua @EnableScheduling hay Clock bean - SchedulingConfig cua task-scheduled-reconciliation da co san va duoc tai su dung nguyen ven.",
+        "Khong them logic sinh giao dich moi - toan bo idempotency va tao dong van thuoc RecurringGenerationService cua V0.7."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-exchange-rate-client",
+      "sessionId": "session-v09-exchange-rate-client",
+      "expectedFiles": [
+        "src/main/java/com/spendwise/fx/ExchangeRateClient.java",
+        "src/main/java/com/spendwise/fx/ExchangeRateResponse.java",
+        "src/main/java/com/spendwise/statistics/FxConversionDecorator.java",
+        "src/test/java/com/spendwise/fx/ExchangeRateClientTest.java",
+        "src/test/java/com/spendwise/statistics/FxConversionTest.java",
+        "src/main/resources/application.properties",
+        "pom.xml"
+      ],
+      "understanding": [
+        "WebClient (webflux) duoc them chi khi co test - lazy dependency, avoid front-loading external integration dep.",
+        "Bounded retry (Retry.backoff, filter chi 5xx) + degrade-to-empty tren permanent failure - down provider khong down app.",
+        "R19: fetch ngoai @Transactional; R4: conversion chi display, decorator so voi NO repository/write path.",
+        "rate nam trong plain field/timeout holder, khong dung cache annotation cua task-reference-data-cache (R11)."
+      ],
+      "whatYouBuilt": "ExchangeRateClient (WebClient + bounded retry + degrade) + ExchangeRateResponse record + FxConversionDecorator display-only conversion + 2 test class chung minh happy/retry/permanent-failure va ledger-untouched.",
+      "whyNotYet": [
+        "Chua co endpoint HTTP nao expose ConvertedFigure len report response - do la task tiep theo cua report layer.",
+        "Chua co cache invalidation/freshness policy - rate chi nam trong plain field voi freshness bound dc document.",
+        "Chua co integration test thuc te voi network - stub ExchangeFunction dung thay cho network trong unit test."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-invariant-test-suite",
+      "sessionId": "session-v09-invariant-test-suite",
+      "expectedFiles": [
+        "src/test/java/com/spendwise/shared/ArchitectureInvariantTest.java",
+        "src/test/java/com/spendwise/shared/ArchitectureInvariantReadSideTest.java"
+      ],
+      "understanding": [
+        "Vi sao cac bat bien duoc chot bang JUnit thuan khong Spring/DB - R2/R5/R7 bieu dat duoc thuan Java, R10/R11/R24 la su that cau truc (reflection + scan nguon), nen tier thap nhat chay trong mili-giay la dung (day-28).",
+        "Vi sao rule id nam trong @DisplayName - mot vach do phai goi thang ten rule bi pha, bien Constitution tu van xuoi rai rac thanh test chay duoc.",
+        "Vi sao suite khong them mot dong production code - neu bat bien can hook moi test duoc thi do la design smell can ghi lai, khong phai hook can them.",
+        "Vi sao khong co gate coverage - coverage la chi bao, khong phai cong (day-28)."
+      ],
+      "whatYouBuilt": "Mot bo test JUnit thuan (ArchitectureInvariantTest + ArchitectureInvariantReadSideTest) chot sau bat bien cau truc R2/R5/R7/R10/R11/R24 thanh assertion chay duoc, chay trong mili-giay, khong Spring context va khong database.",
+      "whyNotYet": [
+        "Chua chot moi rule trong Constitution - chi sau rule cot loi duoc yeu cau (R2, R5, R7, R10, R11, R24); cac rule khac van dua vao test rai rac.",
+        "Chua bien viec 'co lam vi pham thi dung dung mot test fail' thanh kiem tra tu dong - do la kiem chung thu cong tren nhanh nhap, ghi lai chu khong commit.",
+        "Chua them JaCoCo gate hay nguong coverage nao - coverage van chi la bao cao, khong phai cong."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-slice-test-suite",
+      "sessionId": "session-v09-slice-test-suite",
+      "expectedFiles": [
+        "src/test/java/com/spendwise/account/AccountControllerSliceTest.java",
+        "src/test/java/com/spendwise/account/TransactionControllerSliceTest.java",
+        "src/test/java/com/spendwise/category/CategoryControllerSliceTest.java",
+        "src/test/java/com/spendwise/account/TransactionRepositorySliceTest.java",
+        "src/test/java/com/spendwise/account/AccountRepositorySliceTest.java",
+        "src/test/java/com/spendwise/imports/TransactionSourceRefSliceTest.java"
+      ],
+      "understanding": [
+        "Vi sao @WebMvcTest + addFilters=false chot duoc 404 chu so huu ma khong cham DB: service @MockBean tra Optional.empty, controller map thanh 404 (R24), khong phai 403.",
+        "Vi sao @DataJpaTest + replace=NONE bat buoc cho test rang buoc UNIQUE: chi schema Flyway (V10) moi co uq_txn_source_ref; embedded mac dinh khong co nen rang buoc bien mat (R22).",
+        "Vi sao tach slice web va slice persistence: mot regression o controller va mot regression o query khong con doi lot va che giau lan nhau nhu khi chi co test E2E.",
+        "Vi sao query owner-scoped can hang cua nhieu chu trong test: menh de where userId chi lo ra khi co hang cua chu khac de leak (R24/R25)."
+      ],
+      "whatYouBuilt": "Bo slice test @WebMvcTest cho 3 controller Account/Transaction/Category va @DataJpaTest cho repository/rang buoc, moi slice chi nap dung tang cua no va chung minh status/hinh dang record/404 o tang web va query-scoping/UNIQUE o tang persistence.",
+      "whyNotYet": [
+        "Chua co test tich hop chay tren PostgreSQL that qua Testcontainers - do la task-integration-test-suite cua day-29.",
+        "Khong co cong coverage phan tram - slice la la chan regression, khong phai chi so (day-28 blk-32).",
+        "Chua chot cac controller/repository con lai (budget, dashboard, imports, recurring, rule) - task nay chi phu Account/Transaction/Category va 2 repository co @Query custom."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-integration-test-suite",
+      "sessionId": "session-v09-integration-test-suite",
+      "expectedFiles": [
+        "pom.xml",
+        "src/test/java/com/spendwise/IntegrationTestBase.java",
+        "src/test/java/com/spendwise/MoneyPathIntegrationTest.java"
+      ],
+      "understanding": [
+        "Vi sao phai chay tren postgres:16-alpine that qua Testcontainers thay vi H2 in-memory: chi engine that moi co dung ten constraint uq_txn_source_ref, kieu SQL va hanh vi UNIQUE trong tai - H2 se lam cac test o duong tien pass gia (R26, day-29).",
+        "Vi sao giu ddl-auto: validate va chay Flyway that: mapping JPA duoc doi soat vao schema da migrate, bat lech mapping ma Hibernate auto-generate se che giau.",
+        "Vi sao khong mock service nao trong suite nay: R21/R22 la hanh vi lien-tang giua creation service, transfer va constraint DB - mock chinh duong dang kiem chung lam rong bang test (day-28).",
+        "Vi sao transfer phai nguyen tu va sourceRef phai UNIQUE: khong co chung, mot chan transfer fail se pha huy tien am tham (R21) va hai thread dua cung sourceRef se nhan doi giao dich (R22)."
+      ],
+      "whatYouBuilt": "Mot bo integration test @SpringBootTest + Testcontainers boot ca app tren postgres:16-alpine that voi Flyway migrate va ddl-auto: validate, roi chung minh tao canonical (R20), transfer rollback nguyen tu (R21), re-import idempotency va phan xu UNIQUE duoi trong tai (R22), doi soat so du (R8) - toan bo tren engine that, khong mock.",
+      "whyNotYet": [
+        "Chua dat cong % coverage nao - JaCoCo van la moi quan tam chi-bao-cao (day-30), khong phai cong chan build.",
+        "Chua toi uu tai su dung container ngoai muc day-29 cho phep; suite van phai pass tu cold start, chua dong goi container-reuse phuc tap.",
+        "Chua kiem chung cac duong ngoai tien te (vi du notification bat dong bo, cache) o muc integration - suite nay chi tap trung cac bat bien nguy hiem nhat cua duong tien."
+      ]
+    },
+    {
+      "id": "checkpoint-v09-production-packaging",
+      "sessionId": "session-v09-production-packaging",
+      "expectedFiles": [
+        "pom.xml",
+        "src/main/java/com/spendwise/shared/OpenApiConfig.java",
+        "src/main/java/com/spendwise/shared/DatabaseHealthIndicator.java",
+        "src/main/resources/application.properties",
+        "src/main/java/com/spendwise/shared/TraceIdFilter.java",
+        "src/test/java/com/spendwise/shared/TraceIdFilterTest.java",
+        "Dockerfile",
+        "docker-compose.yml",
+        ".dockerignore",
+        "README.md",
+        "src/main/java/com/spendwise/shared/AsyncConfig.java",
+        "src/main/java/com/spendwise/imports/ImportNotification.java",
+        "src/main/java/com/spendwise/imports/ImportService.java",
+        "src/test/java/com/spendwise/imports/ImportNotificationTest.java"
+      ],
+      "understanding": [
+        "Vi sao springdoc phai ghim version tuong minh - Boot khong quan ly starter nay, bo <version> thi Maven khong resolve (day-29 blk-3); va vi sao Actuator chi xuat hien o day, khong o release truoc (R26).",
+        "Vi sao MDC.remove phai nam trong finally - thread-pool tai su dung se ro ri traceId sang request sau neu khong clear, lam sai chuoi truy vet.",
+        "Vi sao notification dispatch SAU vong lap va khong trong transaction row - R19 giu side effect ngoai transaction, day-27 after-commit; va vi sao executor phai bounded + co AsyncUncaughtExceptionHandler (tranh OOM va nuot loi im lang).",
+        "Vi sao JaCoCo la indicator khong phai gate - threshold la knowledge gap (day-30 blk-7), coverage read-side (R10) chi misreport con so chu khong the corrupt ledger."
+      ],
+      "whatYouBuilt": "Dong goi production cho Spendwise: springdoc OpenAPI + Actuator health voi DatabaseHealthIndicator, MDC traceId moi request, Dockerfile layered-jar + docker-compose app+postgres tu environment, duong async notification bounded fire-and-forget sau khi batch terminal, va report JaCoCo dang indicator.",
+      "whyNotYet": [
+        "Khong Kubernetes/microservices/message broker - chi mot compose file (R26: khong gi sau ky thuat day-30).",
+        "Khong doi hop dong HTTP sang 202 - importCsv van return summary dong bo (ADR-012).",
+        "Khong dat percentage gate cho coverage - chi sinh va doc report (day-30 blk-7 coi threshold la knowledge gap).",
+        "Metrics chi expose qua Micrometer/Actuator tai cho, khong them backend giam sat ngoai."
+      ]
+    },
+    {
+      "id": "checkpoint-v10-hardening-reconciliation",
+      "sessionId": "session-v10-hardening-reconciliation",
+      "expectedFiles": [
+        "src/test/java/com/spendwise/SeedHistoryFixture.java",
+        "src/test/java/com/spendwise/HardeningReconciliationTest.java",
+        "src/test/java/com/spendwise/HardeningSumAuditTest.java"
+      ],
+      "understanding": [
+        "Vi sao fixture chi duoc gieo qua TransactionCreationService.create / ImportService.importCsv / RecurringGenerationService.generateDue - nghiem hon R20's test allowance, de bang chung dong kiem chinh cac duong chinh thong chu khong phai raw insert (R20).",
+        "Vi sao bang chung dong la BalanceReconciliationJob.detectDrift() bao zero drift: balance la projection sinh tu transaction rows, job chi doc va bao drift, khong bao gio ghi de (R8).",
+        "Vi sao SUM tay phai khop tuyet doi dashboard/statistics/budget: moi figure la dan xuat tai read time tu ledger (R6, R10), tinh bang BigDecimal scale 2 (R1) - khong con so tong nao duoc luu san de doi chieu.",
+        "Vi sao moi defect lo ra phai sua qua duong binh thuong voi regression test va khong feature/rule/architecture moi: V1.0 la hardening/portfolio, khong phai noi de xay them (blueprint V1.0: none new)."
+      ],
+      "whatYouBuilt": "Mot fixture lich su nhieu-thang/nhieu-account/co-budget/recurring/import gieo hoan toan qua duong chinh thong, cong hai test chung minh reconciliation bao zero drift va moi SUM tay khop tuyet doi voi dashboard, statistics va budget, voi defect (neu co) da sua qua duong binh thuong kem regression test.",
+      "whyNotYet": [
+        "Khong them feature, endpoint hay rule moi nao - V1.0 chi chung minh va sua cai da xay o V0.1-V0.9, moi bang chung la reconciliation zero drift + suite xanh.",
+        "Khong va drift bang update balance truc tiep trong production - moi sua la data/bug fix qua duong tao binh thuong; drift probe neu dung chi o repository-level trong test.",
+        "Khong mo rong reconciliation sang chieu chua tung xay (vi du kiem toan da-currency tu dong hoa) - gieo mot currency thong nhat cho phan SUM audit, phan da-currency nam ngoai pham vi hardening nay.",
+        "Portfolio README, demo script va defense-readiness audit la cac task V1.0 khac - buoc nay chi lo phan bang chung zero-drift + SUM."
+      ]
+    },
+    {
+      "id": "checkpoint-v10-portfolio-readme",
+      "sessionId": "session-v10-portfolio-readme",
+      "expectedFiles": [
+        "README.md",
+        "docs/architecture-notes.md"
+      ],
+      "understanding": [
+        "Vi sao phan Run phai duoc chung minh tu mot checkout sach chu khong gia dinh: mot reviewer chi co repo, lam theo README va phai toi app healthy - chuoi lenh khop docker-compose.yml (SPRING_DATASOURCE_*, ba bien SPENDWISE_* dang :? fail-loud) hoac README sai (R26: chi tai lieu, khong them gi sau day-30).",
+        "Vi sao danh sach invariant phai khop mot-doi-mot display name cua rule suite: R2/R5/R7/R10/R11/R24 la Constitution duoc lam executable trong ArchitectureInvariantTest/ArchitectureInvariantReadSideTest, mot red bar goi dung rule bi vi pham - README chi ke lai su that do chu khong bia them.",
+        "Vi sao mo hinh danh tinh import phai neu kem gioi han: tier-2 occurrenceIndex la order-derived (R22 cam parallelStream tren duong import), stable khi re-import cung file nhung khong stable qua reordering tuy y - README khong duoc oversell dedup thanh universal.",
+        "Vi sao cac quyet dinh la ADR-level chu khong phai feature: canonical path la duong ghi duy nhat, per-row atomicity, no-202 dong bo, 404-khong-403 (R24), AI boundary ADR-016 - advisory/deferred, ship la RuleEngine tat dinh - day la nhung gi giam khao Final Defense (day-36) se hoi."
+      ],
+      "whatYouBuilt": "Mot README.md portfolio ke that ve Spendwise - phan Run chay duoc tu clone toi docker compose up voi health xanh, va phan kien truc liet ke invariant Constitution kem rule id, cac quyet dinh ADR, va mo hinh danh tinh import hai tier kem gioi han reordering - cong cac ghi chu ADR dai hon trong docs/architecture-notes.md.",
+      "whyNotYet": [
+        "Khong them production code, endpoint, hay migration nao - V1.0 la ban dong bang portfolio, R26 cam moi ky thuat sau day-30; task nay chi cham README.md va docs/architecture-notes.md.",
+        "Khong bien coverage thanh percentage gate - JaCoCo van chi la indicator (nhanh yeu nhat la AdvancedStatisticsService); nang len gate la mot quyet dinh kien truc moi, khong thuoc V1.0.",
+        "Khong claim kha nang khong ton tai - khong microservices, khong bank sync, khong universal dedup; gioi han reordering cua tier fallback duoc ghi thang thay vi che di."
+      ]
+    },
+    {
+      "id": "checkpoint-v10-final-demo",
+      "sessionId": "session-v10-final-demo",
+      "expectedFiles": [
+        "docs/demo-script.md"
+      ],
+      "understanding": [
+        "Vi sao moi doan demo phai goi ten dung invariant (R20 duong tao chinh tac, R22 idempotency, R24 ownership, R10 so lieu suy dien) - nguoi cham day-36 can thay ban hieu tai sao code lam vay, mot demo ngau hung chi lo ra CRUD.",
+        "Vi sao cau chuyen hai tang phai ke trung thuc - dong co tham chieu nguon trung bao DUPLICATE (tier 1) con hai dong noi dung giong het khong co tham chieu nguon deu duoc import voi OCC index khac nhau (tier 2), dung nhu ReImportIdempotencyTest chung minh.",
+        "Vi sao doan forced-failure phai ep rollback that thay vi noi suong - transfer khac tien te nem CurrencyMismatchException, ca hai leg rollback trong mot don vi @Transactional (R21) va so du hai account khong doi, dung nhu TransferServiceTest.rollsBackDebitWhenCreditLegFails.",
+        "Vi sao re-import phai cong them zero - danh tinh dong duoc tai tao giong het (batchId/rowNo khong tham gia danh tinh, R22), nen lan re-import bao DUPLICATE va khong them giao dich nao."
+      ],
+      "whatYouBuilt": "docs/demo-script.md di het money path tren app da dong goi voi moc thoi gian gon trong 10-15 phut, moi doan trich dung rule id va co doan forced-failure chung minh rollback, da dien tap chay mot mach khong fixup ngoai kich ban.",
+      "whyNotYet": [
+        "Khong them endpoint moi hay sua production code - V1.0 la ban cuoi/portfolio, chi chung minh va tai lieu hoa nhung gi da xay tu V0.1-V0.9 (R26).",
+        "Khong tao category moi trong demo - category la seed co dinh chi doc qua GET /api/categories, day khong phai thieu sot ma la ranh gioi thiet ke that cua app.",
+        "Khong dung branch AdvancedStatisticsService yeu coverage trong demo - do la read-side reporting suy dien (R10), duoc README ghi la khoang trong trung thuc chu khong phai loi money-path, de lai cho khi co consumer that.",
+        "Khong bien timing thanh mot gate cung - moc thoi gian la de kich ban khung cua so bao ve, khong phai mot nguong tu dong kiem."
+      ]
+    },
+    {
+      "id": "checkpoint-v10-defense-audit",
+      "sessionId": "session-v10-defense-audit",
+      "expectedFiles": [
+        "docs/defense-audit.md",
+        "src/test/java/com/spendwise/shared/DefenseAuditRegressionTest.java"
+      ],
+      "understanding": [
+        "Vi sao moi cau tra loi phong thu phai la bo ba con tro da kiem chung (Money.java + MoneyTest.treatsEquivalentScalesAsEqualMoney + R2 @DisplayName) chu khong phai cau thuoc long - tra loi tu code duoi ap luc thi vung, tu tri nho thi hong.",
+        "Vi sao kiem toan phai 'can': dong dung mot lo hong bang regression test that chung minh no bat duoc diem yeu, thay vi chi liet ke.",
+        "Vi sao cau ngoai pham vi (bank sync, universal dedup) duoc ghi 'khong xay' kem ly do thay vi che ma gia - R26 cam retrofit va V1.0 khong them capability moi.",
+        "Vi sao khong sua src/main de 'tra loi de hon' - task nay chi them test, khong doi hanh vi production."
+      ],
+      "whatYouBuilt": "docs/defense-audit.md phu het ma tran cau hoi bao ve voi bo ba con tro da kiem chung (code path - proving test - rule id) cho tung vung, cong mot regression test DefenseAuditRegressionTest.java dong mot lo hong kiem toan phat hien va cac muc 'khong xay - ngoai pham vi' trung thuc.",
+      "whyNotYet": [
+        "Khong xay bat ky tinh nang production moi nao - V1.0 la ban cuoi, chi chung minh/tai lieu hoa/phong thu cai da co tu V0.1-V0.9.",
+        "Khong retrofit code cho cac cau hoi ngoai pham vi (bank sync, universal cross-bank dedup) - chung o lai la muc 'khong xay - ngoai pham vi' trong docs/defense-audit.md.",
+        "Khong bien JaCoCo coverage thanh cong bang phan tram - branch coverage thap cua AdvancedStatisticsService van la gap trung thuc ghi trong README, khong phai gate cua task nay.",
+        "Khong them dependency, rule hay ADR moi (blueprint V1.0: none new) - kiem toan chi doi chieu voi Hien Phap da chot."
       ]
     }
   ]
