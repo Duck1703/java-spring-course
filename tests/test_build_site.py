@@ -112,10 +112,10 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
             authored = json.load(fh)
         self.assertEqual(self.model["guidedBuild"], authored)
 
-    AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4", "v0-5", "v0-6"}
+    AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4", "v0-5", "v0-6", "v0-7", "v0-8"}
 
     def test_guided_build_v0_1_authored_shape(self):
-        # V0.1-V0.6 are authored content now; the remaining 4 releases stay
+        # V0.1-V0.8 are authored content now; the remaining 2 releases stay
         # planned with zero sessions until their own authoring work happens.
         guided = self.model["guidedBuild"]
         self.assertEqual(len(guided["guidedReleases"]), 10)
@@ -147,7 +147,8 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
         # guided content is allowed to also cover an optional/deferred
         # canonical task (e.g. task-config-profiles in V0.3), and is allowed
         # to leave some uncovered (e.g. task-optimistic-locking in V0.5,
-        # task-auth-hardening-review in V0.6, both required=false) —
+        # task-auth-hardening-review in V0.6, task-advanced-aggregation in
+        # V0.7, task-async-import in V0.8, all required=false) —
         # matching tools/validate_guided_build.py's own completeness check,
         # which is a subset test (`required_tasks - covered_tasks`), not
         # equality.

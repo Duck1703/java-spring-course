@@ -470,13 +470,16 @@ def main() -> int:
             # the in-page self-test harness) on both viewports, so a route
             # that crashes routeRender or renders a blank #route-view fails
             # this gate even if the unrelated selftest counter above still
-            # happens to pass. V0.1 is authored content now — these use its
-            # real session/step ids and cover every guidedStep.type it uses
-            # (orientation, setup, code-with-me, your-turn, checkpoint).
+            # happens to pass. V0.1-V0.8 are authored content now — these use
+            # real session/step ids from v0-1, v0-7 and v0-8 and cover every
+            # guidedStep.type in use (orientation, setup, code-with-me,
+            # your-turn, checkpoint). v0-9 is the still-planned release used
+            # for the "not yet authored" marker (v0-2 stopped being a valid
+            # fixture for that once it was authored).
             guided_routes = {
                 "guided-overview": ("#/guided-build", "roadmap-release"),
                 "guided-release-v01-authored": ("#/guided-build/v0-1", "Tạo nền móng project Spendwise"),
-                "guided-release-v02-planned": ("#/guided-build/v0-2", "Chưa biên soạn"),
+                "guided-release-v09-planned": ("#/guided-build/v0-9", "Chưa biên soạn"),
                 "guided-session-first": (
                     "#/guided-build/v0-1/session-project-foundation", "Tạo nền móng project Spendwise",
                 ),
@@ -499,6 +502,36 @@ def main() -> int:
                 "guided-step-last-in-release": (
                     "#/guided-build/v0-1/session-domain-validation/step-s6-checkpoint",
                     "Điểm dừng cuối: V0.1 hoàn thành",
+                ),
+                "guided-release-v07-authored": (
+                    "#/guided-build/v0-7", "Budget: gioi han theo category + thang, chi luu limit",
+                ),
+                "guided-v07-session-first": (
+                    "#/guided-build/v0-7/session-budget-model",
+                    "Budget: gioi han theo category + thang, chi luu limit",
+                ),
+                "guided-v07-step-your-turn": (
+                    "#/guided-build/v0-7/session-budget-model/step-v07-budget-model-entity",
+                    "Tu viet Budget entity va BudgetPeriod",
+                ),
+                "guided-v07-step-last-in-release": (
+                    "#/guided-build/v0-7/session-dashboard-read-model/step-v07-dashboard-read-model-checkpoint",
+                    "Diem dung: V0.7 hoan chinh",
+                ),
+                "guided-release-v08-authored": (
+                    "#/guided-build/v0-8", "Bo phan tich CSV tuan tu",
+                ),
+                "guided-v08-session-first": (
+                    "#/guided-build/v0-8/session-csv-parse",
+                    "Bo phan tich CSV tuan tu",
+                ),
+                "guided-v08-step-your-turn": (
+                    "#/guided-build/v0-8/session-csv-parse/step-v08-csv-parse-implement",
+                    "Tu viet CsvStatementParser",
+                ),
+                "guided-v08-step-last-in-release": (
+                    "#/guided-build/v0-8/session-csv-export/step-v08-csv-export-checkpoint",
+                    "Điểm dừng: export CSV escaping đúng",
                 ),
                 "guided-not-found-release": ("#/guided-build/unknown-release", "Không tìm thấy nội dung"),
                 "guided-not-found-session": ("#/guided-build/v0-1/unknown-session", "Không tìm thấy nội dung"),
