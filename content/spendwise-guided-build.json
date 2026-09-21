@@ -311,7 +311,7 @@
       "buildTaskId": "task-import-row-transaction",
       "order": 3,
       "title": "Moi dong mot giao dich DB qua dung cua ngo tao canonical - mot dong loi khong keo do 4999 dong con lai",
-      "goal": "Moi dong da parse duoc xu ly trong dung mot @Transactional call: dong hop le duoc tao qua TransactionCreationService.create(CreateTransactionCommand), dong loi rollback rieng no va duoc ghi FAILED, cac dong dong nghiep khong bi anh huong."
+      "goal": "Moi dong da parse duoc xu ly trong dung mot @Transactional call: dong hop le duoc tao qua TransactionCreationService.create(TransactionCreationCommand), dong loi rollback rieng no va duoc ghi FAILED, cac dong dong nghiep khong bi anh huong."
     },
     {
       "id": "session-duplicate-detection",
@@ -1511,7 +1511,7 @@
       "theoryBridge": [
         {
           "lessonId": "day-08",
-          "note": "Command object đơn giản (ví dụ record CreateTransactionCommand) truyền dữ liệu đầu vào cho service, tách khỏi entity Transaction thật sự được lưu."
+          "note": "Command object đơn giản (ví dụ record TransactionCreationCommand) truyền dữ liệu đầu vào cho service, tách khỏi entity Transaction thật sự được lưu."
         },
         {
           "lessonId": "day-10",
@@ -1520,13 +1520,13 @@
       ],
       "instructions": [
         "Tạo src/main/java/com/spendwise/account/TransactionCreationService.java, constructor nhận Repository<Transaction, UUID>.",
-        "Định nghĩa một command đơn giản mang dữ liệu đầu vào (account, type, amount, category) — có thể là một record ngay trong cùng file hoặc file riêng.",
+        "Tạo file riêng src/main/java/com/spendwise/account/TransactionCreationCommand.java chứa public record mang dữ liệu đầu vào (account, type, amount, category). Bước kế tiếp sẽ mở rộng chính record này với sourceRef và transactionId.",
         "create(command) dựng một Transaction mới (dùng đúng constructor Transaction đã có từ V0.1), lưu qua repository.save(...), và trả về Transaction vừa tạo."
       ],
       "codeBlocks": [
         {
           "language": "java",
-          "code": "public record CreateTransactionCommand(\n        Account account,\n        TransactionType type,\n        Money amount,\n        Category category) {\n}\n",
+          "code": "public record TransactionCreationCommand(\n        Account account,\n        TransactionType type,\n        Money amount,\n        Category category) {\n}\n",
           "caption": "Command dau vao cho create() - khong phai entity duoc luu"
         }
       ],
@@ -1551,29 +1551,30 @@
       "buildStepId": "step-transaction-service-02",
       "type": "your-turn",
       "title": "Gán sourceRef cho mọi giao dịch được tạo",
-      "goal": "Mỗi Transaction do create(command) tạo ra đều có một sourceRef khác null, và một test pin lại giá trị đó.",
-      "whyThisMatters": "sourceRef là dấu vết xuất xứ: MANUAL:... hôm nay, IMPORT:.../RECURRING:... sau này — dedup và audit trail của cả project đứng trên field này. Gán nó ngay từ bước đầu tiên rẻ hơn nhiều so với chèn nó vào sau khi đã có hàng nghìn giao dịch không có nguồn gốc.",
+      "goal": "Mỗi Transaction đi qua create(command) giữ đúng sourceRef bắt buộc từ command, trong khi hai constructor V0.1 vẫn biên dịch và giữ nguyên hợp đồng tương thích.",
+      "whyThisMatters": "sourceRef là dấu vết xuất xứ: MANUAL:... hôm nay, IMPORT:.../RECURRING:... sau này — dedup và audit trail của cả project đứng trên field này. Vì sourceRef là final, mọi constructor phải hội tụ vào đúng một constructor canonical gán tất cả final field đúng một lần; đảo chiều delegation sẽ vi phạm definite assignment của Java.",
       "learnerAction": {
-        "goal": "Thêm field private final String sourceRef vào Transaction, cùng một constructor overload 5-tham số (Account account, TransactionType type, Money amount, Category category, String sourceRef) — gọi this(account, type, amount, category) để tái sử dụng validate của constructor 4-tham số, rồi validate sourceRef khác null/blank và gán field. Thêm getter sourceRef(). Trong TransactionCreationService.create(command), sinh sourceRef dạng \"MANUAL:\" + UUID.randomUUID() rồi gọi constructor 5-tham số này.",
+        "goal": "Trong Transaction, thêm private final String sourceRef, đổi category thành final, rồi chuyển việc khởi tạo sang constructor canonical package-private 6-tham số (UUID id, Account account, TransactionType type, Money amount, Category category, String sourceRef). Constructor public 3-tham số và 4-tham số đều gọi thẳng constructor canonical với UUID.randomUUID() và sourceRef=null; constructor 4-tham số gọi requireCategory(category) sau khi delegation để base validation, đặc biệt amount, chạy trước category validation. Constructor canonical chấp nhận sourceRef=null cho hai compatibility constructor cũ nhưng từ chối giá trị non-null mà blank, và là nơi duy nhất gán sourceRef. Thêm sourceRef(). Mở rộng TransactionCreationCommand để mang sourceRef và transactionId tuỳ chọn; TransactionCreationService.create(command) bắt buộc sourceRef non-null/nonblank rồi gọi constructor canonical 6-tham số.",
         "constraints": [
-          "Constructor 5-tham số phải gọi this(account, type, amount, category) làm dòng đầu tiên — không copy-paste lại validate của constructor 4-tham số.",
-          "sourceRef không bao giờ được null hoặc blank sau khi create(command) trả về — constructor ném IllegalArgumentException nếu vi phạm.",
-          "Định dạng sourceRef phải có tiền tố loại nguồn, ví dụ MANUAL: — các loại IMPORT:/RECURRING: sẽ xuất hiện ở các release sau, chưa cần code cho chúng bây giờ."
+          "Mọi final field của Transaction chỉ được gán trong constructor canonical 6-tham số; không thêm constructor public 5-tham số và không gán sourceRef sau một lời gọi this(...).",
+          "Hai constructor public V0.1 vẫn tồn tại để tương thích fixture: chúng truyền sourceRef=null. Chỉ workflow tạo mới qua TransactionCreationService bắt buộc sourceRef non-null/nonblank.",
+          "Constructor 4-tham số phải delegate vào constructor canonical trước rồi mới gọi requireCategory(category), để amount=null và category=null vẫn ném InvalidAmountException(\"amount is required\") trước.",
+          "sourceRef non-null nhưng blank bị constructor canonical từ chối bằng DomainException(\"source reference is required\"); service cũng từ chối cả null lẫn blank trước khi lưu."
         ],
         "hints": [
-          "java.util.UUID.randomUUID().toString() đủ để tạo một định danh duy nhất cho mỗi lần tạo thủ công.",
-          "Đây là constructor overload thứ ba của Transaction (3-tham số → 4-tham số → 5-tham số), mỗi tầng gọi this(...) sang tầng trước — cùng pattern bạn đã dùng ở bước wire Category."
+          "Chiều đúng là constructor ngắn → constructor canonical dài. Chiều constructor có sourceRef → constructor cũ rồi gán sourceRef là bất hợp lệ với final field.",
+          "Trong test service, truyền một giá trị rõ ràng như MANUAL:coffee-1 vào TransactionCreationCommand rồi assert sourceRef() giữ nguyên đúng giá trị đó; service không tự bịa provenance của caller."
         ]
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": ".\\mvnw.cmd '-Dtest=TransactionCreationServiceTest' test",
-        "expectedResult": "BUILD SUCCESS — test xác nhận sourceRef khác null và có tiền tố MANUAL: pass.",
-        "explanation": "Test pin lại đúng hợp đồng sourceRef vừa thêm, tránh nó bị bỏ quên trong lần sửa code sau."
+        "command": ".\\mvnw.cmd '-Dtest=TransactionTest,TransactionCreationServiceTest' test",
+        "expectedResult": "BUILD SUCCESS — constructor chain biên dịch; test amount-before-category pass; service giữ nguyên sourceRef MANUAL:... từ command và từ chối null/blank.",
+        "explanation": "Lệnh này pin đồng thời definite assignment, tương thích validation V0.1 và hợp đồng provenance của đường tạo canonical."
       },
       "reveal": {
-        "label": "Xem constructor 5-tham số nhận sourceRef, và create(command) dùng nó",
-        "content": "public Transaction(Account account, TransactionType type, Money amount, Category category, String sourceRef) {\n    this(account, type, amount, category);\n    if (sourceRef == null || sourceRef.isBlank()) {\n        throw new IllegalArgumentException(\"sourceRef is required\");\n    }\n    this.sourceRef = sourceRef;\n}\n\npublic String sourceRef() {\n    return sourceRef;\n}\n\n// TransactionCreationService.create(command):\npublic Transaction create(CreateTransactionCommand command) {\n    String sourceRef = \"MANUAL:\" + UUID.randomUUID();\n    Transaction transaction = new Transaction(\n            command.account(), command.type(), command.amount(), command.category(), sourceRef);\n    return repository.save(transaction);\n}\n"
+        "label": "Xem constructor canonical 6 tham số và service dùng đúng đường tạo",
+        "content": "// Transaction.java (replace the class body with this shape):\nimport java.util.UUID;\n\npublic final class Transaction {\n    private final UUID id;\n    private final Account account;\n    private final TransactionType type;\n    private final Money amount;\n    private final Category category;\n    private final String sourceRef;\n\n    public Transaction(Account account, TransactionType type, Money amount) {\n        this(UUID.randomUUID(), account, type, amount, null, null);\n    }\n\n    public Transaction(Account account, TransactionType type, Money amount, Category category) {\n        this(UUID.randomUUID(), account, type, amount, category, null);\n        requireCategory(category);\n    }\n\n    Transaction(UUID id, Account account, TransactionType type, Money amount, Category category, String sourceRef) {\n        if (id == null) {\n            throw new DomainException(\"transaction id is required\");\n        }\n        if (account == null) {\n            throw new DomainException(\"account is required\");\n        }\n        if (type == null) {\n            throw new DomainException(\"transaction type is required\");\n        }\n        if (amount == null) {\n            throw new InvalidAmountException(\"amount is required\");\n        }\n        if (amount.amount().signum() <= 0) {\n            throw new InvalidAmountException(\"transaction amount must be positive\");\n        }\n        if (sourceRef != null && sourceRef.isBlank()) {\n            throw new DomainException(\"source reference is required\");\n        }\n        this.id = id;\n        this.account = account;\n        this.type = type;\n        this.amount = amount;\n        this.category = category;\n        this.sourceRef = sourceRef;\n    }\n\n    public UUID id() { return id; }\n    public Account account() { return account; }\n    public TransactionType type() { return type; }\n    public Money amount() { return amount; }\n    public Category category() { return category; }\n    public String sourceRef() { return sourceRef; }\n\n    private static Category requireCategory(Category category) {\n        if (category == null) {\n            throw new DomainException(\"category is required\");\n        }\n        return category;\n    }\n}\n\n// TransactionCreationCommand.java:\npublic record TransactionCreationCommand(\n        Account account,\n        TransactionType type,\n        Money amount,\n        Category category,\n        String sourceRef,\n        UUID transactionId) {\n    public TransactionCreationCommand(\n            Account account, TransactionType type, Money amount, Category category, String sourceRef) {\n        this(account, type, amount, category, sourceRef, null);\n    }\n}\n\n// TransactionCreationService.create(command):\npublic Transaction create(TransactionCreationCommand command) {\n    if (command == null) {\n        throw new DomainException(\"transaction creation command is required\");\n    }\n    if (command.sourceRef() == null || command.sourceRef().isBlank()) {\n        throw new DomainException(\"source reference is required\");\n    }\n    Transaction transaction = new Transaction(\n            command.transactionId() == null ? UUID.randomUUID() : command.transactionId(),\n            command.account(), command.type(), command.amount(), command.category(), command.sourceRef());\n    return repository.save(transaction);\n}\n"
       }
     },
     {
@@ -1742,19 +1743,19 @@
       "buildStepId": "step-csv-read-write-02",
       "type": "your-turn",
       "title": "Đọc lại CSV bằng try-with-resources",
-      "goal": "Có CsvTransactionStore.load(...) đọc file CSV vừa ghi và tái tạo lại đúng danh sách Transaction ban đầu; lỗi IO được xử lý rõ ràng, không bị nuốt (swallow) im lặng.",
-      "whyThisMatters": "try-with-resources đóng file chắc chắn kể cả khi có exception giữa chừng — rò tài nguyên (resource leak) từ việc quên đóng file là lỗi âm thầm, chỉ lộ ra sau hàng nghìn lần chạy. Dòng CSV hỏng (thiếu cột, sai định dạng số) phải làm load() thất bại rõ ràng, không được âm thầm bỏ qua dòng đó và trả về danh sách thiếu. Một điểm dễ bỏ sót: mỗi dòng CSV chỉ ghi accountId (một UUID dạng chuỗi), không ghi đủ dữ liệu để tự dựng lại một Account — vì Transaction constructor cần cả object Account, load() không thể tự tái tạo Transaction một mình, nó cần biết account thật ở đâu.",
+      "goal": "Có CsvTransactionStore.load(...) đọc file CSV vừa ghi và tái tạo lại đúng danh sách Transaction qua TransactionCreationService; lỗi IO được xử lý rõ ràng, không bị nuốt (swallow) im lặng.",
+      "whyThisMatters": "try-with-resources đóng file chắc chắn kể cả khi có exception giữa chừng — rò tài nguyên (resource leak) từ việc quên đóng file là lỗi âm thầm, chỉ lộ ra sau hàng nghìn lần chạy. Dòng CSV hỏng phải làm load() thất bại rõ ràng. CSV nằm ở package shared nên không được gọi constructor canonical package-private của Transaction; nó phải dựng TransactionCreationCommand có sourceRef rồi đi qua TransactionCreationService, đúng cửa tạo duy nhất R20.",
       "learnerAction": {
-        "goal": "Viết load(Path file, Function<UUID, Account> accountResolver) đọc từng dòng (bỏ header), với mỗi dòng: parse accountId thành UUID rồi gọi accountResolver.apply(accountId) để lấy Account thật (ném exception rõ nghĩa nếu resolver trả null — accountId không tồn tại), parse các cột còn lại và dựng Transaction bằng constructor 5-tham số. Dùng try-with-resources (BufferedReader hoặc Files.lines trong try) để đảm bảo file luôn được đóng.",
+        "goal": "Viết load(Path file, Function<UUID, Account> accountResolver, TransactionCreationService creationService) đọc từng dòng (bỏ header), resolve accountId thành Account thật, parse type/amount/category/sourceRef, dựng TransactionCreationCommand rồi gọi creationService.create(command). Dùng try-with-resources (BufferedReader hoặc Files.lines trong try) để đảm bảo file luôn được đóng.",
         "constraints": [
-          "load() nhận thêm tham số Function<UUID, Account> accountResolver — không tự ý đoán hay dựng Account rỗng/giả từ accountId, vì CsvTransactionStore không sở hữu dữ liệu account (đó là việc của AccountRepository/AccountService).",
+          "load() nhận Function<UUID, Account> accountResolver và TransactionCreationService — không tự dựng Account giả, không gọi trực tiếp constructor Transaction.",
           "Phải dùng try-with-resources hoặc try/finally đảm bảo file được đóng dù có exception.",
           "IOException hoặc dòng CSV sai định dạng phải được xử lý tường minh (ném lại một exception rõ nghĩa, hoặc log + rethrow) — không được catch rồi bỏ qua lặng lẽ (empty catch block).",
-          "Không dùng lại constructor Transaction bỏ qua sourceRef — dòng CSV phải mang đủ dữ liệu để tái tạo sourceRef gốc."
+          "Dòng CSV phải mang sourceRef gốc vào TransactionCreationCommand; không sinh provenance mới khi load."
         ],
         "hints": [
           "Files.lines(file) trả về Stream<String> phải được đóng — bọc nó trong try-with-resources vì Stream<String> từ Files.lines implements AutoCloseable, khác với List<String> từ Files.readAllLines.",
-          "Trong test, accountResolver có thể là một Map<UUID, Account> đã seed sẵn, truyền vào dưới dạng map::get (Map::get khớp chữ ký Function<UUID, Account>)."
+          "Trong test, accountResolver có thể là Map<UUID, Account>::get; creationService dùng một Repository<Transaction, UUID> riêng để bạn assert các dòng đã được lưu qua canonical path."
         ]
       },
       "run": {
@@ -1764,8 +1765,8 @@
         "explanation": "Xác nhận vòng ghi-đọc hoạt động đúng trước khi pin chặt độ chính xác tiền tệ ở bước sau."
       },
       "reveal": {
-        "label": "Xem chữ ký load() và cách accountId được resolve về Account",
-        "content": "public List<Transaction> load(Path file, Function<UUID, Account> accountResolver) throws IOException {\n    try (Stream<String> lines = Files.lines(file)) {\n        return lines.skip(1) // bo header\n                .map(line -> parseLine(line, accountResolver))\n                .toList();\n    }\n}\n\nprivate Transaction parseLine(String line, Function<UUID, Account> accountResolver) {\n    String[] cols = line.split(\",\", -1);\n    UUID accountId = UUID.fromString(cols[0]);\n    Account account = accountResolver.apply(accountId);\n    if (account == null) {\n        throw new IllegalStateException(\"unknown accountId in CSV row: \" + accountId);\n    }\n    // ...parse type/amount/currency/category/sourceRef tu cols con lai...\n    return new Transaction(account, type, amount, category, sourceRef);\n}"
+        "label": "Xem load() resolve Account rồi tạo qua TransactionCreationService",
+        "content": "public List<Transaction> load(\n        Path file,\n        Function<UUID, Account> accountResolver,\n        TransactionCreationService creationService) throws IOException {\n    try (Stream<String> lines = Files.lines(file)) {\n        return lines.skip(1) // bo header\n                .map(line -> parseLine(line, accountResolver, creationService))\n                .toList();\n    }\n}\n\nprivate Transaction parseLine(\n        String line,\n        Function<UUID, Account> accountResolver,\n        TransactionCreationService creationService) {\n    String[] cols = line.split(\",\", -1);\n    UUID accountId = UUID.fromString(cols[0]);\n    Account account = accountResolver.apply(accountId);\n    if (account == null) {\n        throw new IllegalStateException(\"unknown accountId in CSV row: \" + accountId);\n    }\n    // ...parse type/amount/currency/category/sourceRef tu cols con lai...\n    TransactionCreationCommand command = new TransactionCreationCommand(\n            account, type, amount, category, sourceRef);\n    return creationService.create(command);\n}"
       }
     },
     {
@@ -2136,25 +2137,25 @@
       "buildStepId": "step-transaction-endpoints-02",
       "type": "your-turn",
       "title": "HTTP cũng chỉ là một caller khác của cửa duy nhất — R20 không dừng ở controller",
-      "goal": "Một test xác nhận giao dịch tạo qua HTTP mang sourceRef được TransactionCreationService gán (không phải do controller tự bịa ra), nghĩa là route POST /transactions thật sự đi qua đúng con đường tạo canonical từ session V0.2 — kể cả bước accountId (String trong request JSON) → Account (đối tượng domain) mà CreateTransactionCommand cần.",
-      "whyThisMatters": "R20 được giới thiệu ở V0.2 như 'con đường tạo duy nhất' — nếu TransactionController tự dựng một Transaction bằng constructor thay vì gọi TransactionCreationService.create(command), quy tắc đó chỉ đúng trên giấy. HTTP là một caller mới, không phải một ngoại lệ. Nhưng CreateTransactionCommand (V0.2) mang một Account đầy đủ, còn request HTTP chỉ có accountId dạng chuỗi — phải có một bước tra cứu accountId → Account trước khi command được xây, và bước đó thuộc về controller (R17: controller được phép điều phối, chỉ không được chứa domain logic), dùng lại đúng Repository<Account, UUID> bean đã đăng ký từ V0.3.",
+      "goal": "Một test xác nhận giao dịch tạo qua HTTP mang sourceRef MANUAL: do caller HTTP truyền trong TransactionCreationCommand, và route POST /transactions thật sự đi qua TransactionCreationService từ session V0.2 — kể cả bước accountId (String trong request JSON) → Account mà command cần.",
+      "whyThisMatters": "R20 được giới thiệu ở V0.2 như 'con đường tạo duy nhất' — nếu TransactionController tự dựng một Transaction bằng constructor thay vì gọi TransactionCreationService.create(command), quy tắc đó chỉ đúng trên giấy. HTTP là một caller mới, không phải một ngoại lệ. TransactionCreationCommand mang Account đầy đủ và provenance do caller biết; request chỉ có accountId nên controller phải resolve Account, gắn sourceRef MANUAL: cho loại nguồn HTTP thủ công, rồi đưa cả hai vào service. Service chịu trách nhiệm validate, giữ nguyên sourceRef và tạo entity qua constructor canonical.",
       "learnerAction": {
-        "goal": "Sửa TransactionController.create để nó nhận Repository<Account, UUID> qua constructor, tra cứu accountId từ request (UUID.fromString) ra Account, xây một CreateTransactionCommand từ Account tìm được rồi gọi transactionCreationService.create(command) — không tự new Transaction hay tự gán sourceRef trong controller; thêm test xác nhận response trả về mang sourceRef có tiền tố MANUAL:, và một test accountId không tồn tại trả 404.",
+        "goal": "Sửa TransactionController.create để nó nhận Repository<Account, UUID> qua constructor, tra cứu accountId từ request (UUID.fromString) ra Account, tạo sourceRef dạng \"MANUAL:\" + UUID.randomUUID(), xây TransactionCreationCommand đủ 5 tham số rồi gọi transactionCreationService.create(command) — không tự new Transaction; thêm test xác nhận response giữ sourceRef có tiền tố MANUAL:, và một test accountId không tồn tại trả 404.",
         "constraints": [
           "TransactionController không được import hay gọi trực tiếp constructor Transaction — mọi việc tạo phải qua TransactionCreationService.create(command).",
-          "sourceRef trong response phải đến từ chính TransactionCreationService, controller không tự sinh nó.",
-          "accountId không tồn tại trong Repository<Account, UUID> phải làm request thất bại rõ ràng (404), không được để NullPointerException hay Account null lọt vào CreateTransactionCommand."
+          "Controller gắn provenance MANUAL: vào TransactionCreationCommand; service validate và giữ nguyên giá trị đó, không tự sinh sourceRef thay caller.",
+          "accountId không tồn tại trong Repository<Account, UUID> phải làm request thất bại rõ ràng (404), không được để NullPointerException hay Account null lọt vào TransactionCreationCommand."
         ]
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
         "command": ".\\mvnw.cmd '-Dtest=TransactionControllerTest' test",
-        "expectedResult": "BUILD SUCCESS — test xác nhận sourceRef của giao dịch tạo qua HTTP có tiền tố MANUAL: và đến từ canonical path; test accountId không tồn tại trả 404.",
-        "explanation": "Test này là bằng chứng R20 giữ nguyên hiệu lực qua một caller mới (HTTP), không chỉ qua lời gọi Java trực tiếp như ở V0.2, và rằng bước tra cứu accountId → Account không bị bỏ sót."
+        "expectedResult": "BUILD SUCCESS — test xác nhận sourceRef MANUAL: từ HTTP caller sống nguyên qua canonical path; test accountId không tồn tại trả 404.",
+        "explanation": "Test pin cả R20 lẫn ownership của provenance: controller biết loại nguồn, service validate và tạo entity qua đúng constructor canonical."
       },
       "reveal": {
-        "label": "Xem cách controller tra accountId ra Account trước khi xây command",
-        "content": "public class TransactionController {\n    private final TransactionCreationService transactionCreationService;\n    private final Repository<Account, UUID> accounts;\n\n    public TransactionController(TransactionCreationService transactionCreationService,\n                                  Repository<Account, UUID> accounts) {\n        this.transactionCreationService = transactionCreationService;\n        this.accounts = accounts;\n    }\n\n    @PostMapping(\"/transactions\")\n    public ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest request) {\n        UUID accountId = UUID.fromString(request.accountId());\n        Account account = accounts.find(accountId)\n                .orElseThrow(() -> new AccountNotFoundException(accountId));\n        CreateTransactionCommand command = new CreateTransactionCommand(\n                account, request.type(), Money.of(request.amount()), request.category());\n        Transaction created = transactionCreationService.create(command);\n        return ResponseEntity.status(HttpStatus.CREATED).body(TransactionResponse.from(created));\n    }\n}\n"
+        "label": "Xem controller resolve Account và truyền sourceRef vào command",
+        "content": "public class TransactionController {\n    private final TransactionCreationService transactionCreationService;\n    private final Repository<Account, UUID> accounts;\n\n    public TransactionController(TransactionCreationService transactionCreationService,\n                                  Repository<Account, UUID> accounts) {\n        this.transactionCreationService = transactionCreationService;\n        this.accounts = accounts;\n    }\n\n    @PostMapping(\"/transactions\")\n    public ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest request) {\n        UUID accountId = UUID.fromString(request.accountId());\n        Account account = accounts.find(accountId)\n                .orElseThrow(() -> new AccountNotFoundException(accountId));\n        String sourceRef = \"MANUAL:\" + UUID.randomUUID();\n        TransactionCreationCommand command = new TransactionCreationCommand(\n                account, request.type(), Money.of(request.amount()), request.category(), sourceRef);\n        Transaction created = transactionCreationService.create(command);\n        return ResponseEntity.status(HttpStatus.CREATED).body(TransactionResponse.from(created));\n    }\n}\n"
       }
     },
     {
@@ -3542,7 +3543,7 @@
       "buildStepId": "step-import-row-transaction-02",
       "type": "code-with-me",
       "title": "Implement ImportRowProcessor + ImportService qua canonical creation path, endpoint upload multipart",
-      "goal": "Moi dong duoc xu ly trong dung mot @Transactional call; dong hop le duoc tao qua TransactionCreationService.create(CreateTransactionCommand) voi sourceRef; dong loi ghi FAILED va rollback rieng no; vong lap goi luon tuan tu theo dung thu tu file.",
+      "goal": "Moi dong duoc xu ly trong dung mot @Transactional call; dong hop le duoc tao qua TransactionCreationService.create(TransactionCreationCommand) voi sourceRef; dong loi ghi FAILED va rollback rieng no; vong lap goi luon tuan tu theo dung thu tu file.",
       "whyThisMatters": "R22: don vi nguyen tu la MOT dong - neu boc ca vong lap 100 dong trong mot @Transactional duy nhat, mot dong loi rollback toan bo 4999 dong lanh, chinh xac dieu R22 cam. R20: moi Transaction tu import phai qua TransactionCreationService.create(command), khong bao gio insert thang qua repository - day la cua ngo duy nhat dam bao moi bat bien (amount duong, balance projection, sourceRef) duoc ton trong. R7: mot amount am tren CSV ngan hang phai duoc chuan hoa thanh amount duong + type EXPENSE truoc khi vao command, khong bao gio luu am. R19: khong external call/async dispatch ben trong bat ky row transaction nao.",
       "theoryBridge": [
         {
@@ -3560,8 +3561,8 @@
       ],
       "instructions": [
         "Tao ImportRowProcessor.java: method xu ly MOT dong (ParsedStatementRow, rowNumber, userId, batchId) tra ve outcome (OK kem id giao dich, hoac FAILED kem reason). Method nay (hoac method no goi) duoc danh dau @Transactional - MOI LAN GOI LA MOT giao dich DB RIENG, khong boc ca vong lap 100 dong trong mot @Transactional duy nhat.",
-        "Ben trong: parse cac truong tho cua ParsedStatementRow thanh CreateTransactionCommand (account, type, amount, category=null - RuleEngine da noi san tu V0.7 se tu gan category khi tao, khong can goi gi them o day; occurredAt, description, sourceRef tam thoi dang 'IMPORT:...' - sourceRef that theo hai tier se den o task-duplicate-detection ke tiep, buoc nay chi can mot sourceRef khong null de create(...) khong tu choi).",
-        "Amount am tren CSV (vi du ngan hang ghi -50000 cho mot khoan chi) phai duoc chuan hoa THANH type=EXPENSE + amount duong truoc khi dua vao CreateTransactionCommand - khong bao gio luu amount am (R7).",
+        "Ben trong: parse cac truong tho cua ParsedStatementRow thanh TransactionCreationCommand (account, type, amount, category=null - RuleEngine da noi san tu V0.7 se tu gan category khi tao, khong can goi gi them o day; occurredAt, description, sourceRef tam thoi dang 'IMPORT:...' - sourceRef that theo hai tier se den o task-duplicate-detection ke tiep, buoc nay chi can mot sourceRef khong null de create(...) khong tu choi).",
+        "Amount am tren CSV (vi du ngan hang ghi -50000 cho mot khoan chi) phai duoc chuan hoa THANH type=EXPENSE + amount duong truoc khi dua vao TransactionCreationCommand - khong bao gio luu amount am (R7).",
         "Neu dong khong parse duoc (amount khong phai so, account khong ton tai, thieu truong bat buoc...), method nem mot exception nghiep vu (khong de lot NullPointerException) - @Transactional rollback dung MOT dong do, khong anh huong dong khac.",
         "Ban ghi ImportRow (OK/FAILED, rowNumber, reason) duoc ghi NGOAI transaction tao-giao-dich cua dong do - vi du caller (ImportService) bat exception tu moi loi goi processor, roi ghi ImportRow trong mot loi goi ngan rieng (propagation REQUIRES_NEW theo day-20) - de mot dong FAILED van toi duoc trang thai cuoi cua no du transaction tao-giao-dich da rollback.",
         "ImportService.importFile(...) la noi orchestrate: tao ImportBatch (status PROCESSING), goi CsvStatementParser.parse(...) lay danh sach tuan tu, duyet TUAN TU (khong parallelStream, R22 menh de hai) goi ImportRowProcessor cho tung dong theo dung thu tu, sau cung cap nhat batch.status thanh COMPLETED hoac COMPLETED_WITH_ERRORS tuy co FAILED nao khong.",
@@ -3599,7 +3600,7 @@
           "Khong viet lai ImportRowProcessor o buoc nay tru khi probe hoac test that bai - day la buoc XAC MINH nhung gi buoc truoc da xay, khong phai mot buoc xay moi."
         ],
         "hints": [
-          "Neu ImportRowProcessor goi TransactionCreationService.create(command) dung nhu buoc truoc, ca hai assertion se tu nhien pass - khong can them logic chuan hoa dau o day, logic do phai da nam san trong buoc dung CreateTransactionCommand tu ParsedStatementRow."
+          "Neu ImportRowProcessor goi TransactionCreationService.create(command) dung nhu buoc truoc, ca hai assertion se tu nhien pass - khong can them logic chuan hoa dau o day, logic do phai da nam san trong buoc dung TransactionCreationCommand tu ParsedStatementRow."
         ]
       },
       "run": {
@@ -3792,10 +3793,10 @@
       "buildStepId": "step-import-rule-application-02",
       "type": "code-with-me",
       "title": "Xác nhận ImportRowProcessor không có đường gọi RuleEngine riêng nào",
-      "goal": "Review lại ImportRowProcessor: category truyền vào CreateTransactionCommand luôn là null, không có bất kỳ import hay lời gọi RuleEngine trực tiếp nào trong package com.spendwise.imports.",
+      "goal": "Review lại ImportRowProcessor: category truyền vào TransactionCreationCommand luôn là null, không có bất kỳ import hay lời gọi RuleEngine trực tiếp nào trong package com.spendwise.imports.",
       "whyThisMatters": "Cám dỗ tự nhiên khi thấy task tên là 'import-rule-application' là nghĩ cần VIẾT code gọi rule engine cho chắc. Nhưng R20 đã bắt buộc mọi Transaction đi qua create(command), và create() đã tự gọi RuleEngine từ V0.7 - thêm một lời gọi RuleEngine thứ hai trong package imports sẽ tạo ra hai đường áp rule song song, có thể áp rule hai lần hoặc áp không nhất quán với giao dịch nhập tay.",
       "instructions": [
-        "Mở lại ImportRowProcessor.java từ session-import-row-transaction - xác nhận CreateTransactionCommand được dựng với category=null, không có bất kỳ tham chiếu nào tới RuleEngine hay CategorizationRule trong file này.",
+        "Mở lại ImportRowProcessor.java từ session-import-row-transaction - xác nhận TransactionCreationCommand được dựng với category=null, không có bất kỳ tham chiếu nào tới RuleEngine hay CategorizationRule trong file này.",
         "Chạy lệnh review PowerShell quét toàn bộ package imports tìm chuỗi 'RuleEngine' - kết quả mong đợi là không tìm thấy dòng nào (rule engine chỉ được gọi từ bên trong TransactionCreationService, không phải từ package imports).",
         "Nếu review phát hiện một lời gọi RuleEngine trực tiếp nào đó trong package imports, xoá nó đi - để category=null trong command và tin tưởng con đường chung create() đã xử lý."
       ],
@@ -4202,7 +4203,7 @@
       "commonErrors": [
         {
           "symptom": "Seed giao dich bang cach goi truc tiep transactionRepository.save(new Transaction(...)) trong test",
-          "likelyCause": "Nhanh hon la lap CreateTransactionCommand day du.",
+          "likelyCause": "Nhanh hon la lap TransactionCreationCommand day du.",
           "fix": "Phep tinh phai doc dung nhung gi con duong tao giao dich CHINH THUC ghi ra - seed qua TransactionCreationService.create(...) de test phan anh dung thuc te production, khong phai mot the gioi gia lap rieng."
         }
       ]
@@ -4447,7 +4448,7 @@
       "buildStepId": "step-recurring-generation-02",
       "type": "your-turn",
       "title": "Tu viet RecurringGenerationService: sinh qua TransactionCreationService voi sourceRef xac dinh",
-      "goal": "generate(templateId, ownerId) tao occurrence qua TransactionCreationService.create(CreateTransactionCommand) VOI sourceRef xac dinh tu template id + ngay den han; nextDueDate chi tien len SAU khi giao dich da ton tai, trong CUNG mot @Transactional method; template khong active hoac da qua end date thi khong sinh gi ca.",
+      "goal": "generate(templateId, ownerId) tao occurrence qua TransactionCreationService.create(TransactionCreationCommand) VOI sourceRef xac dinh tu template id + ngay den han; nextDueDate chi tien len SAU khi giao dich da ton tai, trong CUNG mot @Transactional method; template khong active hoac da qua end date thi khong sinh gi ca.",
       "whyThisMatters": "R20: MOI Transaction - thu cong, lap lai hay import - deu di qua TransactionCreationService.create(...), khong bao gio insert repository truc tiep 'cho nhanh'. Menh de guard chinh: sourceRef xac dinh (khong phai UUID ngau nhien moi lan) la thu lam cho lan goi thu hai tro thanh vo hai - ban SE tu viet logic kiem tra 'da ton tai giao dich voi sourceRef nay chua' truoc khi tao.",
       "learnerAction": {
         "goal": "Viet RecurringGenerationService.java trong com.spendwise.recurring: doc template qua ownership-scoped query, kiem tra active/end-date/da-den-han, tinh sourceRef xac dinh, kiem tra sourceRef da ton tai chua truoc khi goi TransactionCreationService.create(...), roi tien nextDueDate.",
@@ -4474,7 +4475,7 @@
       "commonErrors": [
         {
           "symptom": "Insert Transaction truc tiep qua transactionRepository.save(...) 'cho don gian' thay vi qua TransactionCreationService.create(...)",
-          "likelyCause": "Muon tranh phai lap CreateTransactionCommand day du.",
+          "likelyCause": "Muon tranh phai lap TransactionCreationCommand day du.",
           "fix": "R20 ton tai chinh vi ly do nay: bo qua con duong chinh thuc bo qua luon invariant cua no (cap nhat so du, rule engine, v.v.) va pha vo tinh nhat quan giua giao dich thu cong va giao dich lap lai."
         },
         {
@@ -6914,12 +6915,12 @@
       "understanding": [
         "Vi sao don vi nguyen tu la MOT dong, khong phai ca batch - mot dong loi trong 100 dong chi rollback dung dong do, 99 dong con lai khong he biet dong nao da loi (R22).",
         "Vi sao moi Transaction tu import deu qua TransactionCreationService.create(command), khong bao gio transactionRepository.save truc tiep - va vi sao co mot probe quet ma nguon xac nhan dieu do thay vi chi tin vao review bang mat (R20).",
-        "Vi sao amount am tren CSV ngan hang phai duoc chuan hoa thanh amount duong + type EXPENSE truoc khi toi CreateTransactionCommand, khong bao gio luu mot amount am (R7)."
+        "Vi sao amount am tren CSV ngan hang phai duoc chuan hoa thanh amount duong + type EXPENSE truoc khi toi TransactionCreationCommand, khong bao gio luu mot amount am (R7)."
       ],
       "whatYouBuilt": "ImportRowProcessor xu ly tung dong trong @Transactional rieng qua canonical creation path, ImportService orchestrate tuan tu toan batch va cap nhat trang thai COMPLETED/COMPLETED_WITH_ERRORS, endpoint POST /imports nhan file CSV qua MultipartFile.",
       "whyNotYet": [
         "sourceRef hien chi la mot gia tri tam du de create() khong tu choi - danh tinh hai tang that (SRC uu tien, fingerprint+OCC du phong) va rang buoc UNIQUE chan trung o DB chua ton tai, do la task-duplicate-detection ngay sau day; import hien tai co the tao trung giao dich neu chay lai cung file.",
-        "Chua co rule nao that su duoc ap dung cho category - CreateTransactionCommand truyen category=null, va imported transaction hien tai luon uncategorized cho toi task-import-rule-application."
+        "Chua co rule nao that su duoc ap dung cho category - TransactionCreationCommand truyen category=null, va imported transaction hien tai luon uncategorized cho toi task-import-rule-application."
       ]
     },
     {
@@ -6941,7 +6942,7 @@
       ],
       "whatYouBuilt": "RowIdentityService sinh sourceRef hai tầng, ràng buộc UNIQUE (user_id, source_ref) ở DB, và ImportRowProcessor đánh dấu DUPLICATE đúng khi phát hiện trùng - được chứng minh idempotent qua ba kịch bản import lại.",
       "whyNotYet": [
-        "Chưa xác nhận rõ ràng rule engine có thực sự chạy cho dòng import OK hay không (chỉ mới suy luận từ cách CreateTransactionCommand được gọi) - đó là task-import-rule-application ngay sau đây.",
+        "Chưa xác nhận rõ ràng rule engine có thực sự chạy cho dòng import OK hay không (chỉ mới suy luận từ cách TransactionCreationCommand được gọi) - đó là task-import-rule-application ngay sau đây.",
         "Task tuỳ chọn task-async-import (không bắt buộc trong V0.8) sẽ thêm một đường xử lý bất đồng bộ cho file rất lớn ở phần sau khoá học - không đổi hợp đồng HTTP của POST /imports, không cần cho phần bắt buộc này."
       ]
     },

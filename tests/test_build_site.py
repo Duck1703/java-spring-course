@@ -1,6 +1,9 @@
 """Tests for tools/build_site.py — publication model assembly and safe embedding."""
 
 import json
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -111,6 +114,85 @@ class GuidedBuildEmbeddingTests(unittest.TestCase):
         with self.guided_path.open(encoding="utf-8") as fh:
             authored = json.load(fh)
         self.assertEqual(self.model["guidedBuild"], authored)
+
+    def test_v0_2_source_ref_step_teaches_compilable_canonical_constructor(self):
+        guided = self.model["guidedBuild"]
+        step = next(s for s in guided["guidedSteps"] if s["id"] == "step-v02-source-ref")
+        reveal = step["reveal"]["content"]
+        transaction_source = reveal.split(
+            "// Transaction.java (replace the class body with this shape):\n", 1
+        )[1].split("\n// TransactionCreationCommand.java:", 1)[0]
+
+        self.assertIn(
+            "this(UUID.randomUUID(), account, type, amount, category, null);",
+            transaction_source,
+        )
+        self.assertIn(
+            "Transaction(UUID id, Account account, TransactionType type, Money amount, "
+            "Category category, String sourceRef)",
+            transaction_source,
+        )
+        self.assertIn("if (sourceRef != null && sourceRef.isBlank())", transaction_source)
+        self.assertEqual(transaction_source.count("this.sourceRef = sourceRef;"), 1)
+        self.assertLess(
+            transaction_source.index("this(UUID.randomUUID(), account, type, amount, category, null);"),
+            transaction_source.index("requireCategory(category);"),
+        )
+        self.assertNotIn("this(account, type, amount, category);", reveal)
+        self.assertNotIn("public Transaction(Account account, TransactionType type, Money amount, Category category, String sourceRef)", reveal)
+        self.assertIn("public TransactionCreationCommand(", reveal)
+        self.assertIn(
+            "command.transactionId() == null ? UUID.randomUUID() : command.transactionId(),",
+            reveal,
+        )
+        self.assertIn(
+            "command.account(), command.type(), command.amount(), command.category(), command.sourceRef()",
+            reveal,
+        )
+
+        fixture = transaction_source + """
+
+final class Account {}
+enum TransactionType { INCOME, EXPENSE }
+enum Category { FOOD }
+final class Money {
+    java.math.BigDecimal amount() { return java.math.BigDecimal.ONE; }
+}
+class DomainException extends RuntimeException {
+    DomainException(String message) { super(message); }
+}
+final class InvalidAmountException extends DomainException {
+    InvalidAmountException(String message) { super(message); }
+}
+"""
+        javac = shutil.which("javac")
+        self.assertIsNotNone(javac, "javac is required for the Guided constructor regression test")
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "Transaction.java"
+            source.write_text(fixture, encoding="utf-8")
+            completed = subprocess.run(
+                [javac, str(source)], capture_output=True, text=True, cwd=tmp, timeout=30,
+            )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
+    def test_v0_2_csv_read_reconstructs_through_creation_service(self):
+        guided = self.model["guidedBuild"]
+        step = next(s for s in guided["guidedSteps"] if s["id"] == "step-v02-csv-read")
+        text = json.dumps(step, ensure_ascii=False)
+        self.assertIn("TransactionCreationService", text)
+        self.assertIn("TransactionCreationCommand", text)
+        self.assertNotIn("new Transaction(account, type, amount, category, sourceRef)", text)
+
+    def test_v0_4_http_caller_supplies_manual_source_ref(self):
+        guided = self.model["guidedBuild"]
+        step = next(
+            s for s in guided["guidedSteps"]
+            if s["id"] == "step-v04-transaction-canonical-path"
+        )
+        text = json.dumps(step, ensure_ascii=False)
+        self.assertIn('"MANUAL:" + UUID.randomUUID()', step["reveal"]["content"])
+        self.assertNotIn("TransactionCreationService gán", text)
+        self.assertNotIn("service không tự sinh", text)
 
     AUTHORED_RELEASE_IDS = {"v0-1", "v0-2", "v0-3", "v0-4", "v0-5", "v0-6", "v0-7", "v0-8", "v0-9", "v1-0"}
 
