@@ -17,6 +17,11 @@ def _guided_step(step_id: str) -> dict:
     return next(step for step in guided["guidedSteps"] if step["id"] == step_id)
 
 
+def _session_steps(session_id: str) -> list:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    return [s for s in guided["guidedSteps"] if s["sessionId"] == session_id]
+
+
 def _text(value: object) -> str:
     if isinstance(value, str):
         return value
@@ -80,3 +85,57 @@ def test_v03_parent_verifier_checks_effective_exact_version() -> None:
     assert "-Dexpression=project.parent.version" in command
     assert "-ne '3.5.16'" in command
     assert ".\\mvnw.cmd test" in command
+
+
+# --- V0.5 scalar Money persistence contract (progressive-audit repair) -------
+# Canonical authority: D:\spendwise @ 8ead91c maps the Money value object by
+# SCALAR DECOMPOSITION (BigDecimal amount + String currency @Column pairs),
+# never @Embeddable/@Embedded/@AttributeOverride (0 occurrences in all history).
+# These contracts pin that the learner-facing guidance teaches that pattern
+# explicitly and respects build-step chronology (opening scalars at the
+# jpa-entities session; balance scalars only at the balance-projection session).
+
+def test_v05_money_roundtrip_teaches_scalar_decomposition() -> None:
+    step = _guided_step("step-v05-jpa-entities-money-roundtrip")
+    text = _text(step)
+
+    # amount persisted as BigDecimal / NUMERIC(19,2); currency as its own column
+    assert "BigDecimal" in text
+    assert "NUMERIC(19,2)" in text
+    assert "VARCHAR(3)" in text
+    # the two scalar fields are named for the beginner
+    assert "openingAmount" in text
+    assert "openingCurrency" in text
+    # Money stays the domain abstraction, reconstructed from the scalars
+    assert "Money" in text
+    # compareTo round-trip remains the proof
+    assert "compareTo" in text
+
+
+def test_v05_jpa_session_does_not_teach_embeddable_as_the_pattern() -> None:
+    # On the AFFIRMATIVE teaching surfaces (instructions + learnerAction — what
+    # the learner is told to DO), @Embeddable/@Embedded may appear only inside an
+    # explicit negation. commonErrors/reveal are free to name the anti-pattern to
+    # warn against it, so they are deliberately out of scope here.
+    for step in _session_steps("session-jpa-entities"):
+        affirmative = _text(step.get("instructions", [])) + "\n" + _text(step.get("learnerAction", {}))
+        for line in affirmative.splitlines():
+            if "@Embeddable" in line or "@Embedded" in line:
+                negated = any(
+                    marker in line
+                    for marker in ("không dùng", "KHÔNG dùng", "không map", "không phải", "KHÔNG")
+                )
+                assert negated, f"@Embeddable stated affirmatively: {line!r}"
+
+
+def test_v05_balance_scalars_are_named_only_at_projection_session() -> None:
+    # Chronology (directive §8): opening_* scalars belong to the jpa-entities
+    # session; balance_amount/balance_currency must NOT leak earlier and MUST
+    # appear at the balance-projection session with canonical two-column naming.
+    entities_text = _text(_session_steps("session-jpa-entities"))
+    assert "balance_amount" not in entities_text
+    assert "balance_currency" not in entities_text
+
+    projection_text = _text(_session_steps("session-balance-projection"))
+    assert "balance_amount" in projection_text
+    assert "balance_currency" in projection_text

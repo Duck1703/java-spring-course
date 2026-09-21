@@ -2428,6 +2428,7 @@
         "Thêm spring-boot-starter-data-jpa và driver PostgreSQL vào pom.xml (không ghi version, kế thừa từ spring-boot-starter-parent).",
         "Gắn @Entity + @Table(name=\"accounts\")/@Table(name=\"transactions\") lên Account, Transaction — tên bảng số nhiều, khớp với migration sẽ viết ở session sau; dùng lại đúng class hiện có, không tạo class mới.",
         "Gắn @Id lên field id (kiểu UUID) của Account và Transaction — KHÔNG gắn @GeneratedValue, vì id đã được gán bằng UUID.randomUUID() ngay trong constructor từ V0.2; gắn @Column lên các field cần map tên cột khác tên field.",
+        "Money là value object thuần — KHÔNG gắn annotation JPA lên Money, và KHÔNG dùng @Embeddable. Mỗi giá trị Money được map bằng scalar decomposition: một field BigDecimal cho số tiền + một field String cho mã tiền tệ, mỗi field mang @Column riêng. Trên Transaction: @Column(nullable=false) BigDecimal amount + @Column(nullable=false, length=3) String currency; constructor tách Money đầu vào (this.amount = amount.amount(); this.currency = amount.currency().getCurrencyCode();) và getter amount() ghép lại thành Money. Bước round-trip kế tiếp làm y hệt cho openingBalance của Account. (balance hiện tại + @Version thuộc session balance-projection phía sau, chưa map ở đây.)",
         "Viết lại Category: từ enum thành một final class @Entity @Table(name=\"categories\") với field code (String, @Id, KHÔNG @GeneratedValue vì code là khoá tự nhiên VD \"FOOD\") và constructor private. Khai báo 5 static final instance y hệt 5 giá trị enum cũ (public static final Category FOOD = new Category(\"FOOD\"); ...) và hai static method tĩnh values() (trả danh sách/mảng cả 5 instance) và valueOf(String code) (trả đúng instance khớp code, ném IllegalArgumentException nếu không khớp — y hệt hành vi Enum.valueOf) để mọi call site cũ gọi Category.values()/Category.valueOf(...) không cần sửa chữ ký.",
         "KHÔNG gắn @Enumerated lên field category của Transaction nữa — Category không còn là enum; quan hệ @ManyToOne thật từ Transaction tới Category (entity vừa tạo ở trên) được khai báo ở session kế tiếp, bước này chỉ dừng ở việc biến Category thành entity.",
         "Thêm protected no-arg constructor cho Account, Transaction, và Category nếu class chưa có — Hibernate cần nó để khởi tạo entity qua reflection."
@@ -2452,21 +2453,45 @@
       "order": 2,
       "buildStepId": "step-jpa-entities-02",
       "type": "your-turn",
-      "title": "Map cột tiền là BigDecimal và chứng minh round-trip qua PostgreSQL thật",
+      "title": "Map tiền bằng scalar decomposition (BigDecimal + currency) và chứng minh round-trip qua PostgreSQL thật",
       "goal": "Một @DataJpaTest lưu một Account rồi đọc lại, số tiền compareTo-equal với số đã lưu — chạy trên PostgreSQL thật, không phải H2 hay in-memory giả.",
-      "whyThisMatters": "R1/R2: tiền là BigDecimal ở tầng Java và NUMERIC(19,2) ở tầng cột — hai kiểu này phải khớp nhau, nếu không phần lẻ thập phân có thể bị cắt hoặc sai khi round-trip qua ORM. Đây là bước đầu tiên project thật sự nói chuyện với một database sống.",
+      "whyThisMatters": "R1/R2: tiền là BigDecimal ở tầng Java và NUMERIC(19,2) ở tầng cột — hai kiểu này phải khớp nhau, nếu không phần lẻ thập phân có thể bị cắt hoặc sai khi round-trip qua ORM. Đây là bước đầu tiên project thật sự nói chuyện với một database sống.\n\nĐiểm mấu chốt của bước này là phân biệt HAI cách biểu diễn cùng một khái niệm tiền:\n- Ở tầng DOMAIN: Account vẫn làm việc bằng Money — openingBalance() vẫn trả về một Money (amount + currency đi cùng nhau). Money vẫn là một value object thuần Java, KHÔNG mang annotation JPA nào.\n- Ở tầng PERSISTENCE của release này: JPA KHÔNG lưu trực tiếp object Money. Entity giữ các scalar field riêng để map xuống cột: một BigDecimal cho số tiền và một String cho mã tiền tệ. Constructor tách (decompose) Money thành hai scalar khi gán; getter ghép (reconstruct) hai scalar lại thành Money khi đọc.\n\nVì sao lại decompose thay vì embed? Money là value object hữu ích cho domain vì nó giữ amount + currency dính liền nhau. Nhưng schema quan hệ lưu từng cột giá trị nguyên thủy. Spendwise ở V0.5 chọn ánh xạ Money ↔ (BigDecimal + mã tiền tệ String): giữ được ngữ nghĩa Money ở domain trong khi vẫn thỏa NUMERIC(19,2) và VARCHAR(3) ở ranh giới database. Đây là thiết kế hiện hành của Spendwise — không phải một luật JPA phổ quát.",
+      "instructions": [
+        "Trên Account, thay field openingBalance kiểu Money bằng HAI scalar persistence field ánh xạ trực tiếp xuống cột: @Column(name = \"opening_amount\", nullable = false) private BigDecimal openingAmount; và @Column(name = \"opening_currency\", nullable = false, length = 3) private String openingCurrency; — cột amount là NUMERIC(19,2), cột currency là VARCHAR(3).",
+        "Trong constructor Account, DECOMPOSE Money đầu vào thành hai scalar: this.openingAmount = openingBalance.amount(); this.openingCurrency = openingBalance.currency().getCurrencyCode(); — không lưu tham chiếu tới object Money.",
+        "Giữ nguyên API domain: openingBalance() vẫn trả về Money, RECONSTRUCT từ hai scalar — ví dụ return new Money(openingAmount, Currency.getInstance(openingCurrency)); — nên mọi call site cũ (V0.1-V0.4) không đổi chữ ký.",
+        "Ở bước này CHỈ map openingBalance. Số dư hiện tại (balance) và cột version thuộc session balance-projection phía sau — chưa thêm các cột số dư đó lúc này.",
+        "Cấu hình spring.datasource trong application.properties trỏ vào PostgreSQL local (giá trị demo của môi trường học, không phải secret production)."
+      ],
       "learnerAction": {
-        "goal": "Cấu hình spring.datasource trong application.properties trỏ vào PostgreSQL local (host/port/db/user/password của môi trường học, không phải secret thật production), viết AccountJpaTest dùng @DataJpaTest lưu một Account với openingBalance có phần thập phân rồi đọc lại, assert bằng compareTo == 0.",
+        "goal": "Cấu hình spring.datasource trỏ PostgreSQL local, đảm bảo Account map openingBalance thành hai scalar field openingAmount (BigDecimal) + openingCurrency (String) như trên, rồi viết AccountJpaTest dùng @DataJpaTest lưu một Account với openingBalance có phần thập phân (VD new Money(\"100.00\", \"USD\")) và đọc lại, assert bằng compareTo == 0 trên openingBalance().amount() và so mã tiền tệ.",
         "constraints": [
           "Không dùng equals() để so BigDecimal — 100.0 và 100.00 equals() trả false dù compareTo() trả 0; đây chính là cái mà tiền hay dính bug.",
+          "Ở release này KHÔNG dùng @Embeddable/@Embedded cho Money — Spendwise giữ Money ở domain API nhưng map xuống DB bằng các scalar column (BigDecimal + String currency). @Embeddable là kỹ thuật của bài sau chưa được liệt kê cho bước này.",
           "Không được hardcode secret/password thật vào application.properties — chỉ giá trị demo local dùng cho máy học, không phải giá trị production."
         ]
+      },
+      "commonErrors": [
+        {
+          "symptom": "Gắn @Embeddable lên Money rồi @Embedded lên field trong Account để 'lưu nguyên object Money'.",
+          "likelyCause": "Nhầm rằng value object bắt buộc phải map bằng embeddable — đó là một kỹ thuật hợp lệ trong JPA nói chung, nhưng KHÔNG phải mẫu hình Spendwise chọn ở V0.5, và @Embeddable chưa nằm trong danh sách kiến thức được phép của bước này.",
+          "fix": "Không dùng @Embeddable. Giữ Money là value object thuần (không annotation), và map thủ công bằng scalar: BigDecimal openingAmount + String openingCurrency với @Column; decompose trong constructor, reconstruct trong getter."
+        },
+        {
+          "symptom": "Đánh dấu field Money là @Transient rồi mong openingBalance tự được lưu.",
+          "likelyCause": "@Transient nghĩa là JPA BỎ QUA field đó — nó sẽ không bao giờ được persist, nên round-trip đọc lại ra null/0.",
+          "fix": "Bỏ @Transient. Các scalar field openingAmount/openingCurrency mới là thứ được persist; openingBalance() chỉ là getter tính từ chúng, không cần là field lưu trữ."
+        }
+      ],
+      "reveal": {
+        "label": "Gợi ý mapping scalar cho Account (chỉ mở khi đã tự thử)",
+        "content": "Ý tưởng cốt lõi: Money vào — scalar ra — Money lại ra.\n\n// domain vẫn nói bằng Money, persistence nói bằng scalar\n@Column(name = \"opening_amount\", nullable = false)\nprivate BigDecimal openingAmount;\n\n@Column(name = \"opening_currency\", nullable = false, length = 3)\nprivate String openingCurrency;\n\n// trong constructor: decompose\nthis.openingAmount = openingBalance.amount();\nthis.openingCurrency = openingBalance.currency().getCurrencyCode();\n\n// getter: reconstruct\npublic Money openingBalance() {\n    return new Money(openingAmount, Currency.getInstance(openingCurrency));\n}\n\nTest round-trip lưu new Money(\"100.00\", \"USD\"), clear persistence context, đọc lại, rồi assertEquals(0, new Money(\"100.00\", \"USD\").amount().compareTo(reread.openingBalance().amount())). Không @Embeddable ở bước này."
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
         "command": "'-Dtest=AccountJpaTest' test",
         "expectedResult": "BUILD SUCCESS — Account lưu và đọc lại từ PostgreSQL thật, so sánh bằng compareTo() cho kết quả bằng 0.",
-        "explanation": "Đây là bằng chứng đầu tiên rằng dữ liệu không còn sống chỉ trong RAM — @DataJpaTest ở đây chạy trên PostgreSQL local thật (không phải embedded H2), như R1/R2 yêu cầu."
+        "explanation": "Đây là bằng chứng đầu tiên rằng dữ liệu không còn sống chỉ trong RAM — @DataJpaTest ở đây chạy trên PostgreSQL local thật (không phải embedded H2), như R1/R2 yêu cầu. Money round-trip đúng nhờ scalar decomposition, không cần @Embeddable."
       }
     },
     {
@@ -2725,8 +2750,8 @@
         }
       ],
       "instructions": [
-        "Tạo src/main/resources/db/migration/V2__balance_projection.sql thêm cột balance NUMERIC(19,2) và version BIGINT vào bảng accounts (nếu balance chưa có cột riêng từ V1).",
-        "Gắn @Version lên field version của Account; đảm bảo balance là field persisted thật (@Column), không phải @Transient tính toán mỗi lần getter gọi.",
+        "Tạo src/main/resources/db/migration/V2__balance_projection.sql: ALTER TABLE accounts ADD COLUMN balance_amount NUMERIC(19,2) NOT NULL DEFAULT 0.00, ADD COLUMN balance_currency VARCHAR(3) NOT NULL DEFAULT 'USD', ADD COLUMN version BIGINT NOT NULL DEFAULT 0; rồi UPDATE accounts SET balance_amount = opening_amount, balance_currency = opening_currency để backfill số dư ban đầu bằng opening. Hai cột balance_amount/balance_currency là scalar decomposition của Money balance — không thêm một cột 'balance' đơn lẻ, không @Embeddable.",
+        "Gắn @Version lên field version của Account; thêm hai scalar field persisted balanceAmount (@Column(name=\"balance_amount\") BigDecimal) + balanceCurrency (@Column(name=\"balance_currency\", length=3) String), decompose/reconstruct Money y hệt openingBalance — KHÔNG dùng @Transient cho balance (số dư phải được persist thật, không tính lại mỗi lần getter gọi).",
         "Sửa TransactionCreationService.create(command): trong CÙNG một @Transactional, sau khi lưu Transaction, cộng/trừ balance của Account liên quan theo đúng dấu hiệu ứng của type (INCOME/TRANSFER_IN cộng, EXPENSE/TRANSFER_OUT trừ) rồi lưu lại Account qua AccountRepository — balance phải được cập nhật và persist ngay tại thời điểm giao dịch được tạo, không phải tính lại từ đầu mỗi lần đọc, và không phải một bước riêng learner tự nhớ làm sau.",
         "Viết một test mô phỏng hai transaction cùng load một Account rồi cùng ghi — xác nhận transaction ghi sau nhận OptimisticLockException hoặc ObjectOptimisticLockingFailureException."
       ],
