@@ -749,13 +749,12 @@ test("buildMentorPrompt emits all ten Phase-2 §14 fields for a task-level promp
   // 6. Architecture rules — ids only, never invented text
   assert.ok(text.includes("## Architecture rules in force"));
   assert.ok(text.includes("R3, R7"));
-  // 7. Toolchain: Java 17 pinned, Boot pin explicitly PENDING, no invented version
+  // 7. Toolchain: the Guided Rebuild baseline is deterministic.
   assert.ok(text.includes("## Toolchain"));
   assert.ok(text.includes("Java 17"));
-  assert.ok(text.includes("SPRING_BOOT_EXACT_PIN_PENDING"));
-  // A version suggestion would look like "Spring Boot 3.x" — "Spring Boot 40
-  // bai" (the lesson count in the role line) must not trip this.
-  assert.ok(!/Spring Boot\s+v?[0-9]+\.[0-9]/.test(text), "no Spring Boot version is ever suggested");
+  assert.ok(text.includes("Spring Boot 3.5.16"));
+  assert.ok(!text.includes("SPRING_BOOT_EXACT_PIN_PENDING"));
+  assert.ok(text.includes("khong doi version trong build path nay"));
   // 8. Repository truth
   assert.ok(text.includes("## Repository truth"));
   // 9+10. Teaching contract with convention + stop clause verbatim
@@ -898,11 +897,12 @@ test("R22 text carries the full two-tier identity contract, not a condensed over
   assert.ok(r22.includes("not universal bank-file deduplication"), "non-goal stated");
 });
 
-test("R26 note discloses the unresolved Spring Boot pin instead of claiming a full freeze", () => {
+test("R26 note pins the deterministic Guided Spring Boot baseline", () => {
   const rules = new Map(core.ARCHITECTURE_CONSTITUTION.map((r) => [r.id, r]));
   const note = rules.get("R26").note || "";
-  assert.ok(note.includes("SPRING_BOOT_EXACT_PIN_PENDING"), "Boot pin disclosed in the reader note");
-  assert.ok(note.includes("ADR-017"), "pin authority named");
+  assert.ok(note.includes("Spring Boot 3.5.16"), "exact Boot baseline named");
+  assert.ok(note.includes("Java 17"), "Java compile target named");
+  assert.ok(!note.includes("SPRING_BOOT_EXACT_PIN_PENDING"), "resolved pin is not described as pending");
 });
 
 test("defense row 15 attributes testing tiers to ADR-014, not to R26", () => {

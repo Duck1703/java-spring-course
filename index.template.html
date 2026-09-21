@@ -2096,7 +2096,7 @@
     const MENTOR_CONVENTION_CLAUSE =
       "Prefer the established Spendwise convention over your own preference, even where your preference is defensible.";
     const MENTOR_STOP_CLAUSE = [
-      "If completing this task requires deviating from the architecture above, do not deviate. Stop and output:",
+      "If completing this task requires deviating from the architecture above, including Spring Boot 3.5.16, do not deviate. Stop and output:",
       "ARCHITECTURE_CHANGE_REQUIRED",
       "Rule: <rule id or ADR>",
       "Why it blocks: <one sentence>",
@@ -2197,7 +2197,7 @@
         cite: "Blueprint §3" },
       { id: "R26", group: "schema", title: "Migration sở hữu schema; toolchain đóng băng",
         text: "Migrations own the schema; ddl-auto: validate from the V0.5 baseline task onward; applied migrations are never edited. The toolchain (Blueprint §8) is pinned; no release after V0.6 may require a technique not taught by Day 30.",
-        note: "Ngoại lệ duy nhất mà Blueprint công nhận: JwtEncoder canonical ở day-33 — đây chính là lý do mục §7 của Blueprint tồn tại. Ngoài ngoại lệ đó, không release nào sau V0.6 đòi hỏi kỹ thuật chưa dạy tới Day 30. Về toolchain: Java 17, Maven + Wrapper, PostgreSQL 16 đã pin; version Spring Boot chính xác vẫn SPRING_BOOT_EXACT_PIN_PENDING (ADR-017, §8.1) — chưa chốt, không được tự chọn.",
+        note: "Ngoại lệ duy nhất mà Blueprint công nhận: JwtEncoder canonical ở day-33 — đây chính là lý do mục §7 của Blueprint tồn tại. Ngoài ngoại lệ đó, không release nào sau V0.6 đòi hỏi kỹ thuật chưa dạy tới Day 30. Về toolchain: Java 17 là compile target; Spring Boot 3.5.16, Maven + Wrapper và PostgreSQL 16 đều được pin cho Guided Rebuild; không đổi version trong build path này.",
         cite: "Blueprint §3; ADR-013; ADR-017" },
     ];
     const CONSTITUTION_GROUPS = [
@@ -2371,7 +2371,7 @@
       }
       lines.push("## Toolchain");
       lines.push("- Java 17, Maven + Maven Wrapper, PostgreSQL 16, root package com.spendwise.");
-      lines.push("- Spring Boot: CHUA co exact pin — day la quyet dang mo (SPRING_BOOT_EXACT_PIN_PENDING). KHONG de xuat hoac chap nhan bat ky phien ban nao; neu buoc do can pin thi huong dan nguoi hoc giai quyet pin truoc khi start.");
+      lines.push("- Spring Boot 3.5.16 la baseline bat buoc da duoc Guided Rebuild kiem chung; khong doi version trong build path nay. Danh gia release moi hon chi thuoc project tuong lai rieng.");
       lines.push("");
       lines.push("## Repository truth");
       lines.push("- Ban KHONG truy cap duoc repository cuc bo cua nguoi hoc. Checklist tren website chi la tu bao cao cua nguoi hoc va co the sai theo ca hai chieu — hay yeu cau nguoi hoc dan code/loi chinh xac cua ho vao cuoc tro chuyen truoc khi chan doan.");
@@ -7510,19 +7510,20 @@
             notFoundOk);
 
           /* 61 — P3 mentor prompt carries the ten §14 fields with the two
-             contract clauses verbatim, and never suggests a Boot version. */
+             contract clauses verbatim and the pinned Boot baseline. */
           location.hash = "#/task/task-money-vo";
           routeRender();
           var promptText = document.getElementById("route-view").querySelector(".task-prompt-output").textContent;
           var promptFieldsOk = [
             "## Bối cảnh dự án", "## Task hiện tại", "## Các bước của task",
             "## Toolchain", "## Repository truth", "## Hop dong day hoc",
-            "SPRING_BOOT_EXACT_PIN_PENDING", "ARCHITECTURE_CHANGE_REQUIRED",
+            "Spring Boot 3.5.16", "ARCHITECTURE_CHANGE_REQUIRED",
             "Prefer the established Spendwise convention over your own preference",
             "Khong refactor code khong lien quan, khong them dependency, khong doi build, khong tao package moi",
           ].every(function(marker) { return promptText.indexOf(marker) !== -1; });
           assert("P3: rendered mentor prompt contains the §14 sections and contract clauses",
-            promptFieldsOk && promptText.indexOf(CourseCore.MENTOR_STOP_CLAUSE) !== -1 && !/Spring Boot\s+v?[0-9]+\.[0-9]/.test(promptText));
+            promptFieldsOk && promptText.indexOf(CourseCore.MENTOR_STOP_CLAUSE) !== -1 &&
+            promptText.indexOf("SPRING_BOOT_EXACT_PIN_PENDING") === -1);
 
           /* 62 — P3 browse surface + progress independence. The catalogue on
              Project Mode lists every authored task exactly once, each row

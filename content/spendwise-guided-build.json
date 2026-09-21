@@ -143,7 +143,7 @@
       "buildTaskId": "task-spring-bootstrap",
       "order": 1,
       "title": "Đưa Spring Boot vào — không sửa domain",
-      "goal": "Có một ứng dụng Spring Boot khởi động được, phiên bản Boot được chốt qua một quyết định có bằng chứng (không đoán, không nhận mặc định từ start.spring.io), và domain/service V0.1-V0.2 giữ nguyên không sửa."
+      "goal": "Có một ứng dụng Spring Boot khởi động được bằng đúng baseline Spring Boot 3.5.16 của Guided Rebuild, Java compile target 17, và domain/service V0.1-V0.2 giữ nguyên không sửa."
     },
     {
       "id": "session-di-service-beans",
@@ -1810,31 +1810,56 @@
       "order": 1,
       "buildStepId": "step-spring-bootstrap-01",
       "type": "your-turn",
-      "title": "Chốt phiên bản Spring Boot bằng bằng chứng — chưa viết dòng code nào",
-      "goal": "Có docs/decisions/spring-boot-pin.md không rỗng, ghi lại phiên bản Spring Boot 3.5.16 (baseline giảng dạy đã được xác minh) kèm bằng chứng cụ thể, và pom.xml chưa hề bị đổi ở bước này.",
-      "whyThisMatters": "Đây là một BLOCKED PREREQUISITE có chủ đích: một version không rõ nguồn gốc không được phép lọt vào parent POM rồi bị đóng băng ở đó (R26: toolchain được pin, không đổi tuỳ tiện). 3.5.16 là baseline được đề bài này chốt — cùng dòng 3.5.x major mà project tham chiếu của khoá học dùng — nhưng learner vẫn phải tự tra cứu và tự viết ra bằng chứng xác nhận, không được copy số từ đề bài mà không kiểm chứng: dòng hỗ trợ OSS của Spring Boot có thời hạn, nên nếu 3.5.x đã hết hỗ trợ tại thời điểm bạn làm bài, bạn phải dùng đúng quy trình bằng chứng này để tự chốt lại một phiên bản khác còn được hỗ trợ, ghi rõ lý do lệch khỏi 3.5.16.",
+      "title": "Pin đúng Spring Boot 3.5.16 cho Guided Rebuild",
+      "goal": "Có docs/decisions/spring-boot-pin.md ghi đúng springBootVersion=3.5.16, baseline cố định mà Guided Rebuild này đã kiểm chứng; pom.xml chưa bị đổi ở bước này.",
+      "whyThisMatters": "Use Spring Boot 3.5.16 for this course. Đây là phiên bản mà toàn bộ Spendwise Guided Rebuild được kiểm chứng. Boot mới hơn có thể đổi dependency, test slice, cấu hình, auto-configuration hoặc hành vi Security; đánh giá một phiên bản mới nằm ngoài build path này (R26: toolchain được pin, không đổi tuỳ tiện).",
+      "theoryBridge": [
+        {
+          "lessonId": "day-13",
+          "note": "Spring Boot quản lý một tập phiên bản dependency tương thích; pin parent giữ cả build đi trên cùng một baseline."
+        }
+      ],
+      "instructions": [
+        "Tạo docs/decisions/spring-boot-pin.md và ghi nguyên dòng springBootVersion=3.5.16.",
+        "Ghi ngắn gọn rằng 3.5.16 là baseline mà Spendwise Guided Rebuild này đã kiểm chứng; không biến bước này thành bài chọn phiên bản.",
+        "Chưa sửa pom.xml ở bước này; bước kế tiếp mới áp dụng pin vào parent POM.",
+        "Spring Boot tiếp tục phát triển. Với project tương lai của riêng bạn, có thể đánh giá một release mới hơn còn được hỗ trợ, nhưng không đổi phiên bản khi đang theo Spendwise Guided Rebuild này."
+      ],
+      "codeBlocks": [
+        {
+          "language": "text",
+          "code": "springBootVersion=3.5.16\nreason=Validated baseline for the Spendwise Guided Rebuild.\n",
+          "caption": "docs/decisions/spring-boot-pin.md"
+        }
+      ],
       "learnerAction": {
-        "goal": "Tự tra cứu và ghi một quyết định (docs/decisions/spring-boot-pin.md) xác nhận phiên bản Spring Boot 3.5.16, dựa trên bằng chứng kiểm chứng được — không phải suy đoán. Nếu tra cứu tại thời điểm bạn làm bài cho thấy 3.5.16/dòng 3.5.x đã hết hỗ trợ OSS, chốt phiên bản GA mới nhất còn được hỗ trợ theo đúng quy trình bằng chứng dưới đây và ghi rõ lý do lệch khỏi baseline.",
+        "goal": "Ghi đúng baseline bắt buộc Spring Boot 3.5.16 vào docs/decisions/spring-boot-pin.md; không chọn hoặc nghiên cứu một phiên bản thay thế.",
         "constraints": [
-          "Không copy một số phiên bản từ trí nhớ hay đoán — phải tự tra ít nhất: trang release chính thức của Spring Boot trên GitHub (tag 3.5.16 hoặc tag mới nhất còn được hỗ trợ), Maven Central (metadata phiên bản), và trang system requirements của Spring Boot (yêu cầu Java tối thiểu/tối đa — 3.5.x yêu cầu Java 17+).",
-          "File quyết định phải nêu rõ: phiên bản được chọn, ngày tra cứu, và ít nhất hai nguồn bằng chứng cụ thể (không chỉ 'tôi nghĩ vậy').",
-          "pom.xml không được sửa ở bước này — bước này chỉ ghi quyết định, chưa áp dụng nó."
+          "File phải chứa nguyên dòng springBootVersion=3.5.16.",
+          "Không thay baseline cố định bằng một lựa chọn phụ thuộc thời điểm hoặc trạng thái vòng đời bên ngoài.",
+          "pom.xml không được sửa ở bước này — bước này chỉ ghi lại baseline cố định, chưa áp dụng nó."
         ],
         "hints": [
-          "Nếu tra cứu xác nhận 3.5.16 còn được hỗ trợ, việc còn lại chỉ là ghi bằng chứng — không cần chọn lại từ đầu. Nếu không, xử lý y như buildStep gốc: chọn dòng phiên bản còn khả dụng gần 3.5.x nhất và ghi lý do."
+          "Copy đúng dòng trong code block; verifier so khớp chính xác giá trị 3.5.16 và từ chối mọi giá trị khác."
         ]
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "if (-not (Test-Path 'docs/decisions/spring-boot-pin.md')) { Write-Host 'SPRING_BOOT_EXACT_PIN_PENDING - task stays blocked'; exit 1 }; if ((Get-Item 'docs/decisions/spring-boot-pin.md').Length -eq 0) { Write-Host 'SPRING_BOOT_EXACT_PIN_PENDING - task stays blocked'; exit 1 }; Write-Host 'pin resolved - recorded in docs/decisions/spring-boot-pin.md'",
-        "expectedResult": "\"pin resolved - recorded in docs/decisions/spring-boot-pin.md\" — file tồn tại và không rỗng.",
-        "explanation": "Verify command chỉ kiểm tra một quyết định ĐÃ được ghi lại, không kiểm tra nội dung quyết định đó đúng hay sai — trách nhiệm tra cứu bằng chứng thật vẫn ở người học."
+        "command": "$pin = @(Get-Content 'docs/decisions/spring-boot-pin.md' -ErrorAction SilentlyContinue | Where-Object { $_ -match '^springBootVersion=' }); if ($pin.Count -ne 1 -or $pin[0] -cne 'springBootVersion=3.5.16') { Write-Host 'SPRING_BOOT_PIN_MISMATCH - expected exactly springBootVersion=3.5.16'; exit 1 }; Write-Host 'springBootVersion=3.5.16'",
+        "expectedResult": "springBootVersion=3.5.16",
+        "explanation": "Verifier kiểm tra semantic contract bằng một dòng key=value chính xác; file không rỗng nhưng chọn Boot 4 hoặc bất kỳ version khác vẫn fail."
       },
+      "reveal": {
+        "label": "Mở mẫu pin nếu cần",
+        "content": "docs/decisions/spring-boot-pin.md phải có nguyên dòng `springBootVersion=3.5.16`. Không thêm bài nghiên cứu hoặc nhánh chọn version khác."
+      },
+      "projectStateBefore": "D:\\spendwise-learning\\\n  pom.xml  (Java 17 thuần từ V0.1-V0.2; chưa có Spring Boot parent)\n  src\\main\\java\\com\\spendwise\\  (domain và service V0.1-V0.2)",
+      "projectStateAfter": "D:\\spendwise-learning\\\n  docs\\decisions\\spring-boot-pin.md  (springBootVersion=3.5.16)\n  pom.xml  (chưa đổi ở bước này)",
       "commonErrors": [
         {
-          "symptom": "Chọn đại một phiên bản quen thuộc từ dự án cũ mà không tra lại",
-          "likelyCause": "Phiên bản đó có thể đã hết hỗ trợ OSS ở thời điểm hiện tại — 'quen thuộc' không đồng nghĩa 'còn được hỗ trợ'.",
-          "fix": "Luôn tra lại trang release/Maven Central tại thời điểm làm bài, không tin vào trí nhớ hay dự án cũ."
+          "symptom": "SPRING_BOOT_PIN_MISMATCH dù file đã tồn tại",
+          "likelyCause": "File không có nguyên dòng springBootVersion=3.5.16, hoặc đã ghi một version khác.",
+          "fix": "Thay dòng version bằng đúng springBootVersion=3.5.16; không chọn release khác cho Guided Rebuild này."
         }
       ]
     },
@@ -1844,25 +1869,50 @@
       "order": 2,
       "buildStepId": "step-spring-bootstrap-02",
       "type": "your-turn",
-      "title": "Đưa spring-boot-starter-parent vào pom.xml với đúng phiên bản đã chốt",
-      "goal": "pom.xml kế thừa spring-boot-starter-parent đúng phiên bản đã ghi ở bước trước, maven.compiler.release là 17, và không có gì khác bị đổi.",
-      "whyThisMatters": "Parent POM là nơi duy nhất phiên bản Spring Boot được ghi xuống — mọi dependency Spring khác trong project sau này kế thừa version từ đây qua dependency management, không tự khai version riêng lẻ. Đây là lúc quyết định ở bước trước biến thành cấu hình thật.",
+      "title": "Đưa spring-boot-starter-parent 3.5.16 vào pom.xml",
+      "goal": "pom.xml kế thừa org.springframework.boot:spring-boot-starter-parent đúng version 3.5.16, giữ maven.compiler.release là 17, và không đổi gì khác.",
+      "whyThisMatters": "Parent POM là nơi duy nhất ghi version Spring Boot. Mọi dependency Spring phía sau kế thừa dependency management từ cùng baseline 3.5.16; pin exact ngăn cả build trôi sang một major có dependency, test slice, cấu hình, auto-configuration hoặc Security behavior khác.",
+      "theoryBridge": [
+        {
+          "lessonId": "day-13",
+          "note": "spring-boot-starter-parent cung cấp dependency management và build defaults; project vẫn pin Java compile target 17 tường minh."
+        }
+      ],
+      "instructions": [
+        "Thêm <parent> ngay sau <modelVersion> với groupId org.springframework.boot, artifactId spring-boot-starter-parent và version 3.5.16.",
+        "Giữ <maven.compiler.release>17</maven.compiler.release> trong <properties>.",
+        "Không thêm dependency Spring nào ở bước này; starter web/test đến ở bước kế tiếp.",
+        "Chạy help:evaluate để xác nhận effective parent version, rồi chạy toàn bộ test V0.1-V0.2."
+      ],
+      "codeBlocks": [
+        {
+          "language": "xml",
+          "code": "<parent>\n    <groupId>org.springframework.boot</groupId>\n    <artifactId>spring-boot-starter-parent</artifactId>\n    <version>3.5.16</version>\n    <relativePath/>\n</parent>\n",
+          "caption": "pom.xml — đặt ngay sau <modelVersion>"
+        }
+      ],
       "learnerAction": {
-        "goal": "Thêm khối <parent> vào pom.xml trỏ tới org.springframework.boot:spring-boot-starter-parent với đúng version đã ghi trong docs/decisions/spring-boot-pin.md; đặt <maven.compiler.release>17</maven.compiler.release> trong <properties>.",
+        "goal": "Thêm parent org.springframework.boot:spring-boot-starter-parent:3.5.16 và giữ Java compile target 17.",
         "constraints": [
-          "Version trong <parent> phải khớp chính xác với version đã ghi ở bước trước — không đổi ý giữa chừng mà không cập nhật lại file quyết định.",
+          "Version trong <parent> phải là đúng 3.5.16; không dùng property động, range hoặc version khác.",
           "Không thêm bất kỳ dependency Spring nào khác ở bước này — chỉ parent POM và Java release."
         ],
         "hints": [
-          ".\\mvnw.cmd -Dexpression=project.parent.version -DforceStdout help:evaluate in ra version parent hiện tại — dùng để tự kiểm tra trước khi chạy verify command."
+          ".\\mvnw.cmd -Dexpression=project.parent.version -DforceStdout help:evaluate phải in đúng 3.5.16."
         ]
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": ".\\mvnw.cmd test",
-        "expectedResult": "BUILD SUCCESS — toàn bộ test V0.1/V0.2 vẫn pass dù đã đổi parent POM.",
-        "explanation": "Đổi parent POM không được làm gãy bất kỳ test cũ nào — nếu có test fail, đó là dấu hiệu version parent ảnh hưởng đến dependency nào đó ngoài dự kiến."
-      }
+        "command": "$version = .\\mvnw.cmd -q -Dexpression=project.parent.version -DforceStdout help:evaluate; if (($version | Select-Object -Last 1).Trim() -ne '3.5.16') { Write-Host \"SPRING_BOOT_PIN_MISMATCH - effective parent is $version\"; exit 1 }; .\\mvnw.cmd test",
+        "expectedResult": "Effective parent version là 3.5.16 và BUILD SUCCESS — toàn bộ test V0.1/V0.2 vẫn pass.",
+        "explanation": "Gate kiểm tra effective Maven model trước khi chạy test, nên một POM dùng version khác không thể vượt bước này chỉ vì compile thành công."
+      },
+      "reveal": {
+        "label": "Mở parent block nếu cần",
+        "content": "Dùng đúng block `<parent>` trong code sample, với `<version>3.5.16</version>` và `<relativePath/>`; giữ `<maven.compiler.release>17</maven.compiler.release>`."
+      },
+      "projectStateBefore": "D:\\spendwise-learning\\\n  docs\\decisions\\spring-boot-pin.md  (springBootVersion=3.5.16)\n  pom.xml  (chưa có Spring Boot parent)",
+      "projectStateAfter": "D:\\spendwise-learning\\\n  docs\\decisions\\spring-boot-pin.md\n  pom.xml  (spring-boot-starter-parent 3.5.16; maven.compiler.release 17)"
     },
     {
       "id": "step-v03-boot-app",
@@ -1911,7 +1961,7 @@
       "buildStepId": null,
       "type": "checkpoint",
       "title": "Điểm dừng: Spring context sống, domain không đổi",
-      "goal": "Xác nhận Spring Boot khởi động được với phiên bản đã pin có bằng chứng, và toàn bộ domain/service từ V0.1-V0.2 không bị sửa một dòng."
+      "goal": "Xác nhận Spring Boot 3.5.16 khởi động được với Java compile target 17, và toàn bộ domain/service từ V0.1-V0.2 không bị sửa một dòng."
     },
     {
       "id": "step-v03-di-beans",
@@ -6018,7 +6068,7 @@
         "Ghi buoc dat bien moi truong TRUOC compose: SPENDWISE_DB_USERNAME, SPENDWISE_DB_PASSWORD, SPENDWISE_JWT_SECRET (JWT secret >= 32 bytes UTF-8). Ba bien nay la nhung bien docker-compose.yml doc qua dang ${...:?...}, se fail loud neu thieu - dung bia them bien khong co trong compose.",
         "Ghi lenh docker compose up --build -d roi docker compose ps, kem chu thich rang app chi healthy khi /actuator/health bao db UP (healthcheck cua service app trong compose dung wget /actuator/health | grep -q UP). Nhac /swagger-ui.html va /v3/api-docs do springdoc phuc vu.",
         "Giai thich ngan rang compose map SPRING_DATASOURCE_URL/SPRING_DATASOURCE_USERNAME/SPRING_DATASOURCE_PASSWORD (relaxed binding cua Boot cho spring.datasource.*) tu host vao service app, va host db trong mang compose la ten service 'db'. Dung ten bien SPRING_DATASOURCE dung nhu compose ghi, khong doi ten.",
-        "Them mot dong tro toi docs/decisions/spring-boot-pin.md cho ban ghim Spring Boot 3.5.16 (khop <version>3.5.16</version> trong pom.xml) - ghi dung quyet dinh da chep, khong papering over SPRING_BOOT_EXACT_PIN_PENDING.",
+        "Them mot dong tro toi docs/decisions/spring-boot-pin.md cho baseline bat buoc Spring Boot 3.5.16 (khop <version>3.5.16</version> trong pom.xml); khong mo lai lua chon version o README.",
         "Xac minh that: tu mot checkout sach, lam theo chinh phan Run vua viet, chay tron chuoi lenh, va xac nhan docker compose ps ket thuc voi app o trang thai healthy - neu health khong xanh thi README sai, sua chuoi lenh cho khop compose thuc te truoc khi coi la xong."
       ],
       "commonErrors": [
@@ -6527,11 +6577,11 @@
         "src/test/java/com/spendwise/SpendwiseAppTest.java"
       ],
       "understanding": [
-        "Vì sao phiên bản Spring Boot phải được chốt bằng bằng chứng tra cứu được (GitHub release, Maven Central, system requirements), không phải đoán hay nhận mặc định.",
-        "Vì sao parent POM là nơi duy nhất phiên bản Spring Boot được ghi xuống.",
+        "Vì sao Guided Rebuild dùng đúng Spring Boot 3.5.16 thay vì một version phụ thuộc thời điểm.",
+        "Vì sao parent POM là nơi duy nhất phiên bản Spring Boot được ghi xuống và effective Maven model phải in đúng 3.5.16.",
         "Vì sao git diff --stat trên đúng hai package domain là bằng chứng máy-kiểm-được cho lời hứa 'không sửa domain', mạnh hơn một lời khẳng định suông."
       ],
-      "whatYouBuilt": "Một ứng dụng Spring Boot khởi động được, phiên bản được pin có hồ sơ quyết định, domain/service V0.1-V0.2 không bị sửa một dòng.",
+      "whatYouBuilt": "Một ứng dụng Spring Boot 3.5.16 chạy với Java compile target 17; domain/service V0.1-V0.2 không bị sửa một dòng.",
       "whyNotYet": [
         "CHƯA CÓ REST API NÀO — @SpringBootApplication chỉ khởi động một context Java thuần chạy rồi thoát (hoặc chạy nền), chưa có @RestController, chưa có route HTTP nào tồn tại. Route HTTP đầu tiên chỉ xuất hiện ở V0.4.",
         "Service/repository vẫn đang new bằng tay bên trong test hoặc code khởi động thủ công — session kế tiếp mới để container thật sự wire chúng làm bean."
