@@ -2800,8 +2800,8 @@
       "buildStepId": "step-atomic-transfer-01",
       "type": "code-with-me",
       "title": "Triển khai transfer là một @Transactional tạo cặp TRANSFER_OUT/TRANSFER_IN",
-      "goal": "Một public method @Transactional duy nhất trong TransferService tạo hai Transaction (TRANSFER_OUT ở account nguồn, TRANSFER_IN ở account đích) chia sẻ một transferRef, cập nhật cả hai balance projection trong cùng transaction — không có class Transfer nào tồn tại.",
-      "whyThisMatters": "R21: cặp giao dịch liên kết CHÍNH LÀ transfer — một nghiệp vụ chuyển tiền được persist thành hai ledger row, TRANSFER_OUT + TRANSFER_IN, cùng transferRef; không có aggregate/bảng Transfer riêng lưu 'ý định chuyển tiền' rồi tách biệt khỏi ledger. R18: @Transactional chỉ đặt trên method public của service, không đặt trên private method hay trên controller. R20: cả hai row phải đi qua đúng một đường tạo giao dịch dùng chung (TransactionCreationService.create), không tạo row bằng save() rời rạc hai lần; balance không bao giờ được đổi nếu thiếu ledger row tương ứng. transactions.type được lưu bằng @Enumerated(EnumType.STRING) xuống cột VARCHAR(32). Ở bước này Java TransactionType có thêm TRANSFER_OUT/TRANSFER_IN; schema PostgreSQL canonical không có CHECK giới hạn tập giá trị type (và cũng không có CHECK giới hạn category), nên thêm enum Java không cần migration nới type CHECK. V3 chỉ thêm persisted linkage field transfer_ref. Đây là thiết kế canonical V0.5 của Spendwise, không phải khuyến nghị schema phổ quát.",
+      "goal": "Một public method @Transactional duy nhất trong TransferService tạo hai Transaction (TRANSFER_OUT ở account nguồn, TRANSFER_IN ở account đích) chia sẻ một transferRef, cập nhật cả hai balance projection trong cùng transaction — không có class Transfer nào tồn tại — và mọi reader V0.5 vẫn xử lý được transfer có category=null.",
+      "whyThisMatters": "R21: cặp giao dịch liên kết CHÍNH LÀ transfer — một nghiệp vụ chuyển tiền được persist thành hai ledger row, TRANSFER_OUT + TRANSFER_IN, cùng transferRef; không có aggregate/bảng Transfer riêng lưu 'ý định chuyển tiền' rồi tách biệt khỏi ledger. R18: @Transactional chỉ đặt trên method public của service, không đặt trên private method hay trên controller. R20: cả hai row phải đi qua đúng một đường tạo giao dịch dùng chung (TransactionCreationService.create), không tạo row bằng save() rời rạc hai lần; balance không bao giờ được đổi nếu thiếu ledger row tương ứng. transactions.type được lưu bằng @Enumerated(EnumType.STRING) xuống cột VARCHAR(32). Ở bước này Java TransactionType có thêm TRANSFER_OUT/TRANSFER_IN; schema PostgreSQL canonical không có CHECK giới hạn tập giá trị type (và cũng không có CHECK giới hạn category), nên thêm enum Java không cần migration nới type CHECK. V3 chỉ thêm persisted linkage field transfer_ref. Đây là thiết kế canonical V0.5 của Spendwise, không phải khuyến nghị schema phổ quát. Trước transfer, code đọc theo category chỉ gặp các giao dịch được phân loại nên một lời gọi transaction.category().code() mù quáng có thể chưa lộ lỗi. Sau transfer, ledger hợp lệ chứa hai row có category=null; null ở đây nghĩa là nghiệp vụ không mang category, không phải dữ liệu hỏng. Vì vậy mọi reader V0.5 phải kiểm tra null trước khi so sánh/serialize category — không tạo category giả để né null.",
       "theoryBridge": [
         {
           "lessonId": "day-20",
@@ -2814,19 +2814,27 @@
         "Map Transaction.transferRef xuống cột transfer_ref; một transfer logic tạo đúng hai ledger row TRANSFER_OUT + TRANSFER_IN chia sẻ cùng giá trị này. Không dùng VARCHAR trần/VARCHAR(255): exact historical width là VARCHAR(36), phù hợp UUID string canonical.",
         "Tạo TransferService.transfer(fromAccountId, toAccountId, amount) là public method duy nhất mang @Transactional.",
         "Trong method đó: sinh một transferRef (ví dụ UUID string), gọi TransactionCreationService.create hai lần — một lần tạo TRANSFER_OUT ở account nguồn (amount dương, hiệu ứng trừ), một lần tạo TRANSFER_IN ở account đích (amount dương, hiệu ứng cộng) — cả hai row cùng transferRef.",
-        "Không tạo bất kỳ class Transfer/TransferEntity nào — cặp Transaction chia sẻ transferRef là toàn bộ mô hình."
+        "Không tạo bất kỳ class Transfer/TransferEntity nào — cặp Transaction chia sẻ transferRef là toàn bộ mô hình.",
+        "Giữ category=null cho cả hai transfer leg: transfer không có category nghiệp vụ và cột category_code vốn nullable. Không tạo sentinel UNCATEGORIZED, không tạo TRANSFER category, không đổi V1 thành NOT NULL.",
+        "Rà lại các reader V0.5 đã tồn tại để chúng chấp nhận row hợp lệ này: TransactionService khi lọc theo category phải kiểm tra transaction.category() != null TRƯỚC khi gọi .code(); StatisticsService phải bỏ qua category null khi grouping/total theo category; TransactionMapper phải trả category null thay vì dereference; CsvTransactionStore phải ghi category rỗng khi null và khi đọc cột rỗng phải truyền category=null. Không thay đổi total income/expense ngoài việc transfer vẫn không bị tính là INCOME/EXPENSE.",
+        "Bổ sung regression vào TransactionServiceTest (và test reader tương ứng nếu project có StatisticsService/mapper/CSV): seed một giao dịch EXPENSE có category FOOD cùng một transfer thành công category=null, gọi lọc FOOD, rồi assert không có NullPointerException, đúng giao dịch FOOD vẫn được trả về và hai transfer leg vẫn category=null. Đây là EARLY_CORRECTNESS_FIX tại điểm dữ liệu null lần đầu trở thành hợp lệ trong ledger."
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransferServiceTest' test",
-        "expectedResult": "BUILD SUCCESS — transfer thành công tạo đúng hai row TRANSFER_OUT/TRANSFER_IN chia sẻ một transferRef, cả hai balance được cập nhật.",
-        "explanation": "V3__transfer_ref.sql là migration thứ ba — V1 và V2 vẫn nguyên vẹn, đúng kỷ luật migration bất biến đã thực hành từ session Flyway."
+        "command": ".\\mvnw.cmd '-Dtest=TransferServiceTest,TransactionServiceTest,StatisticsServiceTest,TransactionMapperTest,CsvTransactionStoreTest' test",
+        "expectedResult": "BUILD SUCCESS — transfer tạo đúng hai row category=null cùng transferRef; lọc/ thống kê/REST mapping/CSV vẫn xử lý giao dịch có category bình thường, không dereference null và không tạo category giả.",
+        "explanation": "V3__transfer_ref.sql là migration thứ ba — V1 và V2 vẫn nguyên vẹn, đúng kỷ luật migration bất biến đã thực hành từ session Flyway. Gate reader chạy cùng transfer test vì tính nguyên tử chưa đủ: dữ liệu mới còn phải đọc được qua mọi đường V0.5 đã có."
       },
       "commonErrors": [
         {
           "symptom": "Tạo một class Transfer(id, fromAccountId, toAccountId, amount, createdAt) lưu riêng vào một bảng transfer",
           "likelyCause": "Trực giác thiết kế OOP thường muốn có một object đại diện cho 'hành động chuyển tiền' như một entity độc lập.",
           "fix": "R21 cấm aggregate Transfer riêng — cặp TRANSFER_OUT/TRANSFER_IN chia sẻ transferRef trong chính bảng transaction hiện có LÀ transfer, không cần bảng thứ hai."
+        },
+        {
+          "symptom": "TransactionService/StatisticsService/TransactionMapper/CsvTransactionStore ném NullPointerException sau khi transfer thành công",
+          "likelyCause": "Reader cũ gọi category().code()/name() hoặc groupingBy trực tiếp; trước V0.5 nó chỉ được test với giao dịch đã phân loại, nhưng transfer leg hợp lệ có category=null.",
+          "fix": "Giữ transfer category=null và làm reader null-safe: kiểm tra category() != null trước khi so sánh/group; REST trả null; CSV ghi ô rỗng và đọc ô rỗng thành null. Không tạo sentinel category để che lỗi."
         }
       ]
     },

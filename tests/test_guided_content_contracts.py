@@ -187,3 +187,18 @@ def test_guided_never_drops_a_constraint_missing_from_earlier_steps() -> None:
                 "Guided step creates that named constraint"
             )
         earlier_text += "\n" + step_text
+
+
+def test_v05_transfer_teaches_null_category_compatibility_without_sentinel() -> None:
+    transfer_text = _text(_guided_step("step-v05-transfer-implement"))
+
+    assert "category=null" in transfer_text
+    assert "TransactionService" in transfer_text
+    assert "StatisticsService" in transfer_text
+    assert "TransactionMapper" in transfer_text
+    assert "CsvTransactionStore" in transfer_text
+    assert "category() != null" in transfer_text
+    assert "category rỗng khi null" in transfer_text
+    assert re.search(r"lọc.{0,80}category.{0,240}category\(\) != null", transfer_text, re.IGNORECASE | re.DOTALL)
+    assert "Không tạo sentinel UNCATEGORIZED" in transfer_text
+    assert re.search(r"Category\.UNCATEGORIZED|category\s*=\s*UNCATEGORIZED", transfer_text, re.IGNORECASE) is None
