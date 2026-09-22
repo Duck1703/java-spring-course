@@ -139,3 +139,51 @@ def test_v05_balance_scalars_are_named_only_at_projection_session() -> None:
     projection_text = _text(_session_steps("session-balance-projection"))
     assert "balance_amount" in projection_text
     assert "balance_currency" in projection_text
+
+
+# --- V0.5 transfer migration lineage contract -------------------------------
+# Canonical authority: D:\spendwise @ 8ead91c has no transaction-type or
+# category-value CHECK in V1. V3 is exactly one statement adding nullable
+# transfer_ref VARCHAR(36); Java's TransactionType enum owns the allowed values.
+
+
+def test_v05_v1_does_not_teach_type_or_category_enum_checks() -> None:
+    v1_text = _text(_guided_step("step-v05-flyway-init"))
+
+    assert re.search(r"CHECK\s*\(\s*type\s+IN", v1_text, re.IGNORECASE) is None
+    assert re.search(r"CHECK\s*\(\s*category(?:_code)?\s+IN", v1_text, re.IGNORECASE) is None
+
+
+def test_v05_transfer_teaches_exact_canonical_v3_without_constraint_rewrite() -> None:
+    transfer_text = _text(_guided_step("step-v05-transfer-implement"))
+
+    assert "ALTER TABLE transactions ADD COLUMN transfer_ref VARCHAR(36);" in transfer_text
+    assert "DROP CONSTRAINT" not in transfer_text
+    assert "ADD CONSTRAINT" not in transfer_text
+    assert re.search(
+        r"V1(?:'s| đã).{0,120}(?:CHECK|khoá).{0,120}(?:INCOME|EXPENSE)",
+        transfer_text,
+        re.IGNORECASE | re.DOTALL,
+    ) is None
+
+
+def test_guided_never_drops_a_constraint_missing_from_earlier_steps() -> None:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    earlier_text = ""
+
+    for step in guided["guidedSteps"]:
+        step_text = _text(step)
+        for constraint_name in re.findall(
+            r"\bDROP\s+CONSTRAINT\s+(?!IF\s+EXISTS\b)([A-Za-z_][A-Za-z0-9_]*)",
+            step_text,
+            re.IGNORECASE,
+        ):
+            assert re.search(
+                rf"\bADD\s+CONSTRAINT\s+{re.escape(constraint_name)}\b",
+                earlier_text,
+                re.IGNORECASE,
+            ), (
+                f"{step['id']} drops constraint {constraint_name!r}, but no earlier "
+                "Guided step creates that named constraint"
+            )
+        earlier_text += "\n" + step_text
