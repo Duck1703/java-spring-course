@@ -296,3 +296,18 @@ def test_v07_through_v10_run_commands_are_literal_windows_executables() -> None:
             segment = segment.strip()
             looks_like_maven_fragment = bool(re.match(r"^(-q\b|'-Dtest=|test$)", segment))
             assert not looks_like_maven_fragment, f"{step['id']} run.command segment not literal: {segment!r} in {cmd!r}"
+
+# TransactionCreationCommand has no occurredOn field, so every transaction created through
+# the official path silently defaults to LocalDate.now(). step-v07-recurring-generation-service
+# must require occurredOn = the due date being generated, or a catch-up run that backfills
+# several overdue periods in one call would misattribute all of them to the current month in
+# BudgetCalculationService's period-based spend filter (session-budget-calculation).
+
+def test_v07_recurring_generation_requires_occurred_on_equals_due_date() -> None:
+    step = _guided_step("step-v07-recurring-generation-service")
+    text = _text(step)
+
+    assert "occurredOn" in text
+    assert re.search(r"occurredOn.{0,80}PHAI la ngay den han", text) or \
+        re.search(r"occurredOn.{0,80}PHẢI là ngày đến hạn", text)
+    assert "TransactionCreationCommand" in text
