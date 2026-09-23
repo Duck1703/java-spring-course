@@ -202,3 +202,97 @@ def test_v05_transfer_teaches_null_category_compatibility_without_sentinel() -> 
     assert re.search(r"lọc.{0,80}category.{0,240}category\(\) != null", transfer_text, re.IGNORECASE | re.DOTALL)
     assert "Không tạo sentinel UNCATEGORIZED" in transfer_text
     assert re.search(r"Category\.UNCATEGORIZED|category\s*=\s*UNCATEGORIZED", transfer_text, re.IGNORECASE) is None
+
+# --- V0.6 canonical-token-issuer auth-contract repair -----------------------
+# CONFIRMED_CURRICULUM_CONTRADICTION (supervisor adjudication): AuthController
+# is confined to step-auth-hardening-01 (task-auth-hardening-review, optional,
+# prereq task-canonical-token-issuer) and is absent from
+# checkpoint-canonical-token-issuer.expectedFiles. step-v06-canonical-swap-real-
+# issuer must therefore prove the real-signer revocation contract through an
+# already-existing protected route, never through a claimed /auth/login or
+# /auth/logout HTTP endpoint.
+
+def test_v06_canonical_swap_step_does_not_require_authcontroller() -> None:
+    step = _guided_step("step-v06-canonical-swap-real-issuer")
+    text = _text(step)
+
+    assert "AuthController" not in text or "KHÔNG tạo AuthController" in text
+    assert re.search(r"KHÔNG tạo AuthController", text)
+
+def test_authcontroller_confined_to_optional_hardening_task() -> None:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    project = json.loads((ROOT / "content" / "spendwise-project.json").read_text(encoding="utf-8"))
+
+    touching = [
+        bs["id"]
+        for bs in project["buildSteps"]
+        if any("AuthController" in f for f in bs.get("filesTouched", []))
+    ]
+    assert touching == ["step-auth-hardening-01"]
+
+    hardening_step = next(bs for bs in project["buildSteps"] if bs["id"] == "step-auth-hardening-01")
+    assert hardening_step["taskId"] == "task-auth-hardening-review"
+    assert "task-canonical-token-issuer" in hardening_step.get("artifactPrereqTaskIds", [])
+
+    hardening_task = next(t for t in project["buildTasks"] if t["id"] == "task-auth-hardening-review")
+    assert hardening_task["required"] is False
+
+    checkpoint = next(c for c in guided["guidedCheckpoints"] if c["id"] == "checkpoint-canonical-token-issuer")
+    assert "AuthController.java" not in checkpoint["expectedFiles"]
+
+def test_v06_same_token_revocation_proof_uses_authservice_and_protected_route() -> None:
+    step = _guided_step("step-v06-canonical-swap-real-issuer")
+    text = _text(step)
+
+    assert "AuthService.login" in text
+    assert "AuthService.logout" in text
+    assert re.search(r"route (được bảo vệ|đã được bảo vệ)", text)
+    assert "MockMvc" in text
+    assert "200" in text and "401" in text
+
+def test_v06_checkpoint_does_not_claim_http_login_logout_endpoints() -> None:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    checkpoint = next(c for c in guided["guidedCheckpoints"] if c["id"] == "checkpoint-canonical-token-issuer")
+    text = _text(checkpoint)
+
+    assert not re.search(r"/auth/login.{0,40}(tồn tại|endpoint HTTP)", text, re.IGNORECASE)
+    assert re.search(r"không qua endpoint /auth/login", text) or re.search(
+        r"AuthController chưa tồn tại", text
+    )
+
+def test_v06_mandatory_run_commands_are_literal_windows_executables() -> None:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    v06_session_ids = {
+        session["id"] for session in guided["guidedSessions"] if session["releaseId"] == "v0-6"
+    }
+
+    for step in guided["guidedSteps"]:
+        if step["sessionId"] not in v06_session_ids:
+            continue
+        run = step.get("run")
+        if not run or "command" not in run:
+            continue
+        cmd = run["command"]
+        for segment in cmd.split(";"):
+            segment = segment.strip()
+            looks_like_maven_fragment = bool(re.match(r"^(-q\b|'-Dtest=|test$)", segment))
+            assert not looks_like_maven_fragment, f"{step['id']} run.command segment not literal: {segment!r} in {cmd!r}"
+
+def test_v07_through_v10_run_commands_are_literal_windows_executables() -> None:
+    guided = json.loads(GUIDED_PATH.read_text(encoding="utf-8"))
+    later_release_ids = {"v0-7", "v0-8", "v0-9", "v1-0"}
+    later_session_ids = {
+        session["id"] for session in guided["guidedSessions"] if session["releaseId"] in later_release_ids
+    }
+
+    for step in guided["guidedSteps"]:
+        if step["sessionId"] not in later_session_ids:
+            continue
+        run = step.get("run")
+        if not run or "command" not in run:
+            continue
+        cmd = run["command"]
+        for segment in cmd.split(";"):
+            segment = segment.strip()
+            looks_like_maven_fragment = bool(re.match(r"^(-q\b|'-Dtest=|test$)", segment))
+            assert not looks_like_maven_fragment, f"{step['id']} run.command segment not literal: {segment!r} in {cmd!r}"

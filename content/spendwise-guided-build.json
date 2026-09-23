@@ -2435,7 +2435,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AccountTest,TransactionTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AccountTest,TransactionTest' test",
         "expectedResult": "BUILD SUCCESS — Account và Transaction vẫn compile, toàn bộ test domain cũ (không liên quan JPA) vẫn pass nguyên vẹn.",
         "explanation": "Test cũ không được sửa nội dung assertion — nếu annotation JPA làm test cũ đỏ, đó là annotation sai, không phải test cần cập nhật."
       },
@@ -2489,7 +2489,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AccountJpaTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AccountJpaTest' test",
         "expectedResult": "BUILD SUCCESS — Account lưu và đọc lại từ PostgreSQL thật, so sánh bằng compareTo() cho kết quả bằng 0.",
         "explanation": "Đây là bằng chứng đầu tiên rằng dữ liệu không còn sống chỉ trong RAM — @DataJpaTest ở đây chạy trên PostgreSQL local thật (không phải embedded H2), như R1/R2 yêu cầu. Money round-trip đúng nhờ scalar decomposition, không cần @Embeddable."
       }
@@ -2525,7 +2525,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AccountJpaTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AccountJpaTest' test",
         "expectedResult": "BUILD SUCCESS — quan hệ compile và map đúng, test JPA hiện có (round-trip tiền) vẫn xanh.",
         "explanation": "Chỉ xác nhận biên dịch và mapping cơ bản ở bước này — chứng minh không N+1 là việc của bước kế tiếp."
       }
@@ -2547,7 +2547,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AccountJpaTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AccountJpaTest' test",
         "expectedResult": "BUILD SUCCESS — test đếm/log query xác nhận không có N+1 trên đường đọc listing cơ bản.",
         "explanation": "Vì FetchType.LAZY đã được chọn ở bước trước, việc chỉ đọc field cơ bản của Transaction không kéo theo query load Account/Category — LAZY chỉ tải khi thực sự truy cập getter của quan hệ."
       },
@@ -2591,7 +2591,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "-q test",
+        "command": ".\\mvnw.cmd -q test",
         "expectedResult": "BUILD SUCCESS — Flyway apply V1__init.sql thành công khi context khởi động với ddl-auto=none, test hiện có vẫn xanh.",
         "explanation": "Ở bước này Flyway apply migration và Hibernate đã bị tắt quyền tự sinh schema (ddl-auto=none); siết thêm một bậc thành validate (bắt Hibernate phải khớp, không chỉ im lặng) là bước kế tiếp."
       }
@@ -2614,7 +2614,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=SchemaValidationTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test",
         "expectedResult": "BUILD SUCCESS — context khởi động với ddl-auto=validate trên schema Flyway đã tạo (PostgreSQL thật, không phải embedded database), flyway_schema_history ghi nhận V1, không mismatch.",
         "explanation": "Testcontainers/Postgres đầy đủ cho integration tier được xác nhận sau ở V0.9 — ở đây @SpringBootTest (hoặc @DataJpaTest + @AutoConfigureTestDatabase(replace = Replace.NONE)) chạy trực tiếp trên PostgreSQL local đã cấu hình từ session trước là đủ để chứng minh R26."
       }
@@ -2676,7 +2676,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransactionRepositoryTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionRepositoryTest' test",
         "expectedResult": "BUILD SUCCESS — CRUD cơ bản qua JpaRepository hoạt động đúng trên PostgreSQL.",
         "explanation": "Đây chỉ xác nhận repository interface hoạt động — service vẫn chưa trỏ vào nó, đó là bước kế tiếp."
       }
@@ -2698,7 +2698,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "test",
+        "command": ".\\mvnw.cmd test",
         "expectedResult": "BUILD SUCCESS — toàn bộ suite (bao gồm test nghiệp vụ V0.2/V0.3 không sửa assertion) chạy trên implementation Spring Data mới.",
         "explanation": "Chạy full suite không giới hạn -Dtest vì đây là điểm kiểm tra 'đổi implementation không đổi hành vi' cho toàn bộ project, không riêng một class."
       }
@@ -2720,7 +2720,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransactionRepositoryTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionRepositoryTest' test",
         "expectedResult": "BUILD SUCCESS — listing phân trang/sắp xếp trả đúng kết quả từ PostgreSQL.",
         "explanation": "Test xác nhận Pageable query hoạt động đúng, không phải chỉ compile."
       }
@@ -2757,7 +2757,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AccountJpaTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AccountJpaTest' test",
         "expectedResult": "BUILD SUCCESS — Account mang @Version, balance persisted qua V2 migration, test ghi đồng thời phát hiện đúng conflict.",
         "explanation": "V2__balance_projection.sql là migration MỚI — V1__init.sql không bị mở lại để sửa, đúng kỷ luật R26 đã thực hành ở session Flyway."
       }
@@ -2779,7 +2779,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=BalanceReconciliationTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=BalanceReconciliationTest' test",
         "expectedResult": "BUILD SUCCESS — đối soát cho sai lệch bằng 0 giữa balance đã lưu và tổng hiệu ứng tính từ lịch sử giao dịch.",
         "explanation": "Đây là invariant R8 tuyên bố là vĩnh viễn đúng — test này sẽ được chạy lại ở mọi release sau như một hồi quy bắt buộc."
       }
@@ -2857,7 +2857,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransferServiceTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=TransferServiceTest' test",
         "expectedResult": "BUILD SUCCESS — sau lỗi giữa chừng, không có Transaction row nào của lần transfer thất bại tồn tại, balance hai account giữ nguyên như trước khi gọi.",
         "explanation": "Đây là bằng chứng thực nghiệm cho R21 — không phải suy luận từ việc đọc annotation @Transactional."
       }
@@ -2879,7 +2879,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransferServiceTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=TransferServiceTest' test",
         "expectedResult": "BUILD SUCCESS — cả hai account đối soát đúng sau transfer, hai row mới chia sẻ đúng một transferRef.",
         "explanation": "Test này khép lại chuỗi bằng chứng cho R8+R21 hoạt động cùng nhau, không mâu thuẫn nhau."
       }
@@ -2918,7 +2918,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AppUserServiceTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AppUserServiceTest' test",
         "expectedResult": "BUILD SUCCESS — user được lưu qua UserRepository với hash khác raw password; matches(raw, encoded) đúng.",
         "explanation": "Test này chỉ kiểm tra hành vi hash/verify, chưa đụng tới HTTP hay JWT — đúng phạm vi của bước này."
       },
@@ -2954,7 +2954,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=SecurityConfigTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=SecurityConfigTest' test",
         "expectedResult": "BUILD SUCCESS — request không xác thực tới route được bảo vệ bị từ chối; route công khai vẫn truy cập được.",
         "explanation": "SecurityConfigTest ở bước này chỉ xác nhận policy STATELESS được áp dụng và route công khai/riêng tư được phân biệt đúng."
       }
@@ -2979,7 +2979,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=SecurityConfigTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=SecurityConfigTest' test",
         "expectedResult": "BUILD SUCCESS — không token: 401; token sai: 401; token hợp lệ (qua decoder giả): 200.",
         "explanation": "Nhánh 200 sẽ được pin lại lần thứ hai với bộ ký JWT THẬT ở step-canonical-token-issuer-04, sau khi NimbusJwtEncoder ra đời — bước này chưa chạm tới ký JWT."
       },
@@ -3026,7 +3026,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=SchemaValidationTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=SchemaValidationTest' test",
         "expectedResult": "BUILD SUCCESS — Flyway apply V4 sạch trên schema mới (không có hàng cũ), ddl-auto=validate vẫn pass; và một lần chạy thủ công với dữ liệu accounts/transactions có sẵn từ trước phải FAIL với đúng thông báo của RAISE EXCEPTION.",
         "explanation": "SchemaValidationTest xác nhận entity Java khớp với schema sau khi V4 apply — không có cột nào Hibernate mong đợi mà migration thiếu, và ngược lại. Nhánh fail-fast chứng minh migration không bao giờ âm thầm đoán hoặc xoá dữ liệu cũ."
       },
@@ -3075,7 +3075,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "test",
+        "command": ".\\mvnw.cmd test",
         "expectedResult": "BUILD SUCCESS — mọi phương thức trả về danh sách của AccountRepository/TransactionRepository nhận userId, không còn phương thức nào trả về toàn bộ bảng không lọc.",
         "explanation": "Chạy toàn bộ suite vì thay đổi signature ảnh hưởng tới mọi call site đang gọi các repository này."
       }
@@ -3114,7 +3114,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "-q compile",
+        "command": ".\\mvnw.cmd -q compile",
         "expectedResult": "BUILD SUCCESS và không có kết quả grep 'SecurityContextHolder' nào ngoài CurrentUser.java.",
         "explanation": "Đây là bằng chứng cấu trúc (grep), không phải test hành vi — R24 là một ràng buộc về VỊ TRÍ code, kiểm bằng cách tìm kiếm text trong repo."
       },
@@ -3149,7 +3149,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=OwnershipTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=OwnershipTest' test",
         "expectedResult": "BUILD SUCCESS — service tải resource có điều kiện owner id ngay trong query, không tải rồi so sánh sau; controller không còn owner-scoped lookup riêng của nó.",
         "explanation": "Test ở bước này xác nhận HÀNH VI tải đúng owner; bước kế tiếp mới chốt đúng MÃ LỖI HTTP (404) trả về."
       }
@@ -3173,7 +3173,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=OwnershipTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=OwnershipTest' test",
         "expectedResult": "BUILD SUCCESS — mọi resource được bảo vệ trả 404 khi user A truy cập id thuộc user B.",
         "explanation": "Đây là test khép lại toàn bộ task-ownership-checks — nếu xanh, R24 được chứng minh bằng thực nghiệm, không chỉ bằng đọc code."
       }
@@ -3210,7 +3210,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "-q compile",
+        "command": ".\\mvnw.cmd -q compile",
         "expectedResult": "BUILD SUCCESS và grep 'implements TokenIssuer' trong src/main/java không trả về kết quả nào.",
         "explanation": "Bằng chứng cấu trúc: interface tồn tại, nhưng chưa có triển khai thật nào trong main — đúng như R23 yêu cầu ở giai đoạn này (JWT là seam, chưa là công nghệ cụ thể)."
       },
@@ -3248,7 +3248,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AuthServiceTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AuthServiceTest' test",
         "expectedResult": "BUILD SUCCESS — sai password không issue token; đúng password gọi TokenIssuer.issue(userId) và trả kết quả về caller.",
         "explanation": "Test dùng double cho TokenIssuer vì chưa có bộ ký thật — hành vi login/verify được chứng minh độc lập với công nghệ ký JWT cụ thể."
       }
@@ -3272,7 +3272,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=AuthServiceTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=AuthServiceTest' test",
         "expectedResult": "BUILD SUCCESS — cùng token: được coi là hợp lệ trước logout, bị từ chối (thu hồi) sau logout, kiểm chứng ở tầng service/filter qua seam TokenIssuer — chưa phải bằng chứng HTTP 200/401 qua route thật.",
         "explanation": "Đây là test khép lại task-token-lifecycle bằng thực nghiệm ở tầng seam — chứng minh logic thu hồi đúng, không chỉ xóa token ở phía client. Bằng chứng HTTP 200→401 cùng một token qua route được bảo vệ thật sự đến ở step-v06-canonical-checkpoint, sau khi bộ ký thật thay decoder double."
       }
@@ -3311,7 +3311,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "-q compile",
+        "command": ".\\mvnw.cmd -q compile",
         "expectedResult": "Dòng ghi chú có định dạng ngày YYYY-MM-DD và cụm từ xác nhận 'after day-36' tồn tại trong README.md.",
         "explanation": "Đây là một bước thủ tục, không phải test hành vi — mục đích là buộc một điểm dừng tường minh trước khi bắt đầu code canonical issuer."
       }
@@ -3338,7 +3338,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=NimbusTokenIssuerTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=NimbusTokenIssuerTest' test",
         "expectedResult": "BUILD SUCCESS — token ký bằng NimbusJwtEncoder thật, decode lại đúng subject=userId; app.jwt.secret trong application.properties là placeholder, không phải giá trị thật.",
         "explanation": "Test này lần đầu tiên dùng bộ ký JWT THẬT, không còn test double — đây là điểm task-token-lifecycle và task-canonical-token-issuer nối lại thành một."
       },
@@ -3368,7 +3368,7 @@
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=NimbusTokenIssuerTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=NimbusTokenIssuerTest' test",
         "expectedResult": "BUILD SUCCESS — secret ngắn hơn 32 byte ném lỗi ngay tại encode(); secret hợp lệ (>=32 byte) vẫn ký/decode đúng như bước trước.",
         "explanation": "Cùng file test giờ pin cả hai nhánh: secret hợp lệ hoạt động, secret yếu thất bại đúng vị trí."
       }
@@ -3393,14 +3393,15 @@
         "constraints": [
           "KHÔNG sửa lại các assertion 401/401/200 đã viết ở step-auth-foundation-03 — chỉ thay nguồn cấp token/decoder từ double sang thật.",
           "Login phải issue một JWT hợp lệ từ NimbusTokenIssuer thật, và endpoint được bảo vệ phải chấp nhận đúng token đó (200) — không dùng token giả ở bất kỳ đâu trong test này.",
-          "Đây là bước đầu tiên có đủ điều kiện để chứng minh logout bằng HTTP thật: thêm (hoặc chuyển) một test MockMvc login → 200, gọi logout với CHÍNH token đó, gọi lại route được bảo vệ với CHÍNH token đó → 401 — cùng một token thật xuyên suốt ba bước. step-v06-token-logout chỉ chứng minh logic thu hồi ở tầng seam/service vì lúc đó chưa có decoder thật; bằng chứng HTTP 200-trước/401-sau chỉ tồn tại từ đây.",
+          "KHÔNG tạo AuthController hay bất kỳ endpoint HTTP /auth/login, /auth/logout nào ở bước này. AuthController CHƯA thuộc phạm vi canonical của task-canonical-token-issuer — nó chỉ xuất hiện ở step-auth-hardening-01 (task-auth-hardening-review), một task tùy chọn, không chấm điểm, và phụ thuộc vào chính task này hoàn tất trước. checkpoint-canonical-token-issuer.expectedFiles cũng không liệt kê AuthController.java.",
+          "Đây là bước đầu tiên có đủ điều kiện để chứng minh thu hồi token bằng HTTP thật — nhưng bằng chứng đó đi qua một route ĐÃ ĐƯỢC BẢO VỆ SẴN CÓ (ví dụ GET /accounts), KHÔNG qua một endpoint /auth/login hay /auth/logout thật. Thêm (hoặc chuyển) một test MockMvc theo đúng 4 bước: (1) gọi AuthService.login(...) trực tiếp trong test để lấy một JWT thật do NimbusTokenIssuer ký; (2) MockMvc gửi request tới route được bảo vệ sẵn có kèm đúng JWT đó trong header Authorization → 200; (3) gọi AuthService.logout(...) với CHÍNH token đó để thu hồi nó; (4) MockMvc gửi lại đúng request tới CÙNG route được bảo vệ đó, vẫn với CHÍNH token đó → 401. Đây là bằng chứng HTTP thật cho việc xác thực tài nguyên được bảo vệ trước/sau khi thu hồi — không phải bằng chứng rằng endpoint /auth/login hay /auth/logout tồn tại.",
           "app.jwt.secret phải có một giá trị mặc định KHÔNG RỖNG, đủ dài cho HS256 (tối thiểu 32 byte), cấu hình trong application.properties trước khi swap — SecretKeySpec ném IllegalArgumentException ngay khi context khởi động nếu secret rỗng, và điều đó sẽ làm sập MỌI @SpringBootTest trong suite, không chỉ các test liên quan tới JWT.",
           "Grep toàn bộ src/test để tìm mọi chuỗi token giả hardcode dạng tiền tố \"fake-jwt.\" (hoặc tương tự) còn sót lại từ các bước dùng test double trước đó (step-auth-foundation-03 và các bước ownership) — xoá hoặc thay các chuỗi này bằng token thật lấy từ NimbusTokenIssuer/luồng login thật; một chuỗi hardcode như vậy sẽ không bao giờ decode được với bộ ký thật và sẽ làm test đỏ vì lý do không liên quan tới lỗi thiết kế seam."
         ]
       },
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "test",
+        "command": ".\\mvnw.cmd test",
         "expectedResult": "BUILD SUCCESS — toàn bộ suite (SecurityConfigTest, AuthServiceTest, OwnershipTest, NimbusTokenIssuerTest, cùng suite V0.5) đều xanh với bộ ký JWT thật, không còn test double nào cho TokenIssuer trong đường dẫn production.",
         "explanation": "Chạy toàn bộ suite vì đây là điểm hội tụ của mọi tính năng V0.6 — hash password, filter chain STATELESS, ownership, và vòng đời token — nay chạy trên cùng một bộ ký JWT thật duy nhất."
       },
@@ -4069,7 +4070,7 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": "'-Dtest=TransactionTest' test; .\\mvnw.cmd test",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionTest' test; .\\mvnw.cmd test",
         "expectedResult": "BUILD SUCCESS — occurred_on migrate sạch (guard fail-fast không kích hoạt vì bảng đang rỗng ở giai đoạn học), Transaction mang occurredOn đúng giá trị mặc định hoặc giá trị truyền vào, toàn bộ suite cũ vẫn xanh.",
         "explanation": "Xác nhận cột mới không phá vỡ bất kỳ test cũ nào (nhờ default LocalDate.now()) trước khi Budget migration (bước kế tiếp) dùng chung file migration numbering này."
       },
@@ -6939,9 +6940,10 @@
         "Vì sao canonical issuer bị dời tới sau day-36 dù kiến thức NimbusJwtEncoder mở khóa từ day-33.",
         "Vì sao secret HS256 ngắn thất bại ở encode(), không phải lúc khởi tạo hay khởi động app.",
         "Vì sao app.jwt.secret không bao giờ được hardcode hoặc commit — luôn đọc qua placeholder từ configuration ngoài.",
-        "Vì sao thay test double bằng bộ ký thật không cần sửa lại bất kỳ assertion cũ nào, nếu seam được thiết kế đúng từ task-token-lifecycle."
+        "Vì sao thay test double bằng bộ ký thật không cần sửa lại bất kỳ assertion cũ nào, nếu seam được thiết kế đúng từ task-token-lifecycle.",
+        "Vì sao bằng chứng 200→401 sau khi thu hồi token dùng một route được bảo vệ sẵn có (ví dụ GET /accounts) thay vì một endpoint /auth/login hay /auth/logout HTTP thật — AuthController chỉ xuất hiện ở task-auth-hardening-review, một task tùy chọn nằm sau task này."
       ],
-      "whatYouBuilt": "NimbusTokenIssuer — triển khai TokenIssuer duy nhất, ký JWT thật bằng NimbusJwtEncoder/ImmutableSecret/JwtClaimsSet, secret đọc từ configuration ngoài; toàn bộ luồng auth/ownership của V0.6 giờ chạy end-to-end trên bộ ký thật.",
+      "whatYouBuilt": "NimbusTokenIssuer — triển khai TokenIssuer duy nhất, ký JWT thật bằng NimbusJwtEncoder/ImmutableSecret/JwtClaimsSet, secret đọc từ configuration ngoài; toàn bộ luồng auth/ownership của V0.6 giờ chạy end-to-end trên bộ ký thật. Bằng chứng thu hồi token đi qua HTTP thật bằng một route đã được bảo vệ sẵn có (không qua endpoint /auth/login hay /auth/logout HTTP — AuthController chưa tồn tại ở task này).",
       "whyNotYet": [
         "Refresh token rotation và replay detection KHÔNG có ở đây — chúng thuộc task-auth-hardening-review, một task tùy chọn (không chấm điểm) và không được đưa vào chương trình bắt buộc của V0.6."
       ]
