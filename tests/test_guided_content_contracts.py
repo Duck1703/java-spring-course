@@ -311,3 +311,18 @@ def test_v07_recurring_generation_requires_occurred_on_equals_due_date() -> None
     assert re.search(r"occurredOn.{0,80}PHAI la ngay den han", text) or \
         re.search(r"occurredOn.{0,80}PHẢI là ngày đến hạn", text)
     assert "TransactionCreationCommand" in text
+
+
+# No session before session-rule-engine ever added a description field to
+# Transaction/TransactionCreationCommand, yet task-model's RuleCondition matches on the
+# transaction description. step-v07-rule-engine-implement must explicitly require adding that
+# field as plumbing before wiring the engine in, or the engine has nothing to read.
+
+def test_v07_rule_engine_implement_requires_description_field_plumbing() -> None:
+    step = _guided_step("step-v07-rule-engine-implement")
+    text = _text(step)
+
+    assert "description" in text
+    assert "TransactionCreationCommand" in text
+    assert re.search(r"migration.{0,120}description", text, re.IGNORECASE) or \
+        re.search(r"description.{0,120}migration", text, re.IGNORECASE)
