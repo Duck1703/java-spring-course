@@ -2973,9 +2973,9 @@
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
-        "command": ".\\mvnw.cmd '-Dtest=SecurityConfigTest' test",
+        "command": ".\\mvnw.cmd '-Dtest=TransactionValidationTest' test",
         "expectedResult": "BUILD SUCCESS — request không xác thực tới route được bảo vệ bị từ chối; route công khai vẫn truy cập được.",
-        "explanation": "SecurityConfigTest ở bước này chỉ xác nhận policy STATELESS được áp dụng và route công khai/riêng tư được phân biệt đúng."
+        "explanation": "TransactionValidationTest là MockMvc test duy nhất đi qua HTTP thật ở bước này (SecurityConfigTest chưa tồn tại — nó được tạo ở step-v06-auth-401-contract ngay sau). Chạy lại chính nó để chứng minh: request không .with(jwt()) vẫn bị từ chối bởi filter chain STATELESS mới, và cả hai trường hợp 400/201 gốc vẫn đúng khi có .with(jwt())."
       }
     },
     {

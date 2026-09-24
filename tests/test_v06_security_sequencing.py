@@ -140,3 +140,26 @@ def test_step2_does_not_teach_disabling_csrf() -> None:
     # never as an instruction to actually call it.
     assert "Không cần và không nên tắt CSRF" in text
     assert "CSRF không phải nguyên nhân" in text
+
+
+# --- G: run.command step-boundary ordering — a step's own `run` block must only invoke a test
+#     class that already exists by that step, never one authored by a LATER step.
+#     Scope: just the two adjacent auth-foundation steps this defect was found in, not all 204
+#     guided steps — a full "which class exists at which step" model would be its own brittle
+#     project. ponytail: extend to other sessions if the same class of bug recurs elsewhere. ---
+
+def test_step2_run_command_does_not_reference_step3s_test_class() -> None:
+    run = _guided_step("step-v06-auth-filterchain")["run"]
+    assert "SecurityConfigTest" not in run["command"]
+    assert "TransactionValidationTest" in run["command"]
+    # explanation may still name SecurityConfigTest, but only to say it doesn't exist yet
+    assert "chưa tồn tại" in run["explanation"]
+
+    # confirm this was genuinely a defect at the pre-repair baseline (RED reproduction)
+    baseline_run = _guided_step("step-v06-auth-filterchain", _baseline())["run"]
+    assert "SecurityConfigTest" in baseline_run["command"]
+
+
+def test_step3_run_command_references_its_own_test_class() -> None:
+    run = _guided_step("step-v06-auth-401-contract")["run"]
+    assert "SecurityConfigTest" in run["command"]
