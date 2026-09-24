@@ -3164,14 +3164,22 @@
         "Sửa các service ghi dữ liệu (ví dụ TransactionCreationService.create, TransferService.transfer) để nhận thêm tham số ownerId và tải resource qua repository method nhận cả id và ownerId trong một query (ví dụ AccountRepository.findByIdAndOwnerId) — không phải findById(id) rồi if (account.ownerId() != current).",
         "Xoá mọi owner-scoped lookup thủ công còn lại trong controller (ví dụ một AccountService.findOwned riêng chỉ để controller rẽ nhánh 404) — controller chỉ truyền id thô và ownerId (từ CurrentUser) xuống service, không tự tải entity.",
         "Not-found từ service (id không tồn tại HOẶC tồn tại nhưng sai chủ) phải là một exception riêng, được một @ExceptionHandler trung tâm ánh xạ sang HTTP 404 — controller không viết if/else để tự quyết định mã lỗi.",
-        "Viết OwnershipTest xác nhận: user A tạo account, user B gọi get(accountId) của chính A → không nhận được dữ liệu."
+        "Viết OwnershipTest xác nhận: user A tạo account, user B gọi get(accountId) của chính A → không nhận được dữ liệu.",
+        "Test đã có từ trước (ví dụ TransactionValidationTest) dùng .with(jwt()) mặc định — chủ định KHÔNG có subject hợp lệ dạng UUID (mặc định của test helper là chuỗi \"user\"). Khi một request test đi qua đường ownership (tức là chạm CurrentUser.userId()), sửa fixture xác thực của CHÍNH request đó — không sửa kỳ vọng HTTP/business gốc — bằng cách: (1) lưu một AppUser thật, (2) tạo Account với ownerId là AppUser.id() đó, (3) xác thực bằng .with(jwt().jwt(j -> j.subject(ownerId.toString()))). Request nào KHÔNG chạm CurrentUser (ví dụ bị chặn bởi @Valid trước khi tới service) thì fixture .with(jwt()) mặc định vẫn giữ nguyên — không cần sửa nơi logic ownership chưa từng chạy tới."
       ],
       "run": {
         "cwd": "D:\\spendwise-learning",
         "command": ".\\mvnw.cmd '-Dtest=OwnershipTest' test",
         "expectedResult": "BUILD SUCCESS — service tải resource có điều kiện owner id ngay trong query, không tải rồi so sánh sau; controller không còn owner-scoped lookup riêng của nó.",
         "explanation": "Test ở bước này xác nhận HÀNH VI tải đúng owner; bước kế tiếp mới chốt đúng MÃ LỖI HTTP (404) trả về."
-      }
+      },
+      "commonErrors": [
+        {
+          "symptom": "Khi CurrentUser.userId() ném lỗi vì subject không phải UUID hợp lệ (ví dụ subject mặc định \"user\" của .with(jwt())), thử \"sửa cho chạy\" bằng cách ánh xạ chuỗi đó sang một UUID cố định, hoặc thêm một nhánh fallback trong production code cho subject không phải UUID.",
+          "likelyCause": "Muốn giữ nguyên .with(jwt()) mặc định ở test thay vì sửa fixture để dùng một owner thật, hoặc muốn tránh phải tạo AppUser trong setup của test.",
+          "fix": "KHÔNG được tạo ánh xạ tất định từ \"user\" sang UUID, và KHÔNG được thêm logic fallback identity vào production code — cả hai đều làm ownership enforcement không còn đáng tin (một subject giả sẽ luôn map ra cùng một tài khoản). Sửa đúng chỗ: fixture của TEST — tạo AppUser thật, dùng AppUser.id() làm subject qua .jwt(j -> j.subject(ownerId.toString())). Đây là bảo trì test bình thường qua một ranh giới kiến trúc (trước khi ownership enforce, một user xác thực bất kỳ là đủ; sau khi enforce, danh tính xác thực trở thành dữ liệu nghiệp vụ) — không phải workaround."
+        }
+      ]
     },
     {
       "id": "step-v06-ownership-404-contract",
@@ -6914,14 +6922,21 @@
       "sessionId": "session-ownership-checks",
       "expectedFiles": [
         "src/main/java/com/spendwise/auth/CurrentUser.java",
+        "src/main/java/com/spendwise/shared/ResourceNotFoundException.java",
+        "src/main/java/com/spendwise/account/AccountRepository.java",
         "src/main/java/com/spendwise/account/AccountService.java",
-        "src/main/java/com/spendwise/account/TransactionService.java",
+        "src/main/java/com/spendwise/account/AccountController.java",
+        "src/main/java/com/spendwise/account/TransactionCreationCommand.java",
+        "src/main/java/com/spendwise/account/TransactionCreationService.java",
+        "src/main/java/com/spendwise/account/TransactionController.java",
+        "src/main/java/com/spendwise/account/TransferService.java",
         "src/test/java/com/spendwise/account/OwnershipTest.java"
       ],
       "understanding": [
         "Vì sao SecurityContextHolder chỉ được đọc trong một class duy nhất (R24).",
         "Vì sao tải lại có điều kiện owner trong query an toàn hơn tải rồi so sánh sau.",
-        "Vì sao 404 là mã lỗi đúng cho truy cập chéo user, còn 403 là một kênh rò rỉ thông tin."
+        "Vì sao 404 là mã lỗi đúng cho truy cập chéo user, còn 403 là một kênh rò rỉ thông tin.",
+        "Vì sao fixture xác thực (subject của JWT test) của một test có sẵn được PHÉP tiến hoá khi một tính năng mới làm danh tính xác thực trở thành dữ liệu nghiệp vụ — miễn là kỳ vọng HTTP/business gốc của test đó (400/201, v.v.) không đổi."
       ],
       "whatYouBuilt": "CurrentUser tập trung việc đọc danh tính; AccountService/TransactionService enforce ownership bằng query có điều kiện owner; OwnershipTest chốt 404-không-403 trên mọi resource.",
       "whyNotYet": [
