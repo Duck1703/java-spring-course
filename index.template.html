@@ -1140,6 +1140,12 @@
       margin-bottom: 1.5rem;
       border-bottom: 1px solid var(--line);
     }
+    /* Flex item min-width:auto defaults to min-content size, and Chrome's
+       min-content sizing ignores overflow-wrap: break-word — so one long,
+       space-free Java/Spring identifier in .workspace-title (e.g. a step
+       title naming a factory method) forces this item, and the page, wider
+       instead of wrapping. Same fix idiom as .lesson-link/minmax(0, 1fr). */
+    .workspace-header > div { min-width: 0; }
     .workspace-eyebrow, .project-section-label {
       margin: 0 0 .375rem;
       color: var(--project-ink);
@@ -1663,6 +1669,16 @@
        @media block has to appear after every rule it means to override —
        moving it earlier silently loses to those later base declarations
        even while the media query itself matches. */
+    /* .app-header has no flex-wrap and every child (.primary-nav,
+       .header-search, .progress-meter, .header-actions) is fixed/non-
+       shrinking, so once .primary-nav rejoins the header at the 64rem
+       desktop boundary the row briefly doesn't fit (measured ~64px short
+       at 1024px, the narrowest desktop width). Drop the least essential
+       item — same rule .progress-meter already gets at 30rem — over this
+       gap too, before the row has room to breathe again. */
+    @media (max-width: 72rem) {
+      .progress-meter { display: none; }
+    }
     @media (max-width: 30rem) {
       .progress-meter { display: none; }
       .header-search input { width: min(7rem, 25vw); }
@@ -1680,7 +1696,7 @@
       .architecture-compare { grid-template-columns: 1fr; }
       /* P3 task view: labels stack above their content when there is no
          room for a side-by-side definition list. */
-      .task-step-row { grid-template-columns: 1fr; gap: .125rem; }
+      .task-step-row { grid-template-columns: minmax(0, 1fr); gap: .125rem; }
       .task-prevnext { grid-template-columns: 1fr; }
       .task-prevnext-link--next { text-align: left; }
     }
