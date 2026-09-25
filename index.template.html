@@ -25,6 +25,7 @@
       --spring-soft: #e6f1dd;
       --completion: #78716c;
       --completion-soft: #eeece6;
+      --completion-ink: #605a56;
       --ink: #26231f;
       --muted: #6b6558;
       --canvas: #faf8f4;
@@ -36,6 +37,7 @@
       --ok: #2e7d32;
       --ok-soft: #e5f3e6;
       --ok-contrast: #ffffff;
+      --ok-ink: #256b29;
       --info: #2c6e9e;
       --info-soft: #e5f0f8;
       --project: #336b73;
@@ -68,6 +70,7 @@
       --spring-soft: #1c2a17;
       --completion: #a6a099;
       --completion-soft: #24221e;
+      --completion-ink: #a6a099;
       --ink: #eeebe4;
       --muted: #a39c8d;
       --canvas: #16140f;
@@ -79,6 +82,7 @@
       --ok: #6fcf73;
       --ok-soft: #1a2a1b;
       --ok-contrast: #0b1f0d;
+      --ok-ink: #6fcf73;
       --info: #7db8e8;
       --info-soft: #17222c;
       --project: #72c4c5;
@@ -149,8 +153,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 2.375rem;
-      height: 2.375rem;
+      width: 2.5rem;
+      height: 2.5rem;
       flex-shrink: 0;
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
@@ -351,7 +355,7 @@
     }
     .module-toggle[data-group="java"] .module-num { background: var(--java-soft); color: var(--java-ink); }
     .module-toggle[data-group="spring"] .module-num { background: var(--spring-soft); color: var(--spring-ink); }
-    .module-toggle[data-group="completion"] .module-num { background: var(--completion-soft); color: var(--completion); }
+    .module-toggle[data-group="completion"] .module-num { background: var(--completion-soft); color: var(--completion-ink); }
     .module-toggle-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .module-progress { flex-shrink: 0; font-size: .6875rem; font-weight: 700; color: var(--muted); }
     .module-toggle .chevron { flex-shrink: 0; transition: transform .15s ease; color: var(--muted); }
@@ -636,7 +640,12 @@
       border-bottom: 2px solid var(--line);
       letter-spacing: -.005em;
     }
-    .prose > p { margin: 0 0 1.125rem; line-height: 1.75; font-size: 1rem; }
+    /* Lesson body paragraphs render as bare <p> children of .section-block
+       (see renderBlock's "paragraph" branch / proseParagraph) — this used
+       to target a ".prose" wrapper class that no markup ever applies, so
+       every lesson paragraph fell back to the UA default margin instead of
+       the designed rhythm. */
+    .section-block > p { margin: 0 0 1.125rem; line-height: 1.75; font-size: 1rem; }
     .callout {
       display: flex;
       gap: .75rem;
@@ -677,7 +686,20 @@
       letter-spacing: .02em;
       color: var(--muted);
     }
-    .code-sample figcaption > span:first-child { font-family: var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+    /* min-width:0 lets this flex item shrink below its own text width so a
+       long caption ("JAVA — TransactionService.java example") truncates
+       with an ellipsis instead of pushing the copy button (or the page,
+       via the min-content sizing idiom used elsewhere in this file) wider
+       on narrow screens. */
+    .code-sample figcaption > span:first-child {
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .code-sample pre {
       margin: 0;
       padding: 1rem 1.125rem;
@@ -872,7 +894,7 @@
     .badge-read svg, .badge-status--unavailable svg { flex-shrink: 0; }
     .badge-read {
       background: var(--ok-soft);
-      color: var(--ok);
+      color: var(--ok-ink);
     }
     .badge-status--unavailable {
       background: var(--danger-soft);
@@ -1660,6 +1682,30 @@
     .task-browse-summary { margin: 0 0 .25rem; color: var(--muted); font-size: .875rem; }
     .next-build-task-title { display: block; }
     .next-build-task-title h2 { margin: .25rem 0 0; font-size: 1.125rem; }
+
+    /* ---- Guided Build: HỌC / CODE CÙNG TÔI / KIỂM TRA phase accents ----
+       renderGuidedStep already emits its fields in a fixed order (why it
+       matters/theory/instructions, then code/your-turn/reveal, then
+       run/canonical-criteria/checkpoint) — these three modifier classes
+       make that existing order visible at a glance via a left-border +
+       tinted surface, reusing existing tokens rather than new hues. */
+    .guided-phase-learn { border-left: 3px solid var(--info); background: var(--info-soft); }
+    .guided-phase-learn > h2 { color: var(--info); }
+    .guided-phase-code { border-left: 3px solid var(--java); background: var(--java-soft); }
+    .guided-phase-code > h2 { color: var(--java-ink); }
+    .guided-phase-verify { border-left: 3px solid var(--ok); background: var(--ok-soft); }
+    .guided-phase-verify > h2 { color: var(--ok-ink); }
+    /* checkpoint's "chưa xong" callout reuses the neutral note variant —
+       recolor its icon/label to match the verify phase it belongs to. */
+    .callout.guided-phase-verify .callout-icon, .callout.guided-phase-verify .callout-label { color: var(--ok-ink); }
+    .guided-phase-badge--learn { color: var(--info); background: var(--info-soft); border-color: var(--info); }
+    .guided-phase-badge--code { color: var(--java-ink); background: var(--java-soft); border-color: var(--java); }
+    .guided-phase-badge--verify { color: var(--ok-ink); background: var(--ok-soft); border-color: var(--ok); }
+    /* The run command is the single most important string in its step —
+       make it read larger/bolder than the generic code-sample/canonical
+       verify blocks it shares markup with. */
+    .guided-run-command pre { font-size: .9375rem; font-weight: 600; }
+    .guided-run-command figcaption { font-weight: 700; }
 
     /* This block must stay last: it overrides base rules for several
        selectors (.dash-progress-card, .project-*-grid, .release-columns,
@@ -4800,6 +4846,15 @@
         "explanation": "Giải thích", "run": "Chạy thử",
         "checkpoint": "Checkpoint", "debug": "Debug", "review": "Review",
       };
+      // Which of the three visual phases (HỌC / CODE CÙNG TÔI / KIỂM TRA)
+      // this step's own type badge should read as — colors the badge via
+      // .guided-phase-badge--*, independent of the fixed per-field phase
+      // classes applied inside renderGuidedStep below.
+      var GUIDED_STEP_PHASE = {
+        "orientation": "learn", "setup": "learn", "explanation": "learn", "review": "learn",
+        "create-folder": "code", "create-file": "code", "code-with-me": "code", "your-turn": "code", "debug": "code",
+        "run": "verify", "checkpoint": "verify",
+      };
 
       function renderGuidedEmpty(container) {
         var empty = el('section', 'project-empty');
@@ -4882,8 +4937,8 @@
 
       // Reuses the lesson-prose callout look (CALLOUT_CLASS/CALLOUT_ICON)
       // with a Guided-specific label, for whyThisMatters / whyNotYet.
-      function createGuidedCallout(variant, label, text) {
-        var callout = el('aside', 'callout ' + (CALLOUT_CLASS[variant] || 'callout--note'));
+      function createGuidedCallout(variant, label, text, extraClass) {
+        var callout = el('aside', 'callout ' + (CALLOUT_CLASS[variant] || 'callout--note') + (extraClass ? ' ' + extraClass : ''));
         callout.setAttribute('role', 'note');
         var ci = el('span', 'callout-icon');
         ci.setAttribute('aria-hidden', 'true');
@@ -4902,8 +4957,8 @@
       // verifyCommand block, reused for both authored codeBlocks and the
       // run-panel command (code-with-me is rendered by this same path —
       // codeBlocks are always shown, never gated behind a reveal).
-      function createGuidedCodeBlock(block) {
-        var fig = el('figure', 'task-verify');
+      function createGuidedCodeBlock(block, extraClass) {
+        var fig = el('figure', 'task-verify' + (extraClass ? ' ' + extraClass : ''));
         var figcap = el('figcaption');
         var labelText = block.language || 'code';
         if (block.caption) labelText += ' — ' + block.caption;
@@ -5133,14 +5188,15 @@
 
         var header = renderProjectWorkspaceHeader(container,
           'Bước ' + step.order, step.title, step.goal);
-        header.appendChild(el('span', 'project-status project-status--authored', GUIDED_STEP_TYPE_LABELS[step.type] || step.type));
+        var stepPhase = GUIDED_STEP_PHASE[step.type] || 'code';
+        header.appendChild(el('span', 'project-status guided-phase-badge--' + stepPhase, GUIDED_STEP_TYPE_LABELS[step.type] || step.type));
 
         if (step.whyThisMatters) {
-          container.appendChild(createGuidedCallout('note', 'Vì sao bước này quan trọng', step.whyThisMatters));
+          container.appendChild(createGuidedCallout('note', 'Vì sao bước này quan trọng', step.whyThisMatters, 'guided-phase-learn'));
         }
 
         if ((step.theoryBridge || []).length) {
-          var bridgeSection = el('section', 'project-panel release-section');
+          var bridgeSection = el('section', 'project-panel release-section guided-phase-learn');
           bridgeSection.appendChild(el('h2', null, 'Liên kết lý thuyết'));
           var bridgeList = el('ul', 'task-prereq-list');
           step.theoryBridge.forEach(function(bridge) {
@@ -5157,7 +5213,7 @@
         }
 
         if ((step.instructions || []).length) {
-          var instrSection = el('section', 'project-panel release-section');
+          var instrSection = el('section', 'project-panel release-section guided-phase-learn');
           instrSection.appendChild(el('h2', null, 'Hướng dẫn'));
           var ol = el('ol', 'criteria-list');
           step.instructions.forEach(function(text) { ol.appendChild(el('li', null, text)); });
@@ -5168,7 +5224,7 @@
         // codeBlocks always render unconditionally — this is also the
         // code-with-me surface (visible immediately, never gated).
         if ((step.codeBlocks || []).length) {
-          var codeSection = el('section', 'project-panel release-section');
+          var codeSection = el('section', 'project-panel release-section guided-phase-code');
           codeSection.appendChild(el('h2', null, step.type === 'code-with-me' ? 'Code cùng nhau' : 'Mã ví dụ'));
           step.codeBlocks.forEach(function(block) { codeSection.appendChild(createGuidedCodeBlock(block)); });
           container.appendChild(codeSection);
@@ -5178,7 +5234,7 @@
         // reveal below — the reveal is a separate, collapsed-by-default
         // section, never inline here.
         if (step.learnerAction) {
-          var yourTurn = el('section', 'project-panel release-section');
+          var yourTurn = el('section', 'project-panel release-section guided-phase-code');
           yourTurn.appendChild(el('h2', null, 'Đến lượt bạn'));
           if (step.learnerAction.goal) yourTurn.appendChild(el('p', 'task-step-text', step.learnerAction.goal));
           if ((step.learnerAction.constraints || []).length) {
@@ -5199,7 +5255,7 @@
         // reveal — collapsed by default via the shared disclosure pattern;
         // opening it is a pure UI toggle, it never marks the step complete.
         if (step.reveal) {
-          var revealSection = el('section', 'project-panel release-section');
+          var revealSection = el('section', 'project-panel release-section guided-phase-code');
           var panelId = 'guided-reveal-' + step.id;
           var revealBtn = disclosureButton(step.reveal.label || 'Xem đáp án', panelId, 'chevron-down');
           var revealPanel = el('div', null);
@@ -5213,10 +5269,10 @@
         }
 
         if (step.run) {
-          var runSection = el('section', 'project-panel release-section');
+          var runSection = el('section', 'project-panel release-section guided-phase-verify');
           runSection.appendChild(el('h2', null, 'Chạy thử'));
           if (step.run.cwd) runSection.appendChild(el('p', 'task-step-text', 'Thư mục: ' + step.run.cwd));
-          runSection.appendChild(createGuidedCodeBlock({ language: 'command', code: step.run.command }));
+          runSection.appendChild(createGuidedCodeBlock({ language: 'command', code: step.run.command }, 'guided-run-command'));
           if (step.run.expectedResult) {
             var runResult = el('div', 'task-step-row task-step-row--done');
             runResult.appendChild(el('span', 'task-step-label', 'Kết quả mong đợi'));
@@ -5234,7 +5290,7 @@
         if (step.buildStepId) {
           var buildStep = buildStepsById.get(step.buildStepId);
           if (buildStep) {
-            var canonSection = el('section', 'project-panel release-section');
+            var canonSection = el('section', 'project-panel release-section guided-phase-verify');
             canonSection.appendChild(el('h2', null, 'Tiêu chí kỹ thuật (canonical)'));
             if (buildStep.doneWhen) {
               var cDone = el('div', 'task-step-row task-step-row--done');
@@ -5299,7 +5355,7 @@
         if (step.type === 'checkpoint') {
           var checkpoint = (guidedBuildData.guidedCheckpoints || []).find(function(c) { return c.sessionId === sessionId; });
           if (checkpoint) {
-            var cpSection = el('section', 'project-panel release-section guided-checkpoint');
+            var cpSection = el('section', 'project-panel release-section guided-checkpoint guided-phase-verify');
             cpSection.appendChild(el('h2', null, 'Checkpoint — bạn đã xây được gì'));
             cpSection.appendChild(el('p', 'task-step-text', checkpoint.whatYouBuilt));
             if ((checkpoint.expectedFiles || []).length) {
@@ -5319,7 +5375,7 @@
               cpSection.appendChild(uList);
             }
             if (checkpoint.whyNotYet) {
-              cpSection.appendChild(createGuidedCallout('note', 'Nếu chưa xong', checkpoint.whyNotYet));
+              cpSection.appendChild(createGuidedCallout('note', 'Nếu chưa xong', checkpoint.whyNotYet, 'guided-phase-verify'));
             }
             container.appendChild(cpSection);
           }
