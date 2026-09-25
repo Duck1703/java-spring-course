@@ -179,6 +179,41 @@ test("firstIncompleteGuidedStep resumes at the first incomplete step, or the las
   assert.equal(core.firstIncompleteGuidedStep(guidedSessions, guidedSteps, [], "no-such-release"), null);
 });
 
+test("navContextForRoute: lessons → learn, every Spendwise surface → build, the rest → overview", () => {
+  assert.equal(core.navContextForRoute("lesson"), "learn");
+  for (const view of ["guided-build", "guided-release", "guided-session", "guided-step",
+    "project", "roadmap", "release", "task", "map", "architecture"]) {
+    assert.equal(core.navContextForRoute(view), "build", view);
+  }
+  for (const view of ["dashboard", "resources", "unknown", undefined]) {
+    assert.equal(core.navContextForRoute(view), "overview", String(view));
+  }
+});
+
+test("guidedStepsForLesson lists every step whose theoryBridge cites the lesson, in release → session → step order", () => {
+  const bridged = guidedSteps.map((s) => ({
+    ...s,
+    theoryBridge: s.id === "s2-step1" || s.id === "s1-step1" || s.id === "sx-step1" ? [{ lessonId: "day-14" }] : [],
+  }));
+  const hits = core.guidedStepsForLesson(["v0-1", "v0-2"], guidedSessions, bridged, "day-14");
+  assert.deepEqual(hits.map((h) => [h.releaseId, h.session.id, h.step.id]), [
+    ["v0-1", "session-1", "s1-step1"],
+    ["v0-1", "session-2", "s2-step1"],
+    ["v0-2", "session-x", "sx-step1"],
+  ]);
+  assert.deepEqual(core.guidedStepsForLesson(["v0-1"], guidedSessions, bridged, "day-99"), []);
+  // Steps without a theoryBridge field never throw.
+  assert.deepEqual(core.guidedStepsForLesson(["v0-1"], guidedSessions, guidedSteps, "day-14"), []);
+});
+
+test("lessonDayLabel renders syllabus day numbers, including ranges, and is empty for non-lesson ids", () => {
+  assert.equal(core.lessonDayLabel("day-01"), "Day 01");
+  assert.equal(core.lessonDayLabel("day-14"), "Day 14");
+  assert.equal(core.lessonDayLabel("day-39-64"), "Day 39–64");
+  assert.equal(core.lessonDayLabel("unit-01"), "");
+  assert.equal(core.lessonDayLabel(null), "");
+});
+
 test("selectCurrentRelease prefers building then the earliest planned release", () => {
   const releases = [
     { id: "v0-3", order: 3, status: "planned" },

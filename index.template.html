@@ -408,6 +408,50 @@
       color: #fff;
     }
     .lesson-link-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* Build-context sidebar: Spendwise release → session → step tree. Same
+       rhythm as the curriculum rail, project accent instead of group accent. */
+    .sidebar-links { list-style: none; margin: .25rem 0 .5rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .0625rem; }
+    .sidebar-link {
+      display: block; min-width: 0; padding: .4375rem .625rem; border-radius: var(--radius-sm);
+      color: var(--ink); text-decoration: none; font-size: .8438rem; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .sidebar-link:hover { background: var(--surface-strong); }
+    .sidebar-link[aria-current="page"] { background: var(--project-soft); color: var(--project-ink); }
+    .sidebar-note { margin: .25rem .375rem .75rem; font-size: .8125rem; line-height: 1.5; color: var(--muted); }
+    .project-nav-toggle, .project-nav-session {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      width: 100%; min-width: 0; padding: .5rem; border: 0; border-radius: var(--radius-sm);
+      background: transparent; color: var(--ink); font: inherit; font-weight: 600; font-size: .875rem;
+      text-align: left; cursor: pointer;
+    }
+    .project-nav-session { padding: .4375rem .5rem .4375rem 1rem; font-size: .8125rem; }
+    .project-nav-toggle:hover, .project-nav-session:hover { background: var(--surface-strong); }
+    .project-nav-session[aria-current="page"] { background: var(--project-soft); color: var(--project-ink); }
+    .project-nav-toggle .chevron, .project-nav-session .chevron { flex-shrink: 0; transition: transform .15s ease; color: var(--muted); }
+    .project-nav-toggle[aria-expanded="false"] .chevron, .project-nav-session[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+    .project-nav-label { display: flex; align-items: baseline; gap: .5rem; flex: 1 1 auto; min-width: 0; }
+    .project-nav-version {
+      flex-shrink: 0; padding: .0625rem .375rem; border-radius: 999px;
+      background: var(--project-soft); color: var(--project-ink); font-size: .6875rem; font-weight: 800;
+    }
+    .project-nav-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .project-nav-count { flex-shrink: 0; font-size: .6875rem; font-weight: 700; color: var(--muted); }
+    .project-nav-list { list-style: none; margin: .125rem 0 .375rem; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .0625rem; }
+    .project-nav-list[hidden] { display: none; }
+    .project-nav-link {
+      display: flex; align-items: center; gap: .5rem; min-width: 0;
+      padding: .375rem .625rem .375rem 1.5rem; border-radius: var(--radius-sm); border-left: 2px solid transparent;
+      color: var(--ink); text-decoration: none; font-size: .8125rem; line-height: 1.4;
+    }
+    .project-nav-link--step { padding-left: 2rem; }
+    .project-nav-link:hover { background: var(--surface-strong); }
+    .project-nav-link[aria-current="page"] { background: var(--project-soft); border-left-color: var(--project); font-weight: 600; }
+    .project-nav-badge {
+      flex-shrink: 0; padding: .0625rem .375rem; border-radius: 999px;
+      background: var(--completion-soft); color: var(--completion-ink);
+      font-size: .625rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    }
     .visually-hidden {
       position: absolute !important;
       width: 1px; height: 1px;
@@ -1075,6 +1119,14 @@
     }
     .dash-continue-title { font-size: 1.25rem; font-weight: 700; margin: 0 0 .625rem; color: var(--ink); }
     .dash-continue-meta { display: flex; flex-wrap: wrap; gap: .5rem; }
+    /* Two journeys side by side: learn (spring accent) and build (project accent). */
+    .dash-journeys { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem; margin-bottom: 1.75rem; }
+    .dash-journeys .dash-continue-card { margin-bottom: 0; align-items: flex-end; }
+    .dash-journeys .dash-continue-card > div { flex: 1 1 12rem; min-width: 0; }
+    .dash-journey-copy { margin: 0 0 .75rem; font-size: .875rem; line-height: 1.55; color: var(--muted); }
+    .dash-continue-card--build { background: var(--project-soft); border-color: var(--project); }
+    .dash-continue-card--build .dash-continue-eyebrow { color: var(--project-ink); }
+    .dash-continue-card--build .btn--primary { background: var(--project-ink); border-color: var(--project-ink); }
 
     .btn {
       display: inline-flex;
@@ -1248,7 +1300,7 @@
     .feature-list, .dependency-list, .criteria-list { margin: .625rem 0 0; padding-left: 1.15rem; color: var(--muted); font-size: .875rem; }
     .feature-list li, .dependency-list li, .criteria-list li { margin: .3125rem 0; }
 
-    .project-context, .project-application {
+    .project-context, .project-application, .lesson-build-bridges {
       margin: 0 0 2.25rem;
       padding: 1.125rem 1.25rem;
       border: 1px solid color-mix(in srgb, var(--project) 45%, var(--line));
@@ -1256,8 +1308,11 @@
       border-radius: 0 var(--radius-md) var(--radius-md) 0;
       background: var(--project-soft);
     }
-    .project-context h2, .project-application h2 { margin: 0 0 .625rem; font-size: 1rem; letter-spacing: .01em; text-transform: uppercase; }
-    .project-context p, .project-application > p { margin: .5rem 0 0; line-height: 1.7; }
+    .lesson-build-bridges summary { margin-top: .5rem; cursor: pointer; font-weight: 600; font-size: .875rem; }
+    .lesson-return-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1.25rem; }
+    .lesson-syllabus-title { font-weight: 500; color: var(--muted); }
+    .project-context h2, .project-application h2, .lesson-build-bridges h2 { margin: 0 0 .625rem; font-size: 1rem; letter-spacing: .01em; text-transform: uppercase; }
+    .project-context p, .project-application > p, .lesson-build-bridges > p { margin: .5rem 0 0; line-height: 1.7; }
     .project-context-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .625rem; }
     .project-type {
       padding: .15rem .45rem;
@@ -2149,6 +2204,40 @@
       return (nextUp || seq[seq.length - 1]).step;
     }
 
+    // Which navigation context a route belongs to. The sidebar, the primary
+    // nav cue and the mobile drawer all follow this one answer: "learn"
+    // (theory lessons → curriculum tree), "build" (every Spendwise surface →
+    // project tree) or "overview" (dashboard/resources → compact two-journey
+    // nav). Pure: a route view string in, a context string out.
+    const BUILD_VIEWS = new Set(["guided-build", "guided-release", "guided-session", "guided-step",
+      "project", "roadmap", "release", "task", "map", "architecture"]);
+    function navContextForRoute(view) {
+      if (view === "lesson") return "learn";
+      if (BUILD_VIEWS.has(view)) return "build";
+      return "overview";
+    }
+
+    // Reverse theory bridge: every guided step whose theoryBridge cites this
+    // lesson, in release → session → step order, so a lesson page can say
+    // "bạn sẽ dùng kiến thức này ở đâu trong Spendwise". Pure.
+    function guidedStepsForLesson(guidedReleaseIds, guidedSessions, guidedSteps, lessonId) {
+      const out = [];
+      (guidedReleaseIds || []).forEach((releaseId) => {
+        orderedGuidedSteps(guidedSessions, guidedSteps, releaseId).forEach(({ step, session }) => {
+          if ((step.theoryBridge || []).some((b) => b.lessonId === lessonId)) out.push({ releaseId, session, step });
+        });
+      });
+      return out;
+    }
+
+    // "day-14" → "Day 14", "day-39-64" → "Day 39–64": the syllabus numbering
+    // learners see next to a Vietnamese lesson title.
+    function lessonDayLabel(lessonId) {
+      const m = String(lessonId || "").match(/^day-(\d+)(?:-(\d+))?$/);
+      if (!m) return "";
+      return "Day " + m[1] + (m[2] ? "–" + m[2] : "");
+    }
+
     // ---- P3: Mentor prompt builder (Phase 2 plan §14) --------------------
     // Pure: reads only its arguments, returns a string. No state, DOM,
     // clipboard or network. One builder serves both scopes — task-level when
@@ -2568,10 +2657,11 @@
     function searchLessons(lessons, units, query) {
       const q = normalizeSearch(query);
       if (!q) return [];
-      const unitTitleById = new Map(units.map((u) => [u.id, u.title]));
+      const unitTitleById = new Map(units.map((u) => [u.id, [u.title, u.titleVi || ""].join(" ")]));
       return lessons.filter((lesson) => {
         const haystacks = [
           lesson.title,
+          lesson.titleVi || "",
           lesson.summary,
           ...(lesson.outcomes || []),
           unitTitleById.get(lesson.unitId) || "",
@@ -2621,6 +2711,7 @@
       deriveGuidedStepsForSession, selectGuidedStep,
       calculateGuidedSessionProgress, calculateGuidedReleaseProgress,
       getPreviousGuidedStep, getNextGuidedStep, firstIncompleteGuidedStep,
+      navContextForRoute, guidedStepsForLesson, lessonDayLabel,
     });
     /* COURSE_CORE_END */
 
@@ -2639,6 +2730,80 @@
       }
       const lessonsById = new Map(courseData.lessons.map(function(l){return [l.id,l];}));
       const unitsById = new Map(courseData.units.map(function(u){return [u.id,u];}));
+
+      /* ---- Vietnamese display titles ---------------------------------- */
+      // The catalog keeps the syllabus's original (mostly English) titles —
+      // validators pin them to the source spreadsheet. What the learner reads
+      // is this Vietnamese display layer; the original stays visible as a
+      // secondary "Tên trong đề cương" line on the lesson page.
+      var LESSON_TITLE_VI = {
+        "day-01": "JVM, JRE, JDK và kiểu dữ liệu",
+        "day-02": "Toán tử và luồng điều khiển",
+        "day-03": "Lab 1 — StringCalculator: String bất biến và kiểu nguyên thủy",
+        "day-04": "Lớp, đối tượng và đóng gói",
+        "day-05": "Kế thừa, đa hình và lớp trừu tượng",
+        "day-06": "Bài tập 2 — Hệ thống quản lý nhân viên",
+        "day-07": "Interface, lớp lồng và enum",
+        "day-08": "Generics, Collections và xử lý ngoại lệ",
+        "day-09": "Lab 3 — Tự viết Collection và khung ngoại lệ",
+        "day-10": "Lambda và Stream API chuyên sâu",
+        "day-11": "Đa luồng và đọc/ghi file",
+        "day-12": "Bài tập 4 — Pipeline xử lý dữ liệu",
+        "day-13": "Spring Boot cơ bản và vòng đời Bean",
+        "day-14": "Dependency Injection và cấu hình",
+        "day-15": "Bài tập 5 — Dịch vụ thông báo nhiều module",
+        "day-16": "Controller, Request và Response",
+        "day-17": "Validation và xử lý lỗi",
+        "day-18": "Lab 6 — API quản lý User và Task",
+        "day-19": "Thiết kế Entity và quan hệ",
+        "day-20": "Truy vấn, Transaction và các pattern",
+        "day-21": "Bài tập 7 — Tầng dữ liệu cho E-Commerce",
+        "day-22": "Xác thực với Spring Security và JWT",
+        "day-23": "Phân quyền và hiệu năng JPA",
+        "day-24": "Lab 8 — Dịch vụ xác thực và tối ưu hiệu năng",
+        "day-25": "Caching và xử lý bất đồng bộ",
+        "day-26": "Upload/Download file và gọi API bên ngoài",
+        "day-27": "Bài tập 9 — Tính năng Product và Order",
+        "day-28": "Kiểm thử ứng dụng Spring Boot",
+        "day-29": "Tài liệu API, logging, giám sát và Docker",
+        "day-30": "Lab 10 — Sẵn sàng chạy production",
+        "day-31": "Thiết kế hệ thống và khởi động dự án (phần 1)",
+        "day-32": "Thiết kế hệ thống và khởi động dự án (phần 2)",
+        "day-33": "Sprint phát triển 1",
+        "day-34": "Sprint phát triển 2",
+        "day-35": "Sprint phát triển 3",
+        "day-36": "Bảo vệ dự án cuối khóa",
+        "day-37": "Kiểm tra lý thuyết cuối khóa",
+        "day-38": "Kiểm tra thực hành cuối khóa",
+        "day-39-64": "Thực tập OJT — làm task trong dự án FSU",
+        "day-65-66": "Đánh giá sau đào tạo và OJT"
+      };
+      var UNIT_TITLE_VI = {
+        "unit-01": "Nền tảng Java và cú pháp cơ bản",
+        "unit-02": "Lập trình hướng đối tượng (OOP) trong Java",
+        "unit-03": "Interface, Generics, Collections và ngoại lệ",
+        "unit-04": "Stream API, đa luồng và đọc/ghi file",
+        "unit-05": "Spring Boot cốt lõi và IoC Container",
+        "unit-06": "Spring MVC — Xây dựng REST API",
+        "unit-07": "Spring Data JPA và cơ sở dữ liệu",
+        "unit-08": "Spring Security và hiệu năng JPA",
+        "unit-09": "Caching, bất đồng bộ, file và API bên ngoài",
+        "unit-10": "Kiểm thử, tài liệu, giám sát và Docker",
+        "unit-11": "Lập kế hoạch và triển khai dự án",
+        "unit-12": "Sprint triển khai và bảo vệ cuối khóa",
+        "unit-13": "Kiểm tra cuối khóa",
+        "unit-14": "Giai đoạn thực tập OJT",
+        "unit-15": "Giai đoạn đánh giá"
+      };
+      function lessonTitle(lesson) { return lesson ? (LESSON_TITLE_VI[lesson.id] || lesson.title || lesson.id) : ''; }
+      function unitTitle(unit) { return unit ? (UNIT_TITLE_VI[unit.id] || unit.title) : ''; }
+      function lessonUnitLabel(lesson) {
+        var unit = lesson ? unitsById.get(lesson.unitId) : null;
+        return unit ? 'Chương ' + unit.number + ' · ' + unitTitle(unit) : '';
+      }
+      // Search must find a lesson by the title the learner actually sees.
+      courseData.lessons.forEach(function(l) { if (LESSON_TITLE_VI[l.id]) l.titleVi = LESSON_TITLE_VI[l.id]; });
+      courseData.units.forEach(function(u) { if (UNIT_TITLE_VI[u.id]) u.titleVi = UNIT_TITLE_VI[u.id]; });
 
       /* ---- project data layer (Spendwise) ---------------------------- */
       // The project artifact is optional: the course renders fully without it.
@@ -2749,29 +2914,58 @@
       }
       function setAriaCurrent(id) {
         document.querySelectorAll('.lesson-link[aria-current]').forEach(function(a){a.removeAttribute('aria-current');});
+        if (CourseCore.navContextForRoute(CourseCore.parseRoute(window.location.hash).view) !== 'learn') return;
         var link = document.querySelector('.lesson-link[data-lesson-id="' + id + '"]');
         if (link) link.setAttribute('aria-current', 'page');
       }
       function updateNavActive(view) {
-        /* Release Detail has no primary-nav destination of its own — it is
-           only ever reached by drilling into a release from the Roadmap
-           tab — so it inherits Roadmap's active state rather than leaving
-           every tab dark while the learner is still inside that section.
-           Map and Architecture are likewise sub-views of the Project Track
-           (they are only reachable from the project sub-nav), so they keep
-           the "Dự án" tab lit instead of dropping the wayfinding cue
-           entirely; the sub-nav then shows the precise position. Guided
-           release/session/step are sub-views of the new Guided Build tab,
-           same treatment. */
-        var navView = view === 'release' ? 'roadmap'
-          : view === 'lesson' ? 'dashboard'
-          : view === 'task' || view === 'map' || view === 'architecture' ? 'project'
-          : view === 'guided-release' || view === 'guided-session' || view === 'guided-step' ? 'guided-build'
-          : view;
+        /* Four destinations, one per learning context: every lesson lights
+           "Học lý thuyết", every Spendwise surface (guided build, plan,
+           roadmap, release, task, map, architecture) lights "Xây dựng dự án"
+           — the build sidebar then shows the precise position. The learn
+           tab's href follows the learner's continue target so it always
+           resumes where they stopped. */
+        var context = CourseCore.navContextForRoute(view);
+        var navView = context === 'learn' ? 'learn' : context === 'build' ? 'guided-build' : view;
         document.querySelectorAll('.primary-nav [data-view]').forEach(function(link) {
           link.removeAttribute('aria-current');
+          if (link.getAttribute('data-view') === 'learn') link.setAttribute('href', '#/lesson/' + continueLessonTarget());
           if (link.getAttribute('data-view') === navView) link.setAttribute('aria-current', 'page');
         });
+      }
+      // Same formula the dashboard's continue card has always used: the last
+      // opened lesson if still unfinished, else the first unfinished lesson.
+      function continueLessonTarget() {
+        var unfinished = courseData.lessons.find(function(l){return state.completed.indexOf(l.id)===-1;});
+        return (state.lastLessonId && lessonsById.has(state.lastLessonId) && state.completed.indexOf(state.lastLessonId)===-1)
+          ? state.lastLessonId : (unfinished ? unfinished.id : 'day-01');
+      }
+      // Guided releases in canonical release order (V0.1 → V1.0).
+      function orderedGuidedReleases() {
+        if (!guidedBuildData) return [];
+        return (guidedBuildData.guidedReleases || []).slice().sort(function(a, b) {
+          var ca = releasesById.get(a.releaseId), cb = releasesById.get(b.releaseId);
+          return Number((ca && ca.order) || 0) - Number((cb && cb.order) || 0);
+        });
+      }
+      // Where "Xây tiếp" resumes: the first unfinished step of the first
+      // release that still has one; the very last step once all are done.
+      function guidedResumeTarget() {
+        var releases = orderedGuidedReleases();
+        var done = state.guidedProgress.completedSteps;
+        var fallback = null;
+        for (var i = 0; i < releases.length; i++) {
+          var rid = releases[i].releaseId;
+          var p = CourseCore.calculateGuidedReleaseProgress(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, done, rid);
+          var step = CourseCore.firstIncompleteGuidedStep(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, done, rid);
+          if (!step) continue;
+          fallback = { releaseId: rid, step: step };
+          if (p.completed < p.total) return fallback;
+        }
+        return fallback;
+      }
+      function guidedStepHref(releaseId, step) {
+        return '#/guided-build/' + releaseId + '/' + step.sessionId + '/' + step.id;
       }
 
       function projectCompletedTaskIds() {
@@ -2810,7 +3004,7 @@
           projectCompletedTaskIds(),
           release ? release.id : null
         );
-        var text = label || 'Project Progress';
+        var text = label || 'Tiến độ dự án';
         var wrap = el('div', 'project-progress');
         wrap.appendChild(el('span', 'project-progress-label', text));
         if (!progress.total) {
@@ -2883,7 +3077,7 @@
           if (feature.description) card.appendChild(el('p', null, feature.description));
           if ((feature.domainEntities || []).length) {
             var entRow = el('div', 'feature-entities');
-            entRow.appendChild(el('span', 'feature-entities-label', 'Entities: '));
+            entRow.appendChild(el('span', 'feature-entities-label', 'Thực thể: '));
             entRow.appendChild(document.createTextNode(feature.domainEntities.join(', ')));
             card.appendChild(entRow);
           }
@@ -2923,7 +3117,7 @@
         title.appendChild(el('span', 'task-kind', task.required === false ? 'optional' : 'required'));
         body.appendChild(title);
         if (task.problem) body.appendChild(el('div', 'build-task-meta', task.problem));
-        if (task.goal) body.appendChild(el('div', 'build-task-meta', 'Goal: ' + task.goal));
+        if (task.goal) body.appendChild(el('div', 'build-task-meta', 'Mục tiêu: ' + task.goal));
         item.appendChild(body);
         return item;
       }
@@ -2953,23 +3147,23 @@
         panel.id = panelId;
         panel.hidden = true;
         if (hasConstraints) {
-          panel.appendChild(el('div', 'build-task-detail-label', 'Constraints'));
+          panel.appendChild(el('div', 'build-task-detail-label', 'Ràng buộc'));
           var cList = el('ul');
           task.constraints.forEach(function(c) { cList.appendChild(el('li', null, c)); });
           panel.appendChild(cList);
         }
         if (hasCriteria) {
-          panel.appendChild(el('div', 'build-task-detail-label', 'Acceptance Criteria'));
+          panel.appendChild(el('div', 'build-task-detail-label', 'Tiêu chí hoàn thành'));
           var aList = el('ul');
           task.acceptanceCriteria.forEach(function(c) { aList.appendChild(el('li', null, c)); });
           panel.appendChild(aList);
         }
         if (lessons.length) {
-          panel.appendChild(el('div', 'build-task-detail-label', 'Relevant Lessons'));
+          panel.appendChild(el('div', 'build-task-detail-label', 'Bài học liên quan'));
           var lList = el('ul');
           lessons.forEach(function(lesson) {
             var li = el('li');
-            var a = el('a', 'text-link', lesson.title);
+            var a = el('a', 'text-link', lessonTitle(lesson));
             a.href = '#lesson/' + lesson.id;
             li.appendChild(a);
             lList.appendChild(li);
@@ -3006,7 +3200,7 @@
         return (lessonIds || [])
           .map(function(id) {
             var lesson = lessonsById.get(id);
-            return lesson ? { id: id, title: lesson.title || id, done: state.completed.indexOf(id) !== -1 } : null;
+            return lesson ? { id: id, title: lessonTitle(lesson) || id, done: state.completed.indexOf(id) !== -1 } : null;
           })
           .filter(Boolean);
       }
@@ -3093,7 +3287,7 @@
 
         if (step.intent) {
           var intent = el('div', 'task-step-row');
-          intent.appendChild(el('span', 'task-step-label', 'Intent'));
+          intent.appendChild(el('span', 'task-step-label', 'Mục đích'));
           intent.appendChild(el('p', 'task-step-text', step.intent));
           card.appendChild(intent);
         }
@@ -3102,7 +3296,7 @@
         var stepPrereqTasks = resolvePrereqTasks(step.artifactPrereqTaskIds);
         if (stepLessons.length || stepPrereqTasks.length) {
           var prereqs = el('div', 'task-step-row');
-          prereqs.appendChild(el('span', 'task-step-label', 'Prerequisites'));
+          prereqs.appendChild(el('span', 'task-step-label', 'Cần có trước'));
           var prereqBody = el('div', 'task-step-prereqs');
           appendPrereqLessonList(prereqBody, stepLessons);
           appendPrereqTaskList(prereqBody, stepPrereqTasks);
@@ -3112,7 +3306,7 @@
 
         if ((step.filesTouched || []).length) {
           var files = el('div', 'task-step-row');
-          files.appendChild(el('span', 'task-step-label', 'Files'));
+          files.appendChild(el('span', 'task-step-label', 'File thay đổi'));
           var fileList = el('ul', 'task-file-list');
           step.filesTouched.forEach(function(path) {
             fileList.appendChild(el('li', 'task-file-path', path));
@@ -3125,17 +3319,17 @@
         // must not miss, so it gets its own emphasized block.
         if (step.doneWhen) {
           var done = el('div', 'task-step-row task-step-row--done');
-          done.appendChild(el('span', 'task-step-label', 'Done when'));
+          done.appendChild(el('span', 'task-step-label', 'Xong khi'));
           done.appendChild(el('p', 'task-step-text', step.doneWhen));
           card.appendChild(done);
         }
 
         if (step.verifyCommand) {
           var verify = el('div', 'task-step-row');
-          verify.appendChild(el('span', 'task-step-label', 'Verify'));
+          verify.appendChild(el('span', 'task-step-label', 'Kiểm tra'));
           var fig = el('figure', 'task-verify');
           var figcap = el('figcaption');
-          figcap.appendChild(el('span', null, 'verifyCommand — PowerShell'));
+          figcap.appendChild(el('span', null, 'Lệnh kiểm tra — PowerShell'));
           var copyBtn = el('button', 'copy-btn');
           copyBtn.innerHTML = icon('copy') + '<span>Sao chép lệnh</span>';
           copyBtn.type = 'button';
@@ -3157,15 +3351,15 @@
 
         if ((step.architectureRules || []).length) {
           var rules = el('div', 'task-step-row');
-          rules.appendChild(el('span', 'task-step-label', 'Architecture rules'));
+          rules.appendChild(el('span', 'task-step-label', 'Luật kiến trúc'));
           var ruleRow = el('div', 'task-rule-row');
           step.architectureRules.forEach(function(ruleId) {
             var chip = el('a', 'task-rule-chip', ruleId);
             chip.href = '#/architecture';
-            chip.setAttribute('aria-label', 'Architecture rule ' + ruleId + ' — xem định nghĩa trong Architecture view');
+            chip.setAttribute('aria-label', 'Luật kiến trúc ' + ruleId + ' — xem định nghĩa trong trang Kiến trúc');
             ruleRow.appendChild(chip);
           });
-          ruleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong Architecture view'));
+          ruleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong trang Kiến trúc'));
           rules.appendChild(ruleRow);
           card.appendChild(rules);
         }
@@ -3195,7 +3389,7 @@
           hint.appendChild(hintIcon);
           var hintBody = el('div', 'callout-body');
           var hintHead = el('div', 'callout-head');
-          hintHead.appendChild(el('strong', 'callout-label', 'Mentor hint: '));
+          hintHead.appendChild(el('strong', 'callout-label', 'Gợi ý của mentor: '));
           hintBody.appendChild(hintHead);
           hintBody.appendChild(document.createTextNode(step.mentorHint));
           hint.appendChild(hintBody);
@@ -3212,7 +3406,7 @@
       function createMentorPromptSection(task, steps, release, taskLessonRows, taskPrereqRows, ruleIds) {
         var section = el('section', 'project-panel release-section');
         section.setAttribute('aria-labelledby', 'task-mentor-prompt-title');
-        section.appendChild(el('h2', null, 'Mentor Prompt')).id = 'task-mentor-prompt-title';
+        section.appendChild(el('h2', null, 'Prompt hỏi mentor')).id = 'task-mentor-prompt-title';
         section.appendChild(el('p', 'task-prompt-intro',
           'Sao chép prompt này dán vào AI mentor bạn đang dùng — nó kèm đúng ngữ cảnh task, boundary kiến thức đã học và các architecture rule đang có hiệu lực. Không có lệnh gọi API nào ở đây; trang chỉ tạo văn bản.'));
 
@@ -3320,7 +3514,7 @@
         if (!task) {
           var notFound = el('section', 'project-not-found');
           notFound.appendChild(el('h1', null, 'Không tìm thấy build task'));
-          notFound.appendChild(el('p', null, 'Build task “' + taskId + '” không tồn tại trong project data.'));
+          notFound.appendChild(el('p', null, 'Task “' + taskId + '” không tồn tại trong dữ liệu dự án.'));
           var backToTasks = el('a', 'text-link', '← Về danh sách build task');
           backToTasks.href = '#/project';
           notFound.appendChild(backToTasks);
@@ -3366,7 +3560,7 @@
         }
         if (task.goal) {
           var goalP = el('p', 'task-hero-goal');
-          goalP.appendChild(el('strong', null, 'Goal: '));
+          goalP.appendChild(el('strong', null, 'Mục tiêu: '));
           goalP.appendChild(document.createTextNode(task.goal));
           hero.appendChild(goalP);
         }
@@ -3377,7 +3571,7 @@
           }).filter(Boolean);
           if (features.length) {
             var featRow = el('div', 'task-feature-row');
-            featRow.appendChild(el('span', 'task-feature-label', 'Features: '));
+            featRow.appendChild(el('span', 'task-feature-label', 'Tính năng: '));
             featRow.appendChild(document.createTextNode(features.join(', ')));
             hero.appendChild(featRow);
           }
@@ -3422,12 +3616,12 @@
         // completion state exists and none is invented here)
         var stepsSection = el('section', 'project-panel release-section');
         stepsSection.setAttribute('aria-labelledby', 'task-steps-title');
-        stepsSection.appendChild(el('h2', null, 'Build Steps')).id = 'task-steps-title';
+        stepsSection.appendChild(el('h2', null, 'Các bước xây dựng')).id = 'task-steps-title';
         if (!steps.length) {
           stepsSection.appendChild(el('p', null, 'Task này chưa có build step nào được soạn.'));
         } else {
           stepsSection.appendChild(el('p', 'task-steps-note',
-            steps.length + ' bước, làm theo thứ tự. Mỗi bước có "Done when" — tiêu chí bước đó xong; hoàn thành cả task là mục Acceptance Criteria bên dưới.'));
+            steps.length + ' bước, làm theo thứ tự. Mỗi bước có "Xong khi" — dấu hiệu bước đó đã xong; cả task xong khi đạt mục Tiêu chí hoàn thành bên dưới.'));
           var stepList = el('div', 'task-step-list');
           steps.forEach(function(step) {
             stepList.appendChild(createStepCard(step));
@@ -3440,7 +3634,7 @@
         // doneWhen: this is "task hoàn thành", that is "bước hoàn thành")
         if ((task.acceptanceCriteria || []).length) {
           var acSection = el('section', 'project-panel release-section');
-          acSection.appendChild(el('h2', null, 'Acceptance Criteria — hoàn thành cả task'));
+          acSection.appendChild(el('h2', null, 'Tiêu chí hoàn thành — cho cả task'));
           var acList = el('ul', 'criteria-list');
           task.acceptanceCriteria.forEach(function(c) { acList.appendChild(el('li', null, c)); });
           acSection.appendChild(acList);
@@ -3455,7 +3649,7 @@
         // ---- completion + prev/next
         var footer = el('section', 'project-panel release-section task-footer');
         footer.appendChild(el('h2', null, 'Hoàn thành task'));
-        footer.appendChild(el('p', null, 'Đánh dấu hoàn thành khi mọi bước đã qua và các Acceptance Criteria đạt — danh sách này dùng chung Build Tasks Workspace và Release Detail, không tách bộ lưu trạng thái mới.'));
+        footer.appendChild(el('p', null, 'Đánh dấu hoàn thành khi mọi bước đã qua và đạt đủ tiêu chí hoàn thành — trạng thái này dùng chung với bảng task và trang release.'));
         var toggle = el('button', 'btn btn--primary task-complete-toggle');
         toggle.type = 'button';
         toggle.setAttribute('data-action', 'toggle-build-task');
@@ -3488,7 +3682,7 @@
             var nextTask = orderedTasks[globalIndex + 1];
             var nextLink = el('a', 'text-link task-prevnext-link task-prevnext-link--next');
             nextLink.href = '#/task/' + nextTask.id;
-            nextLink.appendChild(el('span', 'task-prevnext-dir', 'Task sau →'));
+            nextLink.appendChild(el('span', 'task-prevnext-dir', 'Task tiếp theo →'));
             nextLink.appendChild(el('span', 'task-prevnext-title',
               nextTask.title + (nextTask.required === false ? ' (optional)' : '')));
             prevNext.appendChild(nextLink);
@@ -3562,7 +3756,7 @@
       // wraps instead of clipping on narrow viewports.
       function renderProjectSubNav(container, activeView) {
         var nav = el('nav', 'project-subnav');
-        nav.setAttribute('aria-label', 'Điều hướng Project Track');
+        nav.setAttribute('aria-label', 'Điều hướng kế hoạch dự án');
         [
           { view: 'project', href: '#/project', label: 'Tổng quan' },
           /* "Lộ trình release", not a bare "Lộ trình": the primary nav
@@ -3587,15 +3781,174 @@
       function renderProjectEmpty(container) {
         var empty = el('section', 'project-empty');
         empty.appendChild(el('h1', null, 'Project track chưa sẵn sàng'));
-        empty.appendChild(el('p', null, 'Thông tin Spendwise hiện chưa sẵn sàng. Learning Track vẫn hoạt động bình thường.'));
+        empty.appendChild(el('p', null, 'Thông tin Spendwise hiện chưa sẵn sàng. Phần học lý thuyết vẫn hoạt động bình thường.'));
         container.appendChild(empty);
       }
 
-      /* ---- curriculum nav ------------------------------------------- */
+      /* ---- context-aware sidebar ---------------------------------------- */
+      // One sidebar, three faces (CourseCore.navContextForRoute): a lesson
+      // shows the curriculum tree, every Spendwise surface shows the project
+      // tree (release → session → step), dashboard/resources show a compact
+      // two-journey header above the curriculum. The mobile drawer is this
+      // same element, so it follows the same context for free.
+      var SIDEBAR_CONTEXT = {
+        learn: { title: 'Học lý thuyết', label: 'Danh mục khóa học' },
+        build: { title: 'XÂY DỰNG SPENDWISE', label: 'Điều hướng dự án Spendwise' },
+        overview: { title: 'Khóa học', label: 'Danh mục khóa học' }
+      };
+      var renderedSidebarKey = null;
       function renderSidebar() {
         var nav = document.getElementById('curriculum-nav');
         if (!nav) return;
+        var route = CourseCore.parseRoute(window.location.hash);
+        var context = CourseCore.navContextForRoute(route.view);
+        var meta = SIDEBAR_CONTEXT[context];
+        var aside = document.getElementById('course-sidebar');
+        if (aside) { aside.setAttribute('aria-label', meta.label); aside.setAttribute('data-nav-context', context); }
+        var titleEl = aside ? aside.querySelector('.sidebar-title') : null;
+        if (titleEl) titleEl.textContent = meta.title;
+        // Keep the rail's scroll position across same-context rebuilds, so
+        // ticking a step or moving to the next one never jumps it to the top.
+        var keepScroll = aside && renderedSidebarKey === context ? aside.scrollTop : 0;
         nav.textContent = '';
+        renderedSidebarKey = context;
+        if (context === 'build') renderProjectTree(nav, route);
+        else {
+          if (context === 'overview') renderJourneyLinks(nav);
+          renderCurriculumTree(nav);
+        }
+        if (aside) aside.scrollTop = keepScroll;
+      }
+      // Called on every render: the curriculum tree only needs a rebuild when
+      // the context flips (aria-current is patched in place); the project tree
+      // rebuilds every time so the current step and ✓ marks stay live after a
+      // step's completion toggle (which re-renders without a hash change).
+      function syncSidebarForRoute() {
+        var context = CourseCore.navContextForRoute(CourseCore.parseRoute(window.location.hash).view);
+        if (context === 'build' || context !== renderedSidebarKey) renderSidebar();
+      }
+
+      function appendSidebarLink(list, href, label, current) {
+        var li = el('li');
+        var a = el('a', 'sidebar-link', label);
+        a.href = href;
+        if (current) a.setAttribute('aria-current', 'page');
+        a.onclick = function() { closeDrawer(); };
+        li.appendChild(a);
+        list.appendChild(li);
+      }
+
+      function renderJourneyLinks(nav) {
+        nav.appendChild(el('p', 'sidebar-note', 'Hai hành trình song song: học kiến thức từng ngày, rồi áp dụng ngay vào Spendwise.'));
+        var list = el('ul', 'sidebar-links');
+        var lesson = lessonsById.get(continueLessonTarget());
+        appendSidebarLink(list, '#/lesson/' + continueLessonTarget(), 'Học kiến thức → ' + CourseCore.lessonDayLabel(lesson ? lesson.id : ''), false);
+        var resume = guidedResumeTarget();
+        appendSidebarLink(list, resume ? guidedStepHref(resume.releaseId, resume.step) : '#/guided-build',
+          'Xây dựng Spendwise → ' + (resume && releasesById.get(resume.releaseId) ? releasesById.get(resume.releaseId).version : ''), false);
+        nav.appendChild(list);
+      }
+
+      // Expand/collapse choices the learner made in the project tree; ids not
+      // listed fall back to "open only the branch that holds the current route".
+      var projectNavOpen = {};
+      function createProjectNavToggle(className, id, open, labelHtml, countText, current) {
+        var btn = el('button', className);
+        btn.type = 'button';
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-controls', 'pnav-' + id);
+        btn.setAttribute('data-pnav-id', id);
+        if (current) btn.setAttribute('aria-current', 'true');
+        btn.innerHTML = '<span class="project-nav-label">' + labelHtml + '</span>' +
+          (countText ? '<span class="project-nav-count">' + countText + '</span>' : '') +
+          '<span class="chevron" aria-hidden="true">' + icon('chevron-down') + '</span>';
+        btn.onclick = function() {
+          var expanded = btn.getAttribute('aria-expanded') === 'true';
+          btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+          var list = document.getElementById('pnav-' + id);
+          if (list) list.hidden = expanded;
+          projectNavOpen[id] = !expanded;
+        };
+        return btn;
+      }
+
+      function renderProjectTree(nav, route) {
+        var top = el('ul', 'sidebar-links');
+        [
+          { views: ['guided-build'], href: '#/guided-build', label: 'Lộ trình xây dựng' },
+          { views: ['project', 'task'], href: '#/project', label: 'Kế hoạch dự án' },
+          { views: ['roadmap', 'release'], href: '#/roadmap', label: 'Các release' },
+          { views: ['map'], href: '#/map', label: 'Bản đồ bài học ↔ dự án' },
+          { views: ['architecture'], href: '#/architecture', label: 'Kiến trúc' }
+        ].forEach(function(item) { appendSidebarLink(top, item.href, item.label, item.views.indexOf(route.view) !== -1); });
+        nav.appendChild(top);
+        if (!guidedBuildData) return;
+        var task = route.view === 'task' ? buildTasksById.get(route.taskId) : null;
+        var currentRelease = route.releaseId || (task ? task.releaseId : null);
+        var done = state.guidedProgress.completedSteps;
+        var label = el('div', 'group-label', 'Release → session → bước');
+        nav.appendChild(label);
+        orderedGuidedReleases().forEach(function(gr) {
+          var rid = gr.releaseId;
+          var release = releasesById.get(rid);
+          var sessions = CourseCore.deriveGuidedSessionsForRelease(guidedBuildData.guidedSessions, rid);
+          var rp = CourseCore.calculateGuidedReleaseProgress(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, done, rid);
+          var isCurrent = rid === currentRelease;
+          var open = projectNavOpen.hasOwnProperty(rid) ? projectNavOpen[rid] : isCurrent;
+          nav.appendChild(createProjectNavToggle('project-nav-toggle', rid, open,
+            '<span class="project-nav-version">' + CourseCore.escapeHtml(release ? release.version : rid) + '</span>' +
+            '<span class="project-nav-title">' + CourseCore.escapeHtml(release ? release.title : rid) + '</span>',
+            rp.completed + '/' + rp.total, isCurrent));
+          var rList = el('ul', 'project-nav-list');
+          rList.id = 'pnav-' + rid;
+          rList.hidden = !open;
+          var overviewLi = el('li');
+          var overview = el('a', 'project-nav-link', 'Giới thiệu ' + (release ? release.version : rid));
+          overview.href = '#/guided-build/' + rid;
+          if (route.view === 'guided-release' && isCurrent) overview.setAttribute('aria-current', 'page');
+          overview.onclick = function() { closeDrawer(); };
+          overviewLi.appendChild(overview);
+          rList.appendChild(overviewLi);
+          sessions.forEach(function(session, sIdx) {
+            var sessionCurrent = isCurrent && route.sessionId === session.id;
+            var sOpen = projectNavOpen.hasOwnProperty(session.id) ? projectNavOpen[session.id] : sessionCurrent;
+            var sp = CourseCore.calculateGuidedSessionProgress(guidedBuildData.guidedSteps, done, session.id);
+            var sLi = el('li');
+            sLi.appendChild(createProjectNavToggle('project-nav-session', session.id, sOpen,
+              '<span class="project-nav-title">' + (sIdx + 1) + '. ' + CourseCore.escapeHtml(session.title) + '</span>',
+              sp.completed + '/' + sp.total, sessionCurrent));
+            var sList = el('ul', 'project-nav-list');
+            sList.id = 'pnav-' + session.id;
+            sList.hidden = !sOpen;
+            var introLi = el('li');
+            var intro = el('a', 'project-nav-link project-nav-link--step', 'Mục tiêu session');
+            intro.href = '#/guided-build/' + rid + '/' + session.id;
+            if (route.view === 'guided-session' && sessionCurrent) intro.setAttribute('aria-current', 'page');
+            intro.onclick = function() { closeDrawer(); };
+            introLi.appendChild(intro);
+            sList.appendChild(introLi);
+            CourseCore.deriveGuidedStepsForSession(guidedBuildData.guidedSteps, session.id).forEach(function(step) {
+              var stepDone = done.indexOf(step.id) !== -1;
+              var li = el('li');
+              var a = el('a', 'project-nav-link project-nav-link--step');
+              a.href = guidedStepHref(rid, step);
+              a.setAttribute('data-step-id', step.id);
+              a.innerHTML = '<span class="lesson-state" data-done="' + stepDone + '">' + (stepDone ? icon('check') : '') + '</span>' +
+                '<span class="lesson-link-title">' + (stepDone ? '<span class="visually-hidden">Đã hoàn thành: </span>' : '') + CourseCore.escapeHtml(step.title) + '</span>' +
+                (step.type === 'checkpoint' ? '<span class="project-nav-badge">Checkpoint</span>' : '');
+              if (route.view === 'guided-step' && route.stepId === step.id) a.setAttribute('aria-current', 'page');
+              a.onclick = function() { closeDrawer(); };
+              li.appendChild(a);
+              sList.appendChild(li);
+            });
+            sLi.appendChild(sList);
+            rList.appendChild(sLi);
+          });
+          nav.appendChild(rList);
+        });
+      }
+
+      function renderCurriculumTree(nav) {
         var GROUP_ORDER = ['java', 'spring', 'completion'];
         var ACCENT = {java:'var(--java)',spring:'var(--spring)',completion:'var(--completion)'};
         var ACCENT_SOFT = {java:'var(--java-soft)',spring:'var(--spring-soft)',completion:'var(--completion-soft)'};
@@ -3616,9 +3969,9 @@
             toggle.setAttribute('aria-controls', 'lessons-' + unit.id);
             toggle.setAttribute('data-unit-id', unit.id);
             toggle.setAttribute('data-group', groupKey);
-            toggle.title = unit.number + '. ' + unit.title;
+            toggle.title = 'Chương ' + unit.number + '. ' + unitTitle(unit);
             toggle.innerHTML = '<span class="module-toggle-label"><span class="module-num">' + unit.number + '</span>' +
-              '<span class="module-toggle-title">' + unit.title + '</span></span>' +
+              '<span class="module-toggle-title">' + unitTitle(unit) + '</span></span>' +
               '<span class="module-progress">' + doneCount + '/' + lessonIds.length + '</span>' +
               '<span class="chevron" aria-hidden="true">' + icon('chevron-down') + '</span>';
             toggle.onclick = function() {
@@ -3644,12 +3997,12 @@
               a.className = 'lesson-link';
               a.href = '#lesson/' + lid;
               a.setAttribute('data-lesson-id', lid);
-              a.title = lesson.title || lid;
+              a.title = CourseCore.lessonDayLabel(lid) + ' · ' + lessonTitle(lesson);
               a.style.setProperty('--accent', ACCENT[lesson.group] || ACCENT.completion);
               a.style.setProperty('--accent-soft', ACCENT_SOFT[lesson.group] || ACCENT_SOFT.completion);
               var done = state.completed.indexOf(lid) !== -1;
               a.innerHTML = '<span class="lesson-state" data-done="' + done + '">' + (done ? icon('check') : '') + '</span>' +
-                '<span class="lesson-link-title">' + (done ? '<span class="visually-hidden">Đã hoàn thành: </span>' : '') + (lesson.title || lid) + '</span>';
+                '<span class="lesson-link-title">' + (done ? '<span class="visually-hidden">Đã hoàn thành: </span>' : '') + lessonTitle(lesson) + '</span>';
               a.onclick = function() { closeDrawer(); };
               li.appendChild(a);
               list.appendChild(li);
@@ -3668,6 +4021,7 @@
         view.textContent = '';
         view.classList.toggle('route-view--reading', route.view === 'lesson');
         updateNavActive(route.view);
+        syncSidebarForRoute();
         if (route.view === 'lesson') renderLessonView(view, route.lessonId);
         else if (route.view === 'resources') renderResourcesView(view);
         else if (route.view === 'project') renderProjectOverview(view);
@@ -3710,11 +4064,11 @@
 
         var hero = el('div', 'dash-hero');
         var eyebrow = el('div', 'dash-eyebrow');
-        eyebrow.innerHTML = icon('book-open') + '<span>Lộ trình học</span>';
+        eyebrow.innerHTML = icon('book-open') + '<span>Tổng quan khóa học</span>';
         hero.appendChild(eyebrow);
         hero.appendChild(el('h1', 'dash-title', 'Java & Spring Boot'));
         hero.appendChild(el('p', 'dash-desc',
-          'Hành trình từ nền tảng ngôn ngữ Java đến xây dựng dịch vụ web với Spring Boot — theo từng bài học có thứ tự, kèm bài tập thực hành và tài liệu tham khảo.'));
+          'Khóa học có hai hành trình đi song song. Bạn học kiến thức Java và Spring Boot qua từng bài có thứ tự, rồi áp dụng ngay vào Spendwise — một ứng dụng quản lý chi tiêu mà bạn tự xây từ con số 0 đến bản V1.0.'));
         container.appendChild(hero);
 
         /* Overall progress + per-track (Java / Spring Boot) split */
@@ -3746,18 +4100,22 @@
         progressCard.appendChild(splitCol);
         container.appendChild(progressCard);
 
-        /* Continue learning */
-        var unfinished = courseData.lessons.find(function(l){return state.completed.indexOf(l.id)===-1;});
-        var target = (state.lastLessonId && lessonsById.has(state.lastLessonId) && state.completed.indexOf(state.lastLessonId)===-1) ? state.lastLessonId : (unfinished ? unfinished.id : 'day-01');
+        /* Two journeys: HỌC KIẾN THỨC (continue lesson) and XÂY DỰNG SPENDWISE
+           (resume the first unfinished guided step). */
+        var target = continueLessonTarget();
         var targetLesson = lessonsById.get(target);
+        var journeys = el('div', 'dash-journeys');
         var continueCard = el('div', 'dash-continue-card');
+        continueCard.setAttribute('data-journey', 'learn');
         var continueInfo = el('div');
         var continueEyebrow = el('div', 'dash-continue-eyebrow');
-        continueEyebrow.innerHTML = icon('flag') + '<span>' + (state.completed.length > 0 ? 'Tiếp tục học' : 'Bắt đầu học') + '</span>';
+        continueEyebrow.innerHTML = icon('book-open') + '<span>Học kiến thức</span>';
         continueInfo.appendChild(continueEyebrow);
-        continueInfo.appendChild(el('p', 'dash-continue-title', targetLesson ? (targetLesson.title || target) : target));
+        continueInfo.appendChild(el('p', 'dash-journey-copy', 'Mỗi bài giải thích một khái niệm Java hoặc Spring: vì sao cần, nó hoạt động thế nào và dùng ở đâu trong Spendwise.'));
+        continueInfo.appendChild(el('p', 'dash-continue-title', targetLesson ? lessonTitle(targetLesson) : target));
         var continueMeta = el('div', 'dash-continue-meta');
-        if (targetLesson && targetLesson.unitTitle) continueMeta.appendChild(el('span', 'chip', targetLesson.unitNumber + '. ' + targetLesson.unitTitle));
+        continueMeta.appendChild(el('span', 'chip', CourseCore.lessonDayLabel(target)));
+        if (targetLesson && targetLesson.unitNumber) continueMeta.appendChild(el('span', 'chip', lessonUnitLabel(targetLesson)));
         if (targetLesson && targetLesson.durationMinutes) continueMeta.appendChild(el('span', 'chip', '~' + targetLesson.durationMinutes + ' phút'));
         continueInfo.appendChild(continueMeta);
         continueCard.appendChild(continueInfo);
@@ -3765,7 +4123,33 @@
         continueBtn.href = '#lesson/' + target;
         continueBtn.innerHTML = icon('play') + '<span>' + (state.completed.length > 0 ? 'Học tiếp' : 'Bắt đầu học') + '</span>';
         continueCard.appendChild(continueBtn);
-        container.appendChild(continueCard);
+        journeys.appendChild(continueCard);
+
+        var resume = guidedResumeTarget();
+        if (resume) {
+          var resumeRelease = releasesById.get(resume.releaseId);
+          var resumeSession = CourseCore.selectGuidedSession(guidedBuildData.guidedSessions, resume.step.sessionId, resume.releaseId);
+          var buildStarted = state.guidedProgress.completedSteps.length > 0;
+          var buildCard = el('div', 'dash-continue-card dash-continue-card--build');
+          buildCard.setAttribute('data-journey', 'build');
+          var buildInfo = el('div');
+          var buildEyebrow = el('div', 'dash-continue-eyebrow');
+          buildEyebrow.innerHTML = icon('target') + '<span>Xây dựng Spendwise</span>';
+          buildInfo.appendChild(buildEyebrow);
+          buildInfo.appendChild(el('p', 'dash-journey-copy', 'Code cùng tôi từng bước nhỏ: mỗi bước nói rõ viết gì, vì sao viết vậy, chạy lệnh nào để kiểm tra.'));
+          buildInfo.appendChild(el('p', 'dash-continue-title', resume.step.title));
+          var buildMeta = el('div', 'dash-continue-meta');
+          if (resumeRelease) buildMeta.appendChild(el('span', 'chip', resumeRelease.version + ' · ' + resumeRelease.title));
+          if (resumeSession) buildMeta.appendChild(el('span', 'chip', resumeSession.title));
+          buildInfo.appendChild(buildMeta);
+          buildCard.appendChild(buildInfo);
+          var buildBtn = el('a', 'btn btn--primary');
+          buildBtn.href = guidedStepHref(resume.releaseId, resume.step);
+          buildBtn.innerHTML = icon('play') + '<span>' + (buildStarted ? 'Xây tiếp' : 'Bắt đầu xây') + '</span>';
+          buildCard.appendChild(buildBtn);
+          journeys.appendChild(buildCard);
+        }
+        container.appendChild(journeys);
 
         renderDashboardProject(container, target);
 
@@ -3774,7 +4158,7 @@
         var overview = el('div', 'curriculum-overview');
         var head = el('div', 'curriculum-overview-head');
         head.appendChild(el('h2', null, 'Nội dung khóa học'));
-        head.appendChild(el('span', 'curriculum-overview-hint', courseData.units.length + ' đơn vị học tập'));
+        head.appendChild(el('span', 'curriculum-overview-hint', courseData.units.length + ' chương'));
         overview.appendChild(head);
         var list = el('div', 'curriculum-list');
         courseData.units.forEach(function(u) {
@@ -3787,7 +4171,7 @@
           var status = el('span', 'curriculum-status');
           status.innerHTML = isDone ? icon('check') : String(u.number);
           row.appendChild(status);
-          row.appendChild(el('span', 'curriculum-name', u.number + '. ' + u.title));
+          row.appendChild(el('span', 'curriculum-name', u.number + '. ' + unitTitle(u)));
           row.appendChild(el('span', 'curriculum-meta', doneCount + '/' + lessonIds.length + ' bài'));
           row.appendChild(el('span', 'curriculum-tag', isDone ? 'Hoàn thành' : (isActive ? 'Đang học' : 'Chưa bắt đầu')));
           list.appendChild(row);
@@ -3813,54 +4197,54 @@
         var head = el('div', 'project-dashboard-head');
         head.appendChild(el('h2', null, projectData.product.name));
         head.firstChild.id = 'dashboard-project-title';
-        var workspaceLink = el('a', 'text-link', 'Mở Project Workspace');
+        var workspaceLink = el('a', 'text-link', 'Xem kế hoạch dự án');
         workspaceLink.href = '#/project';
         head.appendChild(workspaceLink);
         section.appendChild(head);
 
         var now = el('div', 'project-now-grid');
         var learning = el('article', 'project-panel');
-        learning.appendChild(el('div', 'project-section-label', 'Current Learning'));
+        learning.appendChild(el('div', 'project-section-label', 'Bạn đang học gì?'));
         var lesson = lessonsById.get(currentLessonId);
-        learning.appendChild(el('h3', null, lesson ? lesson.title : currentLessonId));
-        if (lesson && lesson.unitTitle) learning.appendChild(el('p', null, 'Unit ' + lesson.unitNumber + ' · ' + lesson.unitTitle));
+        learning.appendChild(el('h3', null, lesson ? lessonTitle(lesson) : currentLessonId));
+        if (lesson && lesson.unitNumber) learning.appendChild(el('p', null, CourseCore.lessonDayLabel(lesson.id) + ' · ' + lessonUnitLabel(lesson)));
         now.appendChild(learning);
 
         var build = el('article', 'project-panel');
         build.setAttribute('data-project-current-release', release.id);
-        build.appendChild(el('div', 'project-section-label', 'Current Build Target'));
+        build.appendChild(el('div', 'project-section-label', 'Mục tiêu xây dựng hiện tại'));
         var releaseLine = el('div', 'project-release-line');
         var releaseLink = el('a', 'text-link', releaseDisplay(release));
         releaseLink.href = '#/release/' + release.id;
         releaseLine.appendChild(releaseLink);
         appendStatusBadge(releaseLine, release.status);
         build.appendChild(releaseLine);
-        build.appendChild(createProjectProgress(release, 'Project Progress · ' + release.version));
+        build.appendChild(createProjectProgress(release, 'Tiến độ dự án · ' + release.version));
         if (milestone) build.appendChild(el('p', null, milestone.name + ' · ' + milestone.summary));
         now.appendChild(build);
         section.appendChild(now);
 
         var next = el('div', 'project-next-grid');
         var impact = el('article', 'project-panel');
-        impact.appendChild(el('div', 'project-section-label', 'Today’s Project Impact'));
+        impact.appendChild(el('div', 'project-section-label', 'Bài học này ảnh hưởng gì đến Spendwise?'));
         if (mapping && mapping.application) {
           impact.appendChild(el('h3', null, mapping.application));
           appendFeatureList(impact, mapping.featureIds);
         } else if (mapping && mapping.context) {
           impact.appendChild(el('p', null, mapping.context));
         } else {
-          impact.appendChild(el('p', null, 'Bài hiện tại không có project application trực tiếp.'));
+          impact.appendChild(el('p', null, 'Bài này chưa dùng trực tiếp trong Spendwise — đây là kiến thức nền cho các release sau.'));
         }
         next.appendChild(impact);
 
         var steps = el('article', 'project-panel');
-        steps.appendChild(el('div', 'project-section-label', 'Next'));
+        steps.appendChild(el('div', 'project-section-label', 'Tiếp theo'));
         if (nextLesson) {
-          var learnLink = el('a', 'text-link', 'Learn → ' + nextLesson.title);
+          var learnLink = el('a', 'text-link', 'Học tiếp → ' + lessonTitle(nextLesson));
           learnLink.href = '#/lesson/' + nextLesson.id;
           steps.appendChild(learnLink);
         } else {
-          steps.appendChild(el('p', null, 'Learning Track đã ở bài cuối.'));
+          steps.appendChild(el('p', null, 'Bạn đã ở bài lý thuyết cuối cùng.'));
         }
         if (nextTask) {
           /* "Learn →" is a link, so "Build →" must be one too: the two lines
@@ -3870,14 +4254,14 @@
              release — one hop fewer, same destination available via the task
              page's own release link. */
           var taskP = el('p');
-          taskP.appendChild(el('strong', null, 'Build → '));
+          taskP.appendChild(el('strong', null, 'Xây tiếp → '));
           var taskLink = el('a', 'text-link dashboard-next-task-link');
           taskLink.href = '#/task/' + nextTask.id;
           taskLink.textContent = nextTask.title;
           taskP.appendChild(taskLink);
           steps.appendChild(taskP);
         } else {
-          steps.appendChild(el('p', null, 'Mọi required task của release này đã hoàn thành.'));
+          steps.appendChild(el('p', null, 'Bạn đã xong mọi task bắt buộc của release này.'));
         }
         next.appendChild(steps);
         section.appendChild(next);
@@ -4220,22 +4604,25 @@
         sep1.innerHTML = icon("chevron-right");
         crumb.appendChild(sep1);
         var unit = courseData.units.find(function(x){ return x.id === lesson.unitId; });
-        var u = el("a", null, "Unit " + lesson.unitNumber + ": " + (lesson.unitTitle || ""));
+        var u = el("a", null, "Chương " + lesson.unitNumber + ": " + unitTitle(unit));
         if (unit && unit.lessonIds && unit.lessonIds.length) u.href = "#lesson/" + unit.lessonIds[0];
         crumb.appendChild(u);
         var sep2 = el("span", "crumb-sep");
         sep2.setAttribute("aria-hidden", "true");
         sep2.innerHTML = icon("chevron-right");
         crumb.appendChild(sep2);
-        crumb.appendChild(el("span", "crumb-current", lesson.title));
+        crumb.appendChild(el("span", "crumb-current", lessonTitle(lesson)));
         container.appendChild(crumb);
 
         var header = el("header", "lesson-header");
         var kicker = el("div", "lesson-kicker");
-        kicker.innerHTML = icon("flag") + '<span>' + (GROUP_LABELS[lesson.group] || lesson.group) + '</span>';
+        kicker.innerHTML = icon("flag") + '<span>' + (GROUP_LABELS[lesson.group] || lesson.group) + ' · ' + CourseCore.lessonDayLabel(lesson.id) + '</span>';
         header.appendChild(kicker);
-        header.appendChild(el("h1", "lesson-title", lesson.title));
+        header.appendChild(el("h1", "lesson-title", lessonTitle(lesson)));
         var meta = el("div", "lesson-meta");
+        /* The syllabus keeps its original (English) title: shown once, small,
+           so a learner can match this page to the đề cương they were given. */
+        if (lesson.title && lesson.title !== lessonTitle(lesson)) meta.appendChild(el("span", "chip lesson-syllabus-title", "Tên trong đề cương: " + lesson.title));
         if (lesson.durationMinutes) meta.appendChild(el("span", "chip", "~" + lesson.durationMinutes + " phút"));
         header.appendChild(meta);
         if (lesson.summary) {
@@ -4275,6 +4662,60 @@
         }
       }
 
+      var PROJECT_TYPE_LABELS = { direct: 'Dùng ngay', future: 'Dùng ở release sau', theory: 'Kiến thức nền' };
+
+      /* Two-way theory ↔ project bridge. A guided step's "Ôn lại" link stores
+         where the learner came from (in memory only — a reload starts fresh),
+         and the lesson page then offers one clear way back. */
+      var returnToBuild = null;
+      function renderReturnToBuild(container, lessonId) {
+        if (!returnToBuild || returnToBuild.lessonId !== lessonId) return;
+        var bar = el('aside', 'callout callout--note lesson-return-bar');
+        bar.setAttribute('role', 'note');
+        bar.appendChild(el('span', null, 'Bạn mở bài này từ bước “' + returnToBuild.stepTitle + '”. Ôn xong thì quay lại code tiếp.'));
+        var back = el('a', 'btn btn--primary lesson-return-link');
+        back.href = returnToBuild.hash;
+        back.innerHTML = icon('arrow-left') + '<span>Quay lại bước đang xây</span>';
+        bar.appendChild(back);
+        container.appendChild(bar);
+      }
+      // Reverse bridge: every guided step that cites this lesson. The first
+      // few are listed openly; a long tail (day-28 has 22) folds under
+      // "Xem thêm" so the lesson stays readable.
+      function renderLessonBuildBridges(container, lessonId) {
+        if (!guidedBuildData) return;
+        var hits = CourseCore.guidedStepsForLesson(orderedGuidedReleases().map(function(r) { return r.releaseId; }),
+          guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, lessonId);
+        if (!hits.length) return;
+        var section = el('section', 'lesson-build-bridges');
+        section.setAttribute('aria-labelledby', 'lesson-bridges-' + lessonIdSlug(lessonId));
+        var heading = el('h2', null, 'Bạn sẽ dùng bài này ở đâu khi xây Spendwise?');
+        heading.id = 'lesson-bridges-' + lessonIdSlug(lessonId);
+        section.appendChild(heading);
+        section.appendChild(el('p', null, 'Kiến thức trong bài được dùng lại ở ' + hits.length + ' bước xây dựng. Khi tới các bước này, bạn sẽ thấy link “Ôn lại” quay về đây.'));
+        function stepItem(hit) {
+          var li = el('li');
+          var release = releasesById.get(hit.releaseId);
+          var a = el('a', 'text-link', (release ? release.version + ' · ' : '') + hit.session.title + ' — ' + hit.step.title);
+          a.href = guidedStepHref(hit.releaseId, hit.step);
+          li.appendChild(a);
+          return li;
+        }
+        var SHOWN = 4;
+        var list = el('ul', 'task-prereq-list');
+        hits.slice(0, SHOWN).forEach(function(hit) { list.appendChild(stepItem(hit)); });
+        section.appendChild(list);
+        if (hits.length > SHOWN) {
+          var more = el('details', 'lesson-bridges-more');
+          more.appendChild(el('summary', null, 'Xem thêm ' + (hits.length - SHOWN) + ' bước khác'));
+          var moreList = el('ul', 'task-prereq-list');
+          hits.slice(SHOWN).forEach(function(hit) { moreList.appendChild(stepItem(hit)); });
+          more.appendChild(moreList);
+          section.appendChild(more);
+        }
+        container.appendChild(section);
+      }
+
       function renderProjectContext(container, lessonId) {
         var mapping = projectByLessonId.get(lessonId);
         if (!mapping) return;
@@ -4282,9 +4723,9 @@
         var section = el('aside', 'project-context project-type--' + type);
         section.setAttribute('aria-labelledby', 'project-context-' + lessonIdSlug(lessonId));
         var meta = el('div', 'project-context-meta');
-        var heading = el('h2', null, 'Why this matters in ' + (projectData ? projectData.product.name : 'the project'));
+        var heading = el('h2', null, 'Bài này quan trọng gì với ' + (projectData ? projectData.product.name : 'dự án') + '?');
         heading.id = 'project-context-' + lessonIdSlug(lessonId);
-        meta.appendChild(el('span', 'project-type', type.toUpperCase()));
+        meta.appendChild(el('span', 'project-type', PROJECT_TYPE_LABELS[type] || type));
         if (mapping.releaseId) {
           var release = releasesById.get(mapping.releaseId);
           if (release) {
@@ -4305,7 +4746,7 @@
         }
         if (mapping.projectProblem) {
           var problem = el('p', 'project-problem');
-          problem.appendChild(el('strong', null, 'Project problem: '));
+          problem.appendChild(el('strong', null, 'Vấn đề trong dự án: '));
           problem.appendChild(document.createTextNode(mapping.projectProblem));
           section.appendChild(problem);
         }
@@ -4318,7 +4759,7 @@
         if (!mapping || !mapping.application) return;
         var section = el('section', 'project-application project-type--' + mapping.applicationType);
         section.setAttribute('aria-labelledby', 'project-application-' + lessonIdSlug(lessonId));
-        var heading = el('h2', null, 'Used in ' + (projectData ? projectData.product.name : 'the project'));
+        var heading = el('h2', null, 'Áp dụng trong ' + (projectData ? projectData.product.name : 'dự án'));
         heading.id = 'project-application-' + lessonIdSlug(lessonId);
         section.appendChild(heading);
         var release = releasesById.get(mapping.releaseId);
@@ -4620,7 +5061,7 @@
           var prevA = el("a", "nav-prev");
           prevA.href = "#lesson/" + prevId;
           prevA.innerHTML = icon("arrow-left") + '<span><span class="nav-label">Bài trước</span><span>' +
-            CourseCore.escapeHtml(prevLesson ? prevLesson.title : prevId) + "</span></span>";
+            CourseCore.escapeHtml(prevLesson ? lessonTitle(prevLesson) : prevId) + "</span></span>";
           nav.appendChild(prevA);
         } else {
           nav.appendChild(el("span"));
@@ -4640,7 +5081,7 @@
           var nextA = el("a", "nav-next");
           nextA.href = "#lesson/" + nextId;
           nextA.innerHTML = icon("arrow-right") + '<span><span class="nav-label">Bài sau</span><span>' +
-            CourseCore.escapeHtml(nextLesson ? nextLesson.title : nextId) + "</span></span>";
+            CourseCore.escapeHtml(nextLesson ? lessonTitle(nextLesson) : nextId) + "</span></span>";
           nav.appendChild(nextA);
         } else {
           nav.appendChild(el("span"));
@@ -4655,12 +5096,14 @@
         var refCards = [];
         buildRefIndex(lesson, refIndexById);
 
+        renderReturnToBuild(container, lesson.id);
         renderLessonHeader(container, lesson, refIndexById);
         renderProjectContext(container, lesson.id);
         renderSections(container, lesson, refIndexById);
         renderPractices(container, lesson);
         renderAssignments(container, lesson);
         renderProjectApplication(container, lesson.id);
+        renderLessonBuildBridges(container, lesson.id);
         renderReferences(container, lesson, refIndexById, refCards);
         renderLessonNav(container, lesson);
         container.setAttribute("tabindex", "-1");
@@ -4678,7 +5121,7 @@
         saveState();
         if (lesson.kind === 'pending') {
           container.innerHTML = '<div style="padding:3rem 0;text-align:center;"><h1>' +
-            CourseCore.escapeHtml(lesson.title) + '</h1>' +
+            CourseCore.escapeHtml(lessonTitle(lesson)) + '</h1>' +
             '<p style="color:var(--muted);margin-top:1rem;">Bài học này đang được biên soạn — nội dung sẽ được bổ sung trong giai đoạn tiếp theo.</p>' +
             '<p><a href="#dashboard" style="color:var(--spring-ink);">← Về tổng quan</a></p></div>';
           return;
@@ -4706,7 +5149,7 @@
         var nextTask = release
           ? CourseCore.selectNextBuildTask(release, buildTasksById, projectCompletedTaskIds())
           : null;
-        var header = renderProjectWorkspaceHeader(container, 'Project Track', product.name, product.type);
+        var header = renderProjectWorkspaceHeader(container, 'Kế hoạch dự án', product.name, product.type);
         header.setAttribute('data-project-overview', '');
         var headerCopy = header.querySelector('.workspace-summary');
         if (headerCopy) headerCopy.textContent = product.type + ' · ' + product.vision;
@@ -4714,13 +5157,13 @@
 
         var grid = el('div', 'project-overview-grid');
         var vision = el('section', 'project-panel');
-        vision.appendChild(el('div', 'project-section-label', 'Product Vision'));
+        vision.appendChild(el('div', 'project-section-label', 'Tầm nhìn sản phẩm'));
         vision.appendChild(el('h2', null, product.name));
         vision.appendChild(el('p', null, product.vision));
         grid.appendChild(vision);
 
         var current = el('section', 'project-panel');
-        current.appendChild(el('div', 'project-section-label', 'Current Build Target'));
+        current.appendChild(el('div', 'project-section-label', 'Mục tiêu xây dựng hiện tại'));
         if (release) {
           current.setAttribute('data-project-current-release', release.id);
           var line = el('div', 'project-release-line');
@@ -4729,14 +5172,14 @@
           line.appendChild(releaseLink);
           appendStatusBadge(line, release.status);
           current.appendChild(line);
-          current.appendChild(createProjectProgress(release, 'Project Progress · ' + release.version));
+          current.appendChild(createProjectProgress(release, 'Tiến độ dự án · ' + release.version));
         } else {
           current.appendChild(el('p', null, 'Chưa có release hiện tại.'));
         }
         grid.appendChild(current);
 
         var milestonePanel = el('section', 'project-panel');
-        milestonePanel.appendChild(el('div', 'project-section-label', 'Current Milestone'));
+        milestonePanel.appendChild(el('div', 'project-section-label', 'Cột mốc hiện tại'));
         if (milestone) {
           milestonePanel.appendChild(el('h2', null, milestone.name));
           milestonePanel.appendChild(el('p', null, milestone.summary));
@@ -4746,7 +5189,7 @@
         grid.appendChild(milestonePanel);
 
         var next = el('section', 'project-panel');
-        next.appendChild(el('div', 'project-section-label', 'Next Build Task'));
+        next.appendChild(el('div', 'project-section-label', 'Task xây dựng tiếp theo'));
         if (nextTask) {
           var nextTitleLink = el('a', 'text-link next-build-task-title');
           nextTitleLink.href = '#/task/' + nextTask.id;
@@ -4759,7 +5202,7 @@
         grid.appendChild(next);
 
         var roadmap = el('section', 'project-panel');
-        roadmap.appendChild(el('div', 'project-section-label', 'Roadmap'));
+        roadmap.appendChild(el('div', 'project-section-label', 'Lộ trình'));
         roadmap.appendChild(el('p', null, (projectData.releases || []).length + ' release từ ' + projectData.releases[0].version + ' đến ' + projectData.releases[projectData.releases.length - 1].version + '.'));
         var roadmapLink = el('a', 'roadmap-entry', 'Xem toàn bộ lộ trình');
         roadmapLink.href = '#/roadmap';
@@ -4771,7 +5214,7 @@
         // features[].domainEntities (union+dedup), never hardcoded, so this
         // section only ever shows what the project data actually supports.
         var domainSection = el('section', 'project-panel release-section');
-        domainSection.appendChild(el('h2', null, 'Domain Overview'));
+        domainSection.appendChild(el('h2', null, 'Mô hình domain'));
         var entities = CourseCore.deriveDomainEntities(projectData.features || []);
         if (entities.length) {
           domainSection.appendChild(el('p', null, 'Domain entities xuất hiện trong các feature của sản phẩm:'));
@@ -4797,7 +5240,7 @@
         var scopeItems = product.outOfScope || [];
         if (scopeItems.length) {
           var scopeSection = el('section', 'project-panel release-section');
-          scopeSection.appendChild(el('h2', null, 'Project Boundaries'));
+          scopeSection.appendChild(el('h2', null, 'Phạm vi dự án'));
           var scopePanelId = 'project-out-of-scope';
           var scopeBtn = disclosureButton('Ngoài phạm vi (' + scopeItems.length + ')', scopePanelId, 'chevron-down');
           var scopePanel = el('div', null);
@@ -4816,9 +5259,9 @@
         // (the authority for build-task ordering), reusing the same
         // expandable item + shared toggleBuildTask state as Release Detail.
         var workspace = el('section', 'project-panel release-section');
-        workspace.appendChild(el('h2', null, 'Build Tasks Workspace'));
+        workspace.appendChild(el('h2', null, 'Bảng task xây dựng'));
         if (release && (release.buildTaskIds || []).length) {
-          workspace.appendChild(el('p', null, 'Build tasks của release hiện tại · ' + releaseDisplay(release)));
+          workspace.appendChild(el('p', null, 'Các task của release hiện tại · ' + releaseDisplay(release)));
           appendExpandableBuildTaskList(workspace, release.buildTaskIds);
         } else {
           workspace.appendChild(el('p', null, 'Release hiện tại chưa có build task để theo dõi.'));
@@ -4844,7 +5287,7 @@
         "create-folder": "Tạo thư mục", "create-file": "Tạo file",
         "code-with-me": "Code cùng nhau", "your-turn": "Đến lượt bạn",
         "explanation": "Giải thích", "run": "Chạy thử",
-        "checkpoint": "Checkpoint", "debug": "Debug", "review": "Review",
+        "checkpoint": "Checkpoint", "debug": "Gỡ lỗi", "review": "Ôn lại",
       };
       // Which of the three visual phases (HỌC / CODE CÙNG TÔI / KIỂM TRA)
       // this step's own type badge should read as — colors the badge via
@@ -4858,8 +5301,8 @@
 
       function renderGuidedEmpty(container) {
         var empty = el('section', 'project-empty');
-        empty.appendChild(el('h1', null, 'Guided Build chưa sẵn sàng'));
-        empty.appendChild(el('p', null, 'Nội dung hướng dẫn xây project chưa sẵn sàng. Learning Track và Project Track vẫn hoạt động bình thường.'));
+        empty.appendChild(el('h1', null, 'Lộ trình xây dựng chưa sẵn sàng'));
+        empty.appendChild(el('p', null, 'Nội dung hướng dẫn xây Spendwise chưa sẵn sàng. Phần học lý thuyết và kế hoạch dự án vẫn hoạt động bình thường.'));
         container.appendChild(empty);
       }
 
@@ -4870,7 +5313,7 @@
         var notFound = el('section', 'project-not-found');
         notFound.appendChild(el('h1', null, 'Không tìm thấy nội dung'));
         notFound.appendChild(el('p', null, message));
-        var back = el('a', 'text-link', '← Về Guided Build');
+        var back = el('a', 'text-link', '← Về lộ trình xây dựng');
         back.href = '#/guided-build';
         notFound.appendChild(back);
         container.appendChild(notFound);
@@ -4878,7 +5321,7 @@
 
       function createGuidedBreadcrumb(items) {
         var crumb = el('nav', 'lesson-breadcrumb');
-        crumb.setAttribute('aria-label', 'Đường dẫn Guided Build');
+        crumb.setAttribute('aria-label', 'Đường dẫn lộ trình xây dựng');
         items.forEach(function(item, i) {
           if (i > 0) {
             var sep = el('span', 'crumb-sep');
@@ -5019,7 +5462,7 @@
       function renderGuidedOverview(container) {
         if (!guidedBuildData) { renderGuidedEmpty(container); return; }
         var header = renderProjectWorkspaceHeader(
-          container, 'Guided Build', 'Xây project theo từng bước',
+          container, 'Lộ trình xây dựng', 'Xây Spendwise theo từng bước',
           'Bạn tự tay code lại Spendwise — không chỉ đọc lý thuyết, không chỉ xem kế hoạch.'
         );
         header.setAttribute('data-guided-overview', '');
@@ -5027,9 +5470,9 @@
         var intro = el('section', 'project-panel release-section');
         intro.appendChild(el('h2', null, 'Ba mảnh ghép của khoá học'));
         var introList = el('ul', 'criteria-list');
-        introList.appendChild(el('li', null, 'HỌC LÝ THUYẾT (tab “Học”) — 40 bài học Java & Spring Boot theo thứ tự cố định.'));
-        introList.appendChild(el('li', null, 'XÂY PROJECT (trang này) — bạn tự tay code lại Spendwise, có hướng dẫn từng bước, theo tiến độ riêng của bạn.'));
-        introList.appendChild(el('li', null, 'HIỂU KIẾN TRÚC / ROADMAP (tab “Dự án”, “Lộ trình”) — bản kế hoạch chính thức: feature, build task, tiêu chí kỹ thuật, tiến trình 10 release.'));
+        introList.appendChild(el('li', null, 'HỌC LÝ THUYẾT (tab “Học lý thuyết”) — 40 bài học Java & Spring Boot theo thứ tự cố định.'));
+        introList.appendChild(el('li', null, 'XÂY DỰNG SPENDWISE (trang này) — bạn tự tay code lại Spendwise, có hướng dẫn từng bước, theo tiến độ riêng của bạn.'));
+        introList.appendChild(el('li', null, 'HIỂU KIẾN TRÚC / LỘ TRÌNH (mục “Kế hoạch dự án”, “Các release” ở sidebar) — bản kế hoạch chính thức: tính năng, task, tiêu chí kỹ thuật, tiến trình 10 release.'));
         intro.appendChild(introList);
         var course = guidedBuildData.guidedCourse || {};
         if (course.workspaceExample) {
@@ -5056,15 +5499,15 @@
         if (!guidedBuildData) { renderGuidedEmpty(container); return; }
         var guidedRelease = CourseCore.selectGuidedRelease(guidedBuildData.guidedReleases, releaseId);
         if (!guidedRelease) {
-          renderGuidedNotFound(container, 'Release "' + releaseId + '" không tồn tại trong Guided Build.');
+          renderGuidedNotFound(container, 'Release "' + releaseId + '" không tồn tại trong lộ trình xây dựng.');
           return;
         }
         var canonical = releasesById.get(releaseId);
         container.appendChild(createGuidedBreadcrumb([
-          { label: 'Guided Build', href: '#/guided-build' },
+          { label: 'Lộ trình xây dựng', href: '#/guided-build' },
           { label: canonical ? canonical.version + ' — ' + canonical.title : releaseId },
         ]));
-        renderProjectWorkspaceHeader(container, 'Guided Build',
+        renderProjectWorkspaceHeader(container, 'Lộ trình xây dựng',
           canonical ? canonical.version + ' — ' + canonical.title : releaseId,
           canonical ? canonical.goal : null);
 
@@ -5073,7 +5516,7 @@
           var empty = el('section', 'project-panel release-section');
           empty.appendChild(el('h2', null, 'Chưa biên soạn'));
           empty.appendChild(el('p', null, 'Nội dung hướng dẫn từng bước cho release này chưa được biên soạn. Bạn vẫn có thể xem kế hoạch chính thức ở trang Dự án / Lộ trình.'));
-          var backLink = el('a', 'text-link', '← Về Guided Build');
+          var backLink = el('a', 'text-link', '← Về lộ trình xây dựng');
           backLink.href = '#/guided-build';
           empty.appendChild(backLink);
           container.appendChild(empty);
@@ -5096,7 +5539,7 @@
         container.appendChild(progressSection);
 
         var sessionsSection = el('section', 'project-panel release-section');
-        sessionsSection.appendChild(el('h2', null, 'Sessions'));
+        sessionsSection.appendChild(el('h2', null, 'Các phiên học (session)'));
         var sList = el('div', 'roadmap-list');
         sessions.forEach(function(session) {
           var sProgress = CourseCore.calculateGuidedSessionProgress(
@@ -5121,18 +5564,18 @@
         }
         var canonicalRelease = releasesById.get(releaseId);
         container.appendChild(createGuidedBreadcrumb([
-          { label: 'Guided Build', href: '#/guided-build' },
+          { label: 'Lộ trình xây dựng', href: '#/guided-build' },
           { label: canonicalRelease ? canonicalRelease.version : releaseId, href: '#/guided-build/' + releaseId },
           { label: session.title },
         ]));
         renderProjectWorkspaceHeader(container,
-          'Guided Build · ' + (canonicalRelease ? canonicalRelease.version : releaseId),
+          'Lộ trình xây dựng · ' + (canonicalRelease ? canonicalRelease.version : releaseId),
           session.title, session.goal);
 
         var buildTask = buildTasksById.get(session.buildTaskId);
         if (buildTask) {
           var taskP = el('p', null);
-          var taskLink = el('a', 'text-link', 'Build task tương ứng: ' + buildTask.title);
+          var taskLink = el('a', 'text-link', 'Task tương ứng: ' + buildTask.title);
           taskLink.href = '#/task/' + buildTask.id;
           taskP.appendChild(taskLink);
           container.appendChild(taskP);
@@ -5180,7 +5623,7 @@
 
         var canonicalRelease = releasesById.get(releaseId);
         container.appendChild(createGuidedBreadcrumb([
-          { label: 'Guided Build', href: '#/guided-build' },
+          { label: 'Lộ trình xây dựng', href: '#/guided-build' },
           { label: canonicalRelease ? canonicalRelease.version : releaseId, href: '#/guided-build/' + releaseId },
           { label: session.title, href: '#/guided-build/' + releaseId + '/' + sessionId },
           { label: step.title },
@@ -5202,8 +5645,12 @@
           step.theoryBridge.forEach(function(bridge) {
             var lesson = lessonsById.get(bridge.lessonId);
             var li = el('li');
-            var a = el('a', 'text-link', lesson ? lesson.title : bridge.lessonId);
+            var a = el('a', 'text-link', 'Ôn lại: ' + (lesson ? lessonTitle(lesson) : bridge.lessonId) + ' — ' + CourseCore.lessonDayLabel(bridge.lessonId));
             a.href = '#/lesson/' + bridge.lessonId;
+            a.setAttribute('data-bridge-lesson', bridge.lessonId);
+            a.addEventListener('click', function() {
+              returnToBuild = { lessonId: bridge.lessonId, hash: guidedStepHref(releaseId, step), stepTitle: step.title };
+            });
             li.appendChild(a);
             if (bridge.note) li.appendChild(el('div', 'build-task-meta', bridge.note));
             bridgeList.appendChild(li);
@@ -5294,27 +5741,27 @@
             canonSection.appendChild(el('h2', null, 'Tiêu chí kỹ thuật (canonical)'));
             if (buildStep.doneWhen) {
               var cDone = el('div', 'task-step-row task-step-row--done');
-              cDone.appendChild(el('span', 'task-step-label', 'Done when'));
+              cDone.appendChild(el('span', 'task-step-label', 'Xong khi'));
               cDone.appendChild(el('p', 'task-step-text', buildStep.doneWhen));
               canonSection.appendChild(cDone);
             }
             if (buildStep.verifyCommand) {
               var cVerify = el('div', 'task-step-row');
-              cVerify.appendChild(el('span', 'task-step-label', 'Verify'));
+              cVerify.appendChild(el('span', 'task-step-label', 'Kiểm tra'));
               cVerify.appendChild(createGuidedCodeBlock({ language: 'verifyCommand', code: buildStep.verifyCommand }));
               canonSection.appendChild(cVerify);
             }
             if ((buildStep.architectureRules || []).length) {
               var cRules = el('div', 'task-step-row');
-              cRules.appendChild(el('span', 'task-step-label', 'Architecture rules'));
+              cRules.appendChild(el('span', 'task-step-label', 'Luật kiến trúc'));
               var cRuleRow = el('div', 'task-rule-row');
               buildStep.architectureRules.forEach(function(ruleId) {
                 var chip = el('a', 'task-rule-chip', ruleId);
                 chip.href = '#/architecture';
-                chip.setAttribute('aria-label', 'Architecture rule ' + ruleId + ' — xem định nghĩa trong Architecture view');
+                chip.setAttribute('aria-label', 'Luật kiến trúc ' + ruleId + ' — xem định nghĩa trong trang Kiến trúc');
                 cRuleRow.appendChild(chip);
               });
-              cRuleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong Architecture view'));
+              cRuleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong trang Kiến trúc'));
               cRules.appendChild(cRuleRow);
               canonSection.appendChild(cRules);
             }
@@ -5437,7 +5884,7 @@
         link.appendChild(copy);
         var stateCol = el('div');
         appendStatusBadge(stateCol, release.status);
-        stateCol.appendChild(createProjectProgress(release, 'User progress'));
+        stateCol.appendChild(createProjectProgress(release, 'Tiến độ của bạn'));
         link.appendChild(stateCol);
         return link;
       }
@@ -5450,8 +5897,8 @@
         if (!projectData) { renderProjectEmpty(container); return; }
         renderProjectWorkspaceHeader(
           container,
-          'Release Roadmap',
-          projectData.product.name + ' Roadmap',
+          'Lộ trình release',
+          'Lộ trình ' + projectData.product.name,
           'Trạng thái kế hoạch của release và tiến độ build cá nhân là hai tín hiệu độc lập.'
         );
         renderProjectSubNav(container, 'roadmap');
@@ -5477,7 +5924,7 @@
           var notFound = el('section', 'project-not-found');
           notFound.appendChild(el('h1', null, 'Không tìm thấy release'));
           notFound.appendChild(el('p', null, 'Release “' + releaseId + '” không tồn tại trong project data.'));
-          var back = el('a', 'text-link', '← Về Roadmap');
+          var back = el('a', 'text-link', '← Về lộ trình release');
           back.href = '#/roadmap';
           notFound.appendChild(back);
           container.appendChild(notFound);
@@ -5502,17 +5949,17 @@
         hero.appendChild(line);
         hero.appendChild(el('h1', null, release.title));
         hero.appendChild(el('p', null, release.goal));
-        hero.appendChild(createProjectProgress(release, 'Release Progress'));
+        hero.appendChild(createProjectProgress(release, 'Tiến độ release'));
         detail.appendChild(hero);
 
         // Problem -> Goal, side by side (closely paired, read together).
         var problemGoal = el('div', 'release-columns');
         var problem = el('section', 'project-panel');
-        problem.appendChild(el('div', 'project-section-label', 'Problem'));
+        problem.appendChild(el('div', 'project-section-label', 'Vấn đề'));
         problem.appendChild(el('p', null, release.problem));
         problemGoal.appendChild(problem);
         var goal = el('section', 'project-panel');
-        goal.appendChild(el('div', 'project-section-label', 'Goal'));
+        goal.appendChild(el('div', 'project-section-label', 'Mục tiêu'));
         goal.appendChild(el('p', null, release.goal));
         problemGoal.appendChild(goal);
         detail.appendChild(problemGoal);
@@ -5520,14 +5967,14 @@
         // Features — richer cards (description, domainEntities, per-feature
         // progress) instead of the plain name list used on lesson pages.
         var features = el('section', 'project-panel release-section');
-        features.appendChild(el('h2', null, 'Features'));
+        features.appendChild(el('h2', null, 'Tính năng'));
         appendFeatureDetailList(features, release.featureIds);
         detail.appendChild(features);
 
         // Learning Dependencies, reframed as a Learning <-> Project bridge:
         // readable prose-list of concepts, not a tag cloud.
         var deps = el('section', 'project-panel release-section');
-        deps.appendChild(el('h2', null, 'Learning ↔ Project'));
+        deps.appendChild(el('h2', null, 'Bài học ↔ dự án'));
         deps.appendChild(el('p', null, 'Kiến thức khoá học cần có trước khi bắt tay vào release này:'));
         var depList = el('ul', 'dependency-list');
         (release.learningDependencies || []).forEach(function(item) { depList.appendChild(el('li', null, item)); });
@@ -5538,14 +5985,14 @@
         // / relevant lessons) sharing the same toggleBuildTask state as the
         // Dashboard and lesson Project Application panels.
         var tasks = el('section', 'project-panel release-section');
-        tasks.appendChild(el('h2', null, 'Build Tasks'));
+        tasks.appendChild(el('h2', null, 'Các task xây dựng'));
         if ((release.buildTaskIds || []).length) appendExpandableBuildTaskList(tasks, release.buildTaskIds);
-        else tasks.appendChild(el('p', null, 'Release này chưa có build task để theo dõi. Bạn vẫn có thể xem Goal, Features, Learning Dependencies và kế hoạch Architecture của release.'));
+        else tasks.appendChild(el('p', null, 'Release này chưa có task để theo dõi. Bạn vẫn có thể xem mục tiêu, tính năng, bài học cần biết và kế hoạch kiến trúc của release.'));
         detail.appendChild(tasks);
 
         // Acceptance Criteria
         var criteria = el('section', 'project-panel release-section');
-        criteria.appendChild(el('h2', null, 'Acceptance Criteria'));
+        criteria.appendChild(el('h2', null, 'Tiêu chí hoàn thành'));
         var criteriaList = el('ul', 'criteria-list');
         (release.acceptanceCriteria || []).forEach(function(item) { criteriaList.appendChild(el('li', null, item)); });
         criteria.appendChild(criteriaList);
@@ -5555,8 +6002,8 @@
         var architecture = archStageByReleaseId.get(release.id);
         if (architecture) {
           var stage = el('section', 'project-panel architecture-stage release-section');
-          stage.appendChild(el('h2', null, 'Architecture: ' + architecture.title));
-          if (release.status === 'planned') stage.appendChild(el('p', 'architecture-target-note', 'Architecture planned for this release — not yet built.'));
+          stage.appendChild(el('h2', null, 'Kiến trúc: ' + architecture.title));
+          if (release.status === 'planned') stage.appendChild(el('p', 'architecture-target-note', 'Kiến trúc dự kiến cho release này — chưa được xây.'));
           stage.appendChild(el('p', null, architecture.rationale));
           if ((architecture.layers || []).length) {
             var layerList = el('ul', 'criteria-list');
@@ -5575,18 +6022,18 @@
           // invented "Before" state. V0.2+ resolves the previous release by
           // order (release.order - 1), never a hardcoded description.
           var compare = el('section', 'project-panel release-section');
-          compare.appendChild(el('h2', null, 'Architecture Change'));
+          compare.appendChild(el('h2', null, 'Kiến trúc thay đổi thế nào'));
           var prevRelease = (projectData.releases || []).find(function(r) { return r.order === release.order - 1; });
           var prevStage = prevRelease ? archStageByReleaseId.get(prevRelease.id) : null;
           var compareGrid = el('div', 'architecture-compare');
           if (prevStage) {
             var beforeCol = el('div', 'architecture-compare-col');
-            beforeCol.appendChild(el('div', 'architecture-compare-label', 'Before · ' + prevRelease.version));
+            beforeCol.appendChild(el('div', 'architecture-compare-label', 'Trước · ' + prevRelease.version));
             beforeCol.appendChild(createArchitectureDiagram(prevStage.diagram, 'Sơ đồ kiến trúc trước đó · ' + prevRelease.version + ' — ' + prevStage.title));
             compareGrid.appendChild(beforeCol);
           }
           var afterCol = el('div', 'architecture-compare-col');
-          afterCol.appendChild(el('div', 'architecture-compare-label', prevStage ? 'After · ' + release.version : 'Initial Architecture'));
+          afterCol.appendChild(el('div', 'architecture-compare-label', prevStage ? 'Sau · ' + release.version : 'Kiến trúc ban đầu'));
           afterCol.appendChild(createArchitectureDiagram(architecture.diagram, 'Sơ đồ kiến trúc ' + release.version + ' — ' + architecture.title));
           compareGrid.appendChild(afterCol);
           compare.appendChild(compareGrid);
@@ -5599,7 +6046,7 @@
         container.appendChild(detail);
       }
 
-      var MAP_TYPE_LABELS = { direct: 'Direct', future: 'Future', theory: 'Theory', unmapped: 'Unmapped' };
+      var MAP_TYPE_LABELS = { direct: 'Dùng ngay', future: 'Dùng sau', theory: 'Kiến thức nền', unmapped: 'Chưa gắn' };
 
       function createMapRow(row) {
         var item = el('div', 'map-row');
@@ -5644,9 +6091,9 @@
         if (!projectData) { renderProjectEmpty(container); return; }
         renderProjectWorkspaceHeader(
           container,
-          'Course ↔ Project',
-          'Course ↔ Project Map',
-          'Mỗi bài học liên hệ với ' + projectData.product.name + ' ra sao: direct (xây trực tiếp), future (dùng ở release sau), theory (kiến thức nền), hoặc unmapped (bài tổng hợp chưa gắn với release cụ thể).'
+          'Bài học ↔ dự án',
+          'Bản đồ bài học ↔ dự án',
+          'Mỗi bài học liên hệ với ' + projectData.product.name + ' ra sao: dùng ngay (xây trực tiếp), dùng sau (ở release sau), kiến thức nền, hoặc chưa gắn (bài tổng hợp chưa gắn với release cụ thể).'
         );
         renderProjectSubNav(container, 'map');
 
@@ -5658,9 +6105,9 @@
         filterBar.setAttribute('aria-label', 'Lọc bản đồ khoá học ↔ dự án');
         var TYPE_FILTERS = [
           { key: 'all', label: 'Tất cả' },
-          { key: 'direct', label: 'Direct' },
-          { key: 'future', label: 'Future' },
-          { key: 'theory-unmapped', label: 'Theory / Unmapped' },
+          { key: 'direct', label: 'Dùng ngay' },
+          { key: 'future', label: 'Dùng sau' },
+          { key: 'theory-unmapped', label: 'Kiến thức nền / Chưa gắn' },
         ];
         var typeButtons = TYPE_FILTERS.map(function(filter) {
           var btn = el('button', 'map-filter-btn', filter.label);
@@ -5726,8 +6173,8 @@
         if (!projectData) { renderProjectEmpty(container); return; }
         renderProjectWorkspaceHeader(
           container,
-          'Architecture Evolution',
-          'Architecture Evolution',
+          'Kiến trúc',
+          'Kiến trúc qua từng release',
           'Kiến trúc ' + projectData.product.name + ' mở rộng dần theo từng release. Mọi stage dưới đây đều đang ở trạng thái kế hoạch — chưa có stage nào được xây hay đang chạy production.'
         );
         renderProjectSubNav(container, 'architecture');
@@ -5782,18 +6229,18 @@
            through parseRoute to the dashboard. */
         var constitution = el('section', 'project-panel release-section');
         constitution.id = 'constitution';
-        constitution.appendChild(el('div', 'project-section-label', 'Architecture Constitution'));
+        constitution.appendChild(el('div', 'project-section-label', 'Hiến pháp kiến trúc'));
         var constitutionH2 = el('h2', null, 'Bộ 26 luật kiến trúc (R1–R26)');
         constitutionH2.id = 'constitution-heading';
         constitution.appendChild(constitutionH2);
         constitution.appendChild(el('p', null,
-          '26 luật dưới đây là bản chiếu đọc (reader-facing projection) của Architecture Constitution ' +
+          '26 luật dưới đây là bản chiếu đọc (reader-facing projection) của hiến pháp kiến trúc ' +
           'định nghĩa trong Architecture Blueprint (docs/report/2026-09-05-spendwise-architecture-blueprint.md §3). ' +
           'Blueprint là nguồn chuẩn; trang này không thêm, bớt hay giải thích lại luật nào. ' +
           'Đoạn tiếng Anh là phần nghĩa canonical của luật; khung ghi chú tiếng Việt chỉ là phần diễn giải cho người đọc.'));
         constitution.appendChild(el('p', 'architecture-target-note',
           'Mọi token architectureRules trong 161 build step của dự án phải trỏ về một trong 26 luật này. ' +
-          'Trên trang Build task, chip R1…R26 của mỗi step liên kết tới view này — đây là nơi tra nghĩa của luật.'));
+          'Trên trang task, chip R1…R26 của mỗi step liên kết tới view này — đây là nơi tra nghĩa của luật.'));
         var constitutionGroupsData = CourseCore.CONSTITUTION_GROUPS || [];
         var constitutionData = CourseCore.ARCHITECTURE_CONSTITUTION || [];
         var product = projectData.product;
@@ -5836,8 +6283,8 @@
           var isCurrent = !!currentRelease && currentRelease.id === release.id;
           block.appendChild(el('div', 'project-section-label', release.version + ' · ' + release.title));
           block.appendChild(el('p', 'architecture-target-note', isCurrent
-            ? 'Current Build Target — trạng thái release: ' + release.status + '.'
-            : 'Architecture planned for release ' + release.version + ' (trạng thái release: ' + release.status + ') — chưa được xây.'));
+            ? 'Mục tiêu xây dựng hiện tại — trạng thái release: ' + release.status + '.'
+            : 'Kiến trúc dự kiến cho release ' + release.version + ' (trạng thái release: ' + release.status + ') — chưa được xây.'));
           block.appendChild(el('h2', null, stage.title));
           block.appendChild(el('p', null, stage.rationale));
           if ((stage.layers || []).length) {
@@ -5892,7 +6339,7 @@
         /* ---- P4: boundaries (IN/OUT of scope) ------------------------------ */
         var boundaries = el('section', 'project-panel release-section');
         boundaries.id = 'boundaries';
-        boundaries.appendChild(el('div', 'project-section-label', 'Project Boundaries'));
+        boundaries.appendChild(el('div', 'project-section-label', 'Phạm vi dự án'));
         var boundariesH2 = el('h2', null, 'Phạm vi: cái gì thuộc dự án, cái gì không');
         boundariesH2.id = 'boundaries-heading';
         boundaries.appendChild(boundariesH2);
@@ -5940,7 +6387,7 @@
         /* ---- P4: defense matrix (15 rows, plan §19) ------------------------ */
         var defense = el('section', 'project-panel release-section');
         defense.id = 'defense-matrix';
-        defense.appendChild(el('div', 'project-section-label', 'Defense Readiness'));
+        defense.appendChild(el('div', 'project-section-label', 'Sẵn sàng bảo vệ đồ án'));
         var defenseH2 = el('h2', null, '15 câu bảo vệ kiến trúc');
         defenseH2.id = 'defense-matrix-heading';
         defense.appendChild(defenseH2);
@@ -5952,7 +6399,7 @@
         var matrixWrap = el('div', 'defense-table-wrap');
         var table = el('table', 'defense-table');
         var caption = el('caption', null,
-          'Defense matrix — 15 câu hỏi, mỗi câu neo vào một rule/ADR của Architecture Constitution.');
+          'Ma trận bảo vệ — 15 câu hỏi, mỗi câu neo vào một luật/ADR của hiến pháp kiến trúc.');
         table.appendChild(caption);
         var thead = el('thead');
         var headRow = el('tr');
@@ -6154,7 +6601,7 @@
             item.setAttribute('role', 'option');
             item.style.cssText = 'display:block;padding:.625rem .75rem;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:.875rem;';
             var unit = unitsById.get(l.unitId);
-            item.innerHTML = '<span style="color:var(--muted);font-size:.75rem;">' + (unit ? 'Unit ' + unit.number : '') + ' | ' + (l.group||'') + '</span><div>' + (l.title || l.id) + '</div>';
+            item.innerHTML = '<span style="color:var(--muted);font-size:.75rem;">' + (unit ? 'Chương ' + unit.number : '') + ' | ' + (l.group||'') + '</span><div>' + CourseCore.escapeHtml(lessonTitle(l)) + '</div>';
             item.onclick = function() { searchInput.value = ''; searchPanel.style.display = 'none'; closeDrawer(); };
             searchPanel.appendChild(item);
           });
@@ -6182,7 +6629,7 @@
         var backdrop = document.querySelector('.drawer-backdrop');
         if (backdrop) backdrop.hidden = false;
         /* Focus the current lesson link if present, else first focusable */
-        var targetLink = document.querySelector('.lesson-link[aria-current="page"]') || drawerFocusables()[0];
+        var targetLink = document.querySelector('#course-sidebar [aria-current="page"]') || drawerFocusables()[0];
         if (targetLink) { targetLink.focus(); return; }
         /* Sidebar may not be rendered yet — focus the sidebar itself */
         var sidebar = document.getElementById('course-sidebar');
@@ -6328,10 +6775,9 @@
         primaryNav.className = 'primary-nav';
         primaryNav.setAttribute('aria-label', 'Điều hướng chính');
         [
-          { view: 'dashboard', href: '#/dashboard', label: 'Học' },
-          { view: 'guided-build', href: '#/guided-build', label: 'Xây project' },
-          { view: 'project', href: '#/project', label: 'Dự án' },
-          { view: 'roadmap', href: '#/roadmap', label: 'Lộ trình' },
+          { view: 'dashboard', href: '#/dashboard', label: 'Tổng quan' },
+          { view: 'learn', href: '#/lesson/' + continueLessonTarget(), label: 'Học lý thuyết' },
+          { view: 'guided-build', href: '#/guided-build', label: 'Xây dựng dự án' },
           { view: 'resources', href: '#/resources', label: 'Tài nguyên' }
         ].forEach(function(item) {
           var link = document.createElement('a');
@@ -6676,7 +7122,7 @@
             routeRender();
             var v = document.getElementById("route-view");
             var h1El = v.querySelector("h1.lesson-title");
-            return !!h1El && h1El.textContent === lesson.title;
+            return !!h1El && h1El.textContent === lessonTitle(lesson);
           });
           assert("selecting a lesson from every group (java/spring/completion) renders the correct title",
             groupSelectOk);
@@ -7015,19 +7461,22 @@
           assert("unknown guided step id is dropped by sanitizeState",
             droppedGuided.guidedProgress.completedSteps.length === 0);
 
-          /* 33 — primary navigation exposes exactly the five P0+Wave3
-             destinations as real anchors, and routeRender keeps aria-current
-             in sync. */
+          /* 33 — primary navigation exposes exactly the four learning-context
+             destinations (Tổng quan / Học lý thuyết / Xây dựng dự án / Tài
+             nguyên) as real anchors, and every project surface lights the
+             build tab. */
           location.hash = "#/project";
           routeRender();
           var primaryNav = document.querySelector(".primary-nav");
           var primaryLinks = primaryNav ? primaryNav.querySelectorAll("a[data-view]") : [];
-          var activeProjectLink = primaryNav && primaryNav.querySelector('[data-view="project"][aria-current="page"]');
-          assert("primary navigation exposes five routes and marks the active view",
-            primaryLinks.length === 5 && !!activeProjectLink &&
+          var activeProjectLink = primaryNav && primaryNav.querySelector('[data-view="guided-build"][aria-current="page"]');
+          assert("primary navigation exposes four context routes and marks the active view",
+            primaryLinks.length === 4 && !!activeProjectLink &&
             Array.prototype.every.call(primaryLinks, function(link) {
-              return /^#\/(dashboard|guided-build|project|roadmap|resources)$/.test(link.getAttribute("href") || "");
-            }));
+              return /^#\/(dashboard|guided-build|resources|lesson\/[a-z0-9-]+)$/.test(link.getAttribute("href") || "");
+            }) &&
+            Array.prototype.map.call(primaryLinks, function(l) { return l.textContent; }).join("|") ===
+              "Tổng quan|Học lý thuyết|Xây dựng dự án|Tài nguyên");
 
           /* 34 — the dashboard derives V0.1 as current because no authored
              release is building, and keeps course/project progress separate. */
@@ -7166,7 +7615,7 @@
           var navLinksForOverflow = Array.prototype.slice.call(
             document.querySelectorAll(".primary-nav [data-view]")
           );
-          var navLinksVisibleOk = navLinksForOverflow.length === 5 &&
+          var navLinksVisibleOk = navLinksForOverflow.length === 4 &&
             navLinksForOverflow.every(function(link) {
               var rect = link.getBoundingClientRect();
               return rect.width > 0 && rect.left >= -1 && rect.right <= window.innerWidth + 1;
@@ -7200,8 +7649,8 @@
              the Roadmap section. */
           location.hash = "#/release/v0-1";
           routeRender();
-          var releaseNavActive = document.querySelector('.primary-nav [data-view="roadmap"][aria-current="page"]');
-          assert("viewing a release keeps the Roadmap primary-nav tab marked active",
+          var releaseNavActive = document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]');
+          assert("viewing a release keeps the Xây dựng dự án primary-nav tab marked active",
             !!releaseNavActive);
 
           /* 42 — Lessons belong to the Learning Track, whose P0 primary-nav
@@ -7210,8 +7659,8 @@
              the Roadmap cue above. */
           location.hash = "#/lesson/day-20";
           routeRender();
-          var lessonNavActive = document.querySelector('.primary-nav [data-view="dashboard"][aria-current="page"]');
-          assert("viewing a lesson keeps the Học primary-nav tab marked active",
+          var lessonNavActive = document.querySelector('.primary-nav [data-view="learn"][aria-current="page"]');
+          assert("viewing a lesson keeps the Học lý thuyết primary-nav tab marked active",
             !!lessonNavActive);
 
           /* 43 — At the true 390px mobile viewport, the lesson footer must
@@ -7263,14 +7712,14 @@
           var allMapRows = CourseCore.deriveMapRows(courseData.lessons, projectData.lessonMap);
           var mapRowsAllOk = mapView.querySelectorAll(".map-row").length === allMapRows.length;
           var mapFilterBtns = mapView.querySelectorAll(".map-filter-btn");
-          var directBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Direct"; });
+          var directBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Dùng ngay"; });
           directBtn.click();
           var directCount = allMapRows.filter(function(r) { return r.applicationType === "direct"; }).length;
           var directRows = mapView.querySelectorAll(".map-row");
           var directFilterOk = directRows.length === directCount &&
             directBtn.getAttribute("aria-pressed") === "true" &&
             Array.prototype.every.call(directRows, function(row) { return !!row.querySelector(".map-type--direct"); });
-          var theoryUnmappedBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Theory / Unmapped"; });
+          var theoryUnmappedBtn = Array.prototype.slice.call(mapFilterBtns).find(function(b) { return b.textContent.trim() === "Kiến thức nền / Chưa gắn"; });
           theoryUnmappedBtn.click();
           var theoryUnmappedCount = allMapRows.filter(function(r) { return r.applicationType === "theory" || r.applicationType === "unmapped"; }).length;
           var theoryUnmappedRows = mapView.querySelectorAll(".map-row");
@@ -7303,7 +7752,7 @@
           var currentArchRelease = currentProjectRelease();
           var currentArchBlock = document.getElementById("architecture-stage-" + currentArchRelease.id);
           var currentNoteOk = !!currentArchBlock &&
-            currentArchBlock.querySelector(".architecture-target-note").textContent.indexOf("Current Build Target") !== -1;
+            currentArchBlock.querySelector(".architecture-target-note").textContent.indexOf("Mục tiêu xây dựng hiện tại") !== -1;
           var targetNotes = archView.querySelectorAll(".architecture-stage .architecture-target-note");
           var honestWordingOk = targetNotes.length === archPairs.length &&
             Array.prototype.every.call(targetNotes, function(note) {
@@ -7372,7 +7821,7 @@
           var v01View = document.getElementById("route-view");
           var v01Compare = v01View.querySelector(".architecture-compare");
           var v01Ok = !!v01Compare && v01Compare.querySelectorAll(".architecture-compare-col").length === 1 &&
-            v01Compare.textContent.indexOf("Initial Architecture") !== -1;
+            v01Compare.textContent.indexOf("Kiến trúc ban đầu") !== -1;
           var v02Release = (projectData.releases || []).find(function(r) { return r.order === 2; });
           location.hash = "#/release/" + v02Release.id;
           routeRender();
@@ -7381,7 +7830,7 @@
           var v02Stage = archStageByReleaseId.get(v02Release.id);
           var v02ChangesEl = v02View.querySelector(".architecture-compare-changes");
           var v02Ok = !!v02Compare && v02Compare.querySelectorAll(".architecture-compare-col").length === 2 &&
-            v02Compare.textContent.indexOf("Before ·") !== -1 && v02Compare.textContent.indexOf("After ·") !== -1 &&
+            v02Compare.textContent.indexOf("Trước ·") !== -1 && v02Compare.textContent.indexOf("Sau ·") !== -1 &&
             (!v02Stage.changesFromPrev || (!!v02ChangesEl && v02ChangesEl.textContent === v02Stage.changesFromPrev));
           assert("Release Detail's Architecture Change section shows Initial Architecture only for V0.1 and a real Before/After comparison for V0.2+",
             v01Ok && v02Ok);
@@ -7404,8 +7853,8 @@
             var onlyOneActive = subnav && subnav.querySelectorAll('[aria-current="page"]').length === 1;
             return !!active && onlyOneActive;
           });
-          var primaryNavStillFour = document.querySelectorAll(".primary-nav [data-view]").length === 5;
-          assert("project sub-nav marks the correct tab active on all 5 project views without growing the 5-item primary nav",
+          var primaryNavStillFour = document.querySelectorAll(".primary-nav [data-view]").length === 4;
+          assert("project sub-nav marks the correct tab active on all 5 project views without growing the 4-item primary nav",
             subnavOk && primaryNavStillFour);
 
           /* 53 — a release carrying no build tasks must say so honestly
@@ -7423,7 +7872,7 @@
              harness. A synthetic release keeps this assertion meaningful in
              both eras and keeps the failure attributable to #53. */
           var syntheticEmptyRelease = { id: "release-selftest-no-tasks", version: "V9.9", order: 99 };
-          var syntheticProgressEl = createProjectProgress(syntheticEmptyRelease, "Release Progress");
+          var syntheticProgressEl = createProjectProgress(syntheticEmptyRelease, "Tiến độ release");
           var emptyProgressOk = !!syntheticProgressEl.querySelector(".project-progress-note") &&
             !syntheticProgressEl.querySelector(".project-progress-count") &&
             !syntheticProgressEl.querySelector("progress") &&
@@ -7467,10 +7916,10 @@
             location.hash = hash;
             routeRender();
             var active = document.querySelectorAll('.primary-nav [data-view][aria-current="page"]');
-            return active.length === 1 && active[0].getAttribute("data-view") === "project";
+            return active.length === 1 && active[0].getAttribute("data-view") === "guided-build";
           });
-          assert("Map and Architecture keep the Dự án primary-nav tab marked active instead of leaving the nav without a cue",
-            inheritedNavOk && document.querySelectorAll(".primary-nav [data-view]").length === 5);
+          assert("Map and Architecture keep the Xây dựng dự án primary-nav tab marked active instead of leaving the nav without a cue",
+            inheritedNavOk && document.querySelectorAll(".primary-nav [data-view]").length === 4);
 
           /* 55 — Release Detail must render each release's ASCII diagram
              once, not twice: the Architecture Change comparison below the
@@ -7707,11 +8156,11 @@
           /* 70 — P4 regression: the collapsed-unit `.lesson-list` stays
              display:none when hidden (author display:grid beats the UA
              [hidden] rule without the P4 companion rule). */
+          location.hash = "#/dashboard";
+          routeRender();
           var firstUnitToggle = document.querySelector('.module-toggle[data-unit-id]');
           var lessonListOk = false;
           if (firstUnitToggle) {
-            location.hash = "#/dashboard";
-            routeRender();
             firstUnitToggle = document.querySelector('.module-toggle[data-unit-id]');
             var unitId = firstUnitToggle.getAttribute("data-unit-id");
             var listEl = document.getElementById("lessons-" + unitId);
@@ -7873,6 +8322,123 @@
 
           guidedBuildData = realGuidedBuildData;
           GUIDED_STEP_IDS = realGuidedStepIds;
+
+          /* 84-92 — navigation follows the learning context (production data).
+             One sidebar element, three faces: lesson → curriculum tree only,
+             every Spendwise surface → project tree only, dashboard/resources →
+             compact two-journey header over the curriculum. */
+          var sidebarEl = document.getElementById("course-sidebar");
+          function sidebarState() {
+            return {
+              context: sidebarEl.getAttribute("data-nav-context"),
+              title: sidebarEl.querySelector(".sidebar-title").textContent,
+              lessonLinks: sidebarEl.querySelectorAll(".lesson-link").length,
+              projectLinks: sidebarEl.querySelectorAll(".project-nav-link").length,
+            };
+          }
+          location.hash = "#/lesson/day-14";
+          routeRender();
+          var learnNav = sidebarState();
+          assert("lesson route shows the curriculum sidebar (no project tree) with the current lesson marked",
+            learnNav.context === "learn" && learnNav.lessonLinks === courseData.lessons.length && learnNav.projectLinks === 0 &&
+            !!sidebarEl.querySelector('.lesson-link[data-lesson-id="day-14"][aria-current="page"]'));
+
+          var navFirstRelease = orderedGuidedReleases()[0].releaseId;
+          var navFirstStep = CourseCore.firstIncompleteGuidedStep(guidedBuildData.guidedSessions, guidedBuildData.guidedSteps, [], navFirstRelease);
+          var navSessionSelector = ".project-nav-session[data-pnav-id='" + navFirstStep.sessionId + "']";
+          location.hash = guidedStepHref(navFirstRelease, navFirstStep);
+          routeRender();
+          var buildNav = sidebarState();
+          var currentStepLink = sidebarEl.querySelector('.project-nav-link[aria-current="page"]');
+          var currentReleaseToggle = sidebarEl.querySelector('.project-nav-toggle[data-pnav-id="' + navFirstRelease + '"]');
+          assert("guided step route shows the XÂY DỰNG SPENDWISE tree with no lesson tree, current step marked and its release/session expanded",
+            buildNav.context === "build" && buildNav.title === "XÂY DỰNG SPENDWISE" && buildNav.lessonLinks === 0 &&
+            sidebarEl.querySelectorAll(".project-nav-toggle").length === guidedBuildData.guidedReleases.length &&
+            !!currentStepLink && currentStepLink.getAttribute("data-step-id") === navFirstStep.id &&
+            !!currentReleaseToggle && currentReleaseToggle.getAttribute("aria-expanded") === "true" &&
+            sidebarEl.querySelector(navSessionSelector).getAttribute("aria-expanded") === "true");
+
+          var projectRoutesOk = ["#/project", "#/roadmap", "#/release/v0-3", "#/map", "#/architecture", "#/guided-build"].every(function(hash) {
+            location.hash = hash;
+            routeRender();
+            var s = sidebarState();
+            return s.context === "build" && s.lessonLinks === 0 && s.projectLinks > 0 &&
+              sidebarEl.querySelectorAll('.sidebar-link[aria-current="page"]').length === 1;
+          });
+          assert("project, roadmap, release, map, architecture and guided overview all use the project sidebar with exactly one active top link",
+            projectRoutesOk);
+
+          var overviewOk = ["#/dashboard", "#/resources"].every(function(hash) {
+            location.hash = hash;
+            routeRender();
+            var s = sidebarState();
+            return s.context === "overview" && s.projectLinks === 0 && !!sidebarEl.querySelector(".module-toggle") &&
+              sidebarEl.querySelectorAll(".sidebar-links .sidebar-link").length === 2;
+          });
+          location.hash = "#/dashboard";
+          routeRender();
+          var dashRootNav = document.getElementById("route-view");
+          assert("dashboard and resources use the compact overview sidebar, and the dashboard offers the two journeys",
+            overviewOk && !!dashRootNav.querySelector('[data-journey="learn"] a[href^="#lesson/"]') &&
+            !!dashRootNav.querySelector('[data-journey="build"] a[href^="#/guided-build/"]'));
+
+          var forbiddenLabels = ["Current Learning", "Current Build Target", "Today’s Project Impact", "Learn →", "Build →", "Project Progress"];
+          var dashText = dashRootNav.textContent;
+          assert("dashboard carries no forbidden English labels (Current Learning / Current Build Target / Today’s Project Impact / Learn → / Build →)",
+            forbiddenLabels.every(function(label) { return dashText.indexOf(label) === -1; }) &&
+            /Bạn đang học gì\?/.test(dashText) && /Mục tiêu xây dựng hiện tại/.test(dashText) &&
+            /Bài học này ảnh hưởng gì đến Spendwise\?/.test(dashText) && /Tiếp theo/.test(dashText));
+
+          /* Two-way bridge: guided step "Ôn lại" → lesson shows a way back →
+             the lesson lists the guided steps that use it. */
+          var bridgeHit = null;
+          orderedGuidedReleases().some(function(gr) {
+            return guidedBuildData.guidedSteps.some(function(st) {
+              var sess = CourseCore.selectGuidedSession(guidedBuildData.guidedSessions, st.sessionId, gr.releaseId);
+              if (sess && (st.theoryBridge || []).some(function(b) { return b.lessonId === "day-14"; })) { bridgeHit = { releaseId: gr.releaseId, step: st }; return true; }
+              return false;
+            });
+          });
+          var bridgeOk = false;
+          if (bridgeHit) {
+            var bridgeStepHash = guidedStepHref(bridgeHit.releaseId, bridgeHit.step);
+            location.hash = bridgeStepHash;
+            routeRender();
+            var bridgeLink = document.getElementById("route-view").querySelector('a[data-bridge-lesson="day-14"]');
+            if (bridgeLink) {
+              bridgeLink.addEventListener("click", function(ev) { ev.preventDefault(); }, { once: true });
+              bridgeLink.click();
+            }
+            location.hash = "#/lesson/day-14";
+            routeRender();
+            var lessonRootNav = document.getElementById("route-view");
+            var backLink = lessonRootNav.querySelector(".lesson-return-link");
+            bridgeOk = !!bridgeLink && /^Ôn lại: .+ — Day 14$/.test(bridgeLink.textContent) &&
+              !!backLink && backLink.getAttribute("href") === bridgeStepHash &&
+              !!lessonRootNav.querySelector('.lesson-build-bridges a[href="' + bridgeStepHash + '"]');
+          }
+          returnToBuild = null;
+          assert("theory bridge round trip: “Ôn lại … — Day 14” opens the lesson with a way back, and the lesson lists the guided step that uses it",
+            bridgeOk);
+
+          location.hash = guidedStepHref(navFirstRelease, navFirstStep);
+          routeRender();
+          var sessionToggleNav = sidebarEl.querySelector(navSessionSelector);
+          var sessionListNav = document.getElementById("pnav-" + navFirstStep.sessionId);
+          sessionToggleNav.click();
+          var collapsedOk = sessionToggleNav.getAttribute("aria-expanded") === "false" && sessionListNav.hidden &&
+            getComputedStyle(sessionListNav).display === "none";
+          sessionToggleNav.click();
+          assert("project sidebar session collapses and expands (aria-expanded + [hidden] beats the author display)",
+            collapsedOk && sessionToggleNav.getAttribute("aria-expanded") === "true" && !sessionListNav.hidden);
+          delete projectNavOpen[navFirstStep.sessionId];
+
+          openDrawer();
+          var drawerFocusOk = document.activeElement && document.activeElement.classList.contains("project-nav-link") &&
+            document.activeElement.getAttribute("aria-current") === "page";
+          closeDrawer();
+          assert("mobile drawer opens on the project tree in build context and focuses the current step",
+            drawerFocusOk);
         } catch (e) {
           results.push({ name: "self-test crashed: " + e.message, ok: false });
         } finally {
