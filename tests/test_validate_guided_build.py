@@ -418,6 +418,28 @@ class GuidedBuildValidatorTests(unittest.TestCase):
         errors = validate_guided_build(guided, _minimal_project())
         self.assertTrue(any("authored session has no guidedCheckpoint" in e for e in errors))
 
+    def test_29_teaching_fields_pass(self):
+        guided = _complete_authored_guided()
+        guided["guidedSessions"][0].update(projectNow="Co X.", sessionAdds="Them Y.")
+        guided["guidedSteps"][0]["codeBlocks"] = [{"language": "java", "code": "class X {}", "explanation": "Vi sao X."}]
+        guided["guidedSteps"][0]["selfCheck"] = [{"question": "Vi sao?", "answer": "Vi vay."}]
+        self.assertEqual(validate_guided_build(guided, _minimal_project()), [])
+
+    def test_30_bad_self_check_fails(self):
+        guided = _complete_authored_guided()
+        guided["guidedSteps"][0]["selfCheck"] = [{"question": "Vi sao?"}]
+        errors = validate_guided_build(guided, _minimal_project())
+        self.assertTrue(any("answer must be a nonempty string" in e for e in errors))
+        guided["guidedSteps"][0]["selfCheck"] = []
+        errors = validate_guided_build(guided, _minimal_project())
+        self.assertTrue(any("1-4 entries" in e for e in errors))
+
+    def test_31_empty_session_continuity_fails(self):
+        guided = _complete_authored_guided()
+        guided["guidedSessions"][0]["projectNow"] = ""
+        errors = validate_guided_build(guided, _minimal_project())
+        self.assertTrue(any("projectNow must be a nonempty string" in e for e in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

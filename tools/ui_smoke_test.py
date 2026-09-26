@@ -457,6 +457,9 @@ def main() -> int:
                             failures.append(f"  got: {snippet.group(1)!r}")
                         for err in re.findall(r'SELFTEST #\d+ FAILED: [^<]*', dom):
                             failures.append(f"  {err}")
+                        df = re.search(r'data-failed="([^"]*)"', dom)
+                        if df and df.group(1):
+                            failures.append(f"  data-failed: {df.group(1)!r}")
 
                 if name != "mobile" and not args.skip_screenshots:
                     shot_cmd = build_screenshot_command(
@@ -503,45 +506,45 @@ def main() -> int:
                     "Điểm dừng cuối: V0.1 hoàn thành",
                 ),
                 "guided-release-v07-authored": (
-                    "#/guided-build/v0-7", "Budget: gioi han theo category + thang, chi luu limit",
+                    "#/guided-build/v0-7", "Budget: giới hạn theo category + tháng, chỉ lưu limit",
                 ),
                 "guided-v07-session-first": (
                     "#/guided-build/v0-7/session-budget-model",
-                    "Budget: gioi han theo category + thang, chi luu limit",
+                    "Budget: giới hạn theo category + tháng, chỉ lưu limit",
                 ),
                 "guided-v07-step-your-turn": (
                     "#/guided-build/v0-7/session-budget-model/step-v07-budget-model-entity",
-                    "Tu viet Budget entity va BudgetPeriod",
+                    "Tự viết Budget entity và BudgetPeriod",
                 ),
                 "guided-v07-step-last-in-release": (
                     "#/guided-build/v0-7/session-dashboard-read-model/step-v07-dashboard-read-model-checkpoint",
-                    "Diem dung: V0.7 hoan chinh",
+                    "Điểm dừng: V0.7 hoàn chỉnh",
                 ),
                 "guided-release-v08-authored": (
-                    "#/guided-build/v0-8", "Bo phan tich CSV tuan tu",
+                    "#/guided-build/v0-8", "Bộ phân tích CSV tuần tự",
                 ),
                 "guided-v08-session-first": (
                     "#/guided-build/v0-8/session-csv-parse",
-                    "Bo phan tich CSV tuan tu",
+                    "Bộ phân tích CSV tuần tự",
                 ),
                 "guided-v08-step-your-turn": (
                     "#/guided-build/v0-8/session-csv-parse/step-v08-csv-parse-implement",
-                    "Tu viet CsvStatementParser",
+                    "Tự viết CsvStatementParser",
                 ),
                 "guided-v08-step-last-in-release": (
                     "#/guided-build/v0-8/session-csv-export/step-v08-csv-export-checkpoint",
                     "Điểm dừng: export CSV escaping đúng",
                 ),
                 "guided-release-v09-authored": (
-                    "#/guided-build/v0-9", "Cache du lieu tham chieu",
+                    "#/guided-build/v0-9", "Cache dữ liệu tham chiếu",
                 ),
                 "guided-v09-session-first": (
                     "#/guided-build/v0-9/session-v09-reference-data-cache",
-                    "Cache du lieu tham chieu",
+                    "Cache dữ liệu tham chiếu",
                 ),
                 "guided-v09-step-your-turn": (
                     "#/guided-build/v0-9/session-v09-reference-data-cache/step-v09-reference-data-cache-02",
-                    "Bat ConcurrentMapCacheManager",
+                    "Bật ConcurrentMapCacheManager",
                 ),
                 "guided-release-v10-authored": (
                     "#/guided-build/v1-0", "Hardening V1.0",
@@ -552,7 +555,7 @@ def main() -> int:
                 ),
                 "guided-v10-step-your-turn": (
                     "#/guided-build/v1-0/session-v10-hardening-reconciliation/step-v10-hardening-reconciliation-02",
-                    "Kiem toan SUM tay",
+                    "Kiểm toán SUM tay",
                 ),
                 "guided-v10-step-last-in-release": (
                     "#/guided-build/v1-0/session-v10-defense-audit/step-v10-defense-audit-ck",

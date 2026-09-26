@@ -107,7 +107,24 @@ def test_disposable_db_reset_is_distinct_from_valuable_data_fail_fast() -> None:
     assert valuable_marker in text
 
 
-# --- F: V0.1-V0.5 learner-visible content is structurally unchanged from baseline ---
+# --- F: V0.1-V0.5 technical skeleton is unchanged from baseline ---
+# The teaching-experience redesign (2026-09-25) legitimately rewrites V0.1-V0.5
+# PROSE (diacritics, selfCheck, commonErrors, run explanations, story fields),
+# so this guard pins only what the learner executes or the build keys on: ids,
+# order, type, canonical build-step join, run command/cwd, code, and the
+# checkpoint file lists. Any of those drifting is still a failure.
+
+STEP_SKELETON = ("id", "sessionId", "order", "buildStepId", "type")
+SESSION_SKELETON = ("id", "releaseId", "buildTaskId", "order")
+
+
+def _step_skeleton(step: dict) -> dict:
+    out = {k: step.get(k) for k in STEP_SKELETON}
+    run = step.get("run") or {}
+    out["run"] = {k: run.get(k) for k in ("command", "cwd")} if run else None
+    out["code"] = [(b["language"], b["code"]) for b in step.get("codeBlocks", [])]
+    return out
+
 
 def _prefix_slices(data: dict) -> dict:
     session_ids = {
@@ -115,15 +132,19 @@ def _prefix_slices(data: dict) -> dict:
     }
     return {
         "releases": [r for r in data["guidedReleases"] if r["releaseId"] in PREFIX_RELEASES],
-        "sessions": [s for s in data["guidedSessions"] if s["releaseId"] in PREFIX_RELEASES],
-        "steps": [s for s in data["guidedSteps"] if s["sessionId"] in session_ids],
+        "sessions": [
+            {k: s.get(k) for k in SESSION_SKELETON}
+            for s in data["guidedSessions"] if s["releaseId"] in PREFIX_RELEASES
+        ],
+        "steps": [_step_skeleton(s) for s in data["guidedSteps"] if s["sessionId"] in session_ids],
         "checkpoints": [
-            c for c in data.get("guidedCheckpoints", []) if c.get("sessionId") in session_ids
+            {k: c.get(k) for k in ("id", "sessionId", "expectedFiles", "expectedProjectTree")}
+            for c in data.get("guidedCheckpoints", []) if c.get("sessionId") in session_ids
         ],
     }
 
 
-def test_v01_to_v05_prefix_is_structurally_identical_to_baseline() -> None:
+def test_v01_to_v05_prefix_skeleton_is_identical_to_baseline() -> None:
     baseline_raw = subprocess.check_output(
         ["git", "show", f"{PRE_REPAIR_COMMIT}:content/spendwise-guided-build.json"],
         cwd=ROOT,

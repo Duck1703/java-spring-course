@@ -73,20 +73,21 @@ TOP_LEVEL_KEYS = {
 }
 GUIDED_COURSE_KEYS = {"id", "title", "workspaceExample", "referenceWorkspaceExample"}
 GUIDED_RELEASE_KEYS = {"releaseId", "authoringStatus"}
-GUIDED_SESSION_KEYS = {"id", "releaseId", "buildTaskId", "order", "title", "goal"}
+GUIDED_SESSION_KEYS = {"id", "releaseId", "buildTaskId", "order", "title", "goal", "projectNow", "sessionAdds"}
 GUIDED_STEP_REQUIRED_KEYS = {"id", "sessionId", "order", "buildStepId", "type", "title", "goal"}
 GUIDED_STEP_OPTIONAL_KEYS = {
     "whyThisMatters", "theoryBridge", "instructions", "codeBlocks", "learnerAction",
-    "commonErrors", "run", "reveal", "projectStateBefore", "projectStateAfter",
+    "commonErrors", "run", "reveal", "projectStateBefore", "projectStateAfter", "selfCheck",
 }
 GUIDED_STEP_KEYS = GUIDED_STEP_REQUIRED_KEYS | GUIDED_STEP_OPTIONAL_KEYS
 THEORY_BRIDGE_KEYS = {"lessonId", "note"}
 CODE_BLOCK_REQUIRED_KEYS = {"language", "code"}
-CODE_BLOCK_KEYS = CODE_BLOCK_REQUIRED_KEYS | {"caption"}
+CODE_BLOCK_KEYS = CODE_BLOCK_REQUIRED_KEYS | {"caption", "explanation"}
 LEARNER_ACTION_KEYS = {"goal", "constraints", "hints"}
 COMMON_ERROR_KEYS = {"symptom", "likelyCause", "fix"}
 RUN_KEYS = {"cwd", "command", "expectedResult", "explanation"}
 REVEAL_KEYS = {"label", "content"}
+SELF_CHECK_KEYS = {"question", "answer"}
 GUIDED_CHECKPOINT_REQUIRED_KEYS = {"id", "sessionId", "expectedFiles", "understanding", "whatYouBuilt"}
 GUIDED_CHECKPOINT_OPTIONAL_KEYS = {"expectedProjectTree", "whyNotYet"}
 GUIDED_CHECKPOINT_KEYS = GUIDED_CHECKPOINT_REQUIRED_KEYS | GUIDED_CHECKPOINT_OPTIONAL_KEYS
@@ -204,6 +205,9 @@ def _validate_guided_sessions(sessions, release_status: dict, canonical_tasks: d
         errors.extend(_check_id(sid, scope, seen_ids, "guidedSession"))
         errors.extend(_require_str(session, "title", scope))
         errors.extend(_require_str(session, "goal", scope))
+        for key in ("projectNow", "sessionAdds"):
+            if key in session:
+                errors.extend(_require_str(session, key, scope))
 
         release_id = session.get("releaseId")
         task_id = session.get("buildTaskId")
@@ -268,8 +272,9 @@ def _validate_code_blocks(blocks, scope: str, errors: list[str]) -> None:
         errors.extend(_closed_keys(block, CODE_BLOCK_KEYS, scope))
         for key in CODE_BLOCK_REQUIRED_KEYS:
             errors.extend(_require_str(block, key, scope))
-        if "caption" in block:
-            errors.extend(_require_str(block, "caption", scope))
+        for key in ("caption", "explanation"):
+            if key in block:
+                errors.extend(_require_str(block, key, scope))
 
 
 def _validate_learner_action(action, scope: str, errors: list[str]) -> None:
@@ -312,6 +317,19 @@ def _validate_reveal(reveal, scope: str, errors: list[str]) -> None:
     errors.extend(_closed_keys(reveal, REVEAL_KEYS, scope))
     for key in REVEAL_KEYS:
         errors.extend(_require_str(reveal, key, scope))
+
+
+def _validate_self_check(entries, scope: str, errors: list[str]) -> None:
+    if not isinstance(entries, list) or not 1 <= len(entries) <= 4:
+        errors.append(_error(scope, "selfCheck must be a list of 1-4 entries"))
+        return
+    for entry in entries:
+        if not isinstance(entry, dict):
+            errors.append(_error(scope, "selfCheck entry must be an object"))
+            continue
+        errors.extend(_closed_keys(entry, SELF_CHECK_KEYS, scope))
+        for key in SELF_CHECK_KEYS:
+            errors.extend(_require_str(entry, key, scope))
 
 
 def _validate_guided_steps(steps, sessions_by_id: dict, canonical_step_task_ids: dict, seen_ids: dict, errors: list[str]) -> list:
@@ -366,6 +384,7 @@ def _validate_guided_steps(steps, sessions_by_id: dict, canonical_step_task_ids:
             ("theoryBridge", _validate_theory_bridge),
             ("codeBlocks", _validate_code_blocks),
             ("commonErrors", _validate_common_errors),
+            ("selfCheck", _validate_self_check),
         ):
             if optional_key in step:
                 validator(step.get(optional_key), scope, errors)
