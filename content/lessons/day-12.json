@@ -108,7 +108,7 @@
         {
           "id": "day12-blk-6",
           "type": "note",
-          "text": "Files.writeString() (từ Java 11) cũng là một phương thức tĩnh của Files thao tác trên Path, tương tự nhóm Files.createFile()/delete() đã nêu trong bài học File I/O — ở đây dùng để ghi trực tiếp nội dung JSON đã dựng sẵn thành String ra file báo cáo. Vì báo cáo chứa tên category tiếng Việt có dấu, phải truyền tường minh StandardCharsets.UTF_8 (đã học ở Day 11) thay vì để mặc định — nếu không, file xuất ra có thể hiển thị sai ký tự trên môi trường có charset mặc định khác UTF-8 (đặc biệt trên Windows). Đây là JSON dựng thủ công bằng StringBuilder như một bước đệm; trong dự án Spring Boot thật (từ Day 16 trở đi), nên dùng ObjectMapper (Jackson) thay vì tự dựng chuỗi JSON để tránh phải tự escape và dễ bảo trì hơn.",
+          "text": "Files.writeString() (từ Java 11) cũng là một phương thức tĩnh của Files thao tác trên Path, tương tự nhóm Files.createFile()/delete() đã nêu trong bài học File I/O — ở đây dùng để ghi trực tiếp nội dung JSON đã dựng sẵn thành String ra file báo cáo. Ở đây ví dụ truyền tường minh StandardCharsets.UTF_8 cho rõ ràng và nhất quán, nhưng đó KHÔNG phải điều bắt buộc để đúng: overload `Files.writeString(path, text)` không nhận Charset vẫn ghi bằng UTF-8 theo hợp đồng API (đúng trên cả Java 17), nên tiếng Việt có dấu không bị hỏng dù bỏ tham số charset — charset mặc định của máy chỉ ảnh hưởng tới nhóm API `java.io` cũ như `FileWriter`, và JEP 400 đổi mặc định đó kể từ Java 18, không liên quan tới các method `Files` này. Đây là JSON dựng thủ công bằng StringBuilder như một bước đệm; trong dự án Spring Boot thật (từ Day 16 trở đi), nên dùng ObjectMapper (Jackson) thay vì tự dựng chuỗi JSON để tránh phải tự escape và dễ bảo trì hơn.",
           "citations": [
             "day12-src-1",
             "day12-src-4"
@@ -219,7 +219,7 @@
     "Tự tạo biến đếm chia sẻ (ví dụ int errorCount) và cập nhật trực tiếp bên trong lambda của parallelStream() mà không đồng bộ — gây race condition ngay cả khi logic chính đã dùng Collectors an toàn.",
     "So sánh hiệu năng parallel vs sequential bằng một lần đo đơn lẻ với System.currentTimeMillis(), không warm-up JIT trước, dẫn tới kết luận sai lệch về việc parallel có thực sự nhanh hơn hay không.",
     "Gọi readValidRows() để lấy List<SalesRow> đầy đủ rồi mới nhóm theo category, thay vì truyền thẳng stream (chưa collect) vào aggregateByCategory() — vẫn giữ toàn bộ 500K dòng hợp lệ trong bộ nhớ cùng lúc, y hệt vấn đề mà mistake #1 cảnh báo (xem day12-blk-14).",
-    "Bỏ qua charset khi ghi báo cáo chứa tiếng Việt bằng Files.writeString(target, content) — không truyền StandardCharsets.UTF_8 tường minh có thể khiến file xuất ra hiển thị sai ký tự trên môi trường có charset mặc định khác UTF-8 (đặc biệt trên Windows).",
+    "Cho rằng phải truyền StandardCharsets.UTF_8 cho Files.writeString()/Files.readString() nếu không sẽ hỏng tiếng Việt — thực ra các overload không nhận Charset của Files đã ghi/đọc bằng UTF-8 theo hợp đồng API (kể cả Java 17); lỗi charset thật nằm ở nhóm java.io cũ (FileWriter/FileReader, new String(bytes)) phụ thuộc charset mặc định của máy, đó mới là chỗ phải truyền charset tường minh.",
     "Dùng double để cộng dồn revenue (tiền) thay vì kiểu số nguyên như long — lặp lại đúng lỗi đã cảnh báo từ Day 01 (không dùng double cho tiền) và đã mắc lại ở Day 06; sai số làm tròn của double tích lũy qua 500K dòng có thể cho tổng sai lệch."
   ],
   "teaching": {

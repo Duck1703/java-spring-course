@@ -85,7 +85,7 @@
         {
           "id": "day11-blk-30",
           "type": "paragraph",
-          "text": "Mental model để nhớ cả bài: một thread là một *luồng thực thi* có stack riêng nhưng dùng chung heap với mọi thread khác trong cùng JVM. Vì stack riêng nên biến local luôn an toàn; vì heap dùng chung nên mọi field của object chia sẻ đều là điểm có thể xảy ra lỗi đồng thời. Toàn bộ phần còn lại của Day 11 (synchronized, volatile, executor) chỉ là các cách trả lời hai câu hỏi: 'ai được sửa dữ liệu chung tại một thời điểm' (atomicity) và 'khi nào thread khác nhìn thấy thay đổi đó' (visibility).",
+          "text": "Mental model để nhớ cả bài: một thread là một *luồng thực thi* có stack riêng nhưng dùng chung heap với mọi thread khác trong cùng JVM. Bản thân *slot biến local* nằm trên stack riêng của một thread nên thread khác không đọc/ghi trực tiếp vào nó được — nhưng đừng nhầm 'biến local' với 'object mà nó trỏ tới': nếu biến local giữ tham chiếu tới một object *mutable dùng chung* (ví dụ được truyền vào từ bên ngoài), thì object đó vẫn nằm trên heap và vẫn có thể bị tranh chấp đồng thời. Nói cách khác, an toàn nằm ở chỗ *slot biến* thuộc riêng một thread, không phải ở chỗ dữ liệu nó trỏ tới. Vì heap dùng chung nên mọi field của object chia sẻ đều là điểm có thể xảy ra lỗi đồng thời. Toàn bộ phần còn lại của Day 11 (synchronized, volatile, executor) chỉ là các cách trả lời hai câu hỏi: 'ai được sửa dữ liệu chung tại một thời điểm' (atomicity) và 'khi nào thread khác nhìn thấy thay đổi đó' (visibility).",
           "citations": [
             "day11-src-1"
           ]
@@ -187,7 +187,7 @@
         {
           "id": "day11-blk-8",
           "type": "paragraph",
-          "text": "Trong hệ nhiều lõi, mỗi thread có thể giữ bản sao biến trong cache riêng; nếu không đồng bộ, thread khác có thể không thấy giá trị vừa cập nhật (memory visibility) hoặc thấy các thay đổi theo thứ tự khác với thứ tự chương trình gốc (reordering).",
+          "text": "Java Memory Model (JMM) — chứ không phải một kiến trúc phần cứng cụ thể — mới là thứ định nghĩa khi nào một thread *bắt buộc* nhìn thấy giá trị do thread khác ghi. Theo JMM, nếu giữa hai thao tác không có quan hệ đồng bộ (happens-before) thì runtime được tự do để một thread *không* thấy giá trị vừa được thread khác cập nhật (mất visibility), hoặc thấy các thao tác theo thứ tự khác với thứ tự trong mã nguồn (reordering). Cách hình dung 'mỗi lõi CPU giữ một bản sao biến trong cache riêng và chưa đẩy về bộ nhớ chung' chỉ là *minh họa trực quan, không phải định nghĩa chuẩn* — điều JMM thực sự bảo đảm là các quy tắc happens-before, không phải một mô hình cache/bộ nhớ chính cụ thể.",
           "citations": [
             "day11-src-7"
           ]
@@ -196,7 +196,7 @@
           "id": "day11-blk-9",
           "type": "code",
           "language": "java",
-          "code": "class VolatileFlagDemo {\n    private volatile boolean running = true;\n\n    void stop() {\n        running = false;\n    }\n\n    void loopUntilStopped() {\n        while (running) {\n            // công việc lặp, luôn đọc giá trị mới nhất từ bộ nhớ chính\n        }\n    }\n}\n",
+          "code": "class VolatileFlagDemo {\n    private volatile boolean running = true;\n\n    void stop() {\n        running = false;\n    }\n\n    void loopUntilStopped() {\n        while (running) {\n            // công việc lặp; running là volatile nên happens-before đảm bảo thấy stop() từ thread khác\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day11-src-8"
@@ -205,7 +205,7 @@
         {
           "id": "day11-blk-10",
           "type": "note",
-          "text": "Đánh dấu biến volatile buộc runtime/processor không được sắp xếp lại các lệnh liên quan tới biến đó và luôn ghi/đọc giá trị mới nhất từ bộ nhớ chính, đảm bảo mọi thread thấy giá trị nhất quán — nhưng không cấp mutual exclusion như synchronized (không thay thế được synchronized khi cần đảm bảo một khối thao tác là nguyên tử). Theo Java Memory Model, một lần ghi vào biến volatile luôn happens-before mọi lần đọc tiếp theo của cùng biến đó, nên các giá trị thread A thấy trước khi ghi volatile cũng được thread B thấy sau khi đọc volatile đó.",
+          "text": "Theo Java Memory Model, một lần *ghi* vào biến volatile luôn happens-before mọi lần *đọc* tiếp theo của chính biến đó; nhờ quan hệ happens-before này, mọi thay đổi mà thread A thực hiện trước khi ghi volatile đều được thread B nhìn thấy sau khi đọc volatile đó (visibility), và JMM cũng cấm sắp xếp lại các lệnh vượt qua thao tác volatile (ordering). Đây là bảo đảm ở mức *đặc tả ngôn ngữ*, không phụ thuộc kiến trúc phần cứng cụ thể; có thể hình dung nôm na rằng ghi/đọc volatile luôn đi tới 'bộ nhớ chung' thay vì cache riêng, nhưng đó chỉ là hình ảnh trực quan còn bảo đảm thật nằm ở happens-before. Lưu ý volatile *không* cấp mutual exclusion như synchronized và không làm một khối thao tác trở nên nguyên tử — riêng `count++` vẫn không an toàn dù `count` là volatile, vì đó là chuỗi đọc–sửa–ghi.",
           "citations": [
             "day11-src-9"
           ]
@@ -363,7 +363,7 @@
         {
           "id": "day11-blk-44",
           "type": "warning",
-          "text": "Ba edge case gây bug thật: (1) không chỉ định charset — `Files.readAllLines(path)` dùng UTF-8 từ Java 18 nhưng trên Java 17 nhiều API text vẫn phụ thuộc default charset của máy, nên code chạy đúng trên máy dev và làm hỏng tiếng Việt trên server; luôn truyền `StandardCharsets.UTF_8` tường minh; (2) `Files.lines(...)` mở một file handle và chỉ đóng khi stream được close — quên try-with-resources sẽ rò rỉ file descriptor; (3) đường dẫn ghép từ input người dùng phải được `normalize()` và kiểm tra `startsWith(baseDir)` để chặn path traversal (`../../etc/passwd`) — điều bắt buộc khi làm chức năng upload/download ở Day 26.",
+          "text": "Ba edge case gây bug thật: (1) hiểu sai charset — các overload không nhận `Charset` của `java.nio.file.Files` như `Files.readAllLines(path)`, `Files.readString(path)`, `Files.writeString(path, text)` KHÔNG dùng charset mặc định của máy: theo hợp đồng API, chúng dùng UTF-8 (đúng trên cả Java 17), nên nỗi lo 'chạy đúng trên máy dev, hỏng tiếng Việt trên server' không áp dụng cho các method NIO này; JEP 400 chỉ đổi charset *mặc định* của nhóm API `java.io` cũ (ví dụ `new FileReader(file)`) kể từ Java 18 — đó mới là chỗ default charset của máy từng gây lỗi. Truyền `StandardCharsets.UTF_8` tường minh vẫn nên làm cho rõ ràng và nhất quán, nhưng không phải vì 'Java 17 dùng charset máy ở đây'; (2) `Files.lines(...)` mở một file handle và chỉ đóng khi stream được close — quên try-with-resources sẽ rò rỉ file descriptor; (3) đường dẫn ghép từ input người dùng phải được `normalize()` và kiểm tra `startsWith(baseDir)` để chặn path traversal (`../../etc/passwd`) — điều bắt buộc khi làm chức năng upload/download ở Day 26.",
           "citations": [
             "day11-src-15",
             "day11-src-16"
