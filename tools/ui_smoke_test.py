@@ -480,6 +480,7 @@ def main() -> int:
             # for the "not yet authored" marker (v0-2 stopped being a valid
             # fixture for that once it was authored).
             guided_routes = {
+                "guided-intro": ("#/guided-intro", "Spendwise là gì"),
                 "guided-overview": ("#/guided-build", "roadmap-release"),
                 "guided-release-v01-authored": ("#/guided-build/v0-1", "Tạo nền móng project Spendwise"),
                 "guided-session-first": (

@@ -93,6 +93,14 @@ test("parseRoute recognizes all four Guided Build routes, longest-segment-first,
   assert.deepEqual(core.parseRoute("#/architecture"), { view: "architecture" });
 });
 
+test("parseRoute recognizes the project introduction route without shadowing guided-build", () => {
+  assert.deepEqual(core.parseRoute("#/guided-intro"), { view: "guided-intro" });
+  // The intro is an exact match, so the guided-build/<release> patterns and
+  // the bare guided-build overview are all still intact alongside it.
+  assert.deepEqual(core.parseRoute("#/guided-build"), { view: "guided-build" });
+  assert.deepEqual(core.parseRoute("#/guided-build/v0-1"), { view: "guided-release", releaseId: "v0-1" });
+});
+
 // ---- Guided Build fixtures -------------------------------------------------
 const guidedSessions = [
   { id: "session-2", releaseId: "v0-1", buildTaskId: "task-a", order: 2, title: "S2", goal: "g" },
@@ -181,7 +189,7 @@ test("firstIncompleteGuidedStep resumes at the first incomplete step, or the las
 
 test("navContextForRoute: lessons → learn, every Spendwise surface → build, the rest → overview", () => {
   assert.equal(core.navContextForRoute("lesson"), "learn");
-  for (const view of ["guided-build", "guided-release", "guided-session", "guided-step",
+  for (const view of ["guided-intro", "guided-build", "guided-release", "guided-session", "guided-step",
     "project", "roadmap", "release", "task", "map", "architecture"]) {
     assert.equal(core.navContextForRoute(view), "build", view);
   }

@@ -1773,6 +1773,51 @@
     .guided-run-command pre { font-size: .9375rem; font-weight: 600; }
     .guided-run-command figcaption { font-weight: 700; }
 
+    /* ---- Project orientation (#/guided-intro) ------------------------
+       Reuses .project-panel / .btn / .criteria-list / guided-phase accents;
+       only the intro-specific layout primitives live here. */
+    .intro-key-message {
+      margin: .75rem 0; padding: .625rem .875rem; font-weight: 650;
+      border-left: 3px solid var(--project); background: var(--project-soft);
+      color: var(--project-ink); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .intro-tree { list-style: none; margin: .5rem 0 0; padding: 0; font-family: var(--mono); }
+    .intro-tree-root { font-weight: 800; color: var(--project-ink); }
+    .intro-tree-branch { list-style: none; margin: .25rem 0 0; padding: .25rem 0 0 1rem; border-left: 2px solid var(--line); }
+    .intro-tree-branch > li { padding: .25rem 0; display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+    .intro-tree-node { font-weight: 700; color: var(--ink); }
+    .intro-tree-node::before { content: "├─ "; color: var(--muted); }
+    .intro-tree-desc { font-family: var(--sans, inherit); font-size: .8438rem; color: var(--muted); }
+    .intro-releases { display: grid; gap: .625rem; margin-top: .5rem; }
+    .intro-release { padding: .75rem .875rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .intro-release-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; margin-bottom: .375rem; }
+    .intro-release-ver { font-family: var(--mono); font-size: .75rem; font-weight: 800; color: var(--project-ink); }
+    .intro-release-title { font-weight: 750; }
+    .intro-release-line { display: flex; gap: .5rem; margin: .1875rem 0; font-size: .875rem; line-height: 1.5; }
+    .intro-release-tag {
+      flex-shrink: 0; align-self: flex-start; font-size: .6875rem; font-weight: 700; text-transform: uppercase;
+      padding: .0625rem .375rem; border-radius: var(--radius-sm); background: var(--surface-strong); color: var(--muted);
+    }
+    .intro-release-tag--after { background: var(--ok-soft); color: var(--ok); }
+    .intro-release .text-link { display: inline-block; margin-top: .375rem; font-size: .8125rem; }
+    .intro-flow { display: flex; flex-direction: column; align-items: center; gap: .1875rem; margin: .5rem 0; }
+    .intro-flow-node {
+      font-family: var(--mono); font-size: .8125rem; font-weight: 700; padding: .375rem .75rem; min-width: 12rem; text-align: center;
+      border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface-strong); color: var(--ink);
+    }
+    .intro-flow-arrow { color: var(--muted); font-weight: 700; line-height: 1; }
+    .intro-learnflow { display: grid; gap: .625rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); margin: .5rem 0; }
+    .intro-phase { padding: .75rem .875rem; border-radius: var(--radius-md); }
+    .intro-phase-name { font-weight: 800; letter-spacing: .02em; font-size: .8125rem; }
+    .intro-phase-desc { font-size: .875rem; color: var(--muted); margin-top: .25rem; }
+    .intro-endpoints { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .375rem; }
+    .intro-endpoints > li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+    .intro-ep-method { font-family: var(--mono); font-size: .75rem; font-weight: 800; padding: .0625rem .375rem; border-radius: var(--radius-sm); background: var(--project-soft); color: var(--project-ink); min-width: 3.25rem; text-align: center; }
+    .intro-ep-path { font-family: var(--mono); font-size: .8125rem; color: var(--ink); }
+    .intro-ep-desc { font-size: .8438rem; color: var(--muted); }
+    .intro-cta { display: flex; flex-wrap: wrap; gap: .625rem; margin-top: .75rem; }
+    .intro-cta .btn--primary { background: var(--project-ink); border-color: var(--project-ink); }
+
     /* This block must stay last: it overrides base rules for several
        selectors (.dash-progress-card, .project-*-grid, .release-columns,
        .roadmap-release, .curriculum-row) that are declared further down
@@ -1864,6 +1909,10 @@
       const raw = String(hash ?? "").replace(/^#\/?/, "");
       if (!raw || raw === "dashboard") return { view: "dashboard" };
       if (raw === "resources") return { view: "resources" };
+      /* Product orientation: a first-class Spendwise destination that sits
+         before V0.1 in the build track. Exact match, so it never collides
+         with the guided-build/<release> patterns below. */
+      if (raw === "guided-intro") return { view: "guided-intro" };
       if (raw === "project") return { view: "project" };
       if (raw === "roadmap") return { view: "roadmap" };
       if (raw === "map") return { view: "map" };
@@ -2220,7 +2269,7 @@
     // (theory lessons → curriculum tree), "build" (every Spendwise surface →
     // project tree) or "overview" (dashboard/resources → compact two-journey
     // nav). Pure: a route view string in, a context string out.
-    const BUILD_VIEWS = new Set(["guided-build", "guided-release", "guided-session", "guided-step",
+    const BUILD_VIEWS = new Set(["guided-intro", "guided-build", "guided-release", "guided-session", "guided-step",
       "project", "roadmap", "release", "task", "map", "architecture"]);
     function navContextForRoute(view) {
       if (view === "lesson") return "learn";
@@ -3886,6 +3935,7 @@
       function renderProjectTree(nav, route) {
         var top = el('ul', 'sidebar-links');
         [
+          { views: ['guided-intro'], href: '#/guided-intro', label: '★ Giới thiệu dự án' },
           { views: ['guided-build'], href: '#/guided-build', label: 'Lộ trình xây dựng' },
           { views: ['project', 'task'], href: '#/project', label: 'Kế hoạch dự án' },
           { views: ['roadmap', 'release'], href: '#/roadmap', label: 'Các release' },
@@ -4041,6 +4091,7 @@
         else if (route.view === 'task') renderTaskDetail(view, route.taskId);
         else if (route.view === 'map') renderCourseProjectMap(view);
         else if (route.view === 'architecture') renderArchitecture(view);
+        else if (route.view === 'guided-intro') renderGuidedIntro(view);
         else if (route.view === 'guided-build') renderGuidedOverview(view);
         else if (route.view === 'guided-release') renderGuidedRelease(view, route.releaseId);
         else if (route.view === 'guided-session') renderGuidedSession(view, route.releaseId, route.sessionId);
@@ -5531,6 +5582,206 @@
       // authoringStatus. All 10 releases V0.1-V1.0 are authored now; the
       // "Chưa biên soạn" empty state remains in the renderer as an honest
       // fallback for any release whose content is ever absent.
+      /* Product orientation page (#/guided-intro). Sits before V0.1 in the
+         build track: answers "tôi đang xây sản phẩm gì?" before any code.
+         Release list is data-driven from projectData.releases; the per-release
+         before/after narrative and the beginner prose are authored here. */
+      function renderGuidedIntro(container) {
+        var header = renderProjectWorkspaceHeader(
+          container, 'Xây dựng Spendwise', 'Giới thiệu dự án',
+          'Trước khi viết dòng code đầu tiên, hãy hiểu rõ: bạn đang xây sản phẩm gì, cho ai, và vì sao lộ trình đi từ Java thuần tới Spring production.');
+        header.setAttribute('data-guided-intro', '');
+        function panel(title) {
+          var s = el('section', 'project-panel release-section');
+          if (title) s.appendChild(el('h2', null, title));
+          container.appendChild(s);
+          return s;
+        }
+
+        var s1 = panel('Spendwise là gì?');
+        s1.appendChild(el('p', null, 'Spendwise là một ứng dụng quản lý tài chính cá nhân. Nó giúp một người theo dõi tiền của mình: tiền đang ở đâu, mỗi tháng thu vào và chi ra bao nhiêu, và có đang tiêu quá tay so với dự định không.'));
+        s1.appendChild(el('p', null, 'Trong khóa học này, chúng ta sẽ xây phần backend của Spendwise bằng Java và Spring Boot — phần chạy phía sau, lưu dữ liệu và xử lý mọi quy tắc tính toán. Chúng ta không làm giao diện; thay vào đó Spendwise mở ra một REST API để các ứng dụng khác gọi vào.'));
+        s1.appendChild(el('p', 'sidebar-note', 'Đây không phải app khổng lồ. Spendwise cố tình nhỏ gọn để một người học hiểu trọn vẹn, nhưng đủ thật để chạm tới mọi khái niệm quan trọng của Java và Spring.'));
+
+        var s2 = panel('Một người dùng Spendwise sẽ làm gì?');
+        s2.appendChild(el('p', null, 'Hãy tưởng tượng Minh — một người đi làm muốn kiểm soát chi tiêu.'));
+        var story = el('ul', 'criteria-list');
+        [
+          'Minh đăng ký một tài khoản và đăng nhập vào Spendwise.',
+          'Minh tạo vài tài khoản tài chính: “Ví tiền mặt”, “Tài khoản ngân hàng”.',
+          'Mỗi khi nhận lương, Minh ghi một khoản thu; mỗi khi mua đồ, Minh ghi một khoản chi và gắn nhãn (category) như “Ăn uống”, “Đi lại”.',
+          'Cuối tuần Minh chuyển tiền từ tài khoản ngân hàng sang ví tiền mặt — Spendwise trừ một bên, cộng bên kia, không để lệch.',
+          'Minh đặt ngân sách: “Ăn uống tối đa 3 triệu/tháng” và theo dõi đã tiêu bao nhiêu.',
+          'Với khoản lặp lại như tiền nhà, Minh khai báo giao dịch định kỳ để hệ thống tự tạo hằng tháng.',
+          'Cuối tháng Minh import file CSV sao kê ngân hàng để khỏi nhập tay, và có thể export dữ liệu ra CSV.',
+          'Bất cứ lúc nào Minh cũng xem được số dư và bảng tổng quan chi tiêu.'
+        ].forEach(function(t){ story.appendChild(el('li', null, t)); });
+        s2.appendChild(story);
+        s2.appendChild(el('p', 'sidebar-note', 'Toàn bộ hành vi trên đều là chức năng có thật trong Spendwise — chính là những thứ bạn sẽ xây.'));
+        var s3 = panel('Cuối khóa bạn sẽ xây được gì?');
+        s3.appendChild(el('p', null, 'Đến V1.0, backend Spendwise sẽ có các nhóm chức năng sau:'));
+        var tree = el('ul', 'intro-tree');
+        var rootLi = el('li');
+        rootLi.appendChild(el('span', 'intro-tree-root', 'Spendwise'));
+        var branch = el('ul', 'intro-tree-branch');
+        [
+          ['Người dùng & bảo mật', 'đăng ký, đăng nhập bằng JWT, mỗi người chỉ thấy dữ liệu của mình'],
+          ['Tài khoản', 'tạo và quản lý tài khoản tài chính, theo dõi số dư'],
+          ['Giao dịch', 'ghi khoản thu / khoản chi, phân loại theo category'],
+          ['Chuyển tiền', 'chuyển giữa hai tài khoản một cách an toàn (atomic)'],
+          ['Ngân sách', 'đặt hạn mức theo category và theo tháng'],
+          ['Giao dịch định kỳ', 'tự động tạo các khoản lặp lại theo lịch'],
+          ['Import / Export', 'nhập sao kê CSV (có chống trùng lặp), xuất dữ liệu CSV'],
+          ['Dashboard & thống kê', 'tổng quan số dư, chi tiêu, báo cáo'],
+          ['Vận hành production', 'cache, scheduler, tỷ giá ngoài, test tự động, Docker'],
+          ['Thông minh (tùy chọn)', 'gợi ý category và insight hàng tháng bằng AI — chỉ tư vấn']
+        ].forEach(function(g){
+          var li = el('li');
+          li.innerHTML = '<span class="intro-tree-node">' + CourseCore.escapeHtml(g[0]) + '</span>' +
+            '<span class="intro-tree-desc">' + CourseCore.escapeHtml(g[1]) + '</span>';
+          branch.appendChild(li);
+        });
+        rootLi.appendChild(branch);
+        tree.appendChild(rootLi);
+        s3.appendChild(tree);
+
+        var s4 = panel('Tại sao chọn Spendwise để học Spring?');
+        s4.appendChild(el('p', null, 'Spendwise lớn hơn một app Todo, nhưng vẫn đủ nhỏ để một người hiểu hết. Quan trọng hơn: mỗi khái niệm Spring xuất hiện vì sản phẩm phát sinh nhu cầu, không phải vì “Spring có tính năng đó”.'));
+        var needList = el('ul', 'criteria-list');
+        [
+          ['Tiền và quy tắc nghiệp vụ phức tạp', 'cần mô hình hóa domain cẩn thận (Money, số dư, dấu tiền)'],
+          ['Nhiều object phối hợp với nhau', 'cần Dependency Injection để quản lý'],
+          ['Muốn client bên ngoài gọi vào', 'cần REST API'],
+          ['Dữ liệu phải sống sót sau khi tắt app', 'cần persistence (database)'],
+          ['Chuyển tiền không được để lệch', 'cần transaction (atomic)'],
+          ['Nhiều người dùng chung hệ thống', 'cần authentication và kiểm tra quyền sở hữu'],
+          ['Dữ liệu thật đến từ file sao kê', 'cần import/export và chống trùng'],
+          ['Muốn chạy thật, ổn định', 'cần testing, migration và các mối lo production']
+        ].forEach(function(p){
+          var li = el('li');
+          li.innerHTML = '<strong>' + CourseCore.escapeHtml(p[0]) + '</strong> → ' + CourseCore.escapeHtml(p[1]) + '.';
+          needList.appendChild(li);
+        });
+        s4.appendChild(needList);
+        var s5 = panel('Tại sao không dùng Spring ngay từ dòng code đầu tiên?');
+        s5.appendChild(el('p', null, 'V0.1 bắt đầu bằng Java thuần một cách có chủ đích. Trước tiên bạn hiểu rõ Money, Account, Transaction và các quy tắc nghiệp vụ — những object Java tự cộng tác với nhau — trước khi để Spring quản lý chúng.'));
+        s5.appendChild(el('p', 'intro-key-message', 'Spring không thay thế Java. Spring quản lý và kết nối những object Java mà bạn đã hiểu.'));
+        s5.appendChild(el('p', null, 'Nhờ vậy, khi tới V0.3 học IoC/DI, bạn đã biết rõ object nào cần object nào — nên câu hỏi “ai tạo object này, ai nối chúng lại với nhau” trở nên dễ hiểu, thay vì trừu tượng.'));
+
+        var s6 = panel('Spendwise sẽ lớn dần như thế nào?');
+        s6.appendChild(el('p', null, 'Mười release, mỗi release trả lời hai câu: trước đó Spendwise chưa làm được gì, và sau đó làm được thêm gì.'));
+        var NARR = {
+          'v0-1': ['Spendwise chưa phải web application.', 'Có mô hình nghiệp vụ tài chính bằng Java thuần: Money, Account, Transaction, Category, với quy tắc được bảo vệ ngay trong object.'],
+          'v0-2': ['Domain mới chỉ là các object rời rạc, chưa dùng được như một ứng dụng.', 'Thành ứng dụng Java chạy được: repository trong bộ nhớ, service tạo giao dịch, thống kê cơ bản, đọc/ghi CSV đơn giản.'],
+          'v0-3': ['Số object và dependency tăng lên; tự tay tạo và nối chúng bắt đầu khó quản lý.', 'Spring Boot quản lý và nối các object (bean) giúp bạn — domain giữ nguyên, không viết lại.'],
+          'v0-4': ['Chỉ code Java bên trong project mới gọi được Spendwise.', 'Mở hệ thống ra cho HTTP client qua REST API, có DTO, validation và lỗi trả về nhất quán.'],
+          'v0-5': ['Dữ liệu biến mất mỗi khi ứng dụng dừng.', 'Lưu dữ liệu thật trong PostgreSQL bằng JPA; chuyển tiền trở nên atomic, tự rollback khi lỗi.'],
+          'v0-6': ['Chưa có người dùng thật — dữ liệu của mọi người lẫn vào nhau.', 'Đăng ký/đăng nhập bằng JWT và backend tự kiểm tra quyền sở hữu; dữ liệu người này không lộ cho người khác.'],
+          'v0-7': ['Spendwise mới chỉ là CRUD cơ bản.', 'Có Ngân sách, Giao dịch định kỳ, Rule engine phân loại tự động và thống kê nâng cao.'],
+          'v0-8': ['Mọi giao dịch phải nhập bằng tay.', 'Import file CSV: phân tích, kiểm tra, chống trùng lặp, báo cáo kết quả; có export CSV và import nền cho dữ liệu lớn.'],
+          'v0-9': ['Chạy được nhưng chưa sẵn sàng cho môi trường thật.', 'Cache dữ liệu tham chiếu (Redis tùy chọn), scheduler cho giao dịch định kỳ, tỷ giá ngoài, test tự động, giám sát và Docker.'],
+          'v1-0': ['Đã đầy đủ chức năng cốt lõi.', 'Ổn định toàn bộ và thêm lớp AI tư vấn (gợi ý category, insight hàng tháng) — AI chỉ tư vấn, không đụng vào quy tắc nghiệp vụ; sẵn sàng cho portfolio.']
+        };
+        var relList = (projectData && projectData.releases ? projectData.releases.slice() : [])
+          .sort(function(a, b){ return Number(a.order || 0) - Number(b.order || 0); });
+        var timeline = el('div', 'intro-releases');
+        relList.forEach(function(rel){
+          var n = NARR[rel.id] || ['', ''];
+          var item = el('div', 'intro-release');
+          item.innerHTML =
+            '<div class="intro-release-head"><span class="intro-release-ver">' + CourseCore.escapeHtml(rel.version || rel.id) + '</span>' +
+            '<span class="intro-release-title">' + CourseCore.escapeHtml(rel.title || rel.id) + '</span></div>' +
+            '<div class="intro-release-line"><span class="intro-release-tag">Trước</span><span>' + CourseCore.escapeHtml(n[0]) + '</span></div>' +
+            '<div class="intro-release-line"><span class="intro-release-tag intro-release-tag--after">Sau</span><span>' + CourseCore.escapeHtml(n[1]) + '</span></div>';
+          var link = el('a', 'text-link', 'Mở ' + (rel.version || rel.id) + ' →');
+          link.href = '#/guided-build/' + rel.id;
+          item.appendChild(link);
+          timeline.appendChild(item);
+        });
+        s6.appendChild(timeline);
+        var s7 = panel('Hình dung kiến trúc cuối cùng');
+        s7.appendChild(el('p', null, 'Đến cuối khóa, một request đi qua các lớp sau:'));
+        function flowInto(parent, nodes) {
+          var flow = el('div', 'intro-flow');
+          nodes.forEach(function(step, i){
+            flow.appendChild(el('span', 'intro-flow-node', step));
+            if (i < nodes.length - 1) flow.appendChild(el('span', 'intro-flow-arrow', '↓'));
+          });
+          parent.appendChild(flow);
+        }
+        flowInto(s7, ['Client', 'REST API', 'Controller', 'Service', 'Repository', 'PostgreSQL']);
+        s7.appendChild(el('p', null, 'Khi đã có bảo mật (từ V0.6), mỗi request còn đi qua một lớp kiểm tra trước khi vào Controller:'));
+        flowInto(s7, ['Request', 'Spring Security (JWT)', 'Controller', 'Service', 'Repository', 'PostgreSQL']);
+        s7.appendChild(el('p', 'intro-key-message', 'Bạn chưa cần hiểu tất cả các khối này ngay bây giờ.'));
+        var when = el('ul', 'criteria-list');
+        [
+          ['Controller', 'khi học Spring MVC (V0.4)'],
+          ['Service', 'xuyên suốt, rõ nhất ở V0.2–V0.3'],
+          ['Repository / JPA', 'khi học persistence (V0.5)'],
+          ['Spring Security', 'khi học bảo mật (V0.6)'],
+          ['PostgreSQL', 'khi học database (V0.5)']
+        ].forEach(function(w){
+          var li = el('li');
+          li.innerHTML = '<strong>' + CourseCore.escapeHtml(w[0]) + '</strong> → ' + CourseCore.escapeHtml(w[1]) + '.';
+          when.appendChild(li);
+        });
+        s7.appendChild(when);
+
+        var s8 = panel('Chúng ta sẽ học theo cách nào?');
+        s8.appendChild(el('p', null, 'Mỗi bước trong lộ trình xây dựng có ba pha nối tiếp nhau:'));
+        var learnflow = el('div', 'intro-learnflow');
+        [
+          ['HỌC', 'hiểu kiến thức cần dùng', 'guided-phase-learn'],
+          ['CODE CÙNG TÔI', 'dùng kiến thức đó để phát triển Spendwise', 'guided-phase-code'],
+          ['KIỂM TRA', 'chạy/test và hiểu kết quả chứng minh điều gì', 'guided-phase-verify']
+        ].forEach(function(p){
+          var box = el('div', 'intro-phase ' + p[2]);
+          box.appendChild(el('div', 'intro-phase-name', p[0]));
+          box.appendChild(el('div', 'intro-phase-desc', p[1]));
+          learnflow.appendChild(box);
+        });
+        s8.appendChild(learnflow);
+        s8.appendChild(el('p', 'sidebar-note', 'Đây không phải “tải mã nguồn cuối cùng về rồi đọc”. Bạn tự tay dựng lại sản phẩm từng bước, nên hiểu vì sao mỗi dòng tồn tại.'));
+        s8.appendChild(el('p', null, 'Hai phần bổ trợ nhau: phần Học lý thuyết trả lời “Tôi cần hiểu gì?”, còn phần Xây dựng Spendwise trả lời “Tôi dùng kiến thức đó để xây Spendwise như thế nào?”.'));
+        var s9 = panel('Xem trước Spendwise ở cuối hành trình');
+        s9.appendChild(el('p', null, 'Đây là một vài endpoint thật mà chính bạn sẽ xây (xuất hiện dần từ V0.4 trở đi):'));
+        var epList = el('ul', 'intro-endpoints');
+        [
+          ['POST', '/api/auth/register', 'tạo tài khoản người dùng'],
+          ['POST', '/api/auth/login', 'đăng nhập, nhận JWT'],
+          ['POST', '/api/accounts', 'tạo tài khoản tài chính'],
+          ['GET', '/api/accounts/{id}', 'xem một tài khoản'],
+          ['POST', '/api/transactions', 'ghi một giao dịch'],
+          ['GET', '/api/transactions', 'liệt kê giao dịch'],
+          ['POST', '/api/budgets', 'tạo ngân sách'],
+          ['GET', '/api/budgets/{id}/calculation', 'xem mức chi so với hạn mức'],
+          ['GET', '/api/dashboard', 'tổng quan tài chính'],
+          ['POST', '/api/imports', 'import file CSV'],
+          ['GET', '/api/transactions/export', 'export dữ liệu ra CSV']
+        ].forEach(function(e){
+          var li = el('li');
+          li.innerHTML = '<code class="intro-ep-method">' + CourseCore.escapeHtml(e[0]) + '</code>' +
+            '<code class="intro-ep-path">' + CourseCore.escapeHtml(e[1]) + '</code>' +
+            '<span class="intro-ep-desc">' + CourseCore.escapeHtml(e[2]) + '</span>';
+          epList.appendChild(li);
+        });
+        s9.appendChild(epList);
+        s9.appendChild(el('p', 'intro-key-message', 'Đến cuối khóa, chính bạn sẽ xây các luồng này từ project ban đầu.'));
+
+        var s10 = panel('Trước khi bắt đầu V0.1');
+        s10.appendChild(el('p', null, 'Bạn cần: JDK đã cài, một IDE (ví dụ IntelliJ hoặc VS Code), và biết chạy lệnh trong terminal. Chưa cần biết Spring — chúng ta sẽ học dần.'));
+        s10.appendChild(el('p', null, 'V0.1 chỉ dùng Java thuần: bạn sẽ tạo Money, Account, Transaction và các quy tắc của chúng. Không có Spring, không có database — chỉ object Java.'));
+        var cta = el('div', 'intro-cta');
+        var start = el('a', 'btn btn--primary', 'Bắt đầu V0.1 — Java Domain');
+        start.href = '#/guided-build/v0-1';
+        start.setAttribute('data-intro-start', '');
+        var roadmap = el('a', 'btn', 'Xem lộ trình đầy đủ');
+        roadmap.href = '#/guided-build';
+        cta.appendChild(start);
+        cta.appendChild(roadmap);
+        s10.appendChild(cta);
+      }
+
       function renderGuidedOverview(container) {
         if (!guidedBuildData) { renderGuidedEmpty(container); return; }
         var header = renderProjectWorkspaceHeader(
@@ -7587,6 +7838,30 @@
             }) &&
             Array.prototype.map.call(primaryLinks, function(l) { return l.textContent; }).join("|") ===
               "Tổng quan|Học lý thuyết|Xây dựng dự án|Tài nguyên");
+
+          /* 33b — Project Introduction (#/guided-intro): renders as a real
+             build-track destination, lights the "Xây dựng dự án" tab, and its
+             sidebar entry sits before V0.1 and is marked active. */
+          location.hash = "#/guided-intro";
+          routeRender();
+          var introView = document.getElementById("route-view");
+          var introHeader = introView.querySelector("[data-guided-intro]");
+          var introStart = introView.querySelector('a[data-intro-start][href="#/guided-build/v0-1"]');
+          var introBuildTab = document.querySelector('.primary-nav [data-view="guided-build"][aria-current="page"]');
+          var introContextBuild = CourseCore.navContextForRoute(CourseCore.parseRoute("#/guided-intro").view) === "build";
+          var introNav = document.getElementById("curriculum-nav");
+          var introNavLink = introNav ? introNav.querySelector('a[href="#/guided-intro"]') : null;
+          var introNavItems = introNav ? Array.prototype.slice.call(introNav.querySelectorAll('a[href], button[data-pnav-id]')) : [];
+          var firstReleaseToggle = introNav ? introNav.querySelector('button[data-pnav-id]') : null;
+          var introBeforeV01 = !!introNavLink && !!firstReleaseToggle &&
+            introNavItems.indexOf(introNavLink) !== -1 &&
+            introNavItems.indexOf(introNavLink) < introNavItems.indexOf(firstReleaseToggle);
+          assert("project introduction renders, lights the build tab, and its sidebar entry precedes V0.1 and is active",
+            !!introHeader && !!introStart &&
+            introView.textContent.indexOf("Spendwise là gì") !== -1 &&
+            introView.textContent.indexOf("Bắt đầu V0.1") !== -1 &&
+            !!introBuildTab && introContextBuild &&
+            !!introNavLink && introNavLink.getAttribute("aria-current") === "page" && introBeforeV01);
 
           /* 34 — the dashboard derives V0.1 as current because no authored
              release is building, and keeps course/project progress separate. */
