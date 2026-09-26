@@ -34,7 +34,7 @@
   ],
   "outcomes": [
     "Phân biệt đúng 3 kiểu Dependency Injection và chọn kiểu phù hợp theo tính bắt buộc/tùy chọn của dependency.",
-    "Giải thích được thứ tự Spring resolve dependency (type, tên, index).",
+    "Giải thích được thứ tự Spring chọn bean để inject (type, rồi @Primary/@Qualifier, rồi tên tham số).",
     "Mô tả được quan hệ giữa @Bean tự viết và auto-configuration của Spring Boot (non-invasive/back-away).",
     "Biết cách loại trừ một auto-configuration class và xem conditions report bằng --debug."
   ],
@@ -46,13 +46,13 @@
         {
           "id": "day14-blk-1",
           "type": "deliverable",
-          "text": "Ngày này không có đề bài lập trình riêng — lịch học ghi 'Guides/Review', tức là buổi ôn tập lý thuyết và thực hành lại các ví dụ đã học. Không có deliverable nộp riêng cho Day 14; hãy tự thực hành lại 3 kiểu Dependency Injection, cơ chế @Autowired resolve dependency theo type/tên/index, và cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot trước khi sang Day 15 (Assignment 5).",
+          "text": "Ngày này không có đề bài lập trình riêng — lịch học ghi 'Guides/Review', tức là buổi ôn tập lý thuyết và thực hành lại các ví dụ đã học. Không có deliverable nộp riêng cho Day 14; hãy tự thực hành lại 3 kiểu Dependency Injection, cơ chế @Autowired chọn bean theo type, rồi @Primary/@Qualifier, rồi tên tham số, và cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot trước khi sang Day 15 (Assignment 5).",
           "citations": []
         },
         {
           "id": "day14-blk-2",
           "type": "note",
-          "text": "Bài học nối tiếp Day 13, đi sâu vào 3 kiểu Dependency Injection và cơ chế @Autowired resolve dependency, cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot, và giới thiệu @ConfigurationProperties/Profiles (sẽ học chi tiết ở Day 15 cùng Assignment 5). Lịch học ngày này ghi 'Guides/Review' — học viên ôn tập lý thuyết và thực hành lại ví dụ.",
+          "text": "Bài học nối tiếp Day 13, đi sâu vào 3 kiểu Dependency Injection và cơ chế @Autowired resolve dependency, cách @Configuration/@Bean phối hợp với auto-configuration của Spring Boot, và giới thiệu @ConfigurationProperties/Profiles (sẽ học chi tiết ở Day 15 cùng Assignment 5). Lịch học ngày này ghi 'Guides/Review' — bạn ôn tập lý thuyết và thực hành lại ví dụ.",
           "citations": []
         }
       ]
@@ -103,7 +103,7 @@
             [
               "Field injection",
               "Dùng @Autowired trực tiếp trên field qua reflection",
-              "Không khuyến nghị: reflection tốn chi phí hơn, dễ khiến lớp gánh quá nhiều dependency, vi phạm Single Responsibility Principle"
+              "Không khuyến nghị: field không thể final, dependency bị che khuất (dễ gánh quá nhiều dependency, vi phạm Single Responsibility Principle), test phải cần container hoặc reflection"
             ]
           ],
           "citations": [
@@ -116,7 +116,7 @@
           "id": "day14-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.stereotype.Service;\n\ninterface PricingPolicy {\n    double priceFor(int quantity);\n}\n\n@Service\nclass DiscountPricingPolicy implements PricingPolicy {\n    private static final double UNIT_PRICE = 10.0;\n\n    @Override\n    public double priceFor(int quantity) {\n        double total = quantity * UNIT_PRICE;\n        return quantity >= 10 ? total * 0.9 : total;\n    }\n}\n\n@Service\nclass OrderService {\n\n    private final PricingPolicy pricingPolicy;\n\n    // Constructor injection: Spring resolve theo type trước; nếu có nhiều\n    // bean cùng type thì theo tên tham số; cuối cùng theo index để phân biệt.\n    OrderService(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n",
+          "code": "import org.springframework.stereotype.Service;\n\ninterface PricingPolicy {\n    double priceFor(int quantity);\n}\n\n@Service\nclass DiscountPricingPolicy implements PricingPolicy {\n    private static final double UNIT_PRICE = 10.0;\n\n    @Override\n    public double priceFor(int quantity) {\n        double total = quantity * UNIT_PRICE;\n        return quantity >= 10 ? total * 0.9 : total;\n    }\n}\n\n@Service\nclass OrderService {\n\n    private final PricingPolicy pricingPolicy;\n\n    // Constructor injection: Spring tìm bean theo type trước; nếu có nhiều\n    // bean cùng type thì xét @Primary/@Qualifier, cuối cùng mới xét tên tham số.\n    OrderService(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day14-src-2"
@@ -126,7 +126,7 @@
         {
           "id": "day14-blk-6",
           "type": "note",
-          "text": "Về thứ tự resolve dependency: với constructor injection, Spring resolve theo type trước; nếu có nhiều bean cùng type, Spring xét tiếp theo tên thuộc tính (thường kết hợp với @Qualifier); cuối cùng mới xét theo index để phân biệt các tham số cùng type.",
+          "text": "Về thứ tự resolve dependency: với constructor injection, Spring resolve theo type trước; nếu có nhiều bean cùng type, Spring xét tiếp @Primary và @Qualifier; nếu vẫn chưa phân định được thì mới dùng tên tham số làm tên bean dự phòng. (Chỉ số index của tham số chỉ dùng khi bạn khai báo constructor-arg bằng XML, không phải khi autowire.)",
           "citations": [
             "day14-src-2"
           ]
@@ -164,7 +164,7 @@
         {
           "id": "day14-blk-24",
           "type": "note",
-          "text": "Khi resolve constructor dependency theo type, hai tình huống cốt lõi là: không có bean nào khớp thì container không thể điền tham số; có nhiều bean cùng type thì điểm inject phải chỉ rõ lựa chọn bằng `@Qualifier`, hoặc một bean được đặt làm mặc định bằng `@Primary`. Hai nguyên nhân vận hành thường gặp là component chưa được đăng ký hoặc nằm ngoài package scan, và nhiều implementation cùng được đăng ký mà chưa có quy tắc chọn. Một lỗi khởi động khác là circular dependency giữa hai constructor — xem walkthrough không trích dẫn ở mục sau để hiểu vì sao phá vòng thiết kế tốt hơn việc mặc định thêm `@Lazy`.",
+          "text": "Khi resolve constructor dependency theo type, hai tình huống cốt lõi là: không có bean nào khớp thì container không thể điền tham số; có nhiều bean cùng type thì điểm inject phải chỉ rõ lựa chọn bằng `@Qualifier`, hoặc một bean được đặt làm mặc định bằng `@Primary`. Hai nguyên nhân vận hành thường gặp là component chưa được đăng ký hoặc nằm ngoài package scan, và nhiều implementation cùng được đăng ký mà chưa có quy tắc chọn. Một lỗi khởi động khác là circular dependency giữa hai constructor — ví dụ ở mục sau cho thấy vì sao phá vòng bằng thiết kế tốt hơn việc mặc định thêm `@Lazy`.",
           "citations": []
         },
         {
@@ -249,7 +249,7 @@
     },
     {
       "id": "day14-sec-scope-recap",
-      "title": "Bean Scope (tham chiếu Day 13) và Circular Dependency",
+      "title": "Nhắc lại bean scope (Day 13) và circular dependency (phụ thuộc vòng)",
       "blocks": [
         {
           "id": "day14-blk-10",
@@ -283,7 +283,7 @@
         {
           "id": "day14-blk-11",
           "type": "note",
-          "text": "Chủ đề @ConfigurationProperties (gom property liên quan vào một POJO có kiểu, thay vì đọc từng property riêng lẻ bằng @Value) và Profiles (kích hoạt cấu hình khác nhau theo môi trường: dev/test/prod) không có resource nào trong resourceIds của riêng Day 14 mô tả chi tiết (xem authoring.limitations) — hai chủ đề này sẽ được học sau, có trích dẫn đầy đủ, trong Day 15 cùng với Assignment 5 Multi-module Notification Service.",
+          "text": "Chủ đề @ConfigurationProperties (gom property liên quan vào một POJO có kiểu, thay vì đọc từng property riêng lẻ bằng @Value) và Profiles (kích hoạt cấu hình khác nhau theo môi trường: dev/test/prod) chưa có bài chi tiết trong tài liệu tham khảo của Day 14 — hai chủ đề này sẽ được học kỹ, kèm nguồn đầy đủ, ở Day 15 cùng Assignment 5 Multi-module Notification Service.",
           "citations": []
         },
         {
@@ -320,6 +320,32 @@
     "Giữ state có thể thay đổi trong bean singleton, gây lẫn dữ liệu giữa các request đồng thời.",
     "Dùng @Lazy để che circular dependency thay vì tách phần logic dùng chung ra bean thứ ba."
   ],
+  "teaching": {
+    "why": "Day 13 cho bạn container; câu hỏi tiếp theo là container đưa dependency vào class bằng đường nào, và khi có nhiều ứng viên thì chọn ai. Chọn sai kiểu injection khiến field không thể `final` và class khó test nếu không khởi động Spring; không hiểu cách resolve thì bạn sẽ bó tay trước lỗi thiếu bean, lỗi nhiều bean cùng type hay circular dependency lúc khởi động. Còn nếu không hiểu auto-configuration, bạn sẽ không biết vì sao chỉ thêm một starter mà Spring Boot đã tự dựng cả Tomcat hay DataSource, và làm sao ghi đè chúng.",
+    "javaBridge": "Constructor injection chính là điều bạn vẫn làm trong Java thuần: `new OrderService(new DiscountPricingPolicy())` — class nhận dependency qua constructor và giữ trong field `final`; Spring chỉ gọi `new` thay bạn. Setter injection giống việc gọi `service.setPricingPolicy(policy)` sau khi đã tạo object. Còn method `@Bean` trong class `@Configuration` chỉ là một factory method bình thường trả về object — container gọi nó thay bạn và coi kết quả là bean.",
+    "mentalModel": "Hãy hình dung việc lắp máy tính: constructor injection giống bo mạch chỉ bật được khi đã cắm đủ CPU và RAM — thiếu là báo lỗi ngay lúc bật nguồn; setter injection giống cổng USB — máy vẫn chạy, cắm thêm sau cũng được; field injection giống hàn linh kiện thẳng vào mạch — không ai nhìn thấy, cũng không tháo ra thay bản giả để thử được. Auto-configuration là cấu hình xuất xưởng: linh kiện mặc định được lắp sẵn dựa trên những gì có trong thùng (classpath), nhưng khi bạn tự lắp linh kiện cùng vai trò (một `@Bean` của bạn) thì bản mặc định tự rút ra — đó là cơ chế back-away nhờ các điều kiện như `@ConditionalOnMissingBean`.",
+    "is": "Dependency Injection là cách container đưa dependency vào bean (qua constructor, setter hoặc field), tìm ứng viên theo type trước rồi mới dựa vào tên/`@Qualifier` khi có nhiều bean cùng type; auto-configuration là các cấu hình có điều kiện mà Spring Boot tự áp dụng theo classpath và tự lùi lại khi bạn đã khai báo bean của mình.",
+    "isNot": "`@Autowired` không bắt buộc phải có ở mọi nơi: với class chỉ có một constructor, Spring (từ 4.3) tự dùng constructor đó để inject. Và auto-configuration không 'đè' hay xung đột với `@Bean` bạn tự viết — nó lùi lại nhường chỗ cho bean của bạn.",
+    "solves": "Bài này giúp bạn wire bean theo cách vừa an toàn (dependency bắt buộc có đủ ngay lúc tạo, field `final`), vừa test được bằng `new` thuần, và biết đọc condition evaluation report (`--debug`) khi auto-configuration không như ý. Trong Spendwise, V0.3 (Spring Boot Core) dùng bài này ở bước 'để container wire thay vì tự new': `TransactionService` và repository trở thành bean, nhận collaborator qua constructor với field `final`, còn object bên thứ ba và cấu hình được khai báo bằng `@Configuration`/`@Bean`.",
+    "selfCheck": [
+      {
+        "question": "Có hai bean `EmailSender` và `SmsSender` cùng implement `NotificationSender`, và `OrderNotifier` nhận `NotificationSender` qua constructor mà không có gì thêm. Điều gì xảy ra khi khởi động, và sửa thế nào?",
+        "answer": "Spring tìm theo type và thấy hai ứng viên nên không biết chọn cái nào; ứng dụng dừng ngay lúc khởi động. Sửa bằng `@Qualifier(\"emailSender\")` tại điểm inject, hoặc đánh dấu một bean là mặc định bằng `@Primary`."
+      },
+      {
+        "question": "Vì sao một class dùng constructor injection có thể unit test mà không cần khởi động Spring?",
+        "answer": "Vì dependency chỉ là tham số constructor: trong test bạn viết `new OrderService(mockRepo)` như Java thuần. Với field injection, bạn cần container hoặc reflection mới gán được field."
+      },
+      {
+        "question": "Bạn tự khai báo một `@Bean DataSource` trong class `@Configuration`. Database nhúng mặc định của Spring Boot sẽ ra sao, và làm sao kiểm chứng?",
+        "answer": "Auto-configuration lùi lại (back away) vì ứng dụng đã có bean cùng vai trò, nên bean của bạn được dùng. Chạy ứng dụng với `--debug` để đọc condition evaluation report và thấy vì sao cấu hình mặc định bị bỏ qua."
+      },
+      {
+        "question": "A cần B trong constructor, B cũng cần A trong constructor. Vì sao thêm `@Lazy` không phải cách sửa tốt nhất?",
+        "answer": "`@Lazy` chỉ tạo proxy trì hoãn để ứng dụng khởi động được; hai class vẫn phụ thuộc vòng tròn. Cách tốt hơn là tách phần logic dùng chung ra bean thứ ba để hai chiều A ↔ B thành hai dependency một chiều."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day14-prac-1",
@@ -329,7 +355,7 @@
       "choices": [
         {
           "id": "day14-prac-1-a",
-          "text": "Vì field injection dùng reflection tốn chi phí hơn và dễ khiến lớp gánh quá nhiều dependency, vi phạm Single Responsibility Principle"
+          "text": "Vì field injection không cho khai báo field final, che khuất danh sách dependency (dễ khiến lớp gánh quá nhiều trách nhiệm) và buộc test phải có container"
         },
         {
           "id": "day14-prac-1-b",
@@ -348,9 +374,9 @@
         "day14-prac-1-a"
       ],
       "hint": "Đọc lại bảng so sánh 3 kiểu DI trong bài.",
-      "solution": "“Vì field injection dùng reflection tốn chi phí hơn và dễ khiến lớp gánh quá nhiều dependency, vi phạm Single Responsibility Principle” là đáp án đúng: @Autowired gán trực tiếp vào field qua reflection, che khuất danh sách dependency, trong khi constructor làm các dependency bắt buộc hiển thị rõ và dễ kiểm thử.",
-      "explanation": "Field injection dùng reflection để gán dependency và có thể che khuất việc một lớp đang gánh quá nhiều dependency, nên dễ vi phạm Single Responsibility Principle. @Service là stereotype đăng ký bean chứ không phải lý do cấm @Autowired trên field; kiểu injection cũng không bị giới hạn ở scope prototype, vì bài còn phân tích DI trên bean singleton và quan hệ giữa các scope. Nhận định field injection yêu cầu mọi field phải final còn đảo ngược nội dung bài: field được inject trực tiếp không thể final, trong khi constructor injection mới cho phép dependency được khai báo final.",
-      "rubric": "Chọn đúng lý do liên quan reflection/SRP, không nhầm với các lý do không có trong tài liệu.",
+      "solution": "“Vì field injection không cho khai báo field final, che khuất danh sách dependency (dễ khiến lớp gánh quá nhiều trách nhiệm) và buộc test phải có container” là đáp án đúng: @Autowired gán thẳng vào field sau khi object đã được tạo, nên field không thể final, danh sách dependency bị che khuất và test phải cần container, trong khi constructor làm các dependency bắt buộc hiển thị rõ và dễ kiểm thử.",
+      "explanation": "Field injection gán dependency sau khi tạo object nên field không thể final, và có thể che khuất việc một lớp đang gánh quá nhiều dependency, nên dễ vi phạm Single Responsibility Principle. @Service là stereotype đăng ký bean chứ không phải lý do cấm @Autowired trên field; kiểu injection cũng không bị giới hạn ở scope prototype, vì bài còn phân tích DI trên bean singleton và quan hệ giữa các scope. Nhận định field injection yêu cầu mọi field phải final còn đảo ngược nội dung bài: field được inject trực tiếp không thể final, trong khi constructor injection mới cho phép dependency được khai báo final.",
+      "rubric": "Chọn đúng lý do liên quan final/dependency bị che khuất/khả năng test, không nhầm với các lý do không có trong tài liệu.",
       "sourceUsage": [
         "day14-src-4"
       ]
@@ -363,7 +389,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Bỏ constructor tham số, thêm setter có @Autowired; so sánh field pricingPolicy trước/sau khi bỏ final.",
-      "solution": "class OrderService {\n    private PricingPolicy pricingPolicy;\n\n    @Autowired\n    void setPricingPolicy(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n// Bi mat so voi ban constructor injection goc:\n// 1) field khong con duoc khai bao final\n// 2) co mot khoang khac object da duoc tao nhung pricingPolicy con null,\n//    truoc khi container goi setter",
+      "solution": "class OrderService {\n    private PricingPolicy pricingPolicy;\n\n    @Autowired\n    void setPricingPolicy(PricingPolicy pricingPolicy) {\n        this.pricingPolicy = pricingPolicy;\n    }\n\n    double quote(int quantity) {\n        return pricingPolicy.priceFor(quantity);\n    }\n}\n// Bị mất so với bản constructor injection gốc:\n// 1) field không còn được khai báo final\n// 2) có một khoảnh khắc object đã được tạo nhưng pricingPolicy còn null,\n//    trước khi container gọi setter",
       "explanation": "Áp dụng đúng mô hình setter injection: constructor không tham số, setter có @Autowired để container gọi sau khi khởi tạo. So với bản constructor injection gốc, bài tập này lộ rõ cái giá phải trả: field không còn được final, và tồn tại một khoảng thời gian object đã được tạo nhưng pricingPolicy chưa được gán — đúng như bảng so sánh 3 kiểu DI đã cảnh báo. Setter injection vẫn có chỗ dùng hợp lý: khi dependency thực sự tùy chọn hoặc cần thay đổi lại sau khi khởi tạo, không phải trường hợp bắt buộc như PricingPolicy ở đây.",
       "rubric": "Đánh giá đúng: field không còn final, có setter với @Autowired, không còn constructor nhận PricingPolicy, và học viên nêu được ít nhất một tradeoff bị mất (mất tính bất biến final, hoặc có giai đoạn object chưa đủ dependency) thay vì chỉ chuyển đổi máy móc.",
       "sourceUsage": [

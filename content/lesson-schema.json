@@ -30,7 +30,8 @@
         "enhancedExercises": "array<string>",
         "references": "array<reference>",
         "sourceUsage": "array<sourceUsageEntry>",
-        "authoring": "object (see authoring)"
+        "authoring": "object (see authoring)",
+        "teaching": "optional object (see teaching): beginner scaffold rendered before and after the sections"
       }
     },
     "catalogRef": {
@@ -119,6 +120,18 @@
         "resourceId": "string, required for type external; must match a sourceUsage.resourceId in this lesson",
         "citationId": "string, required for type external; must match a sourceUsage.id in this lesson",
         "description": "string, required (nonempty) for type internal; internal references never masquerade as external sourceUsage"
+      }
+    },
+    "teaching": {
+      "required": ["why", "javaBridge", "mentalModel", "is", "isNot", "solves", "selfCheck"],
+      "properties": {
+        "why": "string, nonempty: why a beginner needs this lesson (part A)",
+        "javaBridge": "string, nonempty: what the learner already knows from Java that this builds on (part B)",
+        "mentalModel": "string, nonempty: one everyday picture of the idea (part C)",
+        "is": "string, nonempty: what the concept is (part D)",
+        "isNot": "string, nonempty: what it is commonly confused with (part D)",
+        "solves": "string, nonempty: the concrete problem it removes (part D)",
+        "selfCheck": "array<{question, answer}>, length 2..4, answers rendered hidden (part I)"
       }
     },
     "authoring": {

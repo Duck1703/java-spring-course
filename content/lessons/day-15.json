@@ -139,10 +139,10 @@
           "id": "day15-blk-12",
           "type": "code",
           "language": "text",
-          "code": "// PushSender của assignment: chọn bằng @Profile thay vì @Qualifier —\n// cả hai bean cùng trả supportedType() = PUSH, nhưng Spring chỉ đăng ký\n// ĐÚNG MỘT bean trong số này tùy profile đang active, nên Factory\n// (day15-blk-9) không bao giờ thấy hai sender PUSH cùng lúc.\n\n@Component\n@Profile(\"dev\")\nclass FakePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[fake-push] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component\n@Profile(\"prod\")\nclass FirebasePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        // Gọi Firebase Cloud Messaging API thật ở đây, cấu hình theo\n        // FirebaseProperties (@ConfigurationProperties ở phần trên).\n        // Không có resource nào trong resourceIds của Day 15 mô tả API\n        // này — xem authoring.limitations.\n    }\n}\n",
+          "code": "// PushSender của assignment: chọn bằng @Profile thay vì @Qualifier —\n// cả hai bean cùng trả supportedType() = PUSH, nhưng Spring chỉ đăng ký\n// ĐÚNG MỘT bean trong số này tùy profile đang active, nên Factory\n// (day15-blk-9) không bao giờ thấy hai sender PUSH cùng lúc.\n\n@Component\n@Profile(\"dev\")\nclass FakePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        System.out.println(\"[fake-push] to=\" + recipient + \" msg=\" + message);\n    }\n}\n\n@Component\n@Profile(\"prod\")\nclass FirebasePushSender implements NotificationService {\n    @Override\n    public NotificationType supportedType() {\n        return NotificationType.PUSH;\n    }\n\n    @Override\n    public void send(String recipient, String message) {\n        // Gọi Firebase Cloud Messaging API thật ở đây, cấu hình theo\n        // FirebaseProperties (@ConfigurationProperties ở phần trên).\n        // Phần gọi Firebase Cloud Messaging API thật nằm ngoài phạm vi bài này.\n    }\n}\n",
           "compile": false,
           "citations": [],
-          "partialReason": "Minh họa @Profile chọn implementation (FakePushSender/FirebasePushSender, khớp với đáp án day15-prac-3) và hoàn thiện PushSender còn thiếu trong đề bài; không có resource nào trong resourceIds của Day 15 mô tả trực tiếp cơ chế @Profile-annotated-bean selection — fact về activation YAML theo profile (day15-src-5) là một claim khác và hẹp hơn nên không dùng làm citation (xem authoring.limitations). Không đưa vào bước javac của pipeline vì lý do tương tự các khối Spring khác trong bài (không có Spring jar trên classpath) và vì phần gọi Firebase thật nằm ngoài phạm vi nguồn đã đọc."
+          "partialReason": "Ví dụ cần Spring/Jakarta trên classpath và chỉ minh họa cách `@Profile` chọn một implementation theo môi trường, nên không được biên dịch độc lập."
         }
       ]
     },
@@ -176,7 +176,7 @@
         {
           "id": "day15-blk-11",
           "type": "note",
-          "text": "Yêu cầu retry logic khi send thất bại không có resource nào trong resourceIds của Day 15 mô tả chi tiết (xem authoring.limitations). Cách làm phổ biến: bọc lỗi gửi trong vòng lặp thử lại tối đa N lần với backoff (ví dụ delay tăng dần giữa các lần thử), hoặc dùng @Retryable của Spring Retry (thư viện riêng, không nằm trong resourceIds đã đọc) nếu được phép thêm dependency; nếu vượt quá số lần thử, ghi log/ném exception nghiệp vụ để tầng gửi thất bại ở cấp cao hơn xử lý.",
+          "text": "Tài liệu tham khảo của Day 15 chưa có bài riêng về retry và backoff. Cách phổ biến là thử lại tối đa N lần với khoảng chờ tăng dần, hoặc dùng `@Retryable` của Spring Retry nếu dự án cho phép thêm dependency; sau lần cuối, phải ghi log hoặc ném exception nghiệp vụ để tầng gọi xử lý.",
           "citations": []
         },
         {
@@ -186,7 +186,7 @@
           "code": "class NotificationSendException extends Exception {\n    NotificationSendException(String message, Throwable cause) {\n        super(message, cause);\n    }\n}\n\nclass RetryingNotificationSender {\n\n    private static final int MAX_ATTEMPTS = 3;\n\n    private final NotificationService delegate;\n\n    RetryingNotificationSender(NotificationService delegate) {\n        this.delegate = delegate;\n    }\n\n    void sendWithRetry(String recipient, String message) {\n        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n            try {\n                delegate.send(recipient, message);\n                return;\n            } catch (RuntimeException sendFailed) {\n                // TODO: nếu attempt == MAX_ATTEMPTS, ném một exception nghiệp\n                // vụ (terminal) để tầng gọi biết gửi đã thất bại hẳn — KHÔNG\n                // nuốt lỗi âm thầm và KHÔNG thử lại vô hạn (xem commonMistakes).\n\n                // TODO: nếu chưa phải lần cuối, chờ một khoảng backoff tăng\n                // dần trước khi thử lại (ví dụ nhân đôi delay mỗi lần thử).\n                // Cẩn thận nếu dùng Thread.sleep: đây là luồng xử lý request,\n                // sleep trực tiếp sẽ chặn luồng đó tới khi hết retry.\n            }\n        }\n    }\n}\n",
           "compile": false,
           "citations": [],
-          "partialReason": "Khung sườn minh họa cấu trúc attempt loop có giới hạn cho retry logic — không có resource nào trong resourceIds của Day 15 mô tả chủ đề retry/backoff (xem authoring.limitations và day15-blk-11), nên không đưa vào bước javac của pipeline."
+          "partialReason": "Khung sườn minh họa vòng lặp retry có giới hạn và được để ngoài bước kiểm tra biên dịch độc lập để bạn hoàn thành các TODO."
         },
         {
           "id": "day15-blk-41",
@@ -256,6 +256,32 @@
     "Thêm một sender mới nhưng quên gắn @Component (hoặc quên implement supportedType() đúng loại) — Factory không tìm thấy sender, senderFor() ném IllegalArgumentException lúc runtime thay vì báo lỗi sớm.",
     "Gắn hai bean cùng trả supportedType() giống nhau mà không tách bằng @Profile/@Qualifier — Spring context không khởi động được (nhiều bean cùng type) hoặc, nếu derive Map bằng Collectors.toMap không xử lý key trùng, Factory ném IllegalStateException lúc khởi động."
   ],
+  "teaching": {
+    "why": "Khi có ba nhà cung cấp gửi thông báo, code rất dễ thành một chuỗi `if/else`, secret rải rác trong `@Value`, và vòng retry vô hạn làm request treo. Assignment này rèn cách để Spring chọn và cấu hình đúng implementation, còn code nghiệp vụ chỉ hỏi factory theo `NotificationType`.",
+    "javaBridge": "Bạn đã biết interface, constructor injection và `Map` trong Java thuần: ba sender cùng implement một interface; Spring đưa toàn bộ implementation vào `List<NotificationService>`; factory chuyển list đó thành map bằng `supportedType()`. `@ConfigurationProperties` giống tạo một record từ nhiều giá trị cấu hình, còn Bean Validation kiểm tra record đó ngay lúc khởi động.",
+    "mentalModel": "Hãy hình dung tổng đài có ba quầy Email, SMS và Push. Mỗi quầy tự treo biển `supportedType`; lễ tân factory lập danh bạ từ các biển thay vì ghi cứng tên quầy. Profile quyết định quầy nào được mở ở từng môi trường, configuration properties cấp thông số cho quầy, còn retry là quy định gọi lại hữu hạn rồi báo thất bại rõ ràng.",
+    "is": "Đây là assignment tích hợp DI, `@Qualifier`/`@Profile`, cấu hình kiểu mạnh, factory tự khám phá sender và retry có giới hạn.",
+    "isNot": "`@Qualifier` và `@Profile` không cùng giải một việc: qualifier phân biệt bean tại điểm inject, profile quyết định bean có tồn tại trong context hay không. Retry cũng không phải vòng lặp bắt mọi lỗi vô hạn; chỉ lỗi tạm thời phù hợp mới nên thử lại.",
+    "solves": "Bài này rèn cách thêm hoặc đổi provider mà không sửa client, kiểm tra cấu hình trước khi phục vụ request và làm thất bại gửi thông báo có giới hạn, quan sát được. Đây là bài luyện Spring độc lập, không tạo feature trực tiếp trong Spendwise.",
+    "selfCheck": [
+      {
+        "question": "Dev và prod đều đăng ký một bean trả `supportedType() == PUSH`. Factory dùng `toMap` sẽ gặp gì nếu cả hai cùng active?",
+        "answer": "Hai phần tử tạo cùng key `PUSH`, nên `Collectors.toMap` ném `IllegalStateException` khi dựng factory. Dùng profile loại trừ nhau hoặc fail fast với thông báo cấu hình rõ ràng."
+      },
+      {
+        "question": "Khi nào dùng `@Qualifier`, khi nào dùng `@Profile` trong assignment?",
+        "answer": "Dùng `@Qualifier` khi nhiều bean cùng tồn tại nhưng một điểm inject cần chọn bean cụ thể, như `emailSender`. Dùng `@Profile` khi chỉ một implementation theo môi trường được đăng ký, như fake push ở dev và Firebase push ở prod."
+      },
+      {
+        "question": "Chỉ gắn `@NotBlank` lên record `@ConfigurationProperties` đã đủ bảo đảm fail fast chưa?",
+        "answer": "Chưa. Type phải được đăng ký bằng `@ConfigurationPropertiesScan` hoặc `@EnableConfigurationProperties`, và cần `@Validated` cùng validation dependency để constraint được chạy lúc bind."
+      },
+      {
+        "question": "Provider luôn thất bại và `MAX_ATTEMPTS = 3`. Hợp đồng đúng sau vòng lặp là gì?",
+        "answer": "Delegate được gọi đúng ba lần; giữa các lần có backoff theo chính sách; sau lần thứ ba, method ném một exception terminal giữ nguyên cause. Không được trả về như thể gửi thành công."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day15-prac-1",
@@ -318,7 +344,7 @@
       "hint": "Nghĩ về annotation gắn bean với một môi trường cụ thể.",
       "solution": "Nên dùng @Profile: gắn @Profile(\"dev\") cho FakePushSender và @Profile(\"prod\") cho FirebasePushSender — Spring chỉ đăng ký bean tương ứng với profile đang active, tránh phải sửa code gọi hay dùng if/else theo môi trường.",
       "explanation": "Liên kết với nội dung @Profile chọn implementation đã học trong bài.",
-      "rubric": "Đánh giá học viên nêu đúng @Profile và giải thích được lợi ích (không sửa code gọi, tách theo môi trường).",
+      "rubric": "Đánh giá bạn nêu đúng `@Profile` và giải thích được lợi ích: không sửa code gọi, tách implementation theo môi trường.",
       "sourceUsage": []
     },
     {

@@ -49,7 +49,7 @@
   "sections": [
     {
       "id": "day32-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day32-blk-1",
@@ -67,7 +67,7 @@
     },
     {
       "id": "day32-sec-db",
-      "title": "Thiet ke database (ERD so bo)",
+      "title": "Thiết kế database (ERD sơ bộ)",
       "blocks": [
         {
           "id": "day32-blk-3",
@@ -146,7 +146,7 @@
           "id": "day32-blk-6",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.persistence.MappedSuperclass;\nimport jakarta.persistence.PostLoad;\nimport jakarta.persistence.PostPersist;\nimport jakarta.persistence.Transient;\nimport org.springframework.data.domain.Persistable;\n\n@MappedSuperclass\nabstract class BaseEntity<ID> implements Persistable<ID> {\n\n    @Transient\n    private boolean isNew = true;\n\n    @Override\n    public boolean isNew() {\n        return isNew;\n    }\n\n    // Sau khi entity duoc luu lan dau hoac duoc load tu DB, danh dau la \"khong con moi\".\n    @PostPersist\n    @PostLoad\n    void markNotNew() {\n        this.isNew = false;\n    }\n}\n",
+          "code": "import jakarta.persistence.MappedSuperclass;\nimport jakarta.persistence.PostLoad;\nimport jakarta.persistence.PostPersist;\nimport jakarta.persistence.Transient;\nimport org.springframework.data.domain.Persistable;\n\n@MappedSuperclass\nabstract class BaseEntity<ID> implements Persistable<ID> {\n\n    @Transient\n    private boolean isNew = true;\n\n    @Override\n    public boolean isNew() {\n        return isNew;\n    }\n\n    // Sau khi entity được lưu lần đầu hoặc được load từ DB, đánh dấu là \"không còn mới\".\n    @PostPersist\n    @PostLoad\n    void markNotNew() {\n        this.isNew = false;\n    }\n}\n",
           "compile": false,
           "citations": [
             "day32-src-2"
@@ -157,7 +157,7 @@
     },
     {
       "id": "day32-sec-error",
-      "title": "Chien luoc xu ly loi toan cuc",
+      "title": "Chiến lược xử lý lỗi toàn cục",
       "blocks": [
         {
           "id": "day32-blk-7",
@@ -187,7 +187,7 @@
           "id": "day32-blk-9",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.HttpHeaders;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.http.HttpStatusCode;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.validation.FieldError;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport org.springframework.web.context.request.WebRequest;\nimport org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;\n\nimport java.util.List;\nimport java.util.stream.Collectors;\n\n// Nhom (3) - xung dot du lieu (vi du email da ton tai luc Register, xem Day\n// 33/day33-blk-24): anh xa rieng sang 409 Conflict, KHONG dung chung voi\n// ValidationException (nhom (2) luon anh xa 400).\nclass ConflictException extends RuntimeException {\n    ConflictException(String message) { super(message); }\n}\n\n// Ke thua ResponseEntityExceptionHandler de tai dung co che xu ly loi mac\n// dinh cua Spring MVC (gom ca MethodArgumentNotValidException) va chi can\n// override method can tuy chinh phan body tra ve.\n@RestControllerAdvice\nclass GlobalExceptionHandler extends ResponseEntityExceptionHandler {\n\n    // Nhom (1) - loi tu dong tu @Valid tren @RequestBody: override method co\n    // san cua ResponseEntityExceptionHandler de doi dinh dang loi sang\n    // ProblemDetail kem danh sach FieldError, thay vi dung body mac dinh.\n    @Override\n    protected ResponseEntity<Object> handleMethodArgumentNotValid(\n            MethodArgumentNotValidException ex, HttpHeaders headers,\n            HttpStatusCode status, WebRequest request) {\n        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, \"Du lieu khong hop le\");\n        List<String> errors = ex.getBindingResult().getFieldErrors().stream()\n                .map(fe -> fe.getField() + \": \" + fe.getDefaultMessage())\n                .collect(Collectors.toList());\n        problem.setProperty(\"errors\", errors);\n        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);\n    }\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n    }\n\n    // Nhom (2) - ValidationException la exception nghiep vu TU DINH NGHIA,\n    // tang service tu nem tuong minh cho quy tac khong bieu dien duoc bang\n    // annotation Bean Validation; chi mang mot message nghiep vu don, khong\n    // co danh sach FieldError nhu nhom (1).\n    @ExceptionHandler(ValidationException.class)\n    ProblemDetail handleValidation(ValidationException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());\n    }\n\n    // Nhom (3) - xung dot du lieu, vi du email da ton tai luc Register (Day\n    // 33/day33-blk-24) - anh xa 409 Conflict theo dung API contract Day 31.\n    @ExceptionHandler(ConflictException.class)\n    ProblemDetail handleConflict(ConflictException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());\n    }\n}\n",
+          "code": "import org.springframework.http.HttpHeaders;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.http.HttpStatusCode;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.validation.FieldError;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport org.springframework.web.context.request.WebRequest;\nimport org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;\n\nimport java.util.List;\nimport java.util.stream.Collectors;\n\n// Nhóm (3) - xung đột dữ liệu (ví dụ email đã tồn tại lúc Register, xem Day\n// 33/day33-blk-24): ánh xạ riêng sang 409 Conflict, KHÔNG dùng chung với\n// ValidationException (nhóm (2) luôn ánh xạ 400).\nclass ConflictException extends RuntimeException {\n    ConflictException(String message) { super(message); }\n}\n\n// Kế thừa ResponseEntityExceptionHandler để tái dùng cơ chế xử lý lỗi mặc\n// định của Spring MVC (gồm cả MethodArgumentNotValidException) và chỉ cần\n// override method cần tùy chỉnh phần body trả về.\n@RestControllerAdvice\nclass GlobalExceptionHandler extends ResponseEntityExceptionHandler {\n\n    // Nhóm (1) - lỗi tự động từ @Valid trên @RequestBody: override method có\n    // sẵn của ResponseEntityExceptionHandler để đổi định dạng lỗi sang\n    // ProblemDetail kèm danh sách FieldError, thay vì dùng body mặc định.\n    @Override\n    protected ResponseEntity<Object> handleMethodArgumentNotValid(\n            MethodArgumentNotValidException ex, HttpHeaders headers,\n            HttpStatusCode status, WebRequest request) {\n        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, \"Dữ liệu không hợp lệ\");\n        List<String> errors = ex.getBindingResult().getFieldErrors().stream()\n                .map(fe -> fe.getField() + \": \" + fe.getDefaultMessage())\n                .collect(Collectors.toList());\n        problem.setProperty(\"errors\", errors);\n        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);\n    }\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n    }\n\n    // Nhóm (2) - ValidationException là exception nghiệp vụ TỰ ĐỊNH NGHĨA,\n    // tầng service tự ném tường minh cho quy tắc không biểu diễn được bằng\n    // annotation Bean Validation; chỉ mang một message nghiệp vụ đơn, không\n    // có danh sách FieldError như nhóm (1).\n    @ExceptionHandler(ValidationException.class)\n    ProblemDetail handleValidation(ValidationException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());\n    }\n\n    // Nhóm (3) - xung đột dữ liệu, ví dụ email đã tồn tại lúc Register (Day\n    // 33/day33-blk-24) - ánh xạ 409 Conflict theo đúng API contract Day 31.\n    @ExceptionHandler(ConflictException.class)\n    ProblemDetail handleConflict(ConflictException ex) {\n        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());\n    }\n}\n",
           "compile": false,
           "citations": [
             "day32-src-3",
@@ -207,18 +207,18 @@
     },
     {
       "id": "day32-sec-workflow",
-      "title": "Quy trinh lam viec (dev workflow)",
+      "title": "Quy trình làm việc (dev workflow)",
       "blocks": [
         {
           "id": "day32-blk-11",
           "type": "template",
-          "text": "Quy ước làm việc nhóm cho Sprint 1-3:\n- Nhánh: main (ổn định) / develop (tích hợp) / feature/<ten-module> (vd feature/cart-management).\n- Commit message: <module>: <mo ta ngan> (vd 'category: them CRUD controller').\n- Pull Request: tối thiểu 1 reviewer duyệt trước khi merge vào develop.\n- Daily standup cuối mỗi buổi Sprint: đã làm gì / sẽ làm gì / đang bị chặn ở đâu.",
+          "text": "Quy ước làm việc nhóm cho Sprint 1-3:\n- Nhánh: main (ổn định) / develop (tích hợp) / feature/<ten-module> (vd feature/cart-management).\n- Commit message: <module>: <mô tả ngắn> (ví dụ 'category: thêm CRUD controller').\n- Pull Request: tối thiểu 1 reviewer duyệt trước khi merge vào develop.\n- Daily standup cuối mỗi buổi Sprint: đã làm gì / sẽ làm gì / đang bị chặn ở đâu.",
           "citations": []
         },
         {
           "id": "day32-blk-12",
           "type": "note",
-          "text": "Hai resource được gán cho Day 32 (repository query methods, Baeldung ProblemDetail) trả về HTTP 404 tại thời điểm khảo sát - không có nội dung cache hợp lệ để trích dẫn thêm cho phần ERD/workflow.",
+          "text": "Hai tài liệu tham khảo về repository query methods và ProblemDetail trả về HTTP 404 tại thời điểm khảo sát. Vì vậy bài chưa có thêm nội dung từ hai nguồn này cho phần ERD và workflow.",
           "citations": []
         }
       ]
@@ -233,6 +233,32 @@
     "Đánh index vào mọi cột FK ngay từ đầu 'cho chắc' trước khi có use case/truy vấn thực tế nào cần tới, thay vì đợi đo đạc.",
     "Chọn pessimistic locking cho toàn bộ luồng đặt hàng ngay từ thiết kế ban đầu thay vì bắt đầu với optimistic locking (mặc định) và chỉ chuyển khi đo được tranh chấp thật sự cao."
   ],
+  "teaching": {
+    "why": "Một ERD chỉ có hộp và mũi tên chưa đủ để code: nhóm vẫn có thể đặt FK sai phía, làm mất `quantity`, dùng index vô tội vạ hoặc trả mỗi loại lỗi theo một hình dạng khác nhau. Trước Sprint 1, bạn cần biến bản vẽ thành các quyết định kiểm chứng được về dữ liệu, lỗi và cách phối hợp nhóm.",
+    "javaBridge": "Trong Java, field tham chiếu một object khác mô tả quan hệ trong bộ nhớ; trong database, FK mô tả quan hệ giữa các dòng. `Persistable.isNew()` cũng giống một cờ trạng thái do object cung cấp để Spring Data quyết định gọi `persist` hay `merge`, thay vì đoán chỉ từ việc `id` có `null` hay không.",
+    "mentalModel": "Hãy hình dung ERD là bản đồ kho hàng: PK là mã duy nhất trên mỗi kiện, FK là phiếu chỉ sang kiện liên quan, còn CartItem/OrderItem là phiếu giao nhận có dữ liệu riêng như số lượng và giá. Index là mục lục tra cứu — thêm đúng chỗ giúp tìm nhanh, nhưng mỗi mục lục đều tốn công cập nhật khi ghi.",
+    "is": "Thiết kế trước Sprint là việc chốt mô hình dữ liệu, quy tắc persistence, định dạng lỗi chung và workflow đủ rõ để nhiều người hiện thực nhất quán.",
+    "isNot": "Nó không phải vẽ quan hệ mà bỏ qua phía giữ FK, cũng không phải thêm index hoặc pessimistic lock “cho chắc”. Mỗi quyết định phải xuất phát từ use case, hình dạng truy vấn hoặc tranh chấp đã quan sát.",
+    "solves": "Bài này giúp nhóm tránh schema mất dữ liệu, thao tác `save()` sai trạng thái và response lỗi lệch giữa các module, đồng thời tạo quy ước Git chung cho Sprint 1-3. Đây là kỹ năng thiết kế và quy trình dùng chung; bài không gắn với tính năng Spendwise cụ thể.",
+    "selfCheck": [
+      {
+        "question": "Vì sao OrderItem phải là entity riêng thay vì `@ManyToMany` đơn giản giữa Order và Product?",
+        "answer": "Quan hệ này mang dữ liệu riêng như `quantity` và `price` tại thời điểm đặt hàng. Một join table chỉ có hai FK không biểu diễn đầy đủ các thuộc tính đó."
+      },
+      {
+        "question": "`CrudRepository.save()` chọn `persist()` hay `merge()` dựa vào điều gì khi entity implements `Persistable`?",
+        "answer": "Nó gọi `persist()` khi `isNew()` trả `true`, ngược lại gọi `merge()`. `BaseEntity` chuyển cờ sang `false` sau `@PostPersist` hoặc `@PostLoad`."
+      },
+      {
+        "question": "Có nên đánh index mọi FK ngay khi vẽ ERD không?",
+        "answer": "Không. FK thường là ứng viên tốt, nhưng bạn nên bắt đầu từ truy vấn `WHERE`/`JOIN`, đo bằng dữ liệu thực rồi mới thêm; mỗi index làm tăng chi phí ghi và bảo trì."
+      },
+      {
+        "question": "Validation DTO và lỗi nghiệp vụ nên đi qua cùng một handler không?",
+        "answer": "Không. `MethodArgumentNotValidException` có `BindingResult` và danh sách lỗi field, còn `ValidationException` nghiệp vụ chỉ mang thông điệp do service ném. Có thể trả cùng chuẩn ProblemDetail nhưng cần xử lý theo hai nhánh khác nhau."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day32-prac-1",
@@ -325,7 +351,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Áp dụng quy ước feature/<ten-module> và <module>: <mo ta ngan> đã thống nhất trong bài.",
-      "solution": "Nhánh: feature/category-crud\nCommit: 'category: them entity va repository', 'category: them controller CRUD'",
+      "solution": "Nhánh: feature/category-crud\nCommit: 'category: thêm entity và repository', 'category: thêm controller CRUD'",
       "explanation": "Áp dụng lại quy ước dev workflow đã thống nhất trong bài cho một tính năng cụ thể của Sprint 1.",
       "rubric": "Đánh giá đúng: tên nhánh có prefix feature/, commit message có prefix module rõ ràng.",
       "sourceUsage": []

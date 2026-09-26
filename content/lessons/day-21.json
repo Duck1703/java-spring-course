@@ -80,7 +80,7 @@
         {
           "id": "day21-blk-5",
           "type": "note",
-          "text": "OrderItem lưu lại unitPriceAtOrder (giá tại thời điểm đặt hàng) thay vì chỉ tham chiếu tới Product.unitPrice hiện tại - một nguyên tắc thiết kế dữ liệu thương mại điện tử phổ biến để giá trên hoá đơn cũ không bị thay đổi khi Product được cập nhật giá sau này. Đây là kiến thức thiết kế domain chuẩn, không có resource nào trong resourceIds của Day 21 mô tả trực tiếp (xem authoring.limitations).",
+          "text": "OrderItem lưu `unitPriceAtOrder` (giá tại thời điểm đặt hàng) thay vì chỉ đọc `Product.unitPrice` hiện tại. Nhờ vậy, hóa đơn cũ vẫn giữ đúng giá khách đã thanh toán dù giá sản phẩm thay đổi sau này.",
           "citations": []
         }
       ]
@@ -126,7 +126,7 @@
         {
           "id": "day21-blk-8",
           "type": "note",
-          "text": "Quy trình Flyway (đặt tên file migration theo chuẩn V{version}__{description}.sql, chạy tuần tự và ghi lại lịch sử trong bảng flyway_schema_history) và @DataJpaTest (slice test chỉ nạp cấu hình liên quan JPA, mặc định dùng database nhúng trong bộ nhớ và rollback sau mỗi test) không có resource nào trong resourceIds của Day 21 mô tả - resource res-553bbd92e5d0 dự kiến cho chủ đề này hiện không thể truy cập (xem authoring.limitations). Khối mã bên dưới minh hoạ V1__init.sql tạo đủ 5 bảng cùng khoá ngoại (categories, users, products, orders, order_items), và một OrderRepositoryTest với một test method mẫu đã dựng sẵn khung (các TODO còn lại là phần bài tập - viết thêm test cho topSellingProducts và findByCreatedAtBetween). V2__seed_data.sql thì chèn vài dòng dữ liệu mẫu cho từng bảng theo đúng thứ tự khoá ngoại (categories/users trước, rồi products, rồi orders/order_items) để kiểm thử thủ công.",
+          "text": "Flyway chạy migration theo thứ tự tên `V{version}__{description}.sql` và ghi lịch sử vào bảng `flyway_schema_history`; file đã áp dụng phải được giữ bất biến, còn thay đổi mới đi vào version mới. `@DataJpaTest` chỉ nạp phần cấu hình JPA, dùng database test và rollback sau mỗi test. Khối mã bên dưới minh họa `V1__init.sql` tạo đủ năm bảng cùng khóa ngoại (`categories`, `users`, `products`, `orders`, `order_items`) và dựng khung một test cho `OrderRepository`. Bạn hoàn thành dữ liệu đối chứng cho test đó, rồi viết thêm test cho `topSellingProducts` và `findByCreatedAtBetween`. `V2__seed_data.sql` chèn dữ liệu mẫu theo thứ tự khóa ngoại: category/user trước, rồi product, order và order item.",
           "citations": []
         },
         {
@@ -174,7 +174,7 @@
             ],
             [
               "@DataJpaTest integration test cho các query nghiệp vụ",
-              "Chạy OrderRepositoryTest.findByUserId_shouldReturnOnlyOrdersOfThatUser() sau khi hoàn thành TODO (prac-4); thêm 2 test method cho topSellingProducts/findByCreatedAtBetween (enhancedExercise)",
+              "Chạy `OrderRepositoryTest.findByUserId_shouldReturnOnlyOrdersOfThatUser()` sau khi hoàn thành phần còn thiếu; thêm hai test method cho `topSellingProducts` và `findByCreatedAtBetween`.",
               "Test persist dữ liệu mẫu đúng thứ tự khoá ngoại, dùng TestEntityManager, và assertion so khớp đúng điều kiện nghiệp vụ (không chỉ kiểm tra danh sách không rỗng) - test phải fail nếu dữ liệu của user/khoảng ngày khác lọt vào kết quả"
             ]
           ],
@@ -191,6 +191,32 @@
     "Giữ @Param trên derived query method (findByUserId, findByCreatedAtBetween) dù không cần thiết - @Param chỉ có tác dụng khi Spring không tự suy ra được tên tham số (native query, @Query phức tạp, hoặc thiếu cờ biên dịch -parameters); với derived query method, giữ @Param không gây lỗi nhưng cũng không có tác dụng gì, chỉ gây rối khi đọc code.",
     "Trong test @DataJpaTest, gọi entityManager.persist() cho Order/OrderItem trước khi persist User/Product/Category tương ứng - vi phạm ràng buộc NOT NULL trên khoá ngoại của schema V1__init.sql, ném lỗi constraint ngay khi flush thay vì lỗi biên dịch dễ phát hiện hơn."
   ],
+  "teaching": {
+    "why": "Day 19 và Day 20 cho từng mảnh persistence, nhưng dự án thật chỉ thành công khi entity, migration, query và test khớp nhau. Assignment này buộc bạn chứng minh cùng một mô hình ở cả Java lẫn SQL: sai tên cột, sai phía quan hệ hoặc sai thứ tự foreign key đều chỉ lộ khi chạy integration test. Đây là bước chuyển từ “biết annotation” sang sở hữu một data layer có thể kiểm chứng.",
+    "javaBridge": "Bạn đã biết thiết kế nhiều class Java tham chiếu nhau và viết method lọc dữ liệu. Ở đây mỗi class trở thành entity, mỗi tham chiếu trở thành foreign key, repository biến ý định truy vấn thành SQL, còn Flyway lưu lịch sử thay đổi schema như một chuỗi phiên bản bất biến. `@DataJpaTest` chạy các phần này cùng nhau trên database test rồi rollback để mỗi test độc lập.",
+    "mentalModel": "Hãy hình dung data layer như một cây cầu có hai bản vẽ: entity là bản Java, migration là bản database. Repository là làn xe chạy qua cầu, còn `@DataJpaTest` là kiểm định tải; nếu hai bản vẽ lệch nhau, xe không thể qua dù từng bản nhìn riêng có vẻ đúng. Làm theo thứ tự: chốt quan hệ và vòng đời, viết schema tương ứng, viết query, rồi tạo dữ liệu đối chứng để test cả kết quả đúng lẫn dữ liệu không được phép lọt vào.",
+    "is": "Assignment 7 là bài tích hợp xây data layer E-Commerce gồm năm entity, quan hệ/cascade, repository query có phân trang, Flyway migration và `@DataJpaTest`.",
+    "isNot": "Đây không phải bài sao chép mọi cascade từ `Order`–`OrderItem` sang các quan hệ khác. Migration không phải DDL tạm để sửa tùy ý sau khi chạy; mỗi thay đổi mới cần một file version mới.",
+    "solves": "Bài này rèn cách giữ entity, schema, query và integration test đồng bộ, đồng thời bảo toàn dữ liệu lịch sử như `unitPriceAtOrder`. Kỹ thuật Flyway áp dụng trực tiếp trong Spendwise V0.5: `V1__init.sql` sở hữu toàn bộ schema, cột tiền dùng `NUMERIC(19,2)`, `ddl-auto=validate`, và migration đã áp dụng không được sửa; schema E-Commerce của assignment chỉ là môi trường luyện tập.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `OrderItem` dùng `orphanRemoval=true` nhưng `Category`–`Product` không nên sao chép cấu hình đó?",
+        "answer": "`OrderItem` là thành phần độc quyền của một `Order` và mất ý nghĩa khi bị gỡ. `Product` là dữ liệu độc lập; xóa hoặc đổi `Category` không nên âm thầm xóa sản phẩm."
+      },
+      {
+        "question": "Vì sao `OrderItem` lưu `unitPriceAtOrder` dù đã có tham chiếu tới `Product`?",
+        "answer": "Giá hiện tại của Product có thể thay đổi sau khi đặt hàng. Bản sao giá tại thời điểm mua giữ hóa đơn cũ đúng với giao dịch đã xảy ra."
+      },
+      {
+        "question": "Một test `findByUserId` chỉ assert danh sách không rỗng. Test đó bỏ sót lỗi gì?",
+        "answer": "Query có thể trả cả order của user khác mà test vẫn pass. Cần tạo ít nhất hai user làm đối chứng và assert mọi phần tử đều thuộc đúng `targetUserId`."
+      },
+      {
+        "question": "Sau khi Flyway đã áp dụng `V1__init.sql`, bạn cần thêm index. Nên sửa V1 hay tạo file mới?",
+        "answer": "Tạo migration mới, chẳng hạn `V3__add_index.sql`. Sửa migration đã áp dụng làm checksum lịch sử lệch và khiến các môi trường không còn tái tạo cùng schema."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day21-prac-1",
@@ -260,7 +286,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Persist CategoryEntity rồi ProductEntity trước (không phụ thuộc User/Order); sau đó persist 2 UserEntity khác nhau, mỗi user gán ít nhất 1 OrderEntity riêng - đúng thứ tự khoá ngoại của schema V1__init.sql ở trên. entityManager.persist(...) trả về chính entity vừa persist nên bạn lấy id từ đó, không hardcode.",
-      "solution": "Không có lời giải viết sẵn ở đây, đúng nguyên tắc không giao bài làm sẵn của Assignment 7 - tự kiểm tra bằng cách chạy test: nếu bạn persist 2 user với order tách biệt và assertion so khớp đúng userId trên từng phần tử của result.getContent(), test phải pass; nếu cố tình để lẫn order của một user thứ 3 chưa lọc vào assertion mà test vẫn pass, nghĩa là assertion đang kiểm tra sai điều kiện (ví dụ chỉ assertThat(...).isNotEmpty() mà không so khớp userId). Đối chiếu thêm với bảng nghiệm thu ở day21-sec-acceptance.",
+      "solution": "Bài không cung cấp lời giải viết sẵn. Hãy tự kiểm tra bằng cách chạy test: persist hai user với các order tách biệt và assert đúng `userId` trên từng phần tử của `result.getContent()`. Nếu bạn thêm order của user thứ ba mà một query lọc sai vẫn làm test pass, assertion chưa đủ mạnh — thường do chỉ kiểm tra `isNotEmpty()` thay vì đối chiếu `userId`. Đối chiếu thêm bảng tiêu chí nghiệm thu ở cuối bài.",
       "explanation": "@DataJpaTest dùng database nhúng trong bộ nhớ và rollback sau mỗi test, nên dữ liệu persist trong một test method không rò sang test khác - đây là lý do phải tự persist đủ dữ liệu mẫu ở đầu mỗi test thay vì dựa vào dữ liệu có sẵn từ V2__seed_data.sql.",
       "rubric": "Đánh giá đúng: thứ tự persist tôn trọng khoá ngoại (category/product trước, rồi user, rồi order gắn đúng user), targetUserId lấy từ entity vừa persist thay vì hardcode, và assertion so khớp userId trên từng phần tử thay vì chỉ kiểm tra danh sách không rỗng.",
       "sourceUsage": []
@@ -275,7 +301,7 @@
   "enhancedExercises": [
     "Thêm truy vấn 'sản phẩm sắp hết hàng' (tồn kho dưới ngưỡng) dùng derived query method kết hợp Pageable.",
     "Viết thêm một migration V3__add_index.sql tạo index trên order_items(product_id) và đo lại thời gian chạy truy vấn top-selling trước/sau khi có index.",
-    "Viết thêm test method cho topSellingProducts() và findByCreatedAtBetween() trong OrderRepositoryTest, dùng cùng kỹ thuật persist dữ liệu mẫu đã áp dụng ở prac-4."
+    "Viết thêm test method cho `topSellingProducts()` và `findByCreatedAtBetween()` trong `OrderRepositoryTest`, dùng cùng kỹ thuật persist dữ liệu mẫu đã áp dụng ở bài thực hành trước."
   ],
   "references": [
     {

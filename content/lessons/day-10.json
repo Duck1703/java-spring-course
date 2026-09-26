@@ -57,7 +57,7 @@
         {
           "id": "day10-blk-1",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn chuyên sâu trong resourceIds của Day 10 (xem authoring.limitations); nội dung dưới đây theo kiến thức Java 17 chuẩn, tập trung vào phần làm nền tảng cho Stream API.",
+          "text": "Tài liệu tham khảo của Day 10 chưa có bài chuyên sâu về lambda và functional interface; phần dưới đây trình bày kiến thức Java 17 chuẩn làm nền tảng cho Stream API.",
           "citations": []
         },
         {
@@ -82,10 +82,10 @@
           "id": "day10-blk-22",
           "type": "code",
           "language": "text",
-          "code": "import java.util.function.*;\nimport java.util.List;\n\nclass LambdaBasics {\n    interface Discount { double apply(double amount); }   // functional interface tu viet\n\n    static double total(List<Double> items, Discount rule) {\n        double sum = 0;\n        for (double i : items) sum += rule.apply(i);\n        return sum;\n    }\n\n    public static void main(String[] args) {\n        double rate = 0.9;                 // effectively final -> capture duoc\n        System.out.println(total(List.of(100.0, 200.0), a -> a * rate));  // 270.0\n\n        // 4 nhom functional interface hay dung nhat\n        Predicate<String> notBlank = s -> !s.isBlank();\n        Function<String, Integer> length = String::length;      // method reference\n        Supplier<List<String>> factory = List::of;\n        Consumer<String> printer = System.out::println;\n\n        if (notBlank.test(\"abc\")) printer.accept(\"len=\" + length.apply(\"abc\"));\n        System.out.println(factory.get().size());\n\n        // compose: ghep hanh vi thay vi viet lai\n        Function<String, Integer> lengthTimesTwo = length.andThen(n -> n * 2);\n        System.out.println(lengthTimesTwo.apply(\"abcd\"));       // 8\n    }\n}",
+          "code": "import java.util.function.*;\nimport java.util.List;\n\nclass LambdaBasics {\n    interface Discount { double apply(double amount); }   // functional interface tự viết\n\n    static double total(List<Double> items, Discount rule) {\n        double sum = 0;\n        for (double i : items) sum += rule.apply(i);\n        return sum;\n    }\n\n    public static void main(String[] args) {\n        double rate = 0.9;                 // effectively final -> capture được\n        System.out.println(total(List.of(100.0, 200.0), a -> a * rate));  // 270.0\n\n        // 4 nhóm functional interface hay dùng nhất\n        Predicate<String> notBlank = s -> !s.isBlank();\n        Function<String, Integer> length = String::length;      // method reference\n        Supplier<List<String>> factory = List::of;\n        Consumer<String> printer = System.out::println;\n\n        if (notBlank.test(\"abc\")) printer.accept(\"len=\" + length.apply(\"abc\"));\n        System.out.println(factory.get().size());\n\n        // compose: ghép hành vi thay vì viết lại\n        Function<String, Integer> lengthTimesTwo = length.andThen(n -> n * 2);\n        System.out.println(lengthTimesTwo.apply(\"abcd\"));       // 8\n    }\n}",
           "citations": [],
           "compile": false,
-          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+          "partialReason": "Ví dụ dùng API Java 17 chuẩn và không được đưa vào bước kiểm tra biên dịch độc lập của bài học."
         },
         {
           "id": "day10-blk-23",
@@ -183,7 +183,7 @@
           "id": "day10-blk-26",
           "type": "code",
           "language": "java",
-          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass PipelineDemo {\n    public static void main(String[] args) {\n        // lazy: khong in gi vi thieu terminal operation\n        Stream<Integer> lazy = Stream.of(1, 2, 3).peek(n -> System.out.println(\"seen \" + n));\n        System.out.println(\"chua chay gi\");\n\n        // short-circuit: chi xu ly toi khi tim thay\n        Optional<Integer> firstEven = Stream.of(1, 3, 4, 6)\n                .peek(n -> System.out.println(\"check \" + n))\n                .filter(n -> n % 2 == 0)\n                .findFirst();                       // dung ngay tai 4\n        System.out.println(firstEven.orElse(-1));\n\n        // stream chi dung mot lan\n        Stream<Integer> once = Stream.of(1, 2);\n        once.count();\n        try {\n            once.count();\n        } catch (IllegalStateException e) {\n            System.out.println(\"stream da bi tieu thu\");\n        }\n\n        // flatMap: lam phang cau truc long nhau\n        List<List<String>> nested = List.of(List.of(\"a\", \"b\"), List.of(\"c\"));\n        System.out.println(nested.stream().flatMap(List::stream).toList()); // [a, b, c]\n    }\n}",
+          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass PipelineDemo {\n    public static void main(String[] args) {\n        // lazy: không in gì vì thiếu terminal operation\n        Stream<Integer> lazy = Stream.of(1, 2, 3).peek(n -> System.out.println(\"seen \" + n));\n        System.out.println(\"chưa chạy gì\");\n\n        // short-circuit: chỉ xử lý tới khi tìm thấy\n        Optional<Integer> firstEven = Stream.of(1, 3, 4, 6)\n                .peek(n -> System.out.println(\"check \" + n))\n                .filter(n -> n % 2 == 0)\n                .findFirst();                       // dừng ngay tại 4\n        System.out.println(firstEven.orElse(-1));\n\n        // stream chỉ dùng một lần\n        Stream<Integer> once = Stream.of(1, 2);\n        once.count();\n        try {\n            once.count();\n        } catch (IllegalStateException e) {\n            System.out.println(\"stream đã bị tiêu thụ\");\n        }\n\n        // flatMap: làm phẳng cấu trúc lồng nhau\n        List<List<String>> nested = List.of(List.of(\"a\", \"b\"), List.of(\"c\"));\n        System.out.println(nested.stream().flatMap(List::stream).toList()); // [a, b, c]\n    }\n}",
           "citations": [
             "day10-src-1",
             "day10-src-2"
@@ -207,7 +207,7 @@
         {
           "id": "day10-blk-8",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn chi tiết trong resourceIds của Day 10 — bảng ở mục trước (c4) chỉ xác nhận Collectors là một nhóm chủ đề trong Streams Series, không mô tả chi tiết từng phương thức (xem authoring.limitations). Nội dung dưới đây theo kiến thức Java 17 chuẩn.",
+          "text": "Tài liệu tham khảo của Day 10 mới giới thiệu Collectors như một nhóm chủ đề trong Streams Series, chưa mô tả chi tiết từng phương thức; phần dưới đây trình bày kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
@@ -226,10 +226,10 @@
           "id": "day10-blk-29",
           "type": "code",
           "language": "text",
-          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass CollectorsDemo {\n    record Order(String customer, String status, double amount) {}\n\n    public static void main(String[] args) {\n        List<Order> orders = List.of(\n                new Order(\"an\", \"PAID\", 100),\n                new Order(\"an\", \"NEW\", 50),\n                new Order(\"binh\", \"PAID\", 300));\n\n        Map<String, List<Order>> byCustomer =\n                orders.stream().collect(Collectors.groupingBy(Order::customer));\n\n        Map<String, Double> totalByCustomer = orders.stream()\n                .collect(Collectors.groupingBy(Order::customer,\n                         Collectors.summingDouble(Order::amount)));\n\n        Map<String, Long> countByStatus = orders.stream()\n                .collect(Collectors.groupingBy(Order::status, Collectors.counting()));\n\n        String names = orders.stream().map(Order::customer)\n                .distinct().collect(Collectors.joining(\", \"));\n\n        System.out.println(byCustomer.keySet() + \" \" + totalByCustomer\n                + \" \" + countByStatus + \" [\" + names + \"]\");\n\n        // toMap: NEM IllegalStateException khi khoa trung -> phai co merge function\n        Map<String, Double> latest = orders.stream()\n                .collect(Collectors.toMap(Order::customer, Order::amount, (a, b) -> b));\n        System.out.println(latest);\n    }\n}",
+          "code": "import java.util.*;\nimport java.util.stream.*;\n\nclass CollectorsDemo {\n    record Order(String customer, String status, double amount) {}\n\n    public static void main(String[] args) {\n        List<Order> orders = List.of(\n                new Order(\"an\", \"PAID\", 100),\n                new Order(\"an\", \"NEW\", 50),\n                new Order(\"binh\", \"PAID\", 300));\n\n        Map<String, List<Order>> byCustomer =\n                orders.stream().collect(Collectors.groupingBy(Order::customer));\n\n        Map<String, Double> totalByCustomer = orders.stream()\n                .collect(Collectors.groupingBy(Order::customer,\n                         Collectors.summingDouble(Order::amount)));\n\n        Map<String, Long> countByStatus = orders.stream()\n                .collect(Collectors.groupingBy(Order::status, Collectors.counting()));\n\n        String names = orders.stream().map(Order::customer)\n                .distinct().collect(Collectors.joining(\", \"));\n\n        System.out.println(byCustomer.keySet() + \" \" + totalByCustomer\n                + \" \" + countByStatus + \" [\" + names + \"]\");\n\n        // toMap: NÉM IllegalStateException khi khóa trùng -> phải có merge function\n        Map<String, Double> latest = orders.stream()\n                .collect(Collectors.toMap(Order::customer, Order::amount, (a, b) -> b));\n        System.out.println(latest);\n    }\n}",
           "citations": [],
           "compile": false,
-          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+          "partialReason": "Ví dụ dùng API Java 17 chuẩn và không được đưa vào bước kiểm tra biên dịch độc lập của bài học."
         },
         {
           "id": "day10-blk-30",
@@ -246,7 +246,7 @@
         {
           "id": "day10-blk-10",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn trong resourceIds của Day 10 (xem authoring.limitations); nội dung dưới đây theo kiến thức Java 17 chuẩn.",
+          "text": "Tài liệu tham khảo của Day 10 chưa có bài riêng về `Optional`; phần dưới đây trình bày kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
@@ -265,10 +265,10 @@
           "id": "day10-blk-32",
           "type": "code",
           "language": "text",
-          "code": "import java.util.Optional;\n\nclass OptionalDemo {\n    record Address(String city) {}\n    record User(String name, Address address) {\n        Optional<Address> addressOpt() { return Optional.ofNullable(address); }\n    }\n\n    static Optional<User> findUser(String id) {\n        return \"u1\".equals(id) ? Optional.of(new User(\"An\", new Address(\"Hanoi\")))\n                               : Optional.empty();\n    }\n\n    public static void main(String[] args) {\n        String city = findUser(\"u1\")\n                .flatMap(User::addressOpt)      // Optional long nhau -> flatMap\n                .map(Address::city)\n                .orElse(\"unknown\");\n        System.out.println(city);                // Hanoi\n\n        // orElseGet: chi tinh khi thuc su thieu gia tri\n        String name = findUser(\"u9\").map(User::name).orElseGet(() -> \"guest\");\n        System.out.println(name);                // guest\n\n        // bien 'khong co' thanh loi domain ro rang\n        try {\n            findUser(\"u9\").orElseThrow(() -> new IllegalArgumentException(\"user not found\"));\n        } catch (IllegalArgumentException e) {\n            System.out.println(e.getMessage());\n        }\n    }\n}",
+          "code": "import java.util.Optional;\n\nclass OptionalDemo {\n    record Address(String city) {}\n    record User(String name, Address address) {\n        Optional<Address> addressOpt() { return Optional.ofNullable(address); }\n    }\n\n    static Optional<User> findUser(String id) {\n        return \"u1\".equals(id) ? Optional.of(new User(\"An\", new Address(\"Hanoi\")))\n                               : Optional.empty();\n    }\n\n    public static void main(String[] args) {\n        String city = findUser(\"u1\")\n                .flatMap(User::addressOpt)      // Optional lồng nhau -> flatMap\n                .map(Address::city)\n                .orElse(\"unknown\");\n        System.out.println(city);                // Hanoi\n\n        // orElseGet: chỉ tính khi thực sự thiếu giá trị\n        String name = findUser(\"u9\").map(User::name).orElseGet(() -> \"guest\");\n        System.out.println(name);                // guest\n\n        // biến 'không có' thành lỗi domain rõ ràng\n        try {\n            findUser(\"u9\").orElseThrow(() -> new IllegalArgumentException(\"user not found\"));\n        } catch (IllegalArgumentException e) {\n            System.out.println(e.getMessage());\n        }\n    }\n}",
           "citations": [],
           "compile": false,
-          "partialReason": "Snippet minh hoa cu phap/hanh vi Java 17 chuan; Day 10 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations) nen khoi code khong dua vao buoc javac cua pipeline."
+          "partialReason": "Ví dụ dùng API Java 17 chuẩn và không được đưa vào bước kiểm tra biên dịch độc lập của bài học."
         },
         {
           "id": "day10-blk-33",
@@ -285,7 +285,7 @@
         {
           "id": "day10-blk-12",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn chi tiết trong resourceIds của Day 10 — bảng c4 chỉ xác nhận 'parallel stream' là một thao tác được liệt kê trong nhóm Operations with Streams, không mô tả cơ chế hoạt động (xem authoring.limitations). Nội dung dưới đây theo kiến thức Java 17 chuẩn.",
+          "text": "Tài liệu tham khảo của Day 10 chỉ liệt kê parallel stream trong nhóm thao tác với stream, chưa mô tả cơ chế hoạt động; phần dưới đây trình bày kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
@@ -318,6 +318,32 @@
     "Sửa trạng thái bên ngoài (side effect) trong lambda của filter/map, khiến kết quả sai và không thể chuyển sang parallel.",
     "Dùng parallelStream() bên trong request handler của Spring Boot, làm mất transaction/SecurityContext gắn với thread và chiếm ForkJoinPool.commonPool dùng chung."
   ],
+  "teaching": {
+    "why": "Khi vòng lặp, `if` và biến tạm chồng lên nhau, ý định ‘lọc giao dịch, nhóm theo danh mục, cộng tổng’ bị chìm trong chi tiết điều khiển. Lambda và Stream giúp diễn đạt chuỗi biến đổi trực tiếp; nhưng nếu không hiểu lazy evaluation, single-use và side effect, code ngắn hơn vẫn có thể sai hoặc chậm.",
+    "javaBridge": "Lambda là lớp ẩn danh rút gọn cho một functional interface bạn đã biết; `Predicate<T>` giống một method nhận `T` và trả `boolean`. Stream pipeline thay vòng `for` bằng các bước `filter`, `map`, `reduce` và `collect`, còn `Optional<T>` đưa khả năng ‘không tìm thấy’ vào kiểu trả về thay vì trả `null` âm thầm.",
+    "mentalModel": "Hãy hình dung stream như dây chuyền: nguồn đặt từng món lên băng tải, `filter` gạt món không đạt, `map` đổi hình dạng, collector đóng thùng kết quả. Các trạm chỉ được lắp khi bạn khai báo intermediate operation; terminal operation mới bật máy, và băng tải đó chỉ chạy một lần.",
+    "is": "Lambda là biểu thức triển khai một functional interface, còn Stream là pipeline lazy xử lý dữ liệu qua các operation và kết thúc bằng một terminal operation.",
+    "isNot": "Stream không phải collection, không lưu dữ liệu và không dùng lại được sau terminal operation. `parallelStream()` cũng không phải nút ‘tăng tốc’: nó có overhead, dùng pool chung và dễ sai khi lambda sửa state bên ngoài.",
+    "solves": "Bài này giúp viết pipeline lọc, biến đổi, nhóm và tổng hợp rõ ý định, đồng thời biểu diễn kết quả có thể vắng bằng `Optional`. Trong Spendwise, V0.2 dùng `groupingBy` và `BigDecimal.reduce` để thống kê chi tiêu theo danh mục; V0.7 dựng dashboard read model, còn V0.8 tuyệt đối không dùng parallel stream trên đường import vì thứ tự nguồn tham gia định danh dòng.",
+    "selfCheck": [
+      {
+        "question": "Đoạn `items.stream().filter(this::valid);` không có terminal operation. Method `valid` được gọi bao nhiêu lần?",
+        "answer": "Không lần nào. `filter` là intermediate operation lazy; pipeline chỉ chạy khi có terminal operation như `toList()`, `count()` hoặc `findFirst()`."
+      },
+      {
+        "question": "Vì sao `orElse(expensiveCall())` có thể lãng phí dù `Optional` đang có giá trị?",
+        "answer": "Đối số của `orElse` được tính trước khi method được gọi, nên `expensiveCall()` vẫn chạy. Dùng `orElseGet(this::expensiveCall)` để chỉ tính khi `Optional` rỗng."
+      },
+      {
+        "question": "`Collectors.toMap(User::id, Function.identity())` gặp hai user cùng ID sẽ làm gì?",
+        "answer": "Nó ném `IllegalStateException` vì không biết giữ value nào. Nếu trùng key là hợp lệ, hãy dùng overload có merge function và nêu rõ quy tắc chọn."
+      },
+      {
+        "question": "Vì sao không dùng `summingDouble` để cộng số tiền `BigDecimal` trong Spendwise?",
+        "answer": "`summingDouble` vừa không nhận trực tiếp `BigDecimal` vừa đưa phép cộng về dấu phẩy động, có thể gây sai số tiền. Hãy map sang `BigDecimal` rồi `reduce(BigDecimal.ZERO, BigDecimal::add)`."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day10-prac-1",
@@ -412,7 +438,7 @@
       "hint": "Nghĩ về điều gì xảy ra ở phía nơi gọi nếu họ quên kiểm tra null.",
       "solution": "Trả về null buộc nơi gọi phải tự nhớ kiểm tra null, để quên là NullPointerException; Optional<T> làm rõ ràng trong chữ ký phương thức rằng giá trị có thể không tồn tại, buộc nơi gọi phải xử lý tường minh (qua isPresent/orElse/map...) thay vì vô tình bỏ quên.",
       "explanation": "Optional biến 'khả năng thiếu giá trị' thành một phần của kiểu dữ liệu, giảm nguy cơ NullPointerException không được kiểm soát.",
-      "rubric": "Đánh giá học viên nêu đúng lý do về tính tường minh/an toàn kiểu của Optional so với null.",
+      "rubric": "Đánh giá bạn nêu đúng lý do về tính tường minh và an toàn kiểu của `Optional` so với `null`.",
       "sourceUsage": []
     }
   ],

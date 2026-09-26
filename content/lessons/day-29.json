@@ -72,14 +72,14 @@
           "id": "day29-blk-3",
           "type": "code",
           "language": "text",
-          "code": "# pom.xml: them dependency springdoc-openapi-starter-webmvc-ui\n# <dependency>\n#   <groupId>org.springdoc</groupId>\n#   <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\n#   <version>2.6.0</version>\n# </dependency>\n\n# application.properties - mac dinh khong can cau hinh gi them:\n#   /v3/api-docs        -> JSON dac ta OpenAPI\n#   /swagger-ui.html     -> giao dien Swagger UI\n\n# Loc bot endpoint duoc dua vao tai lieu, chi lay nhung API cong khai:\nspringdoc.packages-to-scan=com.example.shop.api\nspringdoc.paths-to-match=/api/**\n\n# Tat han che documentation cho mot nhom endpoint noi bo:\n# springdoc.show-actuator=false\n",
+          "code": "# pom.xml: thêm dependency springdoc-openapi-starter-webmvc-ui\n# <dependency>\n#   <groupId>org.springdoc</groupId>\n#   <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\n#   <version>2.6.0</version>\n# </dependency>\n\n# application.properties - mặc định không cần cấu hình gì thêm:\n#   /v3/api-docs        -> JSON đặc tả OpenAPI\n#   /swagger-ui.html     -> giao diện Swagger UI\n\n# Lọc bớt endpoint được đưa vào tài liệu, chỉ lấy những API công khai:\nspringdoc.packages-to-scan=com.example.shop.api\nspringdoc.paths-to-match=/api/**\n\n# Tắt hẳn documentation cho một nhóm endpoint nội bộ:\n# springdoc.show-actuator=false\n",
           "compile": false,
           "citations": [
             "day29-src-1",
             "day29-src-2",
             "day29-src-4"
           ],
-          "partialReason": "Tep cau hinh application.properties/pom.xml, khong phai ma nguon Java bien dich duoc."
+          "partialReason": "Tệp cấu hình application.properties/pom.xml, không phải mã nguồn Java biên dịch được."
         },
         {
           "id": "day29-blk-20",
@@ -128,19 +128,19 @@
           "id": "day29-blk-5",
           "type": "code",
           "language": "text",
-          "code": "# application.properties - bat structured logging dinh dang ECS cho console (Spring Boot 3.4+)\nlogging.structured.format.console=ecs\n\n# Cac dinh dang dung san khac: gelf, logstash\n# logging.structured.format.console=logstash\n",
+          "code": "# application.properties - bật structured logging định dạng ECS cho console (Spring Boot 3.4+)\nlogging.structured.format.console=ecs\n\n# Các định dạng dựng sẵn khác: gelf, logstash\n# logging.structured.format.console=logstash\n",
           "compile": false,
           "citations": [
             "day29-src-5",
             "day29-src-6"
           ],
-          "partialReason": "Tep cau hinh application.properties, khong phai ma nguon Java bien dich duoc."
+          "partialReason": "Tệp cấu hình application.properties, không phải mã nguồn Java biên dịch được."
         },
         {
           "id": "day29-blk-6",
           "type": "code",
           "language": "java",
-          "code": "import org.slf4j.MDC;\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\nclass OrderProcessingService {\n\n    private static final Logger log = LoggerFactory.getLogger(OrderProcessingService.class);\n\n    void process(Long orderId, String customerId) {\n        // Them truong tuy chinh vao MDC - se tu dong xuat hien trong moi\n        // dong log structured (JSON) ghi ra trong pham vi nay.\n        MDC.put(\"orderId\", String.valueOf(orderId));\n        MDC.put(\"customerId\", customerId);\n        try {\n            log.info(\"Bat dau xu ly don hang\");\n            // ... xu ly nghiep vu ...\n            log.info(\"Xu ly don hang thanh cong\");\n        } finally {\n            MDC.clear();\n        }\n    }\n}\n",
+          "code": "import org.slf4j.MDC;\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\nclass OrderProcessingService {\n\n    private static final Logger log = LoggerFactory.getLogger(OrderProcessingService.class);\n\n    void process(Long orderId, String customerId) {\n        // Thêm trường tùy chỉnh vào MDC - sẽ tự động xuất hiện trong mọi\n        // dòng log structured (JSON) ghi ra trong phạm vi này.\n        MDC.put(\"orderId\", String.valueOf(orderId));\n        MDC.put(\"customerId\", customerId);\n        try {\n            log.info(\"Bắt đầu xử lý đơn hàng\");\n            // ... xử lý nghiệp vụ ...\n            log.info(\"Xử lý đơn hàng thành công\");\n        } finally {\n            MDC.clear();\n        }\n    }\n}\n",
           "compile": false,
           "citations": [
             "day29-src-7"
@@ -150,7 +150,7 @@
         {
           "id": "day29-blk-7",
           "type": "note",
-          "text": "Việc lan truyền traceId xuyên suốt một request qua nhiều service (distributed tracing, ví dụ với Micrometer Tracing) không có resource nào trong resourceIds của Day 29 (hay bất kỳ lesson nào khác trong bộ nguồn hiện có) mô tả - đây là khoảng trống kiến thức thật sự. Trình bày dưới dạng ghi chú không trích dẫn.",
+          "text": "Tài liệu tham khảo hiện có chưa mô tả việc lan truyền `traceId` xuyên suốt một request qua nhiều service (distributed tracing, ví dụ với Micrometer Tracing). Vì vậy phần này chỉ nêu khoảng trống để bạn tiếp tục tìm hiểu, chưa hướng dẫn cách triển khai.",
           "citations": []
         },
         {
@@ -209,7 +209,7 @@
           "id": "day29-blk-9",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.boot.actuate.health.Health;\nimport org.springframework.boot.actuate.health.HealthIndicator;\nimport org.springframework.stereotype.Component;\n\n// Actuator mac dinh chi expose /health va /info; can bat them cac endpoint\n// khac qua management.endpoints.web.exposure.include neu can (vi du /metrics,/loggers).\n@Component\nclass PaymentGatewayHealthIndicator implements HealthIndicator {\n\n    @Override\n    public Health health() {\n        boolean reachable = pingPaymentGateway();\n        if (reachable) {\n            return Health.up().withDetail(\"paymentGateway\", \"reachable\").build();\n        }\n        return Health.down().withDetail(\"paymentGateway\", \"unreachable\").build();\n    }\n\n    private boolean pingPaymentGateway() {\n        return true;\n    }\n}\n\n// application.properties tuong ung:\n// management.endpoints.web.exposure.include=health,info,metrics\n// management.endpoint.health.group.readiness.include=paymentGateway,db\n",
+          "code": "import org.springframework.boot.actuate.health.Health;\nimport org.springframework.boot.actuate.health.HealthIndicator;\nimport org.springframework.stereotype.Component;\n\n// Actuator mặc định chỉ expose /health và /info; cần bật thêm các endpoint\n// khác qua management.endpoints.web.exposure.include nếu cần (ví dụ /metrics,/loggers).\n@Component\nclass PaymentGatewayHealthIndicator implements HealthIndicator {\n\n    @Override\n    public Health health() {\n        boolean reachable = pingPaymentGateway();\n        if (reachable) {\n            return Health.up().withDetail(\"paymentGateway\", \"reachable\").build();\n        }\n        return Health.down().withDetail(\"paymentGateway\", \"unreachable\").build();\n    }\n\n    private boolean pingPaymentGateway() {\n        return true;\n    }\n}\n\n// application.properties tương ứng:\n// management.endpoints.web.exposure.include=health,info,metrics\n// management.endpoint.health.group.readiness.include=paymentGateway,db\n",
           "compile": false,
           "citations": [
             "day29-src-9",
@@ -220,7 +220,7 @@
         {
           "id": "day29-blk-10",
           "type": "note",
-          "text": "Xuất metrics theo định dạng Prometheus (thường qua micrometer-registry-prometheus và endpoint /actuator/prometheus) không có resource nào trong resourceIds của Day 29 (hay Day 30) mô tả - đây là khoảng trống kiến thức thật sự trong bộ nguồn hiện có. Trình bày dưới dạng ghi chú không trích dẫn.",
+          "text": "Tài liệu tham khảo hiện có chưa mô tả cách xuất metrics theo định dạng Prometheus, thường qua `micrometer-registry-prometheus` và endpoint `/actuator/prometheus`. Vì vậy phần này chỉ nêu khoảng trống để bạn tiếp tục tìm hiểu, chưa hướng dẫn cách triển khai.",
           "citations": []
         },
         {
@@ -259,7 +259,7 @@
         {
           "id": "day29-blk-11",
           "type": "note",
-          "text": "Đóng gói ứng dụng bằng Docker (layered jar, Dockerfile) và chạy phụ thuộc (DB, Redis) bằng docker-compose không có resource nào trong resourceIds của Day 29 - hai resource tương ứng thuộc resourceIds của Day 30, nơi kỹ thuật này được áp dụng trực tiếp vào Lab 10 và có trích dẫn đầy đủ. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+          "text": "Tài liệu tham khảo của Day 29 chưa đi sâu vào Docker (`layered jar`, Dockerfile) và Docker Compose cho DB/Redis. Phần này chỉ giới thiệu mô hình tổng quan; Day 30 sẽ áp dụng trực tiếp các kỹ thuật đó trong Lab 10.",
           "citations": []
         },
         {
@@ -294,7 +294,7 @@
           "id": "day29-blk-13",
           "type": "code",
           "language": "java",
-          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.test.context.DynamicPropertyRegistry;\nimport org.springframework.test.context.DynamicPropertySource;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n// @Testcontainers quan ly vong doi container (start/stop) theo vong doi test class.\n@Testcontainers\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass OrderApiIntegrationTest {\n\n    // @ServiceConnection tu dong tao ConnectionDetails va tro Spring Boot vao\n    // container nay - khong can @DynamicPropertySource thu cong cho cau hinh datasource pho bien.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\");\n\n    // Chi can dung @DynamicPropertySource cho cau hinh KHONG duoc @ServiceConnection ho tro san.\n    @DynamicPropertySource\n    static void extraProperties(DynamicPropertyRegistry registry) {\n        registry.add(\"app.feature-flag.new-checkout\", () -> \"true\");\n    }\n\n    @Test\n    void containerStartsAndAppConnects() {\n        // RestAssured/WebTestClient goi API that qua RANDOM_PORT o day.\n    }\n}\n",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.test.context.DynamicPropertyRegistry;\nimport org.springframework.test.context.DynamicPropertySource;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n// @Testcontainers quản lý vòng đời container (start/stop) theo vòng đời test class.\n@Testcontainers\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass OrderApiIntegrationTest {\n\n    // @ServiceConnection tự động tạo ConnectionDetails và trỏ Spring Boot vào\n    // container này - không cần @DynamicPropertySource thủ công cho cấu hình datasource phổ biến.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\");\n\n    // Chỉ cần dùng @DynamicPropertySource cho cấu hình KHÔNG được @ServiceConnection hỗ trợ sẵn.\n    @DynamicPropertySource\n    static void extraProperties(DynamicPropertyRegistry registry) {\n        registry.add(\"app.feature-flag.new-checkout\", () -> \"true\");\n    }\n\n    @Test\n    void containerStartsAndAppConnects() {\n        // RestAssured/WebTestClient gọi API thật qua RANDOM_PORT ở đây.\n    }\n}\n",
           "compile": false,
           "citations": [
             "day29-src-12",
@@ -343,6 +343,32 @@
     "Nhồi cấu hình/bí mật của production vào Docker image thay vì truyền từ bên ngoài lúc chạy.",
     "Lưu file tải lên hoặc log vào hệ thống file trong container, làm mất dữ liệu khi container bị thay."
   ],
+  "teaching": {
+    "why": "Khi ứng dụng chạy trên production, bạn không thể gắn debugger vào từng request hay tin rằng tài liệu viết tay vẫn đúng. Bạn cần biết API có hợp đồng gì, ứng dụng còn sẵn sàng phục vụ không, request nào đã lỗi, và lỗi có đến từ database thật hay chỉ bị H2 che giấu.",
+    "javaBridge": "Trong Java, bạn đã dùng logger để in thông báo, viết tài liệu cho method và chạy chương trình với thư viện bên ngoài. Spring Boot nâng các việc đó thành hạ tầng vận hành: OpenAPI sinh hợp đồng từ controller, Actuator phơi tín hiệu sức khỏe, MDC gắn ngữ cảnh vào log, còn Testcontainers dựng phụ thuộc thật cho test.",
+    "mentalModel": "Hãy hình dung production như một căn phòng máy đóng kín: OpenAPI là sơ đồ cổng kết nối, structured log là nhật ký từng sự kiện, metrics là bảng đồng hồ, health check là đèn sẵn sàng, và Testcontainers là buổi diễn tập với thiết bị thật trước khi mở cửa. Mỗi công cụ trả lời một câu hỏi khác nhau; không công cụ nào thay thế tất cả công cụ còn lại.",
+    "is": "Production readiness là tập hợp khả năng giúp API được mô tả, quan sát, kiểm tra với phụ thuộc thật và vận hành an toàn sau khi triển khai.",
+    "isNot": "Nó không đồng nghĩa với bật mọi Actuator endpoint, ghi mọi dữ liệu vào log hay có Swagger UI là đủ. Phơi quá nhiều thông tin và log token có thể biến công cụ vận hành thành lỗ hổng bảo mật.",
+    "solves": "Bài này giúp bạn tạo tài liệu API không trôi khỏi code, truy vết request qua structured logging, phân biệt health với metrics và kiểm thử trên PostgreSQL thật. Trong Spendwise V0.9, các kỹ thuật này tạo nền cho observability: JSON log có `traceId`, health check database, phạm vi Actuator an toàn và OpenAPI cho API.",
+    "selfCheck": [
+      {
+        "question": "OpenAPI và Swagger UI khác nhau ở điểm nào?",
+        "answer": "OpenAPI là đặc tả máy đọc được về path, request, response và lỗi; Swagger UI chỉ là giao diện hiển thị và thử đặc tả đó. Giá trị lâu dài nằm ở hợp đồng OpenAPI vì công cụ khác có thể sinh client hoặc kiểm tra tương thích từ nó."
+      },
+      {
+        "question": "Vì sao phải xóa MDC trong `finally`?",
+        "answer": "MDC thường dựa trên ThreadLocal, trong khi thread của pool được tái sử dụng. Nếu không xóa, `traceId` hoặc `userId` của request trước có thể bị gắn nhầm vào log của request sau."
+      },
+      {
+        "question": "Một payment gateway không thiết yếu bị DOWN. Có nên làm readiness của cả ứng dụng DOWN không?",
+        "answer": "Không nên nếu ứng dụng vẫn phục vụ được chức năng cốt lõi. Readiness chỉ nên phụ thuộc vào thành phần thiếu nó thì instance không thể phục vụ; tình trạng gateway phù hợp hơn với metric hoặc cảnh báo."
+      },
+      {
+        "question": "Vì sao `@ServiceConnection` không làm `@DynamicPropertySource` trở nên vô dụng?",
+        "answer": "`@ServiceConnection` tự cấu hình kết nối cho loại container được hỗ trợ. `@DynamicPropertySource` vẫn cần cho property bổ sung hoặc container chưa có ConnectionDetails tương ứng."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day29-prac-1",

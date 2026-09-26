@@ -57,7 +57,7 @@
         {
           "id": "day16-blk-2",
           "type": "note",
-          "text": "Bài mở đầu Unit 6 (Spring MVC/REST): xây dựng controller với @RestController, khai báo mapping bằng @RequestMapping và các shortcut theo HTTP method, xử lý tham số từ path/query, dùng ResponseEntity để kiểm soát toàn bộ HTTP response, và content negotiation qua consumes/produces. Lịch học ngày nay ghi 'Assignment' nhưng không có đề bài chi tiết riêng — học viên ôn tập và thực hành lại ví dụ trong bài.",
+          "text": "Bài mở đầu Unit 6 (Spring MVC/REST): xây dựng controller với @RestController, khai báo mapping bằng @RequestMapping và các annotation rút gọn theo HTTP method, xử lý tham số từ path/query, dùng ResponseEntity để kiểm soát toàn bộ HTTP response, và thương lượng nội dung qua consumes/produces. Lịch học của ngày này ghi 'Assignment' nhưng không có đề bài chi tiết riêng — bạn ôn tập và thực hành lại ví dụ trong bài.",
           "citations": []
         }
       ]
@@ -114,7 +114,7 @@
           "id": "day16-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/products\")\nclass ProductController {\n\n    private final ProductRepository repository;\n\n    ProductController(ProductRepository repository) {\n        this.repository = repository;\n    }\n\n    // {id:[\\d]+} rang buoc bien path chi khop gia tri so.\n    @GetMapping(\"/{id:[\\\\d]+}\")\n    ResponseEntity<Product> findById(@PathVariable long id) {\n        return repository.findById(id)\n                .map(ResponseEntity::ok)\n                .orElseGet(() -> ResponseEntity.notFound().build());\n    }\n\n    @GetMapping(produces = \"application/json\")\n    ResponseEntity<java.util.List<Product>> search(\n            @RequestParam(required = false) String category) {\n        var results = category == null\n                ? repository.findAll()\n                : repository.findByCategory(category);\n        return ResponseEntity.ok(results);\n    }\n\n    @PostMapping(consumes = \"application/json\")\n    ResponseEntity<Product> create(@RequestBody Product product) {\n        Product saved = repository.save(product);\n        return ResponseEntity.status(201).body(saved);\n    }\n}\n",
+          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/api/products\")\nclass ProductController {\n\n    private final ProductRepository repository;\n\n    ProductController(ProductRepository repository) {\n        this.repository = repository;\n    }\n\n    // {id:[\\d]+} ràng buộc biến path chỉ khớp giá trị số.\n    @GetMapping(\"/{id:[\\\\d]+}\")\n    ResponseEntity<Product> findById(@PathVariable long id) {\n        return repository.findById(id)\n                .map(ResponseEntity::ok)\n                .orElseGet(() -> ResponseEntity.notFound().build());\n    }\n\n    @GetMapping(produces = \"application/json\")\n    ResponseEntity<java.util.List<Product>> search(\n            @RequestParam(required = false) String category) {\n        var results = category == null\n                ? repository.findAll()\n                : repository.findByCategory(category);\n        return ResponseEntity.ok(results);\n    }\n\n    @PostMapping(consumes = \"application/json\")\n    ResponseEntity<Product> create(@RequestBody Product product) {\n        Product saved = repository.save(product);\n        return ResponseEntity.status(201).body(saved);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day16-src-1",
@@ -185,7 +185,7 @@
           "id": "day16-blk-24",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\nimport java.net.URI;\nimport java.util.List;\n\nrecord ProductRequest(String name, double price) {}\nrecord ProductResponse(Long id, String name, double price) {}\n\n@RestController\n@RequestMapping(\"/api/products\")          // mapping dung chung o cap class\nclass ProductController {\n\n    // dinh danh tai nguyen -> @PathVariable\n    @GetMapping(\"/{id}\")\n    ResponseEntity<ProductResponse> getOne(@PathVariable Long id) {\n        return ResponseEntity.ok(new ProductResponse(id, \"demo\", 10.0));\n    }\n\n    // tham so phu tro -> @RequestParam co defaultValue\n    @GetMapping\n    List<ProductResponse> search(@RequestParam(required = false) String keyword,\n                                 @RequestParam(defaultValue = \"0\") int page,\n                                 @RequestParam(defaultValue = \"20\") int size) {\n        return List.of();                 // khong tim thay -> 200 + danh sach rong\n    }\n\n    // tao moi -> 201 + header Location\n    @PostMapping\n    ResponseEntity<ProductResponse> create(@RequestBody ProductRequest request) {\n        ProductResponse created = new ProductResponse(1L, request.name(), request.price());\n        return ResponseEntity.created(URI.create(\"/api/products/\" + created.id())).body(created);\n    }\n\n    @DeleteMapping(\"/{id}\")\n    ResponseEntity<Void> delete(@PathVariable Long id) {\n        return ResponseEntity.noContent().build();   // 204\n    }\n}\n",
+          "code": "import org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.annotation.*;\nimport java.net.URI;\nimport java.util.List;\n\nrecord ProductRequest(String name, double price) {}\nrecord ProductResponse(Long id, String name, double price) {}\n\n@RestController\n@RequestMapping(\"/api/products\")          // mapping dùng chung ở cấp class\nclass ProductController {\n\n    // định danh tài nguyên -> @PathVariable\n    @GetMapping(\"/{id}\")\n    ResponseEntity<ProductResponse> getOne(@PathVariable Long id) {\n        return ResponseEntity.ok(new ProductResponse(id, \"demo\", 10.0));\n    }\n\n    // tham số phụ trợ -> @RequestParam có defaultValue\n    @GetMapping\n    List<ProductResponse> search(@RequestParam(required = false) String keyword,\n                                 @RequestParam(defaultValue = \"0\") int page,\n                                 @RequestParam(defaultValue = \"20\") int size) {\n        return List.of();                 // không tìm thấy -> 200 + danh sách rỗng\n    }\n\n    // tạo mới -> 201 + header Location\n    @PostMapping\n    ResponseEntity<ProductResponse> create(@RequestBody ProductRequest request) {\n        ProductResponse created = new ProductResponse(1L, request.name(), request.price());\n        return ResponseEntity.created(URI.create(\"/api/products/\" + created.id())).body(created);\n    }\n\n    @DeleteMapping(\"/{id}\")\n    ResponseEntity<Void> delete(@PathVariable Long id) {\n        return ResponseEntity.noContent().build();   // 204\n    }\n}\n",
           "compile": false,
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
           "citations": [
@@ -268,6 +268,32 @@
     "Quên required=false hoặc defaultValue cho @RequestParam tùy chọn, khiến request thiếu tham số bị trả 400.",
     "Đặt động từ trong URL (/getProduct, /deleteProduct) thay vì để HTTP method diễn đạt hành động trên tài nguyên."
   ],
+  "teaching": {
+    "why": "Một method Java chạy đúng vẫn chưa trở thành API: client cần biết gọi URL nào, gửi dữ liệu ở đâu và nhận mã HTTP nào. Nếu thiếu kiến thức controller, bạn dễ tạo endpoint trùng mapping, trả 200 cho mọi trường hợp hoặc phơi thẳng entity ra JSON. Bài này giúp bạn thiết kế biên giới HTTP rõ ràng trước khi nối vào service.",
+    "javaBridge": "Bạn đã biết một method Java nhận tham số và trả về object. Spring MVC giữ mô hình đó: `@PathVariable`, `@RequestParam` và `@RequestBody` biến từng phần của HTTP request thành tham số Java, còn giá trị trả về được `HttpMessageConverter` chuyển thành JSON. `ResponseEntity<T>` giống một object kết quả chứa đủ ba phần: status, headers và body.",
+    "mentalModel": "Hãy hình dung `DispatcherServlet` như lễ tân: đọc địa chỉ và HTTP method, tra `HandlerMapping` để tìm đúng phòng, nhờ bộ chuyển đổi điền dữ liệu vào tham số Java, rồi đóng gói kết quả thành response. `@RestController` là biển tên của phòng; annotation mapping là quy tắc định tuyến; DTO là phiếu nhận và phiếu trả, không phải hồ sơ nội bộ của hệ thống.",
+    "is": "Spring MVC controller là bean nhận HTTP request qua các mapping, bind dữ liệu vào tham số Java và trả HTTP response, thường ở dạng JSON.",
+    "isNot": "Controller không phải nơi chứa business logic hoặc truy cập database trực tiếp. `@RestController` cũng không tự chọn status code đúng cho mọi tình huống; bạn vẫn phải diễn đạt 201, 204, 404 và các header cần thiết.",
+    "solves": "Bài này giúp bạn tạo API có URL, method, tham số và response nhất quán, đồng thời tách contract HTTP khỏi entity nội bộ. Trong Spendwise V0.4, kiến thức này dùng để xây `AccountController`, `TransactionController` và `CategoryController`; thao tác tạo Account trả 201 kèm `Location`, thao tác đọc trả DTO, còn tài nguyên không tồn tại trả 404.",
+    "selfCheck": [
+      {
+        "question": "Client gọi `GET /api/products/abc` nhưng mapping là `/{id:[\\d]+}`. Method controller có chạy không, và lỗi nằm ở bước nào?",
+        "answer": "Method không chạy vì URL không khớp regex của mapping. Request bị loại ở bước tìm handler, trước khi Spring bind `id` thành tham số Java."
+      },
+      {
+        "question": "Endpoint tìm kiếm không có kết quả nên trả 200 với danh sách rỗng hay 404? Vì sao?",
+        "answer": "Trả 200 với danh sách rỗng vì collection vẫn tồn tại, chỉ không có phần tử khớp bộ lọc. 404 dành cho một tài nguyên cụ thể được định danh nhưng không tồn tại."
+      },
+      {
+        "question": "Vì sao `POST` tạo tài nguyên nên trả 201 kèm `Location` thay vì chỉ trả 200?",
+        "answer": "201 diễn đạt rõ tài nguyên mới đã được tạo; `Location` cho client URL chuẩn để lấy tài nguyên đó. Contract này mang nhiều thông tin hơn một phản hồi 200 chung chung."
+      },
+      {
+        "question": "Nếu hai method có cùng HTTP method, URL, params, headers và media type, lỗi xuất hiện khi nào?",
+        "answer": "Spring phát hiện ambiguous mapping khi dựng application context và dừng lúc khởi động. Cần đổi URL hoặc thêm điều kiện mapping phân biệt thực sự."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day16-prac-1",

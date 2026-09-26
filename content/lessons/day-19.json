@@ -61,7 +61,7 @@
         {
           "id": "day19-blk-2",
           "type": "note",
-          "text": "Bài học mở đầu Unit 7 (JPA/Hibernate nâng cao): entity mapping bằng các annotation JPA cốt lõi, các kiểu quan hệ một chiều/hai chiều (bao gồm @ManyToMany), cascade type và orphan removal, và chiến lược fetch (eager/lazy). Assignment của ngày này không có đề bài chi tiết riêng (lịch học chỉ ghi 'Assignment') - học viên ôn tập và thực hành lại các ví dụ trong bài để chuẩn bị cho Assignment 7 (E-Commerce Data Layer) ở Day 21.",
+          "text": "Bài học mở đầu Unit 7 (JPA/Hibernate nâng cao): ánh xạ entity bằng các annotation JPA cốt lõi, các kiểu quan hệ một chiều/hai chiều (bao gồm @ManyToMany), cascade và orphan removal, cùng chiến lược nạp dữ liệu eager/lazy. Assignment của ngày này không có đề bài chi tiết riêng (lịch học chỉ ghi 'Assignment') — bạn ôn tập và thực hành lại các ví dụ trong bài để chuẩn bị cho Assignment 7 (E-Commerce Data Layer) ở Day 21.",
           "citations": []
         }
       ]
@@ -155,7 +155,7 @@
     },
     {
       "id": "day19-sec-entity",
-      "title": "Entity Mapping: @Entity, @Id, @Table, @Column",
+      "title": "Ánh xạ entity: @Entity, @Id, @Table, @Column",
       "blocks": [
         {
           "id": "day19-blk-3",
@@ -275,7 +275,7 @@
     },
     {
       "id": "day19-sec-cascade",
-      "title": "Cascade Type và Orphan Removal",
+      "title": "Lan truyền thao tác (cascade) và xóa phần tử mồ côi (orphan removal)",
       "blocks": [
         {
           "id": "day19-blk-9",
@@ -345,7 +345,7 @@
     },
     {
       "id": "day19-sec-fetch",
-      "title": "FetchType: Eager và Lazy Loading",
+      "title": "FetchType: nạp ngay (eager) và nạp khi cần (lazy)",
       "blocks": [
         {
           "id": "day19-blk-12",
@@ -401,6 +401,32 @@
     "Dùng @Temporal + java.util.Date cho field ngày giờ mới thay vì tập kiểu java.time mà JPA 3.1 đã hỗ trợ trực tiếp (LocalDate/LocalTime/LocalDateTime/OffsetTime/OffsetDateTime), không cần @Temporal - và nhầm rằng java.time.Instant cũng nằm trong nhóm được JPA 3.1 chuẩn hoá, trong khi Instant phải tới Jakarta Persistence 3.2 mới được hỗ trợ trực tiếp.",
     "Tưởng sửa object reference trong bộ nhớ (ví dụ set quan hệ = null) lập tức đổi dữ liệu ở database, trong khi thực chất chỉ đồng bộ khi persistence context flush/commit."
   ],
+  "teaching": {
+    "why": "Object Java biến mất khi ứng dụng dừng, còn dữ liệu nghiệp vụ phải sống qua nhiều lần khởi động. Nếu ánh xạ quan hệ sai, Hibernate có thể tạo bảng nối ngoài ý muốn, xóa lan dữ liệu dùng chung, phát hàng trăm query hoặc ném `LazyInitializationException` lúc serialize. Bài này giúp bạn kiểm soát khoảng cách giữa object trong bộ nhớ và row trong database.",
+    "javaBridge": "Một entity vẫn là class Java có field, constructor và method, nhưng `@Entity`, `@Id` và `@Column` cho JPA biết cách nối nó với table, primary key và column. Tham chiếu `product.category` trong heap được lưu thành giá trị `category_id` ở database; JPA làm nhiệm vụ dịch giữa hai mô hình. Collection Java ở phía `@OneToMany` chỉ là phía nhìn ngược, còn field `@ManyToOne` chứa khóa ngoại mới thường là phía sở hữu.",
+    "mentalModel": "Hãy hình dung object model là bản đồ trong ứng dụng, còn relational model là hồ sơ trong kho; JPA là người phiên dịch, không phải bản thân kho. Persistence context giữ một bản đang làm việc của mỗi hồ sơ: bạn sửa entity managed, đến lúc flush Hibernate mới viết thay đổi xuống database. `LAZY` là phiếu lấy hồ sơ khi cần; dùng phiếu sau khi kho đã đóng sẽ gây `LazyInitializationException`.",
+    "is": "JPA entity mapping là cơ chế ánh xạ class và quan hệ Java sang table, column, primary key và foreign key, đồng thời theo dõi entity trong persistence context.",
+    "isNot": "Entity không phải DTO và không nên trả thẳng ra API. Cascade cũng không phải “tự lưu mọi thứ”: nó chỉ lan truyền những thao tác đã chọn, và dùng sai `REMOVE` hoặc `orphanRemoval` có thể xóa dữ liệu được chia sẻ.",
+    "solves": "Bài này giúp dữ liệu Java được lưu đúng schema, quan hệ có phía sở hữu rõ, cascade theo vòng đời thật và fetch không gây lỗi ngoài transaction. Trong Spendwise V0.5, `Account`, `Transaction` và `Category` được ánh xạ tại chỗ thành entity; quan hệ Account–Transaction và Transaction–Category chọn cascade/fetch tường minh, còn đường đọc chính phải tránh N+1.",
+    "selfCheck": [
+      {
+        "question": "Bạn chỉ thêm `product` vào `category.getProducts()` nhưng không gọi `product.setCategory(category)`. Khóa ngoại có được cập nhật không?",
+        "answer": "Thường không, vì phía `Product.category` có `@ManyToOne` và khóa ngoại nên là phía sở hữu. Helper method nên cập nhật cả hai phía để object graph và database không lệch nhau."
+      },
+      {
+        "question": "Khi nào `orphanRemoval=true` an toàn?",
+        "answer": "Khi entity con thuộc độc quyền một cha và mất ý nghĩa khi bị gỡ khỏi cha, như `OrderItem` của một `Order`. Không dùng cho dữ liệu tham chiếu được nhiều cha chia sẻ, như `Category`."
+      },
+      {
+        "question": "Vì sao chạm vào quan hệ lazy trong controller có thể ném `LazyInitializationException`?",
+        "answer": "Transaction và persistence context thường đã đóng trước lúc controller serialize response, nên proxy không còn session để truy vấn. Hãy fetch đúng dữ liệu trong transaction rồi map sang DTO."
+      },
+      {
+        "question": "Vì sao nên dùng `Long` thay vì `long` cho id được sinh tự động?",
+        "answer": "`Long` có giá trị `null` để biểu diễn entity chưa được lưu. `long` mặc định là 0 nên làm mất trạng thái phân biệt này."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day19-prac-1",

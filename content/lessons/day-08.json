@@ -109,7 +109,7 @@
           "id": "day08-blk-22",
           "type": "code",
           "language": "java",
-          "code": "import java.util.*;\n\nclass GenericsDemo {\n    // bounded type parameter: T phai so sanh duoc\n    static <T extends Comparable<T>> T max(List<? extends T> items) {\n        T best = items.get(0);\n        for (T item : items) {\n            if (item.compareTo(best) > 0) best = item;\n        }\n        return best;\n    }\n\n    // consumer: chi ghi -> super\n    static void addNumbers(List<? super Integer> sink) {\n        sink.add(1);\n        sink.add(2);\n    }\n\n    public static void main(String[] args) {\n        List<Integer> ints = new ArrayList<>(List.of(3, 9, 4));\n        System.out.println(max(ints));            // 9\n\n        List<? extends Number> readOnly = ints;\n        System.out.println(readOnly.get(0));      // doc: OK\n        // readOnly.add(5);                        // LOI: khong biet kieu chinh xac -> khong ghi duoc\n\n        List<Number> sink = new ArrayList<>();\n        addNumbers(sink);                          // Number la super cua Integer\n        System.out.println(sink);                  // [1, 2]\n    }\n}\n",
+          "code": "import java.util.*;\n\nclass GenericsDemo {\n    // bounded type parameter: T phải so sánh được\n    static <T extends Comparable<T>> T max(List<? extends T> items) {\n        T best = items.get(0);\n        for (T item : items) {\n            if (item.compareTo(best) > 0) best = item;\n        }\n        return best;\n    }\n\n    // consumer: chỉ ghi -> super\n    static void addNumbers(List<? super Integer> sink) {\n        sink.add(1);\n        sink.add(2);\n    }\n\n    public static void main(String[] args) {\n        List<Integer> ints = new ArrayList<>(List.of(3, 9, 4));\n        System.out.println(max(ints));            // 9\n\n        List<? extends Number> readOnly = ints;\n        System.out.println(readOnly.get(0));      // đọc: OK\n        // readOnly.add(5);                        // LỖI: không biết kiểu chính xác -> không ghi được\n\n        List<Number> sink = new ArrayList<>();\n        addNumbers(sink);                          // Number là supertype của Integer\n        System.out.println(sink);                  // [1, 2]\n    }\n}\n",
           "compile": true,
           "citations": [
             "day08-src-3",
@@ -208,7 +208,7 @@
           "id": "day08-blk-27",
           "type": "code",
           "language": "java",
-          "code": "import java.util.*;\n\nclass CollectionsDemo {\n    // record: tu dong sinh equals/hashCode dung hop dong -> khoa an toan\n    record CustomerId(String value) {}\n\n    public static void main(String[] args) {\n        Map<CustomerId, Integer> orders = new HashMap<>();\n        orders.put(new CustomerId(\"C1\"), 3);\n        // instance khac nhau nhung equals -> tim duoc\n        System.out.println(orders.get(new CustomerId(\"C1\")));   // 3\n\n        // API tien dung thay cho if-else quanh get()\n        orders.merge(new CustomerId(\"C1\"), 2, Integer::sum);     // 5\n        orders.computeIfAbsent(new CustomerId(\"C2\"), k -> 0);\n        System.out.println(orders.getOrDefault(new CustomerId(\"C9\"), -1)); // -1\n\n        // List.of tra ve danh sach BAT BIEN\n        List<String> fixed = List.of(\"a\", \"b\");\n        try {\n            fixed.add(\"c\");\n        } catch (UnsupportedOperationException e) {\n            System.out.println(\"immutable: \" + e.getClass().getSimpleName());\n        }\n\n        // Xoa an toan khi dang duyet: removeIf, khong phai for-each + remove\n        List<String> names = new ArrayList<>(List.of(\"an\", \"binh\", \"chi\"));\n        names.removeIf(n -> n.length() <= 2);\n        System.out.println(names);   // [binh, chi]\n    }\n}\n",
+          "code": "import java.util.*;\n\nclass CollectionsDemo {\n    // record: tự động sinh equals/hashCode đúng hợp đồng -> khóa an toàn\n    record CustomerId(String value) {}\n\n    public static void main(String[] args) {\n        Map<CustomerId, Integer> orders = new HashMap<>();\n        orders.put(new CustomerId(\"C1\"), 3);\n        // instance khác nhau nhưng equals -> tìm được\n        System.out.println(orders.get(new CustomerId(\"C1\")));   // 3\n\n        // API tiện dụng thay cho if-else quanh get()\n        orders.merge(new CustomerId(\"C1\"), 2, Integer::sum);     // 5\n        orders.computeIfAbsent(new CustomerId(\"C2\"), k -> 0);\n        System.out.println(orders.getOrDefault(new CustomerId(\"C9\"), -1)); // -1\n\n        // List.of trả về danh sách BẤT BIẾN\n        List<String> fixed = List.of(\"a\", \"b\");\n        try {\n            fixed.add(\"c\");\n        } catch (UnsupportedOperationException e) {\n            System.out.println(\"immutable: \" + e.getClass().getSimpleName());\n        }\n\n        // Xóa an toàn khi đang duyệt: removeIf, không phải for-each + remove\n        List<String> names = new ArrayList<>(List.of(\"an\", \"binh\", \"chi\"));\n        names.removeIf(n -> n.length() <= 2);\n        System.out.println(names);   // [binh, chi]\n    }\n}\n",
           "compile": true,
           "citations": [
             "day08-src-6",
@@ -291,7 +291,7 @@
           "id": "day08-blk-31",
           "type": "code",
           "language": "java",
-          "code": "class ExceptionDemo {\n    static class OrderNotFoundException extends RuntimeException {\n        private final String orderId;\n        OrderNotFoundException(String orderId, Throwable cause) {\n            super(\"Order not found: \" + orderId, cause);   // GIU nguyen nhan goc\n            this.orderId = orderId;\n        }\n        String getOrderId() { return orderId; }\n    }\n\n    static String loadRaw(String id) {\n        throw new IllegalStateException(\"db timeout\");        // loi tang ha tang\n    }\n\n    static String findOrder(String id) {\n        try {\n            return loadRaw(id);\n        } catch (IllegalStateException e) {\n            throw new OrderNotFoundException(id, e);          // dich sang loi domain\n        }\n    }\n\n    public static void main(String[] args) {\n        try {\n            findOrder(\"A-1\");\n        } catch (OrderNotFoundException e) {\n            System.out.println(e.getMessage());\n            System.out.println(\"root cause: \" + e.getCause().getMessage());\n        }\n    }\n}\n",
+          "code": "class ExceptionDemo {\n    static class OrderNotFoundException extends RuntimeException {\n        private final String orderId;\n        OrderNotFoundException(String orderId, Throwable cause) {\n            super(\"Order not found: \" + orderId, cause);   // GIỮ nguyên nhân gốc\n            this.orderId = orderId;\n        }\n        String getOrderId() { return orderId; }\n    }\n\n    static String loadRaw(String id) {\n        throw new IllegalStateException(\"db timeout\");        // lỗi tầng hạ tầng\n    }\n\n    static String findOrder(String id) {\n        try {\n            return loadRaw(id);\n        } catch (IllegalStateException e) {\n            throw new OrderNotFoundException(id, e);          // dịch sang lỗi domain\n        }\n    }\n\n    public static void main(String[] args) {\n        try {\n            findOrder(\"A-1\");\n        } catch (OrderNotFoundException e) {\n            System.out.println(e.getMessage());\n            System.out.println(\"root cause: \" + e.getCause().getMessage());\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day08-src-11"
@@ -359,7 +359,7 @@
           "id": "day08-blk-34",
           "type": "code",
           "language": "java",
-          "code": "class TwrDemo {\n    static class Res implements AutoCloseable {\n        private final String name;\n        Res(String name) { this.name = name; System.out.println(\"open \" + name); }\n        void use() { throw new IllegalStateException(\"loi trong than try\"); }\n        @Override public void close() {\n            System.out.println(\"close \" + name);\n            throw new IllegalStateException(\"loi khi close \" + name);\n        }\n    }\n\n    public static void main(String[] args) {\n        try (Res a = new Res(\"A\"); Res b = new Res(\"B\")) {   // dong B truoc, roi A\n            a.use();\n        } catch (Exception e) {\n            System.out.println(\"chinh: \" + e.getMessage());\n            for (Throwable s : e.getSuppressed()) {\n                System.out.println(\"suppressed: \" + s.getMessage());\n            }\n        }\n    }\n}\n",
+          "code": "class TwrDemo {\n    static class Res implements AutoCloseable {\n        private final String name;\n        Res(String name) { this.name = name; System.out.println(\"open \" + name); }\n        void use() { throw new IllegalStateException(\"loi trong than try\"); }\n        @Override public void close() {\n            System.out.println(\"close \" + name);\n            throw new IllegalStateException(\"loi khi close \" + name);\n        }\n    }\n\n    public static void main(String[] args) {\n        try (Res a = new Res(\"A\"); Res b = new Res(\"B\")) {   // đóng B trước, rồi A\n            a.use();\n        } catch (Exception e) {\n            System.out.println(\"chinh: \" + e.getMessage());\n            for (Throwable s : e.getSuppressed()) {\n                System.out.println(\"suppressed: \" + s.getMessage());\n            }\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day08-src-14",
@@ -386,6 +386,32 @@
     "Bọc lại exception bằng new RuntimeException(message) mà không truyền cause, làm mất stack trace gốc và không thể truy nguyên lỗi trong production.",
     "Cho rằng List<Dog> dùng được ở nơi cần List<Animal>: generics không covariant, phải dùng wildcard theo nguyên tắc PECS."
   ],
+  "teaching": {
+    "why": "Nếu chọn sai collection, dùng generic thô hoặc xử lý exception qua loa, chương trình vẫn có thể biên dịch nhưng lỗi sẽ xuất hiện muộn: ép kiểu sai, mất phần tử trong `HashMap`, rò rỉ file hoặc mất nguyên nhân gốc. Bài này giúp bạn đẩy lỗi về thời điểm biên dịch, chọn cấu trúc dữ liệu theo hợp đồng và giữ đường đi của lỗi rõ ràng.",
+    "javaBridge": "Bạn đã dùng mảng, class và `try-catch`: generics thêm một ‘nhãn kiểu’ để compiler kiểm tra phần tử; Collections cung cấp các cấu trúc có sẵn thay vì tự quản lý mảng; exception hierarchy cho phép bắt lỗi theo nhóm. `try-with-resources` là cách Java tự gọi `close()` thay cho khối `finally` bạn phải viết tay.",
+    "mentalModel": "Hãy hình dung một kho hàng: generic là nhãn loại hàng trên mỗi kệ, `List`/`Set`/`Map` là ba kiểu kệ với hợp đồng khác nhau, còn exception là phiếu sự cố đi ngược lên qua các tầng. `try-with-resources` là quy trình đóng kho tự động: cửa mở sau đóng trước, và nếu cả công việc lẫn lúc đóng cửa đều lỗi thì lỗi công việc vẫn được giữ làm lỗi chính.",
+    "is": "Đây là bộ công cụ Java để ràng buộc kiểu lúc biên dịch, lưu và tra cứu nhóm object theo hợp đồng, rồi biểu diễn và xử lý luồng lỗi có cấu trúc.",
+    "isNot": "Generics không tạo ra một kiểu mới còn nguyên ở runtime, vì type erasure xóa type argument cụ thể. Collection cũng không tự an toàn với nhiều thread, và `catch (Exception e) {}` không phải xử lý lỗi mà là làm lỗi biến mất.",
+    "solves": "Bài này giúp code an toàn kiểu, chọn đúng `List`/`Set`/`Map`, giữ khóa `HashMap` ổn định và luôn đóng tài nguyên. Trong Spendwise, V0.2 dùng `Repository<T, ID>` trên collection, còn lớp CSV dùng `try-with-resources` và exception khi parse; V0.8 tiếp tục dựa vào các hợp đồng này để phát hiện giao dịch nhập trùng.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `List<Dog>` không thể truyền vào method nhận `List<Animal>`, dù `Dog` là subtype của `Animal`?",
+        "answer": "Nếu được phép, method có thể thêm một `Cat` vào danh sách vốn chỉ nhận `Dog`, phá an toàn kiểu. Khi chỉ cần đọc, hãy nhận `List<? extends Animal>` theo nguyên tắc Producer Extends."
+      },
+      {
+        "question": "Sau khi đặt một object mutable làm khóa `HashMap`, bạn đổi field tham gia `hashCode()`. Điều gì có thể xảy ra?",
+        "answer": "Object có thể nằm ở bucket cũ nhưng khi tra cứu lại tạo hash khác, nên `get()` trả `null` dù object vẫn ở trong map. Khóa nên bất biến, chẳng hạn `String`, record hoặc enum."
+      },
+      {
+        "question": "Thân `try` ném lỗi A và `close()` cũng ném lỗi B trong try-with-resources. Lỗi nào được ném ra ngoài?",
+        "answer": "A vẫn là exception chính; B được gắn vào A dưới dạng suppressed exception và đọc bằng `getSuppressed()`. Cơ chế này tránh việc lỗi lúc đóng tài nguyên che mất lỗi gốc."
+      },
+      {
+        "question": "Khi nào dùng `? super T` thay vì `? extends T`?",
+        "answer": "Dùng `? super T` khi collection là nơi nhận các giá trị `T`, vì bạn có thể thêm `T` an toàn. Dùng `? extends T` khi collection chủ yếu cung cấp giá trị để đọc."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day08-prac-1",
@@ -478,7 +504,7 @@
       "hint": "Sau type erasure, trình biên dịch không còn biết T là kiểu gì lúc runtime nên không thể cấp phát mảng đúng kiểu.",
       "solution": "Vì type erasure xóa hết thông tin kiểu generic cụ thể sau khi biên dịch, JVM lúc runtime không biết T thực sự là kiểu gì để tạo mảng đúng kiểu đó (mảng trong Java cần biết kiểu phần tử cụ thể lúc tạo) — nên Java cấm trực tiếp 'new T[]' và 'new List<X>[]'.",
       "explanation": "Type erasure là lý do sâu xa của nhiều hạn chế kỳ lạ trong generics mà lập trình viên Java hay gặp.",
-      "rubric": "Đánh giá học viên liên kết đúng type erasure với hạn chế tạo mảng generic.",
+      "rubric": "Đánh giá bạn liên kết đúng type erasure với hạn chế tạo mảng generic.",
       "sourceUsage": []
     }
   ],

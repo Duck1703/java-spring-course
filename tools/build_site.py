@@ -37,7 +37,7 @@ DATA_RE = re.compile(
 LESSON_FIELDS = (
     "id", "unitId", "group", "kind", "title", "summary", "durationMinutes",
     "objectives", "prerequisites", "outcomes", "sections", "commonMistakes",
-    "practices", "syllabusAssignments", "enhancedExercises", "references",
+    "practices", "syllabusAssignments", "enhancedExercises", "references", "teaching",
 )
 
 OJT_EVAL_IDS = {"day-39-64", "day-65-66"}

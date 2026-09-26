@@ -63,7 +63,7 @@
         {
           "id": "day22-blk-2",
           "type": "note",
-          "text": "Bài học mở đầu Unit 8 (bảo mật): xác thực stateless bằng JWT qua Spring Security OAuth2 Resource Server, cấu hình session stateless, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder. Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - học viên ôn tập và thực hành lại các cấu hình trong bài để chuẩn bị cho Lab 8 (Auth Service) ở Day 24.",
+          "text": "Bài học mở đầu Unit 8 (bảo mật): xác thực stateless bằng JWT qua Spring Security OAuth2 Resource Server, cấu hình session stateless, và mã hoá mật khẩu an toàn bằng DelegatingPasswordEncoder. Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - bạn ôn tập và thực hành lại các cấu hình trong bài để chuẩn bị cho Lab 8 (Auth Service) ở Day 24.",
           "citations": []
         }
       ]
@@ -182,7 +182,7 @@
           "id": "day22-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            // Khai bao endpoint cong khai truoc, cu the hon anyRequest();\n            // Spring Security xet cac rule theo dung thu tu khai bao.\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .anyRequest().authenticated())\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.config.annotation.web.builders.HttpSecurity;\nimport org.springframework.security.config.http.SessionCreationPolicy;\nimport org.springframework.security.web.SecurityFilterChain;\n\n@Configuration\nclass SecurityConfig {\n\n    @Bean\n    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            // Khai báo endpoint công khai trước, cụ thể hơn anyRequest();\n            // Spring Security xét các rule theo đúng thứ tự khai báo.\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers(\"/api/public/**\").permitAll()\n                .anyRequest().authenticated())\n            .sessionManagement(session -> session\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n            .build();\n    }\n}\n",
           "compile": false,
           "citations": [
             "day22-src-9",
@@ -252,7 +252,7 @@
           "id": "day22-blk-13",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.crypto.factory.PasswordEncoderFactories;\nimport org.springframework.security.crypto.password.PasswordEncoder;\n\n@Configuration\nclass PasswordConfig {\n\n    @Bean\n    PasswordEncoder passwordEncoder() {\n        return PasswordEncoderFactories.createDelegatingPasswordEncoder();\n    }\n\n    void registerExample(PasswordEncoder encoder) {\n        String stored = encoder.encode(\"my-plain-password\");\n        // stored co dang \"{bcrypt}$2a$10$...\" - tien to {id} xac dinh\n        // encoder nao da dung, DelegatingPasswordEncoder tu chon lai\n        // dung encoder khi kiem tra matches().\n    }\n}\n",
+          "code": "import org.springframework.context.annotation.Bean;\nimport org.springframework.context.annotation.Configuration;\nimport org.springframework.security.crypto.factory.PasswordEncoderFactories;\nimport org.springframework.security.crypto.password.PasswordEncoder;\n\n@Configuration\nclass PasswordConfig {\n\n    @Bean\n    PasswordEncoder passwordEncoder() {\n        return PasswordEncoderFactories.createDelegatingPasswordEncoder();\n    }\n\n    void registerExample(PasswordEncoder encoder) {\n        String stored = encoder.encode(\"my-plain-password\");\n        // stored có dạng \"{bcrypt}$2a$10$...\" - tiền tố {id} xác định\n        // encoder nào đã dùng, DelegatingPasswordEncoder tự chọn lại\n        // đúng encoder khi kiểm tra matches().\n    }\n}\n",
           "compile": false,
           "citations": [
             "day22-src-6",
@@ -303,6 +303,32 @@
     "Nghĩ rằng phải có một authorization server bên ngoài (issuer-uri) mới dùng được JWT - ứng dụng hoàn toàn có thể tự phát hành và tự xác thực JWT của chính mình (Day 33); cơ chế Resource Server validate token giống nhau ở cả hai trường hợp, chỉ khác nguồn lấy khoá công khai.",
     "Trả 403 khi user chưa hề gửi token hợp lệ (anonymous) thay vì 401 - ExceptionTranslationFilter luôn gọi AuthenticationEntryPoint cho cả AuthenticationException lẫn AccessDeniedException xảy ra trên user anonymous; 403/AccessDeniedHandler chỉ dành cho user đã xác thực nhưng thiếu quyền."
   ],
+  "teaching": {
+    "why": "Nếu bạn xây API mà không hiểu xác thực stateless, bạn sẽ mặc định nghĩ theo mô hình session cũ (server nhớ ai đã đăng nhập) và bối rối khi scale nhiều instance vì session không tự chia sẻ được. Bạn cũng dễ mắc lỗi bảo mật cơ bản: lưu mật khẩu gần như plain text hoặc dùng mãi một thuật toán hash dù công nghệ tấn công đã tiến bộ. Bài này cho bạn nền tảng để một request tự chứng minh danh tính qua token, và để đổi thuật toán mã hoá mật khẩu mà không phá dữ liệu cũ.",
+    "javaBridge": "Trong Java thuần bạn có thể tự viết một hàm kiểm tra header có đúng giá trị bí mật hay không — JWT là phiên bản có cấu trúc và có chữ ký của ý tưởng đó: một chuỗi base64url gồm ba phần (header.payload.signature) mà server xác minh chữ ký mà không cần tra DB. `PasswordEncoder` cũng giống một interface Java bình thường (`encode(String raw): String`, `matches(String raw, String encoded): boolean`), chỉ khác là Spring Security cung cấp sẵn implementation an toàn thay vì bạn tự viết.",
+    "mentalModel": "Hãy hình dung JWT như một vé xem phim đã đóng dấu: vé ghi rõ thông tin (ai, hạng ghế, hết hạn lúc nào) và có con dấu không thể giả mạo; nhân viên soát vé (Resource Server) chỉ cần kiểm tra con dấu, không cần gọi điện về quầy vé — đó là \"stateless\". `DelegatingPasswordEncoder` giống một cuốn sổ ghi loại khoá dùng cho từng mật khẩu ở đầu dòng (tiền tố `{bcrypt}`), nên đổi loại khoá mới cho người dùng mới không làm hỏng người dùng cũ.",
+    "is": "Spring Security OAuth2 Resource Server xác thực JWT trong mỗi request độc lập (không lưu session ở server), còn `DelegatingPasswordEncoder` mã hoá và xác minh mật khẩu theo tiền tố thuật toán ghi kèm trong chuỗi đã hash.",
+    "isNot": "`SessionCreationPolicy.STATELESS` không có nghĩa là JWT tự sinh chữ ký từ hư không — chữ ký được kiểm bằng khoá mà Resource Server đã biết trước. Và `DelegatingPasswordEncoder` không tự \"nâng cấp\" mật khẩu cũ sang thuật toán mới khi xác minh — nó chỉ chọn đúng encoder để so khớp; rehash cần logic riêng khi người dùng đổi mật khẩu.",
+    "solves": "Bài này giải quyết bài toán xác thực không trạng thái cho API và lưu mật khẩu an toàn có thể nâng cấp thuật toán. Trong Spendwise, V0.6 dùng session-auth-foundation để dựng đúng nền tảng này: SecurityFilterChain stateless qua OAuth2 Resource Server và DelegatingPasswordEncoder khi đăng ký người dùng, trước khi V0.6 tiếp tục sang session-ownership-checks (ai được xem transaction của ai) và session-user-migration (gắn user vào dữ liệu cũ).",
+    "selfCheck": [
+      {
+        "question": "Vì sao cấu hình `.sessionCreationPolicy(SessionCreationPolicy.STATELESS)` lại đi cùng JWT, và điều gì xảy ra nếu khai báo `anyRequest().authenticated()` TRƯỚC rule permitAll cho endpoint public?",
+        "answer": "STATELESS nói Spring không tạo/lưu HttpSession, nên mỗi request phải tự mang đủ bằng chứng danh tính — đó là lý do cần JWT thay vì cookie session. Spring Security xét rule theo đúng thứ tự khai báo, nên nếu anyRequest().authenticated() đứng trước, nó sẽ khớp trước và endpoint public cũng bị chặn theo."
+      },
+      {
+        "question": "Hai người dùng có cùng mật khẩu nhưng một người đăng ký lúc hệ thống dùng `{noop}`, người kia lúc dùng `{bcrypt}`. `matches()` có hoạt động đúng cho cả hai không?",
+        "answer": "Có — DelegatingPasswordEncoder đọc tiền tố `{id}` đứng đầu chuỗi đã lưu để biết chọn encoder nào, nên nó tự chọn lại đúng encoder tương ứng khi kiểm tra `matches()`, không phụ thuộc encoder mặc định hiện tại."
+      },
+      {
+        "question": "Một request gửi JWT hợp lệ (chữ ký đúng, chưa hết hạn) nhưng thiếu quyền cần cho endpoint đó. Response trả về mã gì?",
+        "answer": "Trả về 403 Forbidden chứ không phải 401, vì request đã xác thực thành công (JWT hợp lệ) nhưng thiếu authority — ExceptionTranslationFilter định tuyến trường hợp này tới AccessDeniedHandler, khác với 401 (chưa xác thực được) do AuthenticationEntryPoint xử lý."
+      },
+      {
+        "question": "Vì sao dùng `User.withDefaultPasswordEncoder()` để tạo user mẫu là rủi ro nếu vô tình mang sang production?",
+        "answer": "Phương thức này thực chất không mã hoá bảo mật, chỉ tiện cho demo/test — dùng nó với mật khẩu thật nghĩa là lưu mật khẩu gần như plain text, ngược lại hoàn toàn với mục tiêu của DelegatingPasswordEncoder."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day22-prac-1",
@@ -364,7 +390,7 @@
       "hint": "Nghĩ về việc hệ thống có thể có mật khẩu cũ được hash bằng thuật toán khác mật khẩu mới.",
       "solution": "Tiền tố {id} cho biết mật khẩu được hash bằng thuật toán nào (ví dụ {bcrypt}); khi kiểm tra đăng nhập, DelegatingPasswordEncoder đọc tiền tố này để chọn đúng encoder xác minh, nên hệ thống có thể hỗ trợ nhiều định dạng hash song song - mật khẩu cũ vẫn xác thực được bằng encoder cũ, còn mật khẩu mới dùng encoder mới, không cần migrate toàn bộ dữ liệu ngay lập tức.",
       "explanation": "Liên hệ tới khả năng cùng tồn tại nhiều định dạng hash trong cùng hệ thống.",
-      "rubric": "Đánh giá học viên nêu đúng cơ chế tiền tố {id} cho phép hỗ trợ song song nhiều thuật toán hash.",
+      "rubric": "Đánh giá bạn nêu đúng cơ chế tiền tố {id} cho phép hỗ trợ song song nhiều thuật toán hash.",
       "sourceUsage": [
         "day22-src-6",
         "day22-src-7"

@@ -34,7 +34,7 @@
   "group": "java",
   "kind": "theory",
   "title": "Concurrency & File I/O",
-  "summary": "Vòng đời Thread (6 trạng thái), synchronized/volatile để ngăn race condition và đảm bảo memory visibility, ExecutorService để tách quản lý thread khỏi tác vụ, NIO.2 Path/Files cho thao tác file, và Serialization để lưu/truyền trạng thái object — đây là bài giàu nguồn trích dẫn nhất trong Unit 4 với cả 9 resourceIds đều đã đọc được.",
+  "summary": "Bài học trình bày 6 trạng thái của `Thread`; `synchronized`/`volatile` để kiểm soát race condition và memory visibility; `ExecutorService` để tách tác vụ khỏi việc quản lý thread; NIO.2 `Path`/`Files` để thao tác file; và serialization để lưu hoặc truyền trạng thái object.",
   "durationMinutes": 150.0,
   "objectives": [
     "LO4"
@@ -163,7 +163,7 @@
           "id": "day11-blk-34",
           "type": "code",
           "language": "java",
-          "code": "import java.util.concurrent.atomic.AtomicInteger;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.Map;\n\nclass AtomicVsLockDemo {\n    private final Object lock = new Object();      // monitor rieng, khong khoa 'this'\n    private int guarded = 0;\n    private final AtomicInteger lockFree = new AtomicInteger();\n    private final Map<String, Integer> hits = new ConcurrentHashMap<>();\n\n    void work(String key) {\n        synchronized (lock) {                       // pham vi khoa hep\n            guarded++;\n        }\n        lockFree.incrementAndGet();                 // CAS, khong can khoa\n        hits.merge(key, 1, Integer::sum);           // thao tac nguyen tu san co\n    }\n\n    public static void main(String[] args) throws InterruptedException {\n        AtomicVsLockDemo demo = new AtomicVsLockDemo();\n        Runnable task = () -> { for (int i = 0; i < 1000; i++) demo.work(\"a\"); };\n        Thread t1 = new Thread(task);\n        Thread t2 = new Thread(task);\n        t1.start(); t2.start();\n        t1.join(); t2.join();                       // cho ca hai xong truoc khi doc\n        System.out.println(demo.guarded + \" \" + demo.lockFree.get() + \" \" + demo.hits);\n    }\n}\n",
+          "code": "import java.util.concurrent.atomic.AtomicInteger;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.Map;\n\nclass AtomicVsLockDemo {\n    private final Object lock = new Object();      // monitor riêng, không khóa 'this'\n    private int guarded = 0;\n    private final AtomicInteger lockFree = new AtomicInteger();\n    private final Map<String, Integer> hits = new ConcurrentHashMap<>();\n\n    void work(String key) {\n        synchronized (lock) {                       // phạm vi khóa hẹp\n            guarded++;\n        }\n        lockFree.incrementAndGet();                 // CAS, không cần khóa\n        hits.merge(key, 1, Integer::sum);           // thao tác nguyên tử sẵn có\n    }\n\n    public static void main(String[] args) throws InterruptedException {\n        AtomicVsLockDemo demo = new AtomicVsLockDemo();\n        Runnable task = () -> { for (int i = 0; i < 1000; i++) demo.work(\"a\"); };\n        Thread t1 = new Thread(task);\n        Thread t2 = new Thread(task);\n        t1.start(); t2.start();\n        t1.join(); t2.join();                       // chờ cả hai xong trước khi đọc\n        System.out.println(demo.guarded + \" \" + demo.lockFree.get() + \" \" + demo.hits);\n    }\n}\n",
           "compile": true,
           "citations": [
             "day11-src-5",
@@ -282,7 +282,7 @@
           "id": "day11-blk-40",
           "type": "code",
           "language": "java",
-          "code": "import java.util.concurrent.*;\nimport java.util.List;\n\nclass ExecutorPatternsDemo {\n    public static void main(String[] args) throws Exception {\n        ExecutorService pool = Executors.newFixedThreadPool(2);\n        try {\n            // invokeAll: chay nhieu tac vu, cho tat ca hoan thanh\n            List<Callable<Integer>> tasks = List.of(() -> 1, () -> 2, () -> { throw new IllegalStateException(\"boom\"); });\n            List<Future<Integer>> futures = pool.invokeAll(tasks);\n\n            for (Future<Integer> f : futures) {\n                try {\n                    System.out.println(\"ok \" + f.get());   // blocking\n                } catch (ExecutionException e) {\n                    // loi cua tac vu duoc boc trong ExecutionException\n                    System.out.println(\"task failed: \" + e.getCause().getMessage());\n                }\n            }\n        } finally {\n            pool.shutdown();                                // khong nhan tac vu moi\n            if (!pool.awaitTermination(2, TimeUnit.SECONDS)) {\n                pool.shutdownNow();                         // ngat cac tac vu con lai\n            }\n        }\n    }\n}\n",
+          "code": "import java.util.concurrent.*;\nimport java.util.List;\n\nclass ExecutorPatternsDemo {\n    public static void main(String[] args) throws Exception {\n        ExecutorService pool = Executors.newFixedThreadPool(2);\n        try {\n            // invokeAll: chạy nhiều tác vụ, chờ tất cả hoàn thành\n            List<Callable<Integer>> tasks = List.of(() -> 1, () -> 2, () -> { throw new IllegalStateException(\"boom\"); });\n            List<Future<Integer>> futures = pool.invokeAll(tasks);\n\n            for (Future<Integer> f : futures) {\n                try {\n                    System.out.println(\"ok \" + f.get());   // blocking\n                } catch (ExecutionException e) {\n                    // lỗi của tác vụ được bọc trong ExecutionException\n                    System.out.println(\"task failed: \" + e.getCause().getMessage());\n                }\n            }\n        } finally {\n            pool.shutdown();                                // không nhận tác vụ mới\n            if (!pool.awaitTermination(2, TimeUnit.SECONDS)) {\n                pool.shutdownNow();                         // ngắt các tác vụ còn lại\n            }\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day11-src-12",
@@ -301,7 +301,7 @@
     },
     {
       "id": "day11-sec-fileio",
-      "title": "NIO.2 va File I/O",
+      "title": "NIO.2 và File I/O",
       "blocks": [
         {
           "id": "day11-blk-14",
@@ -353,7 +353,7 @@
           "id": "day11-blk-43",
           "type": "code",
           "language": "java",
-          "code": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.*;\nimport java.util.List;\nimport java.util.stream.Stream;\n\nclass FilesPatternsDemo {\n    public static void main(String[] args) throws IOException {\n        Path dir = Files.createTempDirectory(\"demo\");\n        Path file = dir.resolve(\"data.txt\");                 // ghep duong dan an toan\n\n        // luon chi dinh charset tuong minh\n        Files.writeString(file, \"line1\\nline2\\n\", StandardCharsets.UTF_8);\n\n        // file nho: doc het mot lan\n        List<String> all = Files.readAllLines(file, StandardCharsets.UTF_8);\n        System.out.println(all.size());\n\n        // file lon: stream lazy, PHAI dong -> try-with-resources\n        try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {\n            System.out.println(lines.filter(l -> l.endsWith(\"2\")).count());\n        }\n\n        // ghi them thay vi ghi de\n        Files.writeString(file, \"line3\\n\", StandardCharsets.UTF_8, StandardOpenOption.APPEND);\n\n        try {\n            Files.readString(dir.resolve(\"missing.txt\"));\n        } catch (NoSuchFileException e) {\n            System.out.println(\"loi co kieu ro rang: \" + e.getFile());\n        }\n\n        Files.deleteIfExists(file);\n        Files.deleteIfExists(dir);\n    }\n}\n",
+          "code": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.*;\nimport java.util.List;\nimport java.util.stream.Stream;\n\nclass FilesPatternsDemo {\n    public static void main(String[] args) throws IOException {\n        Path dir = Files.createTempDirectory(\"demo\");\n        Path file = dir.resolve(\"data.txt\");                 // ghép đường dẫn an toàn\n\n        // luôn chỉ định charset tường minh\n        Files.writeString(file, \"line1\\nline2\\n\", StandardCharsets.UTF_8);\n\n        // file nhỏ: đọc hết một lần\n        List<String> all = Files.readAllLines(file, StandardCharsets.UTF_8);\n        System.out.println(all.size());\n\n        // file lớn: stream lazy, PHẢI đóng -> try-with-resources\n        try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {\n            System.out.println(lines.filter(l -> l.endsWith(\"2\")).count());\n        }\n\n        // ghi thêm thay vì ghi đè\n        Files.writeString(file, \"line3\\n\", StandardCharsets.UTF_8, StandardOpenOption.APPEND);\n\n        try {\n            Files.readString(dir.resolve(\"missing.txt\"));\n        } catch (NoSuchFileException e) {\n            System.out.println(\"loi co kieu ro rang: \" + e.getFile());\n        }\n\n        Files.deleteIfExists(file);\n        Files.deleteIfExists(dir);\n    }\n}\n",
           "compile": true,
           "citations": [
             "day11-src-17",
@@ -444,6 +444,32 @@
     "Quên đóng Stream trả về từ Files.lines(), làm rò rỉ file descriptor cho tới khi tiến trình bị giới hạn số file mở.",
     "Không shutdown ExecutorService, khiến JVM không thoát vì thread non-daemon của pool vẫn còn sống."
   ],
+  "teaching": {
+    "why": "Code chạy đúng một thread có thể mất dữ liệu hoặc treo ngẫu nhiên khi hai request cùng sửa một object. File I/O cũng dễ rò handle, hỏng tiếng Việt hoặc cho phép đường dẫn thoát khỏi thư mục gốc nếu bạn bỏ qua lifecycle, charset và chuẩn hóa path.",
+    "javaBridge": "Bạn đã biết object nằm trên heap và exception từ Day 8: nhiều thread có stack riêng nhưng cùng nhìn heap, nên field mutable là nơi tranh chấp. `ExecutorService` nhận `Runnable`/`Callable` thay cho việc bạn tự tạo `Thread`; `Path` là giá trị mô tả đường dẫn, còn `Files` thực hiện thao tác và ném `IOException` cụ thể.",
+    "mentalModel": "Hãy hình dung nhiều nhân viên dùng chung một sổ cái: `synchronized` là chìa khóa chỉ cho một người sửa cả cụm thao tác, `volatile` là bảng thông báo mọi người luôn nhìn thấy bản mới nhưng không khóa cây bút, còn atomic class là máy bấm số thực hiện một thao tác không thể bị chen ngang. Executor là quản đốc phân việc cho số nhân viên hữu hạn; try-with-resources là quy trình trả chìa khóa file sau khi dùng.",
+    "is": "Concurrency là việc nhiều luồng thực thi chia sẻ tài nguyên theo quy tắc atomicity và visibility; NIO.2 là API `Path`/`Files` cho thao tác đường dẫn và file có lỗi tường minh.",
+    "isNot": "`volatile` không làm `count++` nguyên tử, gọi `run()` không tạo thread mới, và bean singleton của Spring không tự thread-safe. `Files.lines()` cũng không tự đóng chỉ vì terminal operation đã chạy; stream phải nằm trong try-with-resources.",
+    "solves": "Bài này giúp ngăn lost update, đảm bảo thread thấy thay đổi, giới hạn số thread và xử lý file an toàn. Trong Spendwise, V0.8 dùng NIO.2 để đọc CSV theo dòng với UTF-8, đóng stream và chặn path traversal; phần concurrency chuẩn bị cho các bean singleton và tác vụ nền ở các release sau.",
+    "selfCheck": [
+      {
+        "question": "`volatile int count; count++;` có an toàn khi 10 thread cùng tăng không?",
+        "answer": "Không. `volatile` đảm bảo visibility nhưng `count++` vẫn là chuỗi đọc–tăng–ghi có thể xen kẽ; dùng `AtomicInteger.incrementAndGet()` hoặc `synchronized`."
+      },
+      {
+        "question": "Một `@Service` singleton giữ `ArrayList` mutable trong field và mọi request cùng thêm phần tử. Rủi ro là gì?",
+        "answer": "Mọi request dùng cùng bean và cùng list, nên thao tác đồng thời có thể mất cập nhật hoặc làm cấu trúc list không nhất quán. Giữ bean stateless hoặc dùng cấu trúc và thao tác đồng thời phù hợp."
+      },
+      {
+        "question": "Vì sao `Future` từ `submit()` có thể làm lỗi tác vụ bị bỏ sót?",
+        "answer": "Exception của tác vụ được giữ trong `Future` và chỉ lộ ra dưới dạng `ExecutionException` khi gọi `get()`. Nếu bỏ qua `Future`, tác vụ có thể thất bại mà luồng gọi không xử lý."
+      },
+      {
+        "question": "Cách kiểm tra path upload `base.resolve(name)` không thoát khỏi `base` là gì?",
+        "answer": "Chuẩn hóa cả base và path đích rồi kiểm tra path đích bắt đầu bằng base, chẳng hạn `target.normalize().startsWith(base.normalize())`. Chỉ kiểm tra chuỗi đầu vào không chứa `..` là chưa đủ chắc."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day11-prac-1",
@@ -506,7 +532,7 @@
       "hint": "increment() và get() đều là synchronized instance method trên cùng một Counter.",
       "solution": "Giá trị luôn là 2000 vì hai thread đều hoàn tất 1000 lần increment() trước khi đọc, và các method synchronized trên cùng một Counter làm mỗi lần tăng nguyên tử nên không mất lần cập nhật nào.",
       "explanation": "Vì cả increment() và get() đều synchronized trên cùng một instance Counter, mỗi lần gọi increment() là nguyên tử (atomic) đối với field count — không còn race condition, nên kết quả luôn đúng 2000 (2 thread × 1000 lần). Kết quả chỉ có thể nhỏ hơn 2000 do lost update nếu nhiều thread cùng cập nhật dữ liệu mutable mà không đồng bộ; synchronized đã ngăn trường hợp đó. 1000 chỉ tính số lần tăng của một thread và bỏ sót 1000 lần của thread còn lại. Kết quả cũng không thể là số bất kỳ vì t1.join() và t2.join() bảo đảm cả hai thread đã hoàn tất trước khi counter.get() đọc giá trị đã được bảo vệ đồng bộ.",
-      "rubric": "Đánh giá học viên hiểu đúng synchronized loại bỏ race condition trong ví dụ này.",
+      "rubric": "Đánh giá bạn hiểu đúng cách `synchronized` loại bỏ race condition trong ví dụ này.",
       "sourceUsage": []
     },
     {

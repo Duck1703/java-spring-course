@@ -26,6 +26,7 @@ PRACTICE_TYPES = {"concept", "predict-output", "coding", "applied"}
 INTERACTIONS = {"self-check", "multiple-choice"}
 REFERENCE_TYPES = {"external", "internal"}
 REVIEW_STATUSES = {"draft", "reviewed"}
+TEACHING_KEYS = {"why", "javaBridge", "mentalModel", "is", "isNot", "solves", "selfCheck"}
 MIN_PRACTICES = 2
 MAX_PRACTICES = 4
 COPIED_RUN_THRESHOLD = 300
@@ -158,6 +159,8 @@ def _validate_lesson_structure(lesson: dict, catalog_lesson: dict | None, source
     errors.extend(_validate_references(lesson, citation_ids, lesson_id))
     errors.extend(_validate_baseline_lint(sections, lesson_id))
     errors.extend(_validate_authoring(lesson.get("authoring"), lesson_id))
+    if "teaching" in lesson:
+        errors.extend(_validate_teaching(lesson.get("teaching"), lesson_id))
 
     return errors
 
@@ -484,6 +487,27 @@ def _validate_references(lesson, citation_ids, lesson_id):
             if not isinstance(reference.get("description"), str) or not reference.get("description"):
                 errors.append(_error(lesson_id, f"reference {reference_id} (internal) requires nonempty description"))
 
+    return errors
+
+
+def _validate_teaching(teaching, lesson_id):
+    """Optional beginner scaffold (contract parts A-D and I): closed keys,
+    every string nonempty, selfCheck 2-4 {question, answer} pairs."""
+    if not isinstance(teaching, dict):
+        return [_error(lesson_id, "teaching must be an object")]
+    errors = [_error(lesson_id, f"teaching has unexpected key {key!r}") for key in sorted(set(teaching) - TEACHING_KEYS)]
+    for key in sorted(TEACHING_KEYS - {"selfCheck"}):
+        if not isinstance(teaching.get(key), str) or not teaching.get(key):
+            errors.append(_error(lesson_id, f"teaching.{key} must be a nonempty string"))
+    checks = teaching.get("selfCheck")
+    if not isinstance(checks, list) or not 2 <= len(checks) <= 4:
+        errors.append(_error(lesson_id, "teaching.selfCheck must be a list of 2-4 entries"))
+    else:
+        for entry in checks:
+            if (not isinstance(entry, dict) or set(entry) != {"question", "answer"}
+                    or not all(isinstance(entry[k], str) and entry[k] for k in entry)):
+                errors.append(_error(lesson_id, "teaching.selfCheck entries must be {question, answer} nonempty strings"))
+                break
     return errors
 
 

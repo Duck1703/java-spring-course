@@ -1753,6 +1753,17 @@
     /* checkpoint's "chưa xong" callout reuses the neutral note variant —
        recolor its icon/label to match the verify phase it belongs to. */
     .callout.guided-phase-verify .callout-icon, .callout.guided-phase-verify .callout-label { color: var(--ok-ink); }
+    .lesson-isnot { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .75rem; }
+    .lesson-isnot-cell { padding: .75rem; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .lesson-isnot-cell p { margin: .25rem 0 0; }
+    .guided-part > h2 { font-size: 1.05rem; letter-spacing: .01em; }
+    .guided-part h3 { margin: 1rem 0 .4rem; font-size: .95rem; }
+    .guided-code-explain { margin: .25rem 0 1rem; font-size: .92rem; }
+    .guided-selfcheck-list { padding-left: 1.25rem; }
+    .guided-selfcheck-list > li { margin-bottom: .75rem; }
+    .guided-selfcheck-q { margin: 0 0 .35rem; font-weight: 600; }
+    .guided-selfcheck-a { margin-top: .35rem; padding: .5rem .75rem; border-left: 3px solid var(--info); background: var(--surface); }
+    .guided-session-story > h2 + p { margin-top: 0; }
     .guided-phase-badge--learn { color: var(--info); background: var(--info-soft); border-color: var(--info); }
     .guided-phase-badge--code { color: var(--java-ink); background: var(--java-soft); border-color: var(--java); }
     .guided-phase-badge--verify { color: var(--ok-ink); background: var(--ok-soft); border-color: var(--ok); }
@@ -4788,6 +4799,64 @@
       }
 
 
+      /* ---- beginner scaffold (lesson contract A–D, H, I) ------------------ */
+      function renderTeachingIntro(container, lesson) {
+        var t = lesson.teaching;
+        if (!t) return;
+        var sec = el("section", "section-block lesson-teaching");
+        sec.appendChild(el("h2", "section-heading", "Trước khi đọc: bài này giúp bạn điều gì?"));
+        [["Vì sao cần học bài này", t.why], ["Từ Java bạn đã biết", t.javaBridge], ["Hình dung đơn giản", t.mentalModel]].forEach(function(pair) {
+          var p = el("p");
+          p.appendChild(el("strong", null, pair[0] + ": "));
+          p.appendChild(document.createTextNode(pair[1]));
+          sec.appendChild(p);
+        });
+        var grid = el("div", "lesson-isnot");
+        [["Nó là", t.is], ["Nó không phải", t.isNot], ["Nó giải quyết", t.solves]].forEach(function(pair) {
+          var cell = el("div", "lesson-isnot-cell");
+          cell.appendChild(el("div", "task-step-label", pair[0]));
+          cell.appendChild(el("p", null, pair[1]));
+          grid.appendChild(cell);
+        });
+        sec.appendChild(grid);
+        container.appendChild(sec);
+      }
+
+      function renderCommonMistakes(container, lesson) {
+        if (!(lesson.commonMistakes || []).length) return;
+        var sec = el("section", "section-block lesson-mistakes");
+        sec.appendChild(el("h2", "section-heading", "Lỗi người mới hay mắc"));
+        var ul = el("ul", "criteria-list");
+        lesson.commonMistakes.forEach(function(m) { ul.appendChild(el("li", null, m)); });
+        sec.appendChild(ul);
+        container.appendChild(sec);
+      }
+
+      function renderTeachingSelfCheck(container, lesson) {
+        var checks = lesson.teaching && lesson.teaching.selfCheck;
+        if (!(checks || []).length) return;
+        var sec = el("section", "section-block lesson-selfcheck");
+        sec.appendChild(el("h2", "section-heading", "Tự kiểm tra nhanh"));
+        sec.appendChild(el("p", null, "Tự trả lời trước, rồi mới mở đáp án."));
+        var ol = el("ol", "guided-selfcheck-list");
+        checks.forEach(function(q, i) {
+          var li = el("li");
+          li.appendChild(el("p", "guided-selfcheck-q", q.question));
+          var ansId = "lesson-selfcheck-" + lessonIdSlug(lesson.id) + "-" + i;
+          var btn = disclosureButton("Xem đáp án", ansId, "chevron-down");
+          var ans = el("div", "guided-selfcheck-a");
+          ans.id = ansId;
+          ans.hidden = true;
+          ans.appendChild(el("p", null, q.answer));
+          wireDisclosure(btn, ans);
+          li.appendChild(btn);
+          li.appendChild(ans);
+          ol.appendChild(li);
+        });
+        sec.appendChild(ol);
+        container.appendChild(sec);
+      }
+
       /* ---- practice cards --------------------------------------------- */
       function disclosureButton(label, panelId, iconName) {
         var b = el("button", "disclosure-btn");
@@ -5099,7 +5168,10 @@
         renderReturnToBuild(container, lesson.id);
         renderLessonHeader(container, lesson, refIndexById);
         renderProjectContext(container, lesson.id);
+        renderTeachingIntro(container, lesson);
         renderSections(container, lesson, refIndexById);
+        renderCommonMistakes(container, lesson);
+        renderTeachingSelfCheck(container, lesson);
         renderPractices(container, lesson);
         renderAssignments(container, lesson);
         renderProjectApplication(container, lesson.id);
@@ -5581,6 +5653,20 @@
           container.appendChild(taskP);
         }
 
+        // Story continuity: where the project stands, and what this session adds.
+        if (session.projectNow || session.sessionAdds) {
+          var story = el('section', 'project-panel release-section guided-phase-learn guided-session-story');
+          if (session.projectNow) {
+            story.appendChild(el('h2', null, 'Spendwise hiện có gì?'));
+            story.appendChild(el('p', null, session.projectNow));
+          }
+          if (session.sessionAdds) {
+            story.appendChild(el('h2', null, 'Phiên này thêm gì?'));
+            story.appendChild(el('p', null, session.sessionAdds));
+          }
+          container.appendChild(story);
+        }
+
         var steps = CourseCore.deriveGuidedStepsForSession(guidedBuildData.guidedSteps, sessionId);
         var progress = CourseCore.calculateGuidedSessionProgress(guidedBuildData.guidedSteps, state.guidedProgress.completedSteps, sessionId);
         var progressSection = el('section', 'project-panel release-section');
@@ -5607,9 +5693,8 @@
         container.appendChild(stepsSection);
       }
 
-      // Generic step shell — works for all 11 STEP_TYPES with only small
-      // type-specific accents (the type badge, the "code-with-me" heading,
-      // the checkpoint join). Every optional field renders its own block
+      // Generic step shell — works for all 11 STEP_TYPES. Fields are grouped
+      // into the six teaching parts (PHẦN 1–6); every optional field renders
       // only when authored; nothing is invented for absent fields.
       function renderGuidedStep(container, releaseId, sessionId, stepId) {
         if (!guidedBuildData) { renderGuidedEmpty(container); return; }
@@ -5634,122 +5719,120 @@
         var stepPhase = GUIDED_STEP_PHASE[step.type] || 'code';
         header.appendChild(el('span', 'project-status guided-phase-badge--' + stepPhase, GUIDED_STEP_TYPE_LABELS[step.type] || step.type));
 
-        if (step.whyThisMatters) {
-          container.appendChild(createGuidedCallout('note', 'Vì sao bước này quan trọng', step.whyThisMatters, 'guided-phase-learn'));
+        // Six fixed teaching parts (PHẦN 1–6). Each part renders only when
+        // it has authored content; numbering never shifts, so "PHẦN 4" always
+        // means "nếu bị lỗi" wherever the learner meets it.
+        function part(n, title, phase) {
+          var sec = el('section', 'project-panel release-section guided-part' + (phase ? ' guided-phase-' + phase : ''));
+          sec.setAttribute('data-part', String(n));
+          sec.appendChild(el('h2', null, 'PHẦN ' + n + ' — ' + title));
+          return sec;
+        }
+        function listBlock(parent, label, items, cls) {
+          if (label) parent.appendChild(el('div', 'task-step-label', label));
+          var list = el(cls === 'ol' ? 'ol' : 'ul', 'criteria-list');
+          items.forEach(function(t) { list.appendChild(el('li', null, t)); });
+          parent.appendChild(list);
         }
 
-        if ((step.theoryBridge || []).length) {
-          var bridgeSection = el('section', 'project-panel release-section guided-phase-learn');
-          bridgeSection.appendChild(el('h2', null, 'Liên kết lý thuyết'));
-          var bridgeList = el('ul', 'task-prereq-list');
-          step.theoryBridge.forEach(function(bridge) {
-            var lesson = lessonsById.get(bridge.lessonId);
-            var li = el('li');
-            var a = el('a', 'text-link', 'Ôn lại: ' + (lesson ? lessonTitle(lesson) : bridge.lessonId) + ' — ' + CourseCore.lessonDayLabel(bridge.lessonId));
-            a.href = '#/lesson/' + bridge.lessonId;
-            a.setAttribute('data-bridge-lesson', bridge.lessonId);
-            a.addEventListener('click', function() {
-              returnToBuild = { lessonId: bridge.lessonId, hash: guidedStepHref(releaseId, step), stepTitle: step.title };
+        // PHẦN 1 — why + theory bridge (+ orientation-style instructions).
+        var isHandsOn = !!(step.codeBlocks || step.learnerAction) || stepPhase === 'code';
+        if (step.whyThisMatters || (step.theoryBridge || []).length || (!isHandsOn && (step.instructions || []).length)) {
+          var p1 = part(1, 'Hiểu trước khi code', 'learn');
+          if (step.whyThisMatters) p1.appendChild(createGuidedCallout('note', 'Vì sao bước này quan trọng', step.whyThisMatters));
+          if ((step.theoryBridge || []).length) {
+            p1.appendChild(el('div', 'task-step-label', 'Liên kết lý thuyết — ôn lại nếu chưa chắc'));
+            var bridgeList = el('ul', 'task-prereq-list');
+            step.theoryBridge.forEach(function(bridge) {
+              var lesson = lessonsById.get(bridge.lessonId);
+              var li = el('li');
+              var a = el('a', 'text-link', 'Ôn lại: ' + (lesson ? lessonTitle(lesson) : bridge.lessonId) + ' — ' + CourseCore.lessonDayLabel(bridge.lessonId));
+              a.href = '#/lesson/' + bridge.lessonId;
+              a.setAttribute('data-bridge-lesson', bridge.lessonId);
+              a.addEventListener('click', function() {
+                returnToBuild = { lessonId: bridge.lessonId, hash: guidedStepHref(releaseId, step), stepTitle: step.title };
+              });
+              li.appendChild(a);
+              if (bridge.note) li.appendChild(el('div', 'build-task-meta', bridge.note));
+              bridgeList.appendChild(li);
             });
-            li.appendChild(a);
-            if (bridge.note) li.appendChild(el('div', 'build-task-meta', bridge.note));
-            bridgeList.appendChild(li);
+            p1.appendChild(bridgeList);
+          }
+          if (!isHandsOn && (step.instructions || []).length) listBlock(p1, 'Điều cần nắm', step.instructions, 'ol');
+          container.appendChild(p1);
+        }
+
+        // PHẦN 2 — the hands-on part. Code chunks always render visibly (the
+        // code-with-me surface); each chunk carries its own "vì sao" line.
+        // your-turn goal/constraints/hints come BEFORE the collapsed reveal.
+        if ((isHandsOn && (step.instructions || []).length) || (step.codeBlocks || []).length || step.learnerAction || step.reveal) {
+          var p2 = part(2, step.type === 'your-turn' ? 'Đến lượt bạn code' : 'Code cùng tôi', 'code');
+          if (isHandsOn && (step.instructions || []).length) listBlock(p2, 'Làm lần lượt', step.instructions, 'ol');
+          (step.codeBlocks || []).forEach(function(block, i) {
+            if (step.codeBlocks.length > 1) p2.appendChild(el('div', 'task-step-label', 'Đoạn ' + (i + 1) + '/' + step.codeBlocks.length));
+            p2.appendChild(createGuidedCodeBlock(block));
+            if (block.explanation) {
+              var why = el('p', 'guided-code-explain');
+              why.appendChild(el('strong', null, 'Đoạn này làm gì: '));
+              why.appendChild(document.createTextNode(block.explanation));
+              p2.appendChild(why);
+            }
           });
-          bridgeSection.appendChild(bridgeList);
-          container.appendChild(bridgeSection);
-        }
-
-        if ((step.instructions || []).length) {
-          var instrSection = el('section', 'project-panel release-section guided-phase-learn');
-          instrSection.appendChild(el('h2', null, 'Hướng dẫn'));
-          var ol = el('ol', 'criteria-list');
-          step.instructions.forEach(function(text) { ol.appendChild(el('li', null, text)); });
-          instrSection.appendChild(ol);
-          container.appendChild(instrSection);
-        }
-
-        // codeBlocks always render unconditionally — this is also the
-        // code-with-me surface (visible immediately, never gated).
-        if ((step.codeBlocks || []).length) {
-          var codeSection = el('section', 'project-panel release-section guided-phase-code');
-          codeSection.appendChild(el('h2', null, step.type === 'code-with-me' ? 'Code cùng nhau' : 'Mã ví dụ'));
-          step.codeBlocks.forEach(function(block) { codeSection.appendChild(createGuidedCodeBlock(block)); });
-          container.appendChild(codeSection);
-        }
-
-        // your-turn: goal/constraints/hints are shown directly, BEFORE any
-        // reveal below — the reveal is a separate, collapsed-by-default
-        // section, never inline here.
-        if (step.learnerAction) {
-          var yourTurn = el('section', 'project-panel release-section guided-phase-code');
-          yourTurn.appendChild(el('h2', null, 'Đến lượt bạn'));
-          if (step.learnerAction.goal) yourTurn.appendChild(el('p', 'task-step-text', step.learnerAction.goal));
-          if ((step.learnerAction.constraints || []).length) {
-            yourTurn.appendChild(el('div', 'task-step-label', 'Ràng buộc'));
-            var cList = el('ul', 'criteria-list');
-            step.learnerAction.constraints.forEach(function(c) { cList.appendChild(el('li', null, c)); });
-            yourTurn.appendChild(cList);
+          if (step.learnerAction) {
+            p2.appendChild(el('h3', null, 'Đến lượt bạn'));
+            if (step.learnerAction.goal) p2.appendChild(el('p', 'task-step-text', step.learnerAction.goal));
+            if ((step.learnerAction.constraints || []).length) listBlock(p2, 'Ràng buộc', step.learnerAction.constraints);
+            if ((step.learnerAction.hints || []).length) listBlock(p2, 'Gợi ý', step.learnerAction.hints);
           }
-          if ((step.learnerAction.hints || []).length) {
-            yourTurn.appendChild(el('div', 'task-step-label', 'Gợi ý'));
-            var hList = el('ul', 'criteria-list');
-            step.learnerAction.hints.forEach(function(h) { hList.appendChild(el('li', null, h)); });
-            yourTurn.appendChild(hList);
+          // reveal — collapsed by default; opening it never marks the step complete.
+          if (step.reveal) {
+            var panelId = 'guided-reveal-' + step.id;
+            var revealBtn = disclosureButton(step.reveal.label || 'Xem đáp án', panelId, 'chevron-down');
+            var revealPanel = el('div', null);
+            revealPanel.id = panelId;
+            revealPanel.hidden = true;
+            revealPanel.appendChild(el('p', null, step.reveal.content));
+            wireDisclosure(revealBtn, revealPanel);
+            p2.appendChild(revealBtn);
+            p2.appendChild(revealPanel);
           }
-          container.appendChild(yourTurn);
+          container.appendChild(p2);
         }
 
-        // reveal — collapsed by default via the shared disclosure pattern;
-        // opening it is a pure UI toggle, it never marks the step complete.
-        if (step.reveal) {
-          var revealSection = el('section', 'project-panel release-section guided-phase-code');
-          var panelId = 'guided-reveal-' + step.id;
-          var revealBtn = disclosureButton(step.reveal.label || 'Xem đáp án', panelId, 'chevron-down');
-          var revealPanel = el('div', null);
-          revealPanel.id = panelId;
-          revealPanel.hidden = true;
-          revealPanel.appendChild(el('p', null, step.reveal.content));
-          wireDisclosure(revealBtn, revealPanel);
-          revealSection.appendChild(revealBtn);
-          revealSection.appendChild(revealPanel);
-          container.appendChild(revealSection);
-        }
-
-        if (step.run) {
-          var runSection = el('section', 'project-panel release-section guided-phase-verify');
-          runSection.appendChild(el('h2', null, 'Chạy thử'));
-          if (step.run.cwd) runSection.appendChild(el('p', 'task-step-text', 'Thư mục: ' + step.run.cwd));
-          runSection.appendChild(createGuidedCodeBlock({ language: 'command', code: step.run.command }, 'guided-run-command'));
-          if (step.run.expectedResult) {
-            var runResult = el('div', 'task-step-row task-step-row--done');
-            runResult.appendChild(el('span', 'task-step-label', 'Kết quả mong đợi'));
-            runResult.appendChild(el('p', 'task-step-text', step.run.expectedResult));
-            runSection.appendChild(runResult);
+        // PHẦN 3 — run + what to observe, then the canonical criteria join
+        // (architectureRules link to #/architecture, one convention sitewide).
+        var buildStep = step.buildStepId ? buildStepsById.get(step.buildStepId) : null;
+        if (step.run || buildStep) {
+          var p3 = part(3, 'Chạy và quan sát', 'verify');
+          if (step.run) {
+            if (step.run.cwd) p3.appendChild(el('p', 'task-step-text', 'Thư mục: ' + step.run.cwd));
+            p3.appendChild(createGuidedCodeBlock({ language: 'command', code: step.run.command }, 'guided-run-command'));
+            if (step.run.explanation) {
+              var runWhy = el('p', null);
+              runWhy.appendChild(el('strong', null, 'Lệnh này làm gì: '));
+              runWhy.appendChild(document.createTextNode(step.run.explanation));
+              p3.appendChild(runWhy);
+            }
+            if (step.run.expectedResult) {
+              var runResult = el('div', 'task-step-row task-step-row--done');
+              runResult.appendChild(el('span', 'task-step-label', 'Kết quả mong đợi'));
+              runResult.appendChild(el('p', 'task-step-text', step.run.expectedResult));
+              p3.appendChild(runResult);
+            }
           }
-          if (step.run.explanation) runSection.appendChild(el('p', null, step.run.explanation));
-          container.appendChild(runSection);
-        }
-
-        // Canonical BuildStep join (secondary panel, distinct from the
-        // authored fields above). architectureRules render as the SAME
-        // unresolved chip-linking-to-#/architecture pattern createStepCard
-        // already uses — one convention for this field sitewide.
-        if (step.buildStepId) {
-          var buildStep = buildStepsById.get(step.buildStepId);
           if (buildStep) {
-            var canonSection = el('section', 'project-panel release-section guided-phase-verify');
-            canonSection.appendChild(el('h2', null, 'Tiêu chí kỹ thuật (canonical)'));
+            p3.appendChild(el('h3', null, 'Tiêu chí kỹ thuật (canonical)'));
             if (buildStep.doneWhen) {
               var cDone = el('div', 'task-step-row task-step-row--done');
               cDone.appendChild(el('span', 'task-step-label', 'Xong khi'));
               cDone.appendChild(el('p', 'task-step-text', buildStep.doneWhen));
-              canonSection.appendChild(cDone);
+              p3.appendChild(cDone);
             }
             if (buildStep.verifyCommand) {
               var cVerify = el('div', 'task-step-row');
               cVerify.appendChild(el('span', 'task-step-label', 'Kiểm tra'));
               cVerify.appendChild(createGuidedCodeBlock({ language: 'verifyCommand', code: buildStep.verifyCommand }));
-              canonSection.appendChild(cVerify);
+              p3.appendChild(cVerify);
             }
             if ((buildStep.architectureRules || []).length) {
               var cRules = el('div', 'task-step-row');
@@ -5763,69 +5846,84 @@
               });
               cRuleRow.appendChild(el('span', 'task-rule-note', 'Định nghĩa đầy đủ trong trang Kiến trúc'));
               cRules.appendChild(cRuleRow);
-              canonSection.appendChild(cRules);
+              p3.appendChild(cRules);
             }
             var parentTask = buildTasksById.get(buildStep.taskId);
             var canonLink = el('a', 'text-link', 'Xem build task đầy đủ: ' + (parentTask ? parentTask.title : buildStep.taskId));
             canonLink.href = '#/task/' + buildStep.taskId;
-            canonSection.appendChild(canonLink);
-            container.appendChild(canonSection);
+            p3.appendChild(canonLink);
           }
+          container.appendChild(p3);
         }
 
+        // PHẦN 4 — failure modes.
         if ((step.commonErrors || []).length) {
-          var errSection = el('section', 'release-section');
-          errSection.appendChild(el('h2', null, 'Lỗi thường gặp'));
+          var p4 = part(4, 'Nếu bị lỗi');
+          p4.appendChild(el('div', 'task-step-label', 'Lỗi thường gặp'));
           step.commonErrors.forEach(function(err) {
-            errSection.appendChild(createGuidedCallout('warning', err.symptom, 'Nguyên nhân: ' + err.likelyCause + ' — Cách sửa: ' + err.fix));
+            p4.appendChild(createGuidedCallout('warning', err.symptom, 'Nguyên nhân: ' + err.likelyCause + ' — Cách sửa: ' + err.fix));
           });
-          container.appendChild(errSection);
+          container.appendChild(p4);
         }
 
-        if (step.projectStateBefore || step.projectStateAfter) {
-          var stateSection = el('section', 'project-panel release-section');
-          stateSection.appendChild(el('h2', null, 'Trạng thái project'));
+        // PHẦN 5 — before/after, and for checkpoint steps the session's one
+        // guidedCheckpoint record (never duplicating canonical doneWhen).
+        var checkpoint = step.type === 'checkpoint'
+          ? (guidedBuildData.guidedCheckpoints || []).find(function(c) { return c.sessionId === sessionId; })
+          : null;
+        if (step.projectStateBefore || step.projectStateAfter || checkpoint) {
+          var p5 = part(5, 'Bạn vừa xây được gì', 'verify');
           if (step.projectStateBefore) {
-            stateSection.appendChild(el('div', 'task-step-label', 'Trước bước này'));
-            stateSection.appendChild(createGuidedStatePre(step.projectStateBefore));
+            p5.appendChild(el('div', 'task-step-label', 'Trước bước này'));
+            p5.appendChild(createGuidedStatePre(step.projectStateBefore));
           }
           if (step.projectStateAfter) {
-            stateSection.appendChild(el('div', 'task-step-label', 'Sau bước này'));
-            stateSection.appendChild(createGuidedStatePre(step.projectStateAfter));
+            p5.appendChild(el('div', 'task-step-label', 'Sau bước này'));
+            p5.appendChild(createGuidedStatePre(step.projectStateAfter));
           }
-          container.appendChild(stateSection);
-        }
-
-        // Checkpoint-type steps join the session's one guidedCheckpoint
-        // record — visually prominent, never duplicating canonical
-        // doneWhen/verifyCommand (those stay in the join panel above).
-        if (step.type === 'checkpoint') {
-          var checkpoint = (guidedBuildData.guidedCheckpoints || []).find(function(c) { return c.sessionId === sessionId; });
           if (checkpoint) {
-            var cpSection = el('section', 'project-panel release-section guided-checkpoint guided-phase-verify');
-            cpSection.appendChild(el('h2', null, 'Checkpoint — bạn đã xây được gì'));
-            cpSection.appendChild(el('p', 'task-step-text', checkpoint.whatYouBuilt));
+            var cp = el('div', 'guided-checkpoint');
+            cp.appendChild(el('h3', null, 'Checkpoint — bạn đã xây được gì'));
+            cp.appendChild(el('p', 'task-step-text', checkpoint.whatYouBuilt));
             if ((checkpoint.expectedFiles || []).length) {
-              cpSection.appendChild(el('div', 'task-step-label', 'File dự kiến'));
+              cp.appendChild(el('div', 'task-step-label', 'File dự kiến'));
               var fList = el('ul', 'task-file-list');
               checkpoint.expectedFiles.forEach(function(p) { fList.appendChild(el('li', 'task-file-path', p)); });
-              cpSection.appendChild(fList);
+              cp.appendChild(fList);
             }
             if (checkpoint.expectedProjectTree) {
-              cpSection.appendChild(el('div', 'task-step-label', 'Cây thư mục dự kiến'));
-              cpSection.appendChild(createGuidedStatePre(checkpoint.expectedProjectTree));
+              cp.appendChild(el('div', 'task-step-label', 'Cây thư mục dự kiến'));
+              cp.appendChild(createGuidedStatePre(checkpoint.expectedProjectTree));
             }
-            if ((checkpoint.understanding || []).length) {
-              cpSection.appendChild(el('div', 'task-step-label', 'Bạn nên hiểu được'));
-              var uList = el('ul', 'criteria-list');
-              checkpoint.understanding.forEach(function(u) { uList.appendChild(el('li', null, u)); });
-              cpSection.appendChild(uList);
-            }
-            if (checkpoint.whyNotYet) {
-              cpSection.appendChild(createGuidedCallout('note', 'Nếu chưa xong', checkpoint.whyNotYet, 'guided-phase-verify'));
-            }
-            container.appendChild(cpSection);
+            if ((checkpoint.understanding || []).length) listBlock(cp, 'Bạn nên hiểu được', checkpoint.understanding);
+            if ((checkpoint.whyNotYet || []).length) listBlock(cp, 'Chưa có (và vì sao chưa)', checkpoint.whyNotYet);
+            p5.appendChild(cp);
           }
+          container.appendChild(p5);
+        }
+
+        // PHẦN 6 — self-check; every answer is collapsed until the learner
+        // has tried, same disclosure pattern as the reveal above.
+        if ((step.selfCheck || []).length) {
+          var p6 = part(6, 'Tự kiểm tra', 'learn');
+          p6.appendChild(el('p', 'task-step-text', 'Tự trả lời trong đầu (hoặc ra giấy) trước khi mở đáp án.'));
+          var qList = el('ol', 'guided-selfcheck-list');
+          step.selfCheck.forEach(function(q, i) {
+            var li = el('li');
+            li.appendChild(el('p', 'guided-selfcheck-q', q.question));
+            var ansId = 'guided-selfcheck-' + step.id + '-' + i;
+            var ansBtn = disclosureButton('Xem đáp án', ansId, 'chevron-down');
+            var ans = el('div', 'guided-selfcheck-a');
+            ans.id = ansId;
+            ans.hidden = true;
+            ans.appendChild(el('p', null, q.answer));
+            wireDisclosure(ansBtn, ans);
+            li.appendChild(ansBtn);
+            li.appendChild(ans);
+            qList.appendChild(li);
+          });
+          p6.appendChild(qList);
+          container.appendChild(p6);
         }
 
         // Completion toggle — mutates ONLY state.guidedProgress.completedSteps
@@ -6956,6 +7054,18 @@
           var h1 = viewEl.querySelector("h1.lesson-title");
           assert("navigating to Day 1 updates route and lesson h1",
             !!h1 && h1.textContent.indexOf("JVM") !== -1);
+
+          /* 6b — teaching scaffold: intro before sections, common mistakes,
+             self-check answers collapsed until the learner asks */
+          var dayOne = lessonsById.get("day-01");
+          var teachSec = viewEl.querySelector(".lesson-teaching");
+          var scAnswers = viewEl.querySelectorAll('[id^="lesson-selfcheck-"]');
+          assert("lesson teaching intro + hidden self-check answers render when authored",
+            !dayOne.teaching || (!!teachSec && teachSec.textContent.indexOf(dayOne.teaching.why) !== -1 &&
+              scAnswers.length === dayOne.teaching.selfCheck.length &&
+              Array.prototype.every.call(scAnswers, function(a) { return a.hidden; })));
+          assert("lesson renders common mistakes under a Vietnamese heading",
+            viewEl.textContent.indexOf("Lỗi người mới hay mắc") !== -1);
 
           /* 7/8 — hint & solution disclosures start hidden and toggle */
           var hintPanel = viewEl.querySelector('[id^="hint-"]');
@@ -8210,7 +8320,7 @@
           var guidedV09Root = document.getElementById("route-view");
           assert("#/guided-build/v0-9 renders its real authored sessions, not the unauthored placeholder",
             !/Chưa biên soạn/.test(guidedV09Root.textContent) &&
-            /Cache du lieu tham chieu/.test(guidedV09Root.textContent));
+            /Cache dữ liệu tham chiếu/.test(guidedV09Root.textContent));
           location.hash = "#/guided-build/v1-0";
           routeRender();
           var guidedV10Root = document.getElementById("route-view");
@@ -8254,12 +8364,14 @@
           var syntheticSession = {
             id: "selftest-session", releaseId: "v0-1", buildTaskId: null,
             order: 1, title: "Selftest session", goal: "g",
+            projectNow: "hiện có A", sessionAdds: "phiên thêm B",
           };
           var syntheticStep1 = {
             id: "selftest-step-1", sessionId: "selftest-session", order: 1,
             type: "explanation", title: "Bước 1", goal: "g",
             theoryBridge: [{ lessonId: "day-01", note: "liên kết ghi chú" }],
-            codeBlocks: [{ language: "java", code: "class X {}" }],
+            codeBlocks: [{ language: "java", code: "class X {}", explanation: "giải thích đoạn x" }],
+            selfCheck: [{ question: "câu hỏi x?", answer: "trả lời x" }],
             learnerAction: { goal: "tự làm", constraints: ["ràng buộc x"], hints: ["gợi ý x"] },
             reveal: { label: "Xem đáp án", content: "đáp án bí mật" },
             run: { cwd: "spendwise", command: "mvn test", expectedResult: "BUILD SUCCESS" },
@@ -8295,6 +8407,12 @@
           assert("Guided step's reveal panel is collapsed by default (aria-expanded=false, panel hidden)",
             !!revealPanel && revealPanel.hidden === true &&
             stepRoot.querySelector(".disclosure-btn").getAttribute("aria-expanded") === "false");
+          var partNums = Array.prototype.map.call(stepRoot.querySelectorAll(".guided-part"), function(n) { return n.getAttribute("data-part"); }).join(",");
+          var selfAns = stepRoot.querySelector('[id^="guided-selfcheck-"]');
+          assert("Guided step groups fields into PHẦN 1–6 in order, with code-chunk explanation and self-check answer hidden",
+            partNums === "1,2,3,4,6" && /PHẦN 2 — Code cùng tôi/.test(stepRoot.textContent) &&
+            /giải thích đoạn x/.test(stepRoot.textContent) && /câu hỏi x\?/.test(stepRoot.textContent) &&
+            !!selfAns && selfAns.hidden === true);
 
           var stepToggle = stepRoot.querySelector('.task-complete-toggle[data-step-id="selftest-step-1"]');
           var pressedBefore = stepToggle && stepToggle.getAttribute("aria-pressed") === "false";
@@ -8312,6 +8430,8 @@
           location.hash = "#/guided-build/v0-1/selftest-session/selftest-step-2";
           routeRender();
           var step2Root = document.getElementById("route-view");
+          assert("Guided checkpoint step renders under PHẦN 5",
+            !!step2Root.querySelector('.guided-part[data-part="5"]'));
           assert("Guided checkpoint step joins its session's guidedCheckpoint record",
             /bạn đã xây được X/.test(step2Root.textContent) &&
             /src\/X\.java/.test(step2Root.textContent) &&
@@ -8319,6 +8439,12 @@
           var prevLink = step2Root.querySelector(".task-prevnext-link");
           assert("Guided step's previous link returns to the session's previous step",
             !!prevLink && prevLink.getAttribute("href") === "#/guided-build/v0-1/selftest-session/selftest-step-1");
+
+          location.hash = "#/guided-build/v0-1/selftest-session";
+          routeRender();
+          assert("Guided session page shows the story-continuity panel (Spendwise hiện có gì? / Phiên này thêm gì?)",
+            /Spendwise hiện có gì\?/.test(document.getElementById("route-view").textContent) &&
+            /phiên thêm B/.test(document.getElementById("route-view").textContent));
 
           guidedBuildData = realGuidedBuildData;
           GUIDED_STEP_IDS = realGuidedStepIds;

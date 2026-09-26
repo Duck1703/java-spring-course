@@ -439,6 +439,32 @@
     "Dùng int cho field entity ứng với cột cho phép NULL, làm mất khả năng phân biệt 'chưa có dữ liệu' với giá trị 0.",
     "Nối chuỗi bằng + trong vòng lặp lớn thay vì dùng StringBuilder."
   ],
+  "teaching": {
+    "why": "Nếu chưa hiểu JVM và kiểu dữ liệu, bạn sẽ gặp những lỗi trông như 'ma ám': hai chuỗi giống hệt nhau mà `==` lại trả `false`, một dòng `int y = x;` không có dấu chấm nào vẫn ném NullPointerException, hay `0.1 + 0.2` không bằng `0.3`. Những lỗi này không nằm ở cú pháp mà ở cách Java lưu dữ liệu trong bộ nhớ. Bài này cho bạn một mô hình bộ nhớ đủ dùng để đoán trước và tránh chúng.",
+    "javaBridge": "Bạn đã quen gõ `javac Main.java` rồi `java Main`: lệnh đầu là công cụ của JDK, sinh ra file `.class` chứa bytecode; lệnh sau khởi động JVM để chạy bytecode đó. Bạn cũng đã viết `int count = 0;` và `String name = \"An\";` — bài này giải thích vì sao hai dòng trông giống nhau lại khác hẳn nhau: `count` chứa chính con số, còn `name` chỉ chứa địa chỉ tới một object nằm trên heap.",
+    "mentalModel": "Hãy hình dung JVM như một văn phòng: mỗi thread là một nhân viên có chồng giấy nháp riêng (stack), mỗi việc đang làm là một tờ nháp (frame), làm xong thì bỏ tờ đó đi; còn heap là kho đồ chung của cả văn phòng, chứa mọi object tạo bằng `new`, và chỉ được dọn (garbage collector) khi không còn ai giữ phiếu (tham chiếu) tới món đồ. Biến nguyên thủy như `int` ghi thẳng con số lên tờ nháp; biến tham chiếu như `String` hay `Integer` chỉ ghi số phiếu trỏ vào kho. Vì vậy `==` trên tham chiếu là so số phiếu, không phải so nội dung món đồ — muốn so nội dung thì dùng `equals`.",
+    "is": "JVM là máy ảo nạp và thực thi bytecode `.class` và quản lý bộ nhớ (stack riêng từng thread, heap dùng chung); JRE là JVM cộng thư viện lõi để chạy chương trình, còn JDK là JRE cộng các công cụ phát triển như `javac` và `javadoc`.",
+    "isNot": "JVM không đọc mã nguồn `.java`: chính `javac` (thuộc JDK) dịch mã nguồn thành bytecode, JVM chỉ chạy bytecode đó. Và `==` không phải phép so sánh nội dung — với `String` hay wrapper nó so sánh tham chiếu, nên đôi khi đúng với chuỗi viết cứng nhưng sai với dữ liệu thật.",
+    "solves": "Bài này giúp bạn chọn đúng kiểu dữ liệu và so sánh đúng cách, tránh các lỗi âm thầm như tràn số `int`, sai số `double`, NPE khi unboxing và `==` trên chuỗi. Trong Spendwise, V0.1 (Java Domain) dựa trực tiếp vào bài này khi xây kiểu giá trị `Money`: số tiền dùng `BigDecimal` khởi tạo từ `String` và so sánh bằng `compareTo` thay vì `double`, còn trường có thể chưa có dữ liệu dùng wrapper để phân biệt 'chưa có dữ liệu' với giá trị 0.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `Integer a = 128, b = 128;` rồi `a == b` cho `false`, trong khi làm y hệt với 127 lại cho `true`?",
+        "answer": "JVM cache sẵn các object `Integer` trong khoảng -128..127, nên 127 được autoboxing thành cùng một object còn 128 thành hai object khác nhau. `==` so sánh tham chiếu, vì vậy với wrapper hãy luôn dùng `equals`."
+      },
+      {
+        "question": "Dự đoán điều gì xảy ra khi chạy `Map<String, Integer> m = new HashMap<>(); int x = m.get(\"a\");` và giải thích vì sao.",
+        "answer": "Chương trình ném NullPointerException: `m.get(\"a\")` trả về `null`, và việc unboxing sang `int` thực chất là lời gọi ẩn `intValue()` trên một tham chiếu `null`."
+      },
+      {
+        "question": "Một máy chỉ cài JRE: bạn làm được gì và không làm được gì với chương trình Java?",
+        "answer": "Chạy được chương trình `.class` đã biên dịch sẵn, nhưng không biên dịch được mã nguồn vì JRE không có `javac`. Muốn viết và biên dịch, bạn cần JDK."
+      },
+      {
+        "question": "Vì sao không nên lưu số tiền bằng `double`, và nên dùng gì thay thế?",
+        "answer": "`double` là số thực dấu phẩy động nên không biểu diễn chính xác số thập phân (`0.1 + 0.2` khác `0.3`), sai số cộng dồn qua nhiều phép tính. Hãy dùng `BigDecimal` khởi tạo từ `String` và so sánh bằng `compareTo`."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day01-prac-1",
@@ -534,7 +560,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Unboxing tương đương JVM tự sinh một lời gọi phương thức intValue() trên đối tượng wrapper — gọi phương thức trên tham chiếu null luôn ném lỗi.",
-      "solution": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class UnboxingNpeDemo {\n    public static void main(String[] args) {\n        Map<String, Integer> ages = new HashMap<>();\n        Integer missing = ages.get(\"khong-ton-tai\"); // trả về null\n        int age = missing; // NullPointerException khi unboxing\n        System.out.println(age);\n    }\n}\nGiải thích: dòng 'int age = missing;' buộc JVM unbox missing thành int, tương đương gọi missing.intValue(); vì missing đang null nên lời gọi phương thức đó ném NullPointerException trước khi phép gán xảy ra.",
+      "solution": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class UnboxingNpeDemo {\n    public static void main(String[] args) {\n        Map<String, Integer> ages = new HashMap<>();\n        Integer missing = ages.get(\"không-tồn-tại\"); // trả về null\n        int age = missing; // NullPointerException khi unboxing\n        System.out.println(age);\n    }\n}\nGiải thích: dòng 'int age = missing;' buộc JVM unbox missing thành int, tương đương gọi missing.intValue(); vì missing đang null nên lời gọi phương thức đó ném NullPointerException trước khi phép gán xảy ra.",
       "explanation": "Lời giải mẫu minh họa đúng tình huống Map.get() trả về null rồi unbox trực tiếp; giải thích unboxing = lời gọi intValue() ẩn của trình biên dịch, gọi trên null nên ném NPE.",
       "rubric": "Đạt yêu cầu nếu code biên dịch được, thực sự tạo ra tình huống unbox null, và lời giải thích nêu đúng cơ chế intValue() ẩn gây NPE.",
       "sourceUsage": [

@@ -156,7 +156,7 @@
           "id": "day02-blk-38",
           "type": "code",
           "language": "java",
-          "code": "class GuardClauseDemo {\n\n    // Cach viet cu: else long nhau, duong di chinh bi thut le sau dan.\n    static String classifyNested(int score) {\n        String result;\n        if (score < 0) {\n            result = \"Invalid\";\n        } else {\n            if (score < 50) {\n                result = \"Fail\";\n            } else {\n                if (score < 80) {\n                    result = \"Pass\";\n                } else {\n                    result = \"Distinction\";\n                }\n            }\n        }\n        return result;\n    }\n\n    // Guard clause: xu ly truong hop khong hop le truoc, return ngay;\n    // phan con lai la duong di chinh, khong long else.\n    static String classifyGuard(int score) {\n        if (score < 0) {\n            return \"Invalid\";\n        }\n        if (score < 50) {\n            return \"Fail\";\n        }\n        if (score < 80) {\n            return \"Pass\";\n        }\n        return \"Distinction\";\n    }\n\n    public static void main(String[] args) {\n        int[] samples = {-5, 42, 65, 95};\n        for (int score : samples) {\n            System.out.println(score + \" -> nested=\" + classifyNested(score)\n                    + \", guard=\" + classifyGuard(score));\n        }\n    }\n}\n",
+          "code": "class GuardClauseDemo {\n\n    // Cách viết cũ: các nhánh else lồng nhau, đường đi chính thụt lề sâu dần.\n    static String classifyNested(int score) {\n        String result;\n        if (score < 0) {\n            result = \"Invalid\";\n        } else {\n            if (score < 50) {\n                result = \"Fail\";\n            } else {\n                if (score < 80) {\n                    result = \"Pass\";\n                } else {\n                    result = \"Distinction\";\n                }\n            }\n        }\n        return result;\n    }\n\n    // Guard clause: xử lý trường hợp không hợp lệ trước rồi return ngay;\n    // phần còn lại là đường đi chính, không lồng các nhánh else.\n    static String classifyGuard(int score) {\n        if (score < 0) {\n            return \"Invalid\";\n        }\n        if (score < 50) {\n            return \"Fail\";\n        }\n        if (score < 80) {\n            return \"Pass\";\n        }\n        return \"Distinction\";\n    }\n\n    public static void main(String[] args) {\n        int[] samples = {-5, 42, 65, 95};\n        for (int score : samples) {\n            System.out.println(score + \" -> nested=\" + classifyNested(score)\n                    + \", guard=\" + classifyGuard(score));\n        }\n    }\n}\n",
           "compile": true,
           "citations": [
             "day02-src-3"
@@ -174,7 +174,7 @@
     },
     {
       "id": "day02-sec-switch",
-      "title": "switch: statement, switch expression và pattern matching",
+      "title": "Câu lệnh switch, biểu thức switch và pattern matching",
       "blocks": [
         {
           "id": "day02-blk-5",
@@ -328,10 +328,36 @@
     "Nhân hai giá trị int rồi gán vào long và vẫn bị tràn, vì phép nhân được thực hiện trong int trước khi gán.",
     "Viết if không có ngoặc nhọn rồi thêm dòng thứ hai, khiến dòng đó luôn chạy dù thụt lề trông như nằm trong if.",
     "Dùng chuỗi thay vì enum cho trạng thái, dẫn tới switch phân biệt chữ hoa/thường và NPE khi giá trị null.",
-    "Bỏ default cho switch trên enum và mất khả năng phát hiện lỗi khi enum có thêm hằng mới (dùng switch expression để compiler kiểm tra đầy đủ nhánh).",
+    "Thêm default vào switch expression trên enum dù đã phủ hết hằng, làm compiler không còn buộc bạn xử lý hằng mới được thêm sau này.",
     "Xóa phần tử khỏi collection trong khi đang duyệt bằng enhanced for và nhận ConcurrentModificationException.",
     "Gọi database hoặc API bên trong vòng lặp thay vì xử lý theo lô, tạo ra vấn đề N+1."
   ],
+  "teaching": {
+    "why": "Một chương trình không chỉ tính toán mà còn phải quyết định nhánh nào được chạy, lặp bao nhiêu lần và dừng ở đâu. Nếu chưa hiểu độ ưu tiên, short-circuit hay fall-through, bạn có thể viết code biên dịch được nhưng cho kết quả sai hoặc ném lỗi chỉ với một dấu toán tử. Bài này giúp bạn đọc luồng chạy trước khi bấm Run.",
+    "javaBridge": "Bạn đã biết khai báo biến và gọi method trong `main`; toán tử là cách kết hợp các giá trị đó, còn `if`, `switch` và vòng lặp quyết định câu lệnh nào được thực thi. Ví dụ `user != null && user.isActive()` dùng chính phép so sánh và lời gọi method quen thuộc, nhưng `&&` còn ngăn Java chạy vế phải khi vế trái đã sai.",
+    "mentalModel": "Hãy hình dung biểu thức như một hàng phép tính có luật xếp lượt: phép có độ ưu tiên cao được xử lý trước, còn ngoặc là tấm vé cho phép bạn chỉ định lượt rõ ràng. Luồng điều khiển giống các ngã rẽ và vòng xuyến: `if` hoặc `switch` chọn đường, vòng lặp cho xe chạy lại, còn `break`, `continue`, `return` đổi lộ trình đang đi. Trong code thật, compiler tuân đúng các luật đó chứ không đoán ý định của bạn.",
+    "is": "Toán tử và câu lệnh điều khiển luồng là các quy tắc Java dùng để tính biểu thức, chọn nhánh, lặp và rời khỏi một đoạn thực thi.",
+    "isNot": "Độ ưu tiên không làm thay đổi thứ tự đánh giá toán hạng tùy ý, và thụt lề đẹp không quyết định phạm vi của `if`; cú pháp ngoặc và dấu ngoặc nhọn mới quyết định. `switch` dạng dấu hai chấm cũng không tự dừng sau mỗi `case`.",
+    "solves": "Bài này giúp bạn viết điều kiện an toàn với short-circuit, chọn đúng dạng `switch`, tránh lỗi biên vòng lặp và diễn đạt luồng nghiệp vụ bằng guard clause. Đây là nền tảng ngôn ngữ chung; Day 2 chưa xây trực tiếp tính năng Spendwise nào, nhưng mọi bước kiểm tra dữ liệu và trạng thái sau này đều dùng các cấu trúc này.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `user != null && user.isActive()` an toàn hơn khi thay `&&` bằng `&`?",
+        "answer": "Nếu `user` là `null`, `&&` dừng ngay sau vế trái nên không gọi `user.isActive()`. Toán tử `&` vẫn đánh giá cả hai vế và làm phát sinh NullPointerException."
+      },
+      {
+        "question": "Dự đoán kiểu và nguy cơ của `long total = intA * intB;` khi hai toán hạng đều là `int` lớn.",
+        "answer": "Phép nhân được thực hiện ở kiểu `int`, nên có thể tràn trước khi kết quả được gán sang `long`. Ép ít nhất một toán hạng sang `long` trước phép nhân để phép tính diễn ra ở kiểu `long`."
+      },
+      {
+        "question": "Một `case` dạng dấu hai chấm không có `break` sẽ làm gì? Dạng mũi tên có hành vi đó không?",
+        "answer": "Dạng dấu hai chấm tiếp tục chạy xuống các `case` sau cho tới khi gặp `break` hoặc hết khối. Dạng mũi tên không có fall-through nên không cần `break` để chặn nhánh kế tiếp."
+      },
+      {
+        "question": "Khi chỉ cần đọc từng phần tử của một mảng mà không cần chỉ số, nên chọn vòng lặp nào và vì sao?",
+        "answer": "Dùng enhanced for vì không phải tự quản lý chỉ số, nhờ đó tránh lỗi lệch một đơn vị và `ArrayIndexOutOfBoundsException`."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day02-prac-1",

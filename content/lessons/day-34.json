@@ -46,7 +46,7 @@
   "sections": [
     {
       "id": "day34-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day34-blk-1",
@@ -64,7 +64,7 @@
     },
     {
       "id": "day34-sec-product",
-      "title": "Product CRUD: tim kiem, loc, phan trang",
+      "title": "Product CRUD: tìm kiếm, lọc, phân trang",
       "blocks": [
         {
           "id": "day34-blk-3",
@@ -75,14 +75,14 @@
         {
           "id": "day34-blk-4",
           "type": "note",
-          "text": "Hai resource được gán cho Day 34 (repository query methods, Spring Data JPA sort) trả về HTTP 404 tại thời điểm khảo sát; phần tìm kiếm/lọc/phân trang trong bài dùng derived query method + Pageable đã học từ các Unit trước, không có trích dẫn riêng cho Day 34. Specification (org.springframework.data.jpa.domain.Specification) chỉ được nhắc thoáng qua một lần ở day20-blk-47 và KHÔNG có bài nào trong khoá học dạy cách dùng - vì vậy đây KHÔNG phải cách bắt buộc để hiện thực tìm kiếm/lọc của Sprint 2 (xem cách đạt yêu cầu bằng derived query method ở trên); dùng Specification để gộp điều kiện lọc linh hoạt hơn chỉ là một hướng tự tìm hiểu thêm (enhancement), không phải yêu cầu chấm điểm.",
+          "text": "Hai tài liệu được gán cho Day 34 (repository query methods và Spring Data JPA sort) trả về HTTP 404 tại thời điểm khảo sát. Phần tìm kiếm, lọc và phân trang trong bài dùng derived query method kết hợp `Pageable` đã học ở các Unit trước, nên bạn không bắt buộc dùng `Specification`. `Specification` chỉ là hướng tự tìm hiểu thêm để ghép điều kiện linh hoạt hơn, không phải tiêu chí chấm điểm.",
           "citations": []
         }
       ]
     },
     {
       "id": "day34-sec-upload",
-      "title": "Upload anh san pham",
+      "title": "Upload ảnh sản phẩm",
       "blocks": [
         {
           "id": "day34-blk-5",
@@ -97,7 +97,7 @@
           "id": "day34-blk-6",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.multipart.MultipartFile;\n\n@RestController\nclass ProductImageController {\n\n    // Spring Boot khong can khai bao servlet thu cong, chi can starter-web tren classpath.\n    // Ghi (upload anh) thuoc nhom quan tri Product - can ROLE_ADMIN dung theo\n    // API contract Day 31 va quy uoc @PreAuthorize/@EnableMethodSecurity Day 33.\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    @PostMapping(\"/api/products/{id}/image\")\n    void uploadImage(@RequestParam(\"file\") MultipartFile file) {\n        String originalFilename = file.getOriginalFilename();\n        String contentType = file.getContentType();\n        // luu file, cap nhat Product.imageUrl...\n    }\n}\n",
+          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.RequestParam;\nimport org.springframework.web.bind.annotation.RestController;\nimport org.springframework.web.multipart.MultipartFile;\n\n@RestController\nclass ProductImageController {\n\n    // Spring Boot không cần khai báo servlet thủ công, chỉ cần starter-web trên classpath.\n    // Ghi (upload ảnh) thuộc nhóm quản trị Product - cần ROLE_ADMIN đúng theo\n    // API contract Day 31 và quy ước @PreAuthorize/@EnableMethodSecurity Day 33.\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    @PostMapping(\"/api/products/{id}/image\")\n    void uploadImage(@RequestParam(\"file\") MultipartFile file) {\n        String originalFilename = file.getOriginalFilename();\n        String contentType = file.getContentType();\n        // lưu file, cập nhật Product.imageUrl...\n    }\n}\n",
           "compile": false,
           "citations": [
             "day34-src-2"
@@ -115,7 +115,7 @@
         {
           "id": "day34-blk-8",
           "type": "important",
-          "text": "Luôn giới hạn dung lượng upload qua spring.servlet.multipart.max-file-size và max-request-size - nếu bỏ mặc định, endpoint upload ảnh sản phẩm có thể bị lạm dụng để gửi file khổng lồ làm quá tải server.",
+          "text": "Luôn cấu hình dung lượng upload qua spring.servlet.multipart.max-file-size và max-request-size theo nhu cầu ảnh và hạ tầng của bạn. Spring Boot có giới hạn mặc định 1 MB mỗi file và 10 MB mỗi request, nhưng mặc định chung đó không thay thế quyết định giới hạn riêng của ứng dụng.",
           "citations": [
             "day34-src-4"
           ]
@@ -124,7 +124,7 @@
     },
     {
       "id": "day34-sec-cart",
-      "title": "Quan ly Cart",
+      "title": "Quản lý Cart",
       "blocks": [
         {
           "id": "day34-blk-9",
@@ -135,13 +135,13 @@
         {
           "id": "day34-blk-17",
           "type": "template",
-          "text": "class CartController {\n\n    // KHONG nhan userId tu client (khong co trong path/body) - Cart luon gan\n    // voi nguoi dung dang xac thuc. Giong co che da thiet lap o Day 24/33: o\n    // moi request da xac thuc bang Bearer JWT, principal la mot doi tuong Jwt\n    // (KHONG phai UserDetails), id nguoi dung la claim sub da nhung vao JWT\n    // luc phat hanh o Day 33 - doc qua\n    // ((Jwt) authentication.getPrincipal()).getSubject(). TUYET DOI khong lay\n    // userId tu mot truong do client tu gui (path/body), vi client co the gia\n    // mao gia tri do de doc/sua gio hang cua nguoi khac.\n    @org.springframework.web.bind.annotation.GetMapping(\"/api/cart/items\")\n    java.util.List<CartItemDto> getItems(org.springframework.security.core.Authentication authentication) {\n        Long currentUserId = Long.valueOf(\n            ((org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal()).getSubject());\n        Cart cart = cartService.findOrCreateForUser(currentUserId);\n        return cart.getItems();\n    }\n}\n",
+          "text": "class CartController {\n\n    // KHÔNG nhận userId từ client (không có trong path/body) - Cart luôn gắn\n    // với người dùng đang xác thực. Giống cơ chế đã thiết lập ở Day 24/33: ở\n    // mỗi request đã xác thực bằng Bearer JWT, principal là một đối tượng Jwt\n    // (KHÔNG phải UserDetails), id người dùng là claim sub đã nhúng vào JWT\n    // lúc phát hành ở Day 33 - đọc qua\n    // ((Jwt) authentication.getPrincipal()).getSubject(). TUYỆT ĐỐI không lấy\n    // userId từ một trường do client tự gửi (path/body), vì client có thể giả\n    // mạo giá trị đó để đọc/sửa giỏ hàng của người khác.\n    @org.springframework.web.bind.annotation.GetMapping(\"/api/cart/items\")\n    java.util.List<CartItemDto> getItems(org.springframework.security.core.Authentication authentication) {\n        Long currentUserId = Long.valueOf(\n            ((org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal()).getSubject());\n        Cart cart = cartService.findOrCreateForUser(currentUserId);\n        return cart.getItems();\n    }\n}\n",
           "citations": []
         },
         {
           "id": "day34-blk-10",
           "type": "note",
-          "text": "Không có resource nào trong resourceIds của Day 34 mô tả riêng nghiệp vụ giỏ hàng - phần thiết kế Cart/CartItem (day34-blk-9) là quyết định thiết kế nghiệp vụ (domain design) của dự án, không có nguồn trích dẫn kỹ thuật cụ thể. Cơ chế xác định chủ sở hữu Cart từ Authentication (day34-blk-17) tái sử dụng đúng quy ước đã có trích dẫn ở Day 24/33 (Resource Server, principal là Jwt, claim sub), không tạo trích dẫn mới cho Day 34.",
+          "text": "Tài liệu tham khảo của Day 34 không mô tả riêng nghiệp vụ giỏ hàng; phần thiết kế Cart/CartItem là quyết định domain design của dự án, không có nguồn kỹ thuật riêng. Cơ chế xác định chủ sở hữu Cart từ Authentication tái sử dụng quy ước đã học ở Day 24/33: ứng dụng là Resource Server, principal là Jwt và id người dùng nằm trong claim sub.",
           "citations": []
         }
       ]
@@ -171,7 +171,7 @@
           "id": "day34-blk-13",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\nimport java.util.List;\n\n@Service\nclass CategoryService {\n\n    // Danh muc it thay doi -> cache theo key mac dinh (khong tham so).\n    @Cacheable(value = \"categories\", unless = \"#result.isEmpty()\")\n    public List<CategoryDto> findAll() {\n        return loadAllFromDatabase();\n    }\n\n    // Xoa toan bo cache \"categories\" khi co category moi/bi sua/bi xoa.\n    @CacheEvict(value = \"categories\", allEntries = true)\n    public void invalidateCache() {\n    }\n\n    private List<CategoryDto> loadAllFromDatabase() { return List.of(); }\n}\n",
+          "code": "import org.springframework.cache.annotation.CacheEvict;\nimport org.springframework.cache.annotation.Cacheable;\nimport org.springframework.stereotype.Service;\nimport java.util.List;\n\n@Service\nclass CategoryService {\n\n    // Danh mục ít thay đổi -> cache theo key mặc định (không tham số).\n    @Cacheable(value = \"categories\", unless = \"#result.isEmpty()\")\n    public List<CategoryDto> findAll() {\n        return loadAllFromDatabase();\n    }\n\n    // Xóa toàn bộ cache \"categories\" khi có category mới/bị sửa/bị xóa.\n    @CacheEvict(value = \"categories\", allEntries = true)\n    public void invalidateCache() {\n    }\n\n    private List<CategoryDto> loadAllFromDatabase() { return List.of(); }\n}\n",
           "compile": false,
           "citations": [
             "day34-src-6",
@@ -196,7 +196,7 @@
         {
           "id": "day34-blk-16",
           "type": "note",
-          "text": "Phạm vi chấm của bảng dưới đây: Specification (nhắc tới ở day20-blk-47) không được bài nào trong khoá học dạy chi tiết, nên KHÔNG phải cách bắt buộc để hiện thực tìm kiếm/lọc sản phẩm - Product CRUD dùng derived query method (đã quen thuộc từ các Unit trước) kết hợp Pageable (có trích dẫn ở Day 20/21) để đạt đúng yêu cầu search + categoryId + phân trang, xem day34-blk-3/blk-4. Kiến trúc xác thực/phân quyền của capstone đã được chốt ở Day 33 (hệ thống tự phát hành JWT ở /api/auth/login, phân quyền theo tiền tố ROLE_ đọc từ claim tuỳ chỉnh \"roles\") - áp dụng nhất quán cho Product CRUD (POST/PUT/DELETE chỉ Admin) và Cart (mỗi Cart gắn với user xác định qua claim sub của JWT, xem day34-blk-17). Cart/CartItem chỉ có thiết kế dạng template (day34-blk-9, không có resource riêng - xem authoring.limitations), nhưng hành vi tổng tiền tính động và quyền sở hữu theo Authentication đã được đặc tả đủ rõ để chấm theo quan sát được, tương tự cách Day 33 chấm User profile API/Category CRUD dù cũng chỉ có template.",
+          "text": "Phạm vi chấm gồm bốn hạng mục trong bảng dưới đây. Product CRUD dùng derived query method kết hợp `Pageable`; `Specification` không bắt buộc. POST/PUT/DELETE Product chỉ dành cho Admin theo kiến trúc Day 33. Mỗi Cart gắn với người dùng lấy từ claim `sub` của JWT, không lấy `userId` do client gửi. Cart/CartItem được chấm theo hành vi tổng tiền tính động và quyền sở hữu đã đặc tả trong bài.",
           "citations": []
         },
         {
@@ -211,17 +211,17 @@
             [
               "Product CRUD: search/filter/pagination",
               "GET /api/products?search=...&categoryId=...&page=0 với dữ liệu mẫu có nhiều category/tên khác nhau; gọi POST/PUT/DELETE bằng token không phải Admin",
-              "Phần phân trang chấm bình thường: đúng số phần tử theo page size và đúng trang được yêu cầu (Pageable/PageRequest/Page đã học có trích dẫn ở Day 20/21). Phần search + categoryId cũng chấm bình thường: kết quả đúng theo derived query method tương ứng tham số nào có mặt trên request (day34-blk-3) - KHÔNG bắt buộc dùng Specification (xem day34-blk-16). Phần 403 cho token không phải Admin chấm theo kiến trúc đã chốt ở Day 33: token của user không có ROLE_ADMIN (claim \"roles\" không chứa ADMIN) → 403 Forbidden."
+              "Phần phân trang chấm bình thường: đúng số phần tử theo page size và đúng trang được yêu cầu (Pageable/PageRequest/Page đã học có trích dẫn ở Day 20/21). Phần search + categoryId cũng chấm bình thường: kết quả đúng theo derived query method tương ứng tham số nào có mặt trên request () - KHÔNG bắt buộc dùng Specification. Phần 403 cho token không phải Admin chấm theo kiến trúc đã chốt ở Day 33: token của user không có ROLE_ADMIN (claim \"roles\" không chứa ADMIN) → 403 Forbidden."
             ],
             [
               "Upload ảnh sản phẩm (MultipartFile + giới hạn dung lượng + quyền Admin)",
               "POST /api/products/{id}/image bằng token Admin với (a) file hợp lệ nhỏ hơn max-file-size, (b) file vượt max-file-size; và bằng token của một user thường (c)",
-              "(a) upload thành công, Product.imageUrl được cập nhật; (b) request bị từ chối (413 hoặc lỗi tương ứng cấu hình), Product.imageUrl KHÔNG đổi; (c) 403 Forbidden vì endpoint ghi thuộc nhóm quản trị Product, chỉ ROLE_ADMIN mới gọi được (@PreAuthorize, xem day34-blk-6)"
+              "(a) upload thành công, Product.imageUrl được cập nhật; (b) request bị từ chối (413 hoặc lỗi tương ứng cấu hình), Product.imageUrl KHÔNG đổi; (c) 403 Forbidden vì endpoint ghi thuộc nhóm quản trị Product, chỉ ROLE_ADMIN mới gọi được (@PreAuthorize,"
             ],
             [
               "Cart/CartItem: tổng tiền tính động và quyền sở hữu theo Authentication",
               "(a) Thêm một CartItem vào giỏ, đổi Product.price của sản phẩm đó, rồi GET /api/cart/items; (b) gọi GET /api/cart/items lần lượt bằng token của hai user khác nhau, mỗi user đã tự thêm CartItem riêng, không truyền userId nào trong request",
-              "(a) tổng tiền trả về phản ánh đúng Product.price MỚI (không phải giá tại thời điểm thêm vào giỏ) - vì tổng tiền tính động từ CartItem.quantity * Product.price hiện tại, không lưu cứng (day34-blk-9); (b) mỗi user chỉ thấy đúng CartItem trong Cart gắn với chính mình - userId được suy ra từ claim sub của JWT (day34-blk-17), KHÔNG lấy từ trường client tự gửi, nên không user nào thấy được giỏ hàng của người khác"
+              "(a) tổng tiền trả về phản ánh đúng Product.price MỚI (không phải giá tại thời điểm thêm vào giỏ) - vì tổng tiền tính động từ CartItem.quantity * Product.price hiện tại, không lưu cứng (); (b) mỗi user chỉ thấy đúng CartItem trong Cart gắn với chính mình - userId được suy ra từ claim sub của JWT (), KHÔNG lấy từ trường client tự gửi, nên không user nào thấy được giỏ hàng của người khác"
             ],
             [
               "Caching Category/Product (@Cacheable/@CacheEvict/unless)",
@@ -240,6 +240,32 @@
     "Nhận userId từ tham số client gửi (path/body) khi hiện thực /api/cart/items thay vì suy ra từ claim sub trong JWT của Authentication, khiến client có thể giả mạo userId để đọc/sửa giỏ hàng của người khác.",
     "Dùng @Cacheable cho method ghi dữ liệu (tạo/sửa category) khiến lần ghi đầu tiên bị bỏ qua nếu cache đã có key trùng."
   ],
+  "teaching": {
+    "why": "Sprint trước mới cho hệ thống quản lý danh mục và người dùng; một cửa hàng vẫn chưa bán được hàng nếu thiếu tìm kiếm sản phẩm, upload ảnh, giỏ hàng và cache cho dữ liệu đọc nhiều. Bài này rèn cách ghép bốn phần đó thành một lát cắt chạy được, đồng thời giữ quyền sở hữu giỏ hàng ở phía server và tránh dữ liệu cache cũ.",
+    "javaBridge": "Bạn đã biết dùng `List`, đọc file và gọi method trên object Java; `MultipartFile` chỉ đóng gói file từ request, còn cache hoạt động gần giống một `Map` lưu kết quả theo key. `Cart` và `CartItem` vẫn là các class Java có quan hệ, nhưng JPA giúp lưu quan hệ đó và Spring Security cung cấp danh tính đã xác thực thay vì tin `userId` do client gửi.",
+    "mentalModel": "Hãy hình dung một siêu thị: Product là hàng trên kệ, Cart là xe đẩy gắn với đúng một khách, còn cache là bảng giá tra nhanh đặt ở quầy. Khi hàng hoặc danh mục đổi, bạn phải xóa bảng tra cũ; khi khách mở xe đẩy, nhân viên nhận diện khách từ thẻ đã xác thực chứ không giao xe chỉ vì khách đọc một mã số.",
+    "is": "Đây là sprint tích hợp Product CRUD, upload ảnh, Cart/CartItem và Spring Cache thành bốn hạng mục có hành vi kiểm chứng được.",
+    "isNot": "Đây không phải bài yêu cầu `Specification`, lưu giá cố định trong CartItem hay nhận `userId` từ request để xác định chủ sở hữu. Cache cũng không thay thế database và không phù hợp để che giấu thao tác ghi.",
+    "solves": "Bài này giúp bạn hoàn thiện luồng duyệt sản phẩm và quản lý giỏ hàng của capstone e-commerce, đồng thời kiểm soát upload và tính nhất quán cache. Bài không xây tính năng Spendwise; lesson map xác định đây là Sprint 2 của capstone riêng.",
+    "selfCheck": [
+      {
+        "question": "Vì sao CartItem không nên lưu cứng giá sản phẩm tại lúc thêm vào giỏ?",
+        "answer": "Giỏ hàng cần phản ánh giá hiện tại khi người dùng xem lại. Vì vậy tổng tiền được tính từ `quantity * Product.price`; việc lưu giá lịch sử chỉ phù hợp khi checkout tạo OrderItem."
+      },
+      {
+        "question": "Client gửi `userId=42` trong body khi gọi API giỏ hàng. Service có nên dùng giá trị đó để chọn Cart không?",
+        "answer": "Không. Service phải lấy chủ sở hữu từ claim `sub` của JWT đã xác thực; trường do client tự gửi có thể bị sửa để đọc hoặc thay đổi giỏ của người khác."
+      },
+      {
+        "question": "`findAll()` trả danh sách rỗng và dùng `unless = \"#result.isEmpty()\"`. Kết quả rỗng có vào cache không, và lợi ích là gì?",
+        "answer": "Không. Lần đọc sau vẫn truy vấn database, nên một danh mục mới xuất hiện sẽ không bị che bởi danh sách rỗng cũ."
+      },
+      {
+        "question": "Sau khi tạo một category, điều gì xảy ra nếu quên `@CacheEvict`?",
+        "answer": "Lần đọc tiếp theo có thể tiếp tục nhận danh sách cũ từ cache dù database đã đổi. Thao tác ghi phải làm mất hiệu lực entry liên quan."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day34-prac-1",
@@ -257,7 +283,7 @@
         },
         {
           "id": "day34-prac-1-a",
-          "text": "Để tránh bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng"
+          "text": "Để đặt giới hạn phù hợp với nhu cầu ứng dụng và giảm rủi ro client gửi file quá lớn làm quá tải server"
         },
         {
           "id": "day34-prac-1-d",
@@ -268,7 +294,7 @@
         "day34-prac-1-a"
       ],
       "hint": "Nghĩ về rủi ro khi không giới hạn dung lượng file client gửi lên.",
-      "solution": "Cấu hình spring.servlet.multipart.max-file-size để tránh endpoint bị lạm dụng gửi file khổng lồ làm quá tải server, vì mặc định Spring Boot không giới hạn chặt dung lượng; giới hạn tường minh kiểm soát kích thước dữ liệu mà client có thể upload.",
+      "solution": "Cấu hình spring.servlet.multipart.max-file-size để tránh endpoint bị lạm dụng gửi file khổng lồ làm quá tải server, dù Spring Boot có giới hạn mặc định; cấu hình tường minh giúp giới hạn đó khớp nhu cầu ứng dụng và kiểm soát kích thước dữ liệu mà client có thể upload.",
       "explanation": "Không giới hạn max-file-size/max-request-size khiến endpoint upload có thể bị lạm dụng để gửi file rất lớn, chiếm băng thông/bộ nhớ và có thể làm quá tải server. Spring Boot vẫn hỗ trợ upload khi có spring-boot-starter-web mà không cần khai báo cấu hình servlet thủ công, nên max-file-size không phải điều kiện để tính năng upload tồn tại. Bài trình bày thuộc tính này như giới hạn bảo vệ server, không phải cách tăng tốc upload. @RequestParam(\"file\") MultipartFile là cách nhận file trong controller và ví dụ hoạt động độc lập với việc khai báo giới hạn, nên annotation này không bắt buộc phải có max-file-size.",
       "rubric": "Liên hệ đúng lý do: phòng ngừa lạm dụng dung lượng upload.",
       "sourceUsage": [

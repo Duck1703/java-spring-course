@@ -94,14 +94,14 @@
         {
           "id": "day18-blk-5",
           "type": "note",
-          "text": "Ràng buộc cơ bản title notBlank (@NotBlank) và dueDate phải ở tương lai (@Future) dùng annotation Bean Validation chuẩn của jakarta.validation.constraints; hai annotation này không có resource nào trong resourceIds của riêng Day 18 mô tả (chúng thuộc resourceIds của Day 17, nơi Bean Validation cơ bản đã được trích dẫn đầy đủ) — Day 18 tập trung trích dẫn phần validate cấp class và ProblemDetail, là phần mới so với Day 17.",
+          "text": "Ràng buộc cơ bản `title` không được để trống (`@NotBlank`) và `dueDate` phải ở tương lai (`@Future`) dùng annotation chuẩn của Bean Validation, đã học ở Day 17. Phần mới của Day 18 là ghép validation cấp class với `ProblemDetail` trong một API hoàn chỉnh.",
           "citations": []
         }
       ]
     },
     {
       "id": "day18-sec-custom-validator",
-      "title": "Custom validator @ValidStatusTransition",
+      "title": "Bộ kiểm tra chuyển trạng thái `@ValidStatusTransition`",
       "blocks": [
         {
           "id": "day18-blk-6",
@@ -159,14 +159,14 @@
         {
           "id": "day18-blk-10",
           "type": "note",
-          "text": "Yêu cầu xuất Postman collection không có resource nào trong resourceIds của Day 18 mô tả (xem authoring.limitations). Cách làm phổ biến: gọi thử từng endpoint CRUD Task trong Postman, gom các request lại thành một Collection, dùng tính năng 'Export' của Postman để xuất file .json chứa toàn bộ request/ví dụ response, lưu kèm repository để nhóm khác/CI có thể import lại và chạy smoke test.",
+          "text": "Để xuất Postman collection, bạn gọi thử từng endpoint CRUD Task, gom các request vào một Collection rồi dùng tính năng 'Export' để tạo file `.json` chứa request và response mẫu. Lưu file cùng repository để thành viên khác hoặc CI có thể import lại và chạy smoke test.",
           "citations": []
         }
       ]
     },
     {
       "id": "day18-sec-acceptance",
-      "title": "Acceptance criteria & giới hạn đã biết",
+      "title": "Tiêu chí nghiệm thu và giới hạn đã biết",
       "blocks": [
         {
           "id": "day18-blk-11",
@@ -215,7 +215,7 @@
             [
               "[Giới hạn đã biết — xem cảnh báo bên dưới] currentStatus client khai không khớp trạng thái thật",
               "PUT .../status với currentStatus SAI so với Task thật trong DB, nhưng cặp (currentStatus khai, status) vẫn hợp lệ theo ALLOWED",
-              "Cài đặt hiện tại KHÔNG phát hiện được sai lệch này — request vẫn được chấp nhận. Đây không phải hành vi đúng, xem Hazard (1) bên dưới."
+              "Cài đặt hiện tại KHÔNG phát hiện được sai lệch này — request vẫn được chấp nhận. Đây không phải hành vi đúng; xem giới hạn (1) bên dưới."
             ],
             [
               "Postman collection",
@@ -238,8 +238,34 @@
     "Gắn @ValidStatusTransition ở @Target(FIELD) khiến validator không đọc được cả hai field cần so sánh.",
     "Quên xử lý TaskNotFoundException trong @RestControllerAdvice, để lỗi 500 mặc định lộ ra ngoài thay vì ProblemDetail 404 rõ ràng.",
     "Cho phép chuyển trạng thái tùy ý (ví dụ DONE -> TODO) mà không kiểm tra qua ALLOWED map.",
-    "Không đối chiếu currentStatus mà client gửi lên với trạng thái Task thật đang lưu trong DB trước khi cập nhật — cho phép client tự khai sai currentStatus để hợp thức hóa một chuyển trạng thái lẽ ra không được phép (xem giới hạn đã biết ở cuối bài, day18-blk-12)."
+    "Không đối chiếu currentStatus mà client gửi lên với trạng thái Task thật đang lưu trong DB trước khi cập nhật — cho phép client tự khai sai currentStatus để hợp thức hóa một chuyển trạng thái lẽ ra không được phép (xem phần giới hạn đã biết ở cuối bài)."
   ],
+  "teaching": {
+    "why": "Biết riêng controller và validation chưa chứng minh bạn ghép được một API hoàn chỉnh. Lab này buộc bạn nối mapping, DTO, validation nhiều field và xử lý lỗi thành một luồng chạy được; nhờ đó bạn thấy những lỗ hổng mà từng ví dụ nhỏ che khuất, đặc biệt khi client tự khai trạng thái cũ.",
+    "javaBridge": "Bạn đã viết CRUD bằng method Java và enum để biểu diễn trạng thái. Trong lab này, HTTP method gọi các thao tác đó, `TaskStatus` tạo tập trạng thái hữu hạn, còn một `Map<TaskStatus, Set<TaskStatus>>` đóng vai trò đồ thị chuyển trạng thái. Bean Validation kiểm tra hình dạng request; service/repository phải kiểm tra trạng thái thật trước khi cập nhật.",
+    "mentalModel": "Hãy hình dung mỗi Task là quân cờ chỉ được đi theo mũi tên trên bản đồ `TODO → IN_PROGRESS → DONE`. Validator kiểm tra tấm vé client đưa có mô tả một bước đi hợp lệ, nhưng nhân viên nghiệp vụ vẫn phải nhìn vị trí thật của quân cờ trong database; nếu chỉ tin tấm vé, client có thể khai sai điểm xuất phát. Controller là quầy nhận yêu cầu, advice là quầy trả biên bản lỗi thống nhất.",
+    "is": "Lab 6 là bài tích hợp xây CRUD Task với mapping REST, Bean Validation, custom constraint cấp class và `ProblemDetail`.",
+    "isNot": "Custom validator trên request không phải cơ chế bảo vệ trạng thái trong database và không thay thế kiểm tra nghiệp vụ ở service. Postman collection cũng không thay thế integration test; nó chỉ lưu các request mẫu để chạy lại.",
+    "solves": "Bài này rèn khả năng ghép Day 16 và Day 17 thành một API có contract quan sát được: status code đúng, input sai bị chặn, chuyển trạng thái được kiểm soát và lỗi có cùng cấu trúc. Đây là bài lab độc lập, không triển khai trực tiếp tính năng Spendwise; kỹ năng của nó chuẩn bị cho các API V0.4.",
+    "selfCheck": [
+      {
+        "question": "Task thật đang là `DONE`, nhưng client gửi `currentStatus=IN_PROGRESS` và `status=TODO`. Validator hiện tại có thể cho qua không?",
+        "answer": "Có, vì nó chỉ thấy cặp trạng thái do client gửi và cặp `IN_PROGRESS → TODO` nằm trong `ALLOWED`. Service phải đọc Task thật và đối chiếu `currentStatus` trước khi cập nhật."
+      },
+      {
+        "question": "Vì sao `@ValidStatusTransition` phải đặt ở `@Target(TYPE)`?",
+        "answer": "Quy tắc cần đọc đồng thời `currentStatus` và `status` của cùng request. Constraint cấp field chỉ nhận một giá trị nên không kiểm tra được quan hệ giữa hai field."
+      },
+      {
+        "question": "Nếu `TaskNotFoundException` không có handler riêng, client có thể nhận kết quả gì?",
+        "answer": "Lỗi có thể rơi vào handler tổng quát và thành 500, dù bản chất là tài nguyên không tồn tại. Handler riêng phải dịch nó thành `ProblemDetail` 404."
+      },
+      {
+        "question": "Postman collection chứng minh được điều gì và không chứng minh được điều gì?",
+        "answer": "Nó lưu các request/response mẫu để nhóm khác import và chạy smoke test. Nó không tự chứng minh logic đúng ở mọi nhánh hoặc thay thế test tự động có assertion."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day18-prac-1",

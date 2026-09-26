@@ -58,7 +58,7 @@
   "sections": [
     {
       "id": "day37-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day37-blk-1",
@@ -76,13 +76,13 @@
     },
     {
       "id": "day37-sec-map",
-      "title": "Ban do on tap theo Learning Outcome",
+      "title": "Bản đồ ôn tập theo Learning Outcome",
       "blocks": [
         {
           "id": "day37-blk-3",
           "type": "code",
           "language": "text",
-          "code": "LO   | Day (goc)                          | Chu de da hoc\nLO1  | Day 01-03                          | JVM/JRE/JDK & kieu du lieu; Operator & control flow; Lab StringCalculator\nLO2  | Day 04-06                          | Class/Object/Encapsulation; Ke thua/Da hinh/Abstract; Assignment Employee Management System\nLO3  | Day 07-09                          | Interface/Inner Class/Enum; Generics/Collections/Exception Handling; Lab Custom Collection & Exception Framework\nLO4  | Day 10-12                          | Lambda & Stream API; Concurrency & File I/O; Assignment Data Processing Pipeline\nLO5  | Day 13-15                          | Spring Boot Fundamentals & Bean Lifecycle; Dependency Injection & Configuration; Assignment Multi-module Notification Service\nLO6  | Day 16-18 (ap dung lai Day 33-34)  | Controller & Request/Response; Validation & Exception Handling; Lab User & Task Management API\nLO7  | Day 19-21 (ap dung lai Day 33-34)  | Entity Design & Relationships; Query/Transaction & Pattern; Assignment E-Commerce Data Layer\nLO8  | Day 22-24 (ap dung lai Day 33, 35) | Authentication voi Spring Security + JWT; Authorization & JPA Performance; Lab Auth Service + Performance Optimization\nLO9  | Day 25-27 (ap dung lai Day 34-35)  | Caching & Async Processing; File Upload/Download & External API; Assignment Product & Order Features\nLO10 | Day 28-30 (ap dung lai Day 35-36)  | Testing Spring Boot; Documentation/Logging/Monitoring & Docker; Lab Production Readiness\n",
+          "code": "LO   | Day (goc)                          | Chủ để đã học\nLO1  | Day 01-03                          | JVM/JRE/JDK & kieu du lieu; Operator & control flow; Lab StringCalculator\nLO2  | Day 04-06                          | Class/Object/Encapsulation; Ke thua/Đã hinh/Abstract; Assignment Employee Management System\nLO3  | Day 07-09                          | Interface/Inner Class/Enum; Generics/Collections/Exception Handling; Lab Custom Collection & Exception Framework\nLO4  | Day 10-12                          | Lambda & Stream API; Concurrency & File I/O; Assignment Data Processing Pipeline\nLO5  | Day 13-15                          | Spring Boot Fundamentals & Bean Lifecycle; Dependency Injection & Configuration; Assignment Multi-module Notification Service\nLO6  | Day 16-18 (áp dùng lai Day 33-34)  | Controller & Request/Response; Validation & Exception Handling; Lab User & Task Management API\nLO7  | Day 19-21 (áp dùng lai Day 33-34)  | Entity Design & Relationships; Query/Transaction & Pattern; Assignment E-Commerce Data Layer\nLO8  | Day 22-24 (áp dùng lai Day 33, 35) | Authentication với Spring Security + JWT; Authorization & JPA Performance; Lab Auth Service + Performance Optimization\nLO9  | Day 25-27 (áp dùng lai Day 34-35)  | Caching & Async Processing; File Upload/Download & External API; Assignment Product & Order Features\nLO10 | Day 28-30 (áp dùng lai Day 35-36)  | Testing Spring Boot; Documentation/Logging/Monitoring & Docker; Lab Production Readiness\n",
           "compile": false,
           "citations": [],
           "partialReason": "Đây là bảng đối chiếu LO-to-Day nội bộ (dùng ngôn ngữ 'text', không phải mã Java thật) - lấy trực tiếp từ trường 'objectives' của course-catalog.json, không phải một khẳng định kỹ thuật cần trích dẫn nguồn ngoài."
@@ -107,7 +107,7 @@
         {
           "id": "day37-blk-7",
           "type": "template",
-          "text": "Gợi ý mẫu phân bổ 60 phút ôn tập trước giờ thi (điều chỉnh lại theo đúng 3 chủ đề yếu nhất mà bạn tự xác định ở day37-prac-4, đây chỉ là khung tham khảo): 15 phút - Java nền tảng (LO1-LO4): lướt nhanh cú pháp, Stream API, Concurrency & File I/O; 15 phút - Spring Core & Data (LO5-LO7): Bean lifecycle, DI, Entity/Query/Transaction; 20 phút - Spring Security & JPA Performance, Caching/Async (LO8-LO9): luồng JWT (JwtEncoder/JwtDecoder), N+1, self-invocation của @Async; 10 phút - Testing & triển khai (LO10): @DataJpaTest/@WebMvcTest/Testcontainers, Docker.",
+          "text": "Gợi ý mẫu phân bổ 60 phút ôn tập trước giờ thi (điều chỉnh lại theo đúng 3 chủ đề yếu nhất mà bạn tự xác định trong phần thực hành cuối bài, đây chỉ là khung tham khảo): 15 phút - Java nền tảng (LO1-LO4): lướt nhanh cú pháp, Stream API, Concurrency & File I/O; 15 phút - Spring Core & Data (LO5-LO7): Bean lifecycle, DI, Entity/Query/Transaction; 20 phút - Spring Security & JPA Performance, Caching/Async (LO8-LO9): luồng JWT (JwtEncoder/JwtDecoder), N+1, self-invocation của @Async; 10 phút - Testing & triển khai (LO10): @DataJpaTest/@WebMvcTest/Testcontainers, Docker.",
           "citations": []
         },
         {
@@ -128,6 +128,32 @@
     "Không giải thích được self-invocation trong Spring AOP (gọi method @Transactional/@Async qua this thay vì qua proxy) - lỗi này lặp lại từ Day 20 đến Day 35 và hay bị hỏi lại ở bài thi lý thuyết.",
     "Học thuộc định nghĩa nhưng không giải thích được TẠI SAO (ví dụ tại sao N+1 làm chậm hệ thống, tại sao JwtDecoder cần verify chữ ký ở mỗi request) - bài thi ưu tiên câu hỏi suy luận/áp dụng hơn ghi nhớ thuần túy."
   ],
+  "teaching": {
+    "why": "Sau 36 ngày, kiến thức dễ tồn tại thành các mảnh rời: bạn nhớ annotation nhưng quên khi nào proxy áp dụng, nhớ lazy loading nhưng không đếm được số query. Bài này buộc bạn nối các mảnh theo LO và luyện giải thích nguyên nhân, đúng dạng câu hỏi lý thuyết cần suy luận.",
+    "javaBridge": "Các câu hỏi vẫn bắt đầu từ hành vi Java: lời gọi `this.method()` là lời gọi trực tiếp, collection lazy chỉ tải khi bị truy cập, và singleton là một object được chia sẻ. Spring thêm proxy, persistence context và container quanh các hành vi đó; hiểu lớp Java bên dưới giúp bạn dự đoán thay vì học thuộc annotation.",
+    "mentalModel": "Hãy hình dung kiến thức khóa học như bản đồ tàu điện: LO là các tuyến, từng Day là ga, còn các bẫy như self-invocation và N+1 là điểm chuyển tuyến dễ đi nhầm. Ôn hiệu quả không phải đọc lại mọi ga, mà xác định điểm yếu rồi tự giải thích đường đi từ nguyên nhân đến kết quả.",
+    "is": "Đây là buổi ôn tập và đánh giá lý thuyết LO1-LO10 bằng bản đồ chủ đề cùng câu hỏi suy luận.",
+    "isNot": "Đây không phải buổi dạy kiến thức mới hay bài kiểm tra khả năng chép định nghĩa. Một câu trả lời chỉ nêu tên lỗi mà không giải thích cơ chế và cách khắc phục vẫn chưa đủ.",
+    "solves": "Bài này giúp bạn hệ thống hóa Java, Spring Core/Data, Web/Security, testing và deployment trước bài thi lý thuyết 60 phút. Bài là hoạt động đánh giá capstone riêng, không phải phiên xây dựng Spendwise.",
+    "selfCheck": [
+      {
+        "question": "Vì sao gọi `this.asyncMethod()` làm `@Async` mất tác dụng?",
+        "answer": "Lời gọi nằm bên trong object gốc nên không đi qua Spring AOP proxy. Method chạy đồng bộ trên thread hiện tại dù annotation vẫn có mặt."
+      },
+      {
+        "question": "Một query lấy 100 Order, rồi vòng lặp gọi `getItems()` trên từng Order lazy. Khoảng bao nhiêu query có thể phát sinh?",
+        "answer": "Thường là 101: một query lấy danh sách và tối đa 100 query tải items. `JOIN FETCH` hoặc `@EntityGraph` có thể giảm số lần truy cập database."
+      },
+      {
+        "question": "Vì sao singleton bean không nên giữ `currentUser` trong field mutable?",
+        "answer": "Một instance phục vụ nhiều request đồng thời, nên request này có thể ghi đè dữ liệu của request khác. Hãy giữ dữ liệu request trong biến cục bộ hoặc lấy từ security context khi cần."
+      },
+      {
+        "question": "Bạn còn yếu JWT, transaction và testing. Kế hoạch 60 phút nên có đặc điểm gì để hữu ích?",
+        "answer": "Phải chia thời gian cụ thể cho cả ba chủ đề và ưu tiên câu hỏi suy luận hoặc bài tập, không chỉ đọc lại phần đã biết. Tổng thời gian cần khớp 60 phút và có bước tự kiểm tra."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day37-prac-1",

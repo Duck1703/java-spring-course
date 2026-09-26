@@ -67,7 +67,7 @@
         {
           "id": "day20-blk-40",
           "type": "paragraph",
-          "text": "Trước khi bàn cách Spring Data JPA sinh câu truy vấn, cần nắm mental model SQL mà nó dịch xuống. Một câu SELECT chia thành ba phần: select list (liệt kê cột cần lấy, dấu * là viết tắt cho 'tất cả cột'), FROM (bảng nguồn dữ liệu), và WHERE - một biểu thức boolean tuỳ chọn để lọc dòng: chỉ dòng nào khiến biểu thức đó true mới được giữ lại trong kết quả. Nếu không có ORDER BY, thứ tự các dòng trả về không được đảm bảo - đây là lý do phải luôn sort theo một khóa xác định khi phân trang (đã nêu ở day20-blk-31).",
+          "text": "Trước khi bàn cách Spring Data JPA sinh câu truy vấn, cần nắm mental model SQL mà nó dịch xuống. Một câu SELECT chia thành ba phần: select list (liệt kê cột cần lấy, dấu * là viết tắt cho 'tất cả cột'), FROM (bảng nguồn dữ liệu), và WHERE - một biểu thức boolean tuỳ chọn để lọc dòng: chỉ dòng nào khiến biểu thức đó true mới được giữ lại trong kết quả. Nếu không có ORDER BY, thứ tự các dòng trả về không được đảm bảo — vì vậy khi phân trang, bạn phải luôn sắp xếp theo một khóa xác định.",
           "citations": [
             "day20-src-10"
           ]
@@ -131,12 +131,12 @@
     },
     {
       "id": "day20-sec-repository",
-      "title": "Repository nâng cao: Pagination và Sorting",
+      "title": "Repository nâng cao: phân trang và sắp xếp",
       "blocks": [
         {
           "id": "day20-blk-2",
           "type": "paragraph",
-          "text": "PagingAndSortingRepository mở rộng CrudRepository, bổ sung khả năng truy vấn theo trang thông qua tham số Pageable - một đối tượng gói số trang (page, bắt đầu từ 0), kích thước trang (size), và tuỳ chọn sắp xếp (Sort). PageRequest.of(page, size, sort) là cách phổ biến nhất để tạo Pageable; kết quả trả về kiểu Page<T> mang theo cả nội dung trang hiện tại lẫn metadata (tổng số phần tử, tổng số trang) - để tính được tổng số trang, Page<T> phải thực thi thêm một câu truy vấn COUNT.",
+          "text": "Từ Spring Data 3.x, PagingAndSortingRepository mở rộng trực tiếp Repository và bổ sung truy vấn phân trang/sắp xếp; nó không còn kế thừa CrudRepository. Nếu cần cả CRUD lẫn phân trang, repository có thể kế thừa JpaRepository (hoặc đồng thời CrudRepository và PagingAndSortingRepository). Truy vấn theo trang dùng tham số Pageable - một đối tượng gói số trang (page, bắt đầu từ 0), kích thước trang (size), và tuỳ chọn sắp xếp (Sort). PageRequest.of(page, size, sort) là cách phổ biến nhất để tạo Pageable; kết quả trả về kiểu Page<T> mang theo cả nội dung trang hiện tại lẫn metadata (tổng số phần tử, tổng số trang) - để tính được tổng số trang, Page<T> phải thực thi thêm một câu truy vấn COUNT.",
           "citations": [
             "day20-src-1",
             "day20-src-2"
@@ -224,7 +224,7 @@
         {
           "id": "day20-blk-5",
           "type": "note",
-          "text": "Chủ đề chi tiết của @Transactional (ranh giới giao dịch, propagation, quy tắc rollback) không có resource nào trong resourceIds của Day 20 mô tả trực tiếp (xem authoring.limitations). Kiến thức chuẩn của Spring: @Transactional đặt trên method (hoặc class) của tầng service để Spring tự mở giao dịch trước khi method chạy và commit/rollback sau khi method kết thúc; mặc định Spring rollback khi gặp RuntimeException hoặc Error (không tự rollback với checked exception trừ khi khai báo rollbackFor tường minh). Propagation mặc định là REQUIRED (tham gia giao dịch hiện có nếu có, hoặc tạo mới nếu chưa có); các giá trị khác như REQUIRES_NEW (luôn tạo giao dịch mới, tạm dừng giao dịch hiện tại) phù hợp khi cần một thao tác ghi log độc lập, không bị rollback theo giao dịch cha.",
+          "text": "`@Transactional` thường đặt trên method (hoặc class) ở tầng service để Spring tự mở giao dịch trước khi method chạy và commit hoặc rollback sau khi method kết thúc. Mặc định Spring rollback khi gặp `RuntimeException` hoặc `Error`; với checked exception, bạn phải khai báo `rollbackFor` nếu muốn rollback. Propagation mặc định là `REQUIRED`: tham gia giao dịch hiện có, hoặc tạo mới nếu chưa có. `REQUIRES_NEW` luôn tạo giao dịch mới và tạm dừng giao dịch hiện tại, phù hợp với thao tác thực sự phải commit độc lập, chẳng hạn một audit record cần tồn tại dù giao dịch cha rollback.",
           "citations": []
         },
         {
@@ -323,7 +323,7 @@
     },
     {
       "id": "day20-sec-auditing",
-      "title": "Auditing: callback JPA, Spring Data, và Envers",
+      "title": "Theo dõi thay đổi (auditing): callback JPA, Spring Data và Envers",
       "blocks": [
         {
           "id": "day20-blk-7",
@@ -365,7 +365,7 @@
         {
           "id": "day20-blk-35",
           "type": "warning",
-          "text": "Mất cập nhật (lost update) đã được xử lý ở phần Isolation và Locking phía trên bằng `@Version` (optimistic) hoặc `@Lock` (pessimistic) - hai cơ chế đó áp dụng y hệt cho các entity có auditing: field `@Version` và `@LastModifiedDate` hoàn toàn độc lập nhau, có thể cùng khai báo trên một entity mà không xung đột. Một chi tiết dễ bỏ sót riêng ở đây: cập nhật kiểu 'đọc rồi cộng dồn' (ví dụ trừ tồn kho) nên chuyển thành một câu UPDATE nguyên tử ở database khi có thể (`UPDATE products SET stock = stock - 1 WHERE id = ? AND stock > 0`) thay vì đọc giá trị về Java rồi tính toán rồi ghi lại - cách này tránh hẳn race condition mà không cần thêm bất kỳ cơ chế locking nào.",
+          "text": "Mất cập nhật (lost update) đã được xử lý ở phần mức cô lập và khóa dữ liệu phía trên bằng `@Version` (optimistic) hoặc `@Lock` (pessimistic) — hai cơ chế đó áp dụng y hệt cho các entity có auditing: field `@Version` và `@LastModifiedDate` hoàn toàn độc lập nhau, có thể cùng khai báo trên một entity mà không xung đột. Một chi tiết dễ bỏ sót riêng ở đây: cập nhật kiểu 'đọc rồi cộng dồn' (ví dụ trừ tồn kho) nên chuyển thành một câu UPDATE nguyên tử ở database khi có thể (`UPDATE products SET stock = stock - 1 WHERE id = ? AND stock > 0`) thay vì đọc giá trị về Java rồi tính toán rồi ghi lại — cách này tránh hẳn race condition mà không cần thêm bất kỳ cơ chế locking nào.",
           "citations": [
             "day20-src-19"
           ]
@@ -392,6 +392,32 @@
     "Dùng pessimistic locking (SELECT ... FOR UPDATE / @Lock) làm lựa chọn mặc định 'cho an toàn' thay vì chỉ dùng khi tranh chấp thật sự cao, gây nghẽn và tăng rủi ro deadlock.",
     "Nhầm CascadeType.LOCK của Hibernate với optimistic/pessimistic locking vì tên gọi giống nhau."
   ],
+  "teaching": {
+    "why": "Repository cơ bản chưa đủ khi bảng lớn hoặc một use case ghi nhiều nơi. Nếu phân trang không có thứ tự ổn định, dữ liệu sẽ trùng hoặc mất giữa các trang; nếu chuyển tiền bằng nhiều câu lệnh rời, lỗi giữa chừng để lại trạng thái nửa vời; nếu hai request cùng ghi, cập nhật có thể bị mất. Bài này đưa các bảo đảm đó xuống đúng nơi: query, transaction và locking.",
+    "javaBridge": "Bạn đã biết gọi nhiều method Java theo thứ tự và bắt exception khi một bước hỏng. `@Transactional` yêu cầu Spring bọc toàn bộ method service bằng BEGIN/COMMIT/ROLLBACK, để database hủy mọi thay đổi nếu đơn vị công việc thất bại. `Pageable` là object gom page, size và sort; `@Version` giống số phiên bản bạn kiểm tra trước khi ghi đè một object đã bị người khác sửa.",
+    "mentalModel": "Hãy hình dung database như sổ cái có thủ thư. Query là phiếu tìm kiếm, index là mục lục, transaction là một tập chỉnh sửa chỉ được đóng dấu cùng lúc, và lock là quyền giữ hồ sơ trong lúc sửa. Optimistic locking cho nhiều người đọc rồi so số phiên bản khi nộp; pessimistic locking giữ hồ sơ ngay từ đầu, nên ít xung đột muộn nhưng khiến người khác phải chờ.",
+    "is": "Spring Data repository diễn đạt query và phân trang, còn `@Transactional` cùng optimistic/pessimistic locking bảo vệ tính nguyên tử và xung đột ghi.",
+    "isNot": "`@Transactional` không phải phép màu gắn đâu cũng chạy: lời gọi nội bộ cùng class không đi qua proxy, checked exception mặc định không rollback, và transaction dài không làm hệ thống an toàn hơn. Auditing cũng không thay thế versioning hoặc lịch sử đầy đủ nếu chỉ lưu lần sửa cuối.",
+    "solves": "Bài này giúp query có chi phí dự đoán được, trang dữ liệu ổn định và thao tác nhiều bước hoặc đồng thời không làm hỏng trạng thái. Trong Spendwise V0.5, repository thay kho in-memory, danh sách transaction dùng phân trang/sắp xếp, balance là projection có `@Version`, và transfer chạy trong một `@Transactional` duy nhất để cặp `TRANSFER_OUT`/`TRANSFER_IN` cùng hai balance cùng commit hoặc cùng rollback.",
+    "selfCheck": [
+      {
+        "question": "Giao diện chỉ có nút “tải thêm”, không hiển thị tổng số trang. Nên trả `Page` hay `Slice`?",
+        "answer": "Dùng `Slice` vì chỉ cần biết còn dữ liệu phía sau hay không. `Page` chạy thêm truy vấn `COUNT` để tính tổng, tạo chi phí không cần thiết."
+      },
+      {
+        "question": "Method `public checkout()` gọi `this.saveOrder()`, trong đó `saveOrder()` có `@Transactional`. Transaction có chắc được mở không?",
+        "answer": "Không. Lời gọi nội bộ không đi qua proxy Spring nên annotation trên `saveOrder()` bị bỏ qua; hãy đặt ranh giới transaction trên method được gọi qua bean proxy hoặc tách sang bean khác."
+      },
+      {
+        "question": "Method `@Transactional` ném checked exception mà không có `rollbackFor`. Mặc định dữ liệu được rollback hay commit?",
+        "answer": "Spring mặc định chỉ rollback với `RuntimeException` và `Error`, nên checked exception có thể vẫn dẫn tới commit. Khai báo `rollbackFor` nếu nghiệp vụ yêu cầu rollback."
+      },
+      {
+        "question": "Hai request thường xuyên cùng trừ một vài dòng tồn kho nóng. Khi nào pessimistic locking hợp lý hơn `@Version`?",
+        "answer": "Khi tranh chấp thật sự cao và optimistic retry liên tục, `SELECT ... FOR UPDATE` có thể tuần tự hóa cập nhật hiệu quả hơn. Transaction phải rất ngắn vì khóa làm giảm throughput và tăng nguy cơ deadlock."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day20-prac-1",

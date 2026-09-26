@@ -40,7 +40,7 @@
   "sections": [
     {
       "id": "day31-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day31-blk-1",
@@ -58,7 +58,7 @@
     },
     {
       "id": "day31-sec-arch",
-      "title": "Kien truc tong the",
+      "title": "Kiến trúc tổng thể",
       "blocks": [
         {
           "id": "day31-blk-3",
@@ -110,7 +110,7 @@
     },
     {
       "id": "day31-sec-api",
-      "title": "Ban thiet ke API (API contract)",
+      "title": "Bản thiết kế API (API contract)",
       "blocks": [
         {
           "id": "day31-blk-8",
@@ -248,7 +248,7 @@
         {
           "id": "day31-blk-10",
           "type": "note",
-          "text": "Resource hướng dẫn dựng RESTful web service kèm ví dụ cụ thể (res-39bc1924ee00) trả về HTTP 404 tại thời điểm khảo sát - bản thiết kế API trên chỉ dựa trên 3 resource còn lại đọc được của Day 31.",
+          "text": "Một tài liệu tham khảo về cách dựng RESTful web service trả về HTTP 404 tại thời điểm khảo sát. Vì vậy bản thiết kế API trên chỉ dựa vào ba tài liệu còn lại đọc được của Day 31.",
           "citations": []
         }
       ]
@@ -259,6 +259,32 @@
     "Mỗi controller tự viết @ExceptionHandler riêng thay vì dùng một GlobalExceptionHandler chung, dẫn tới định dạng lỗi không nhất quán giữa các module.",
     "Bắt đầu code ngay mà không thống nhất API contract trước, khiến các module phát triển song song ở Sprint 1-3 không khớp interface với nhau."
   ],
+  "teaching": {
+    "why": "Nếu nhóm bắt đầu code ngay, mỗi module sẽ tự chọn path, status, cấu trúc lỗi và cách lấy `userId`; tới lúc ghép mới phát hiện các phần không khớp hoặc tin dữ liệu chủ sở hữu do client gửi. Bài kickoff buộc nhóm thống nhất ranh giới module và API contract trước khi chi phí sửa đổi tăng cao.",
+    "javaBridge": "Trong Java, bạn đã chia chương trình thành package, class và method signature để các phần gọi nhau đúng kiểu. Kiến trúc package-per-module và API contract làm điều tương tự ở cấp ứng dụng: package định vị trách nhiệm, còn method/path/request/response là “chữ ký” giữa client và server.",
+    "mentalModel": "Hãy hình dung nhóm đang dựng một tòa nhà: sơ đồ package là mặt bằng chia phòng, `DispatcherServlet` là quầy tiếp nhận dẫn mọi yêu cầu tới đúng phòng, còn API contract là bản vẽ kích thước cửa và đường ống mà các đội phải cùng tuân theo. Không có bản vẽ chung, từng phòng có thể đẹp nhưng không nối được với nhau.",
+    "is": "System design kickoff là bước thống nhất cấu trúc module, luồng request, xử lý lỗi và hợp đồng API trước khi hiện thực capstone.",
+    "isNot": "Nó không phải tài liệu trang trí và không phải lời hứa mơ hồ chỉ có method với path. Contract phải đủ auth, request, success response và error response để hai phía có thể xây độc lập.",
+    "solves": "Bài này giảm xung đột tích hợp, ngăn client tự khai báo dữ liệu chủ sở hữu và tạo điểm tham chiếu chung cho Sprint 1-3. Đây là kỹ năng thiết kế dùng chung; bài không xây tính năng Spendwise cụ thể.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `@SpringBootApplication` nên nằm ở root package thay vì default package?",
+        "answer": "Root package tạo điểm neo cho component/entity scan trong các sub-package của ứng dụng. Default package khiến cơ chế scan mất phạm vi rõ ràng và có thể quét toàn bộ classpath."
+      },
+      {
+        "question": "Ai phải quyết định `userId` khi tạo đơn hàng, client hay server?",
+        "answer": "Server phải suy ra `userId` từ principal đã xác thực, cụ thể là claim `sub` của JWT trong thiết kế này. Nhận `userId` từ body cho phép client giả mạo chủ sở hữu."
+      },
+      {
+        "question": "Một API contract chỉ ghi `POST /api/orders` đã đủ chưa?",
+        "answer": "Chưa. Contract còn phải nêu auth, request shape, success status, response shape và các error status để client và server hiểu cùng một hành vi."
+      },
+      {
+        "question": "Request đi vào Spring MVC được đưa tới controller bằng cách nào?",
+        "answer": "`DispatcherServlet` nhận request như front controller, rồi dùng mapping để chọn handler method phù hợp theo path, HTTP method và tham số."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day31-prac-1",
@@ -353,7 +379,7 @@
       "hint": "Liên hệ mục tiêu 'opinionated defaults, get out of the way when cần tùy chỉnh'.",
       "solution": "Spring Boot ưu tiên cấu hình mặc định hợp lý qua annotation và property file thay vì XML - giúp nhóm khởi động nhanh, tập trung vào logic nghiệp vụ (Category/Product/Cart/Order) thay vì viết cấu hình boilerplate; khi cần tùy chỉnh sâu (ví dụ CacheManager riêng), vẫn có thể override bằng @Bean tường minh.",
       "explanation": "Liên hệ đúng cả hai vế: opinionated defaults giúp khởi động nhanh, và 'get out of the way' vẫn cho phép override tường minh khi cần.",
-      "rubric": "Đánh giá học viên nêu đúng liên hệ giữa 'opinionated + escape hatch' và quyết định dùng annotation-based config.",
+      "rubric": "Đánh giá bạn nêu đúng liên hệ giữa 'opinionated + escape hatch' và quyết định dùng annotation-based config.",
       "sourceUsage": [
         "day31-src-1"
       ]

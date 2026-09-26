@@ -57,7 +57,7 @@
         {
           "id": "day28-blk-2",
           "type": "note",
-          "text": "Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - học viên viết test cho các tính năng đã xây dựng ở Assignment 9 (Day 27) bằng các kỹ thuật trong bài này, chuẩn bị cho Lab 10 - Production Readiness ở Day 30 (nơi Testcontainers được áp dụng đầy đủ vào bộ test tích hợp cuối cùng).",
+          "text": "Assignment không có đề bài chi tiết riêng (lịch chỉ ghi 'Assignment') - bạn viết test cho các tính năng đã xây dựng ở Assignment 9 (Day 27) bằng các kỹ thuật trong bài này, chuẩn bị cho Lab 10 - Production Readiness ở Day 30 (nơi Testcontainers được áp dụng đầy đủ vào bộ test tích hợp cuối cùng).",
           "citations": []
         }
       ]
@@ -88,7 +88,7 @@
           "id": "day28-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.Assertions;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.DisplayName;\nimport org.junit.jupiter.api.Test;\n\n@DisplayName(\"OrderCalculator\")\nclass OrderCalculatorTest {\n\n    private OrderCalculator calculator;\n\n    @BeforeEach\n    void setUp() {\n        calculator = new OrderCalculator();\n    }\n\n    @AfterEach\n    void tearDown() {\n        calculator = null;\n    }\n\n    @Test\n    @DisplayName(\"tinh tong don hang hop le\")\n    void calculatesTotalCorrectly() {\n        // assertAll gom nhieu assertion trong mot test - tat ca deu duoc chay\n        // va bao cao, khong dung lai o assertion loi dau tien.\n        Assertions.assertAll(\"order total\",\n                () -> Assertions.assertEquals(100, calculator.total(),\n                        \"tong phai la 100\"),\n                () -> Assertions.assertTrue(calculator.isValid(),\n                        \"don hang phai hop le\"));\n    }\n\n    @Test\n    void throwsWhenQuantityNegative() {\n        Assertions.assertThrows(IllegalArgumentException.class,\n                () -> calculator.addItem(-1, 10));\n    }\n\n    static class OrderCalculator {\n        int total() { return 100; }\n        boolean isValid() { return true; }\n        void addItem(int quantity, int price) {\n            if (quantity < 0) throw new IllegalArgumentException(\"quantity < 0\");\n        }\n    }\n}\n",
+          "code": "import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.Assertions;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.DisplayName;\nimport org.junit.jupiter.api.Test;\n\n@DisplayName(\"OrderCalculator\")\nclass OrderCalculatorTest {\n\n    private OrderCalculator calculator;\n\n    @BeforeEach\n    void setUp() {\n        calculator = new OrderCalculator();\n    }\n\n    @AfterEach\n    void tearDown() {\n        calculator = null;\n    }\n\n    @Test\n    @DisplayName(\"tính tổng đơn hàng hợp lệ\")\n    void calculatesTotalCorrectly() {\n        // assertAll gom nhiều assertion trong một test - tất cả đều được chạy\n        // và báo cáo, không dừng lại ở assertion lỗi đầu tiên.\n        Assertions.assertAll(\"order total\",\n                () -> Assertions.assertEquals(100, calculator.total(),\n                        \"tổng phải là 100\"),\n                () -> Assertions.assertTrue(calculator.isValid(),\n                        \"đơn hàng phải hợp lệ\"));\n    }\n\n    @Test\n    void throwsWhenQuantityNegative() {\n        Assertions.assertThrows(IllegalArgumentException.class,\n                () -> calculator.addItem(-1, 10));\n    }\n\n    static class OrderCalculator {\n        int total() { return 100; }\n        boolean isValid() { return true; }\n        void addItem(int quantity, int price) {\n            if (quantity < 0) throw new IllegalArgumentException(\"quantity < 0\");\n        }\n    }\n}\n",
           "compile": false,
           "citations": [
             "day28-src-2",
@@ -154,7 +154,7 @@
           "id": "day28-blk-7",
           "type": "code",
           "language": "java",
-          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.boot.test.mock.mockito.MockBean;\nimport org.springframework.test.web.servlet.MockMvc;\n\nimport static org.mockito.BDDMockito.given;\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n// Chi khoi tao ProductController va cac thanh phan lien quan toi MVC\n// (khong nap toan bo Spring context nhu @SpringBootTest).\n@WebMvcTest(ProductController.class)\nclass ProductControllerTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    // Thay the ProductService that bang mot mock, vi @WebMvcTest khong tao bean tang service/repository.\n    @MockBean\n    private ProductService productService;\n\n    @Test\n    void returnsProductByIdAsJson() throws Exception {\n        given(productService.findById(1L)).willReturn(new ProductDTO(1L, \"Ban phim\"));\n\n        mockMvc.perform(get(\"/api/products/1\"))\n                .andExpect(status().isOk())\n                .andExpect(jsonPath(\"$.name\").value(\"Ban phim\"));\n    }\n\n    interface ProductService { ProductDTO findById(Long id); }\n    interface ProductController {}\n    record ProductDTO(Long id, String name) {}\n}\n",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\nimport org.springframework.boot.test.mock.mockito.MockBean;\nimport org.springframework.test.web.servlet.MockMvc;\n\nimport static org.mockito.BDDMockito.given;\nimport static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;\nimport static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n// Chỉ khởi tạo ProductController và các thành phần liên quan tới MVC\n// (không nạp toàn bộ Spring context như @SpringBootTest).\n@WebMvcTest(ProductController.class)\nclass ProductControllerTest {\n\n    @Autowired\n    private MockMvc mockMvc;\n\n    // Thay thế ProductService thật bằng một mock, vì @WebMvcTest không tạo bean tầng service/repository.\n    @MockBean\n    private ProductService productService;\n\n    @Test\n    void returnsProductByIdAsJson() throws Exception {\n        given(productService.findById(1L)).willReturn(new ProductDTO(1L, \"Bàn phím\"));\n\n        mockMvc.perform(get(\"/api/products/1\"))\n                .andExpect(status().isOk())\n                .andExpect(jsonPath(\"$.name\").value(\"Bàn phím\"));\n    }\n\n    interface ProductService { ProductDTO findById(Long id); }\n    interface ProductController {}\n    record ProductDTO(Long id, String name) {}\n}\n",
           "compile": false,
           "citations": [
             "day28-src-5",
@@ -217,7 +217,7 @@
           "id": "day28-blk-10",
           "type": "code",
           "language": "java",
-          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\n// Chi khoi tao lop JPA (entity, repository) voi H2 in-memory tu dong cau hinh,\n// khong nap Controller/Service - nhanh hon nhieu so voi @SpringBootTest day du.\n@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        Product saved = entityManager.persistAndFlush(new Product(\"SKU-001\", \"Ban phim\"));\n\n        Product found = productRepository.findBySku(\"SKU-001\").orElseThrow();\n\n        assertEquals(saved.getId(), found.getId());\n    }\n\n    interface ProductRepository {\n        java.util.Optional<Product> findBySku(String sku);\n    }\n\n    static class Product {\n        private Long id;\n        private final String sku;\n        private final String name;\n        Product(String sku, String name) { this.sku = sku; this.name = name; }\n        Long getId() { return id; }\n    }\n}\n",
+          "code": "import org.junit.jupiter.api.Test;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\nimport org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\n// Chỉ khởi tạo lớp JPA (entity, repository) với H2 in-memory tự động cấu hình,\n// không nạp Controller/Service - nhanh hơn nhiều so với @SpringBootTest đầy đủ.\n@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        Product saved = entityManager.persistAndFlush(new Product(\"SKU-001\", \"Bàn phím\"));\n\n        Product found = productRepository.findBySku(\"SKU-001\").orElseThrow();\n\n        assertEquals(saved.getId(), found.getId());\n    }\n\n    interface ProductRepository {\n        java.util.Optional<Product> findBySku(String sku);\n    }\n\n    static class Product {\n        private Long id;\n        private final String sku;\n        private final String name;\n        Product(String sku, String name) { this.sku = sku; this.name = name; }\n        Long getId() { return id; }\n    }\n}\n",
           "compile": false,
           "citations": [
             "day28-src-11"
@@ -261,7 +261,7 @@
           "id": "day28-blk-12",
           "type": "code",
           "language": "java",
-          "code": "import io.restassured.RestAssured;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.test.web.server.LocalServerPort;\n\nimport static io.restassured.RestAssured.given;\nimport static org.hamcrest.Matchers.equalTo;\n\n// RANDOM_PORT: khoi dong mot server HTTP that tren cong ngau nhien,\n// cho phep goi API qua HTTP client that (RestAssured) thay vi MockMvc gia lap.\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass ProductApiIntegrationTest {\n\n    @LocalServerPort\n    private int port;\n\n    @BeforeEach\n    void setUp() {\n        RestAssured.port = port;\n    }\n\n    @Test\n    void getProductReturnsOkStatus() {\n        given()\n                .when().get(\"/api/products/1\")\n                .then()\n                .statusCode(200)\n                .body(\"name\", equalTo(\"Ban phim\"));\n    }\n}\n",
+          "code": "import io.restassured.RestAssured;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Test;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.springframework.boot.test.web.server.LocalServerPort;\n\nimport static io.restassured.RestAssured.given;\nimport static org.hamcrest.Matchers.equalTo;\n\n// RANDOM_PORT: khởi động một server HTTP thật trên cổng ngẫu nhiên,\n// cho phép gọi API qua HTTP client thật (RestAssured) thay vì MockMvc giả lập.\n@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)\nclass ProductApiIntegrationTest {\n\n    @LocalServerPort\n    private int port;\n\n    @BeforeEach\n    void setUp() {\n        RestAssured.port = port;\n    }\n\n    @Test\n    void getProductReturnsOkStatus() {\n        given()\n                .when().get(\"/api/products/1\")\n                .then()\n                .statusCode(200)\n                .body(\"name\", equalTo(\"Bàn phím\"));\n    }\n}\n",
           "compile": false,
           "citations": [
             "day28-src-15"
@@ -304,7 +304,7 @@
         {
           "id": "day28-blk-13",
           "type": "note",
-          "text": "Testcontainers (chạy database thật trong Docker container cho test tích hợp, thay vì H2 in-memory) không có resource nào trong resourceIds của Day 28 - resource tương ứng thuộc resourceIds của Day 29/30, nơi kỹ thuật này được áp dụng trực tiếp vào bộ test tích hợp của Lab 10. Trình bày khái niệm tổng quan trong khối note không yêu cầu trích dẫn ở đây.",
+          "text": "Tài liệu tham khảo của Day 28 chưa có bài riêng về Testcontainers (chạy database thật trong Docker container cho test tích hợp thay vì H2 in-memory). Nội dung này được giới thiệu tổng quan ở đây và được áp dụng đầy đủ trong Day 29-30.",
           "citations": []
         }
       ]
@@ -318,24 +318,24 @@
           "type": "table",
           "columns": [
             "Annotation",
-            "Pham vi khoi tao"
+            "Phạm vi khởi tạo"
           ],
           "rows": [
             [
               "@WebMvcTest",
-              "Controller + MVC infrastructure (khong nap Service/Repository)"
+              "Controller + MVC infrastructure (không nạp Service/Repository)"
             ],
             [
               "@DataJpaTest",
-              "Entity + Repository voi H2 in-memory (khong nap Controller/Service)"
+              "Entity + Repository với H2 in-memory (không nạp Controller/Service)"
             ],
             [
               "@JsonTest",
-              "Chi khoi tao JacksonTester/GsonTester/JsonbTester de test serialize/deserialize JSON"
+              "Chỉ khởi tạo JacksonTester/GsonTester/JsonbTester để test serialize/deserialize JSON"
             ],
             [
               "@WebFluxTest, @JdbcTest, @DataMongoTest, @DataRedisTest, @RestClientTest",
-              "Cac slice test tuong ung cho WebFlux, JDBC thuan, MongoDB, Redis, REST client"
+              "Các slice test tương ứng cho WebFlux, JDBC thuần, MongoDB, Redis, REST client"
             ]
           ],
           "citations": [
@@ -368,6 +368,32 @@
     "Dùng Thread.sleep để chờ tác vụ bất đồng bộ hoàn tất, tạo ra test chập chờn thay vì chờ theo điều kiện.",
     "Coi tỉ lệ coverage là mục tiêu và viết test cho getter/setter thay vì phủ các nhánh xử lý lỗi."
   ],
+  "teaching": {
+    "why": "Một bộ test chỉ toàn `@SpringBootTest` sẽ chậm, khó khoanh vùng lỗi và dễ bị bỏ qua khi bắt đầu chập chờn. Bài này giúp bạn chọn phạm vi test nhỏ nhất vẫn trả lời đúng câu hỏi: logic có đúng, tầng web có giữ hợp đồng, mapping JPA có chạy, hay toàn hệ thống có ghép được với nhau.",
+    "javaBridge": "Trong Java thuần, bạn đã viết method rồi gọi nó với dữ liệu đầu vào và so kết quả mong đợi. JUnit biến cách kiểm tra đó thành đặc tả chạy lại được; Spring Boot bổ sung các “lát cắt” context để bạn chỉ dựng controller, repository hoặc toàn ứng dụng tùy điều cần chứng minh.",
+    "mentalModel": "Hãy hình dung bộ test như nhiều mức kính phóng đại: JUnit thuần soi một quy tắc nhỏ, `@WebMvcTest` hoặc `@DataJpaTest` soi một tầng, còn `@SpringBootTest` lùi xa để nhìn cả hệ thống. Kính càng rộng càng thấy nhiều mảnh ghép nhưng càng chậm và càng khó xác định mảnh nào hỏng.",
+    "is": "Kiểm thử Spring Boot là việc dùng JUnit 5 cùng test slice và full-context test để xác minh hành vi ở đúng phạm vi cần thiết.",
+    "isNot": "Nó không phải việc nạp toàn bộ ứng dụng cho mọi test, cũng không phải cuộc đua đạt 100% coverage. Test tốt bảo vệ hành vi quan trọng, độc lập và cho cùng kết quả ở mọi lần chạy.",
+    "solves": "Bài này giúp bạn xây kim tự tháp kiểm thử nhanh, có khả năng khoanh vùng lỗi và vẫn chứng minh được các mảnh ghép thật sự hoạt động. Trong Spendwise V0.9, kiến thức này dùng trực tiếp cho `task-invariant-test-suite` bằng JUnit thuần và `task-slice-test-suite` bằng các Spring test slice để bảo vệ tính đúng đắn tài chính.",
+    "selfCheck": [
+      {
+        "question": "Bạn cần kiểm tra controller trả 400 và đúng JSON lỗi khi DTO không hợp lệ, nhưng không cần database. Nên chọn loại test nào và vì sao?",
+        "answer": "`@WebMvcTest` phù hợp vì nó chỉ nạp tầng MVC, cho phép kiểm tra status, validation và JSON bằng MockMvc. Service bên dưới được thay bằng mock, nên test nhanh và lỗi dễ khoanh vùng."
+      },
+      {
+        "question": "Vì sao một `@DataJpaTest` có thể xanh dù ràng buộc database sẽ lỗi khi chạy thật?",
+        "answer": "Mỗi test thường nằm trong transaction được rollback, nên lỗi chỉ xuất hiện lúc flush hoặc commit có thể chưa lộ ra. Hãy gọi `persistAndFlush` hoặc `flush` tường minh; với hành vi phụ thuộc dialect, kiểm tra thêm trên database thật bằng Testcontainers."
+      },
+      {
+        "question": "Khi nào `@SpringBootTest(webEnvironment = RANDOM_PORT)` đáng dùng hơn MockMvc?",
+        "answer": "Dùng nó khi cần server HTTP thật và toàn bộ context, chẳng hạn kiểm tra filter, serialization thực tế và luồng từ HTTP tới database. Không nên dùng cho quy tắc nghiệp vụ nhỏ vì chi phí khởi động lớn và lỗi khó định vị hơn."
+      },
+      {
+        "question": "Một test dùng `Thread.sleep` rồi thỉnh thoảng thất bại trên CI cho thấy vấn đề gì?",
+        "answer": "Test phụ thuộc thời gian thực nên không xác định và dễ chập chờn. Hãy chờ theo điều kiện quan sát được hoặc tiêm `Clock` khi logic phụ thuộc thời gian, thay vì ngủ một khoảng cố định."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day28-prac-1",
@@ -412,7 +438,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Nhớ @Autowired cả TestEntityManager và repository cần test.",
-      "solution": "@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        // persistAndFlush du lieu test roi goi productRepository...\n    }\n}",
+      "solution": "@DataJpaTest\nclass ProductRepositoryTest {\n\n    @Autowired\n    private TestEntityManager entityManager;\n\n    @Autowired\n    private ProductRepository productRepository;\n\n    @Test\n    void findsProductBySku() {\n        // persistAndFlush dữ liệu test rồi gọi productRepository...\n    }\n}",
       "explanation": "Áp dụng lại khung @DataJpaTest + TestEntityManager đã học trong bài.",
       "rubric": "Đánh giá đúng: có @DataJpaTest trên class, @Autowired cả TestEntityManager và repository.",
       "sourceUsage": [

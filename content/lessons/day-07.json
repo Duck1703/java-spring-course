@@ -98,7 +98,7 @@
           "id": "day07-blk-22",
           "type": "code",
           "language": "java",
-          "code": "interface Validator<T> {\n    boolean isValid(T value);\n\n    // default: them hanh vi moi ma khong pha class da implement\n    default Validator<T> and(Validator<T> other) {\n        return value -> this.isValid(value) && other.isValid(value);\n    }\n\n    // static: ham tien ich, KHONG duoc ke thua boi class implement\n    static Validator<String> notBlank() {\n        return s -> s != null && !s.isBlank();\n    }\n}\n\nclass MaxLength implements Validator<String> {\n    private final int max;\n    MaxLength(int max) { this.max = max; }\n    @Override public boolean isValid(String value) { return value.length() <= max; }\n}\n\nclass ValidatorDemo {\n    public static void main(String[] args) {\n        Validator<String> rule = Validator.notBlank().and(new MaxLength(5));\n        System.out.println(rule.isValid(\"abc\"));      // true\n        System.out.println(rule.isValid(\"  \"));        // false\n        System.out.println(rule.isValid(\"abcdefgh\")); // false\n    }\n}\n",
+          "code": "interface Validator<T> {\n    boolean isValid(T value);\n\n    // Default method: thêm hành vi mới mà không phá class đã implement\n    default Validator<T> and(Validator<T> other) {\n        return value -> this.isValid(value) && other.isValid(value);\n    }\n\n    // Static method: hàm tiện ích, không được kế thừa bởi class implement\n    static Validator<String> notBlank() {\n        return s -> s != null && !s.isBlank();\n    }\n}\n\nclass MaxLength implements Validator<String> {\n    private final int max;\n    MaxLength(int max) { this.max = max; }\n    @Override public boolean isValid(String value) { return value.length() <= max; }\n}\n\nclass ValidatorDemo {\n    public static void main(String[] args) {\n        Validator<String> rule = Validator.notBlank().and(new MaxLength(5));\n        System.out.println(rule.isValid(\"abc\"));      // true\n        System.out.println(rule.isValid(\"  \"));        // false\n        System.out.println(rule.isValid(\"abcdefgh\")); // false\n    }\n}\n",
           "compile": true,
           "citations": [
             "day07-src-1"
@@ -113,7 +113,7 @@
         {
           "id": "day07-blk-24",
           "type": "note",
-          "text": "Liên hệ Spring: mọi interface có đúng một abstract method là một functional interface, dùng được với lambda (Day 10) — `Validator` ở trên là ví dụ. Trong Spring Boot bạn sẽ gặp lại mẫu này liên tục: `CommandLineRunner`, `Converter`, `Filter`, `RowMapper` đều là interface một method mà bạn cài đặt bằng lambda hoặc bean.",
+          "text": "Liên hệ Spring: interface có đúng một abstract method — sau khi loại các method khớp với public method của Object — là một functional interface, dùng được với lambda (Day 10) — `Validator` ở trên là ví dụ. Trong Spring Boot bạn sẽ gặp lại mẫu này liên tục: `CommandLineRunner`, `Converter`, `Filter`, `RowMapper` đều là interface một method mà bạn cài đặt bằng lambda hoặc bean.",
           "citations": []
         }
       ]
@@ -168,7 +168,7 @@
         {
           "id": "day07-blk-5",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn chuyên sâu trong bộ tài liệu của khóa học (xem authoring.limitations); nội dung dưới đây trình bày theo kiến thức Java 17 chuẩn, phạm vi vừa đủ để học viên nhận diện và sử dụng đúng các loại lớp lồng nhau.",
+          "text": "Tài liệu tham khảo của bài chưa có nguồn chuyên sâu về lớp lồng nhau, nên mục này trình bày kiến thức Java 17 chuẩn ở phạm vi vừa đủ để bạn nhận diện và sử dụng đúng từng loại.",
           "citations": []
         },
         {
@@ -187,7 +187,7 @@
           "id": "day07-blk-26",
           "type": "code",
           "language": "text",
-          "code": "class Outer {\n    private int state = 42;\n\n    static class Nested {                 // khong giu tham chieu Outer\n        int compute() { return 1; }\n    }\n\n    class Inner {                          // giu tham chieu Outer ngam\n        int read() { return state; }        // truy cap duoc field private cua Outer\n    }\n\n    Runnable localAndAnonymous() {\n        int captured = 10;                 // phai la effectively final\n        class Local { int twice() { return captured * 2; } }\n        Local local = new Local();\n        return new Runnable() {            // anonymous class\n            @Override public void run() {\n                System.out.println(state + local.twice());\n            }\n        };\n    }\n\n    public static void main(String[] args) {\n        Nested n = new Outer.Nested();          // khong can Outer instance\n        Outer outer = new Outer();\n        Inner in = outer.new Inner();           // cu phap bat buoc co instance\n        outer.localAndAnonymous().run();        // 62\n        System.out.println(n.compute() + in.read());\n    }\n}",
+          "code": "class Outer {\n    private int state = 42;\n\n    static class Nested {                 // Không giữ tham chiếu Outer\n        int compute() { return 1; }\n    }\n\n    class Inner {                          // Giữ tham chiếu Outer ngầm\n        int read() { return state; }        // Truy cập được field private của Outer\n    }\n\n    Runnable localAndAnonymous() {\n        int captured = 10;                 // Phải là effectively final\n        class Local { int twice() { return captured * 2; } }\n        Local local = new Local();\n        return new Runnable() {            // anonymous class\n            @Override public void run() {\n                System.out.println(state + local.twice());\n            }\n        };\n    }\n\n    public static void main(String[] args) {\n        Nested n = new Outer.Nested();          // Không cần Outer instance\n        Outer outer = new Outer();\n        Inner in = outer.new Inner();           // Cú pháp bắt buộc có instance\n        outer.localAndAnonymous().run();        // 62\n        System.out.println(n.compute() + in.read());\n    }\n}",
           "citations": [],
           "compile": false,
           "partialReason": "Snippet minh hoa cu phap nested class/enum theo kien thuc Java 17 chuan; Day 7 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations), nen khoi code duoc danh dau language=text va khong dua vao buoc javac cua pipeline."
@@ -207,7 +207,7 @@
         {
           "id": "day07-blk-8",
           "type": "note",
-          "text": "Tương tự Inner Classes, Enums không có nguồn trích dẫn chuyên sâu trong bộ tài liệu của khóa học; nội dung dưới đây theo kiến thức Java 17 chuẩn (xem authoring.limitations).",
+          "text": "Tài liệu tham khảo của bài chưa có nguồn chuyên sâu về enum, nên mục này trình bày theo kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
@@ -226,7 +226,7 @@
           "id": "day07-blk-29",
           "type": "code",
           "language": "text",
-          "code": "enum OrderStatus {\n    NEW(false), PAID(false), SHIPPED(true), CANCELLED(true);\n\n    private final boolean terminal;                 // state rieng cho moi hang so\n    OrderStatus(boolean terminal) { this.terminal = terminal; }\n    boolean isTerminal() { return terminal; }\n\n    // hanh vi khac nhau theo tung hang so bang cach override\n    OrderStatus next() {\n        return switch (this) {                       // switch tren enum: khong can qualify\n            case NEW -> PAID;\n            case PAID -> SHIPPED;\n            case SHIPPED, CANCELLED -> this;\n        };\n    }\n\n    public static void main(String[] args) {\n        OrderStatus s = OrderStatus.valueOf(\"NEW\"); // nem IllegalArgumentException neu sai\n        System.out.println(s.next());                // PAID\n        System.out.println(s.ordinal() + \" \" + s.name());\n        // EnumMap/EnumSet: cau truc du lieu toi uu rieng cho enum\n        java.util.EnumSet<OrderStatus> open = java.util.EnumSet.of(NEW, PAID);\n        System.out.println(open.contains(SHIPPED)); // false\n    }\n}",
+          "code": "enum OrderStatus {\n    NEW(false), PAID(false), SHIPPED(true), CANCELLED(true);\n\n    private final boolean terminal;                 // Trạng thái riêng cho mỗi hằng số\n    OrderStatus(boolean terminal) { this.terminal = terminal; }\n    boolean isTerminal() { return terminal; }\n\n    // Mỗi hằng số có thể mang hành vi riêng bằng cách override\n    OrderStatus next() {\n        return switch (this) {                       // Switch trên enum không cần ghi tên kiểu\n            case NEW -> PAID;\n            case PAID -> SHIPPED;\n            case SHIPPED, CANCELLED -> this;\n        };\n    }\n\n    public static void main(String[] args) {\n        OrderStatus s = OrderStatus.valueOf(\"NEW\"); // Ném IllegalArgumentException nếu tên sai\n        System.out.println(s.next());                // PAID\n        System.out.println(s.ordinal() + \" \" + s.name());\n        // EnumMap/EnumSet: cấu trúc dữ liệu tối ưu riêng cho enum\n        java.util.EnumSet<OrderStatus> open = java.util.EnumSet.of(NEW, PAID);\n        System.out.println(open.contains(SHIPPED)); // false\n    }\n}",
           "citations": [],
           "compile": false,
           "partialReason": "Snippet minh hoa cu phap nested class/enum theo kien thuc Java 17 chuan; Day 7 khong co nguon doc duoc cho chu de nay de gan citation (xem authoring.limitations), nen khoi code duoc danh dau language=text va khong dua vao buoc javac cua pipeline."
@@ -246,7 +246,7 @@
         {
           "id": "day07-blk-11",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn trong bộ tài liệu của khóa học; nội dung dưới đây tóm tắt theo kiến thức thiết kế hướng đối tượng chuẩn, ở mức độ giới thiệu (xem authoring.limitations).",
+          "text": "Tài liệu tham khảo của bài chưa có nguồn riêng về SOLID, nên mục này tóm tắt kiến thức thiết kế hướng đối tượng chuẩn ở mức độ giới thiệu.",
           "citations": []
         },
         {
@@ -283,6 +283,32 @@
     "Lưu enum xuống database theo ordinal() (hoặc để @Enumerated mặc định là ORDINAL), khiến dữ liệu cũ sai nghĩa ngay khi chèn thêm một hằng số vào giữa danh sách.",
     "Implement hai interface có default method trùng chữ ký rồi không override tường minh, dẫn tới lỗi biên dịch do xung đột không thể tự phân giải."
   ],
+  "teaching": {
+    "why": "Kế thừa class chỉ cho bạn một lớp cha, trong khi một object có thể cần nhiều năng lực độc lập và module nghiệp vụ không nên bị khóa vào một class lưu trữ cụ thể. Interface tạo hợp đồng để bên gọi biết object làm được gì mà không biết nó làm bằng cách nào. Enum giải quyết bài toán khác: giữ một tập giá trị đóng, để compiler chặn trạng thái viết sai thay vì chờ lỗi dữ liệu lúc chạy.",
+    "javaBridge": "Bạn đã thấy `DiscountPolicy` ở Day 5: đó là một interface mà nhiều class có thể implement, còn `Checkout` chỉ giữ kiểu hợp đồng. Abstract class có thể giữ field, constructor và code chung cho một họ lớp; interface thường mô tả năng lực và một class có thể implement nhiều interface. Enum giống một class có số instance được định sẵn, mỗi hằng như `PAID` hay `CANCELLED` là một object duy nhất.",
+    "mentalModel": "Hãy hình dung interface là chuẩn ổ cắm: nó quy định hình dạng và điện áp, còn nhà sản xuất được tự chọn linh kiện bên trong; module dùng điện chỉ phụ thuộc chuẩn cắm. Enum là bảng nút niêm phong: người dùng chỉ chọn được các nút đã định nghĩa, không thể gõ tùy ý một trạng thái mới. Dependency Inversion yêu cầu logic cấp cao cắm vào chuẩn, còn tầng cấu hình chọn thiết bị cụ thể.",
+    "is": "Interface là kiểu mô tả hợp đồng hành vi, enum là kiểu cho tập giá trị hữu hạn, còn SOLID là nhóm nguyên tắc giúp phân trách nhiệm và hướng dependency về abstraction.",
+    "isNot": "Interface không phải abstract class không có field: nó không có trạng thái instance hay constructor, nhưng có thể có `default`, `static` và `private` method. SOLID cũng không yêu cầu tạo interface cho mọi class; abstraction chỉ có ích khi có trục thay đổi, nhiều implementation hoặc nhu cầu thay thế trong test.",
+    "solves": "Bài này giúp tách nghiệp vụ khỏi chi tiết hạ tầng, tránh magic string cho trạng thái và chọn đúng giữa interface với abstract class. Trong Spendwise V0.2 (Java Application), `Repository<T, ID>` là interface để nghiệp vụ không phụ thuộc cách lưu dữ liệu; các trạng thái và loại domain dùng enum, rồi về sau được lưu bằng tên thay vì ordinal. Cùng nền tảng này hỗ trợ rule engine ở V0.7 bằng nhiều implementation của một hợp đồng chung.",
+    "selfCheck": [
+      {
+        "question": "Vì sao một class implement được nhiều interface nhưng chỉ extends được một class?",
+        "answer": "Interface chủ yếu ghép các hợp đồng hành vi và không mang trạng thái instance, nên Java cho phép nhiều hợp đồng cùng tồn tại. Nhiều lớp cha có trạng thái và constructor sẽ tạo xung đột phức tạp, nên Java chỉ cho đơn kế thừa class."
+      },
+      {
+        "question": "Nếu hai interface có cùng một default method và một class implement cả hai, điều gì xảy ra?",
+        "answer": "Compiler không tự chọn một bên nên class phải override method để giải quyết xung đột. Trong phần override, bạn có thể gọi tường minh `InterfaceName.super.method()`."
+      },
+      {
+        "question": "Vì sao không nên lưu `enum.ordinal()` xuống database?",
+        "answer": "Ordinal phụ thuộc vị trí khai báo; chèn một hằng mới vào giữa làm dữ liệu cũ đổi nghĩa. Với JPA, lưu tên bằng `@Enumerated(EnumType.STRING)` để thứ tự khai báo không làm hỏng dữ liệu."
+      },
+      {
+        "question": "Một service nghiệp vụ đang `new JdbcOrderRepository()` trực tiếp vi phạm Dependency Inversion thế nào?",
+        "answer": "Module nghiệp vụ cấp cao phụ thuộc vào chi tiết JDBC cụ thể, nên đổi cách lưu trữ buộc phải sửa service. Hãy để service nhận `OrderRepository` qua constructor và để tầng cấu hình chọn implementation."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day07-prac-1",
@@ -328,7 +354,7 @@
       "hint": "SRP nói về 'một lý do để thay đổi' — đếm xem lớp đang có bao nhiêu lý do khác nhau khiến nó phải sửa.",
       "solution": "Tách OrderService (chỉ xử lý nghiệp vụ đơn hàng) và một lớp riêng như OrderLogger/AuditWriter (chỉ lo ghi log). Mỗi lớp chỉ còn một lý do để thay đổi: OrderService thay đổi khi nghiệp vụ đơn hàng thay đổi, OrderLogger thay đổi khi cách ghi log thay đổi.",
       "explanation": "SRP giúp lớp dễ bảo trì và test hơn vì mỗi lớp chỉ tập trung một trách nhiệm.",
-      "rubric": "Đánh giá học viên có nhận diện đúng 'nhiều lý do thay đổi' và đề xuất tách lớp hợp lý hay không.",
+      "rubric": "Bạn đạt yêu cầu khi nhận diện đúng 'nhiều lý do thay đổi' và đề xuất cách tách lớp hợp lý.",
       "sourceUsage": []
     },
     {

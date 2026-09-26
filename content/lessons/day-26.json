@@ -79,7 +79,7 @@
           "id": "day26-blk-4",
           "type": "code",
           "language": "java",
-          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.multipart.MultipartFile;\n\n@Service\nclass FileSystemStorageService {\n\n    private final Path rootLocation;\n\n    FileSystemStorageService(Path rootLocation) {\n        this.rootLocation = rootLocation;\n    }\n\n    public void store(MultipartFile file) {\n        try {\n            if (file.isEmpty()) {\n                throw new StorageException(\"Khong the luu file rong\");\n            }\n            // Chuan hoa duong dan dich, roi kiem tra no PHAI nam trong rootLocation\n            // de chong tan cong path traversal (vi du ten file \"../../etc/passwd\").\n            Path destination = rootLocation.resolve(file.getOriginalFilename()).normalize().toAbsolutePath();\n            if (!destination.getParent().equals(rootLocation.toAbsolutePath())) {\n                throw new StorageException(\"Khong the luu file ngoai thu muc duoc phep\");\n            }\n            try (var inputStream = file.getInputStream()) {\n                Files.copy(inputStream, destination);\n            }\n        } catch (IOException e) {\n            throw new StorageException(\"That bai khi luu file\", e);\n        }\n    }\n\n    static class StorageException extends RuntimeException {\n        StorageException(String message) { super(message); }\n        StorageException(String message, Throwable cause) { super(message, cause); }\n    }\n}\n",
+          "code": "import java.io.IOException;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.multipart.MultipartFile;\n\n@Service\nclass FileSystemStorageService {\n\n    private final Path rootLocation;\n\n    FileSystemStorageService(Path rootLocation) {\n        this.rootLocation = rootLocation;\n    }\n\n    public void store(MultipartFile file) {\n        try {\n            if (file.isEmpty()) {\n                throw new StorageException(\"Khong the luu file rong\");\n            }\n            // Chuẩn hoá đường dẫn đích, rồi kiểm tra nó PHẢI nằm trong rootLocation\n            // để chống tấn công path traversal (ví dụ tên file \"../../etc/passwd\").\n            Path destination = rootLocation.resolve(file.getOriginalFilename()).normalize().toAbsolutePath();\n            if (!destination.getParent().equals(rootLocation.toAbsolutePath())) {\n                throw new StorageException(\"Khong the luu file ngoai thu muc duoc phep\");\n            }\n            try (var inputStream = file.getInputStream()) {\n                Files.copy(inputStream, destination);\n            }\n        } catch (IOException e) {\n            throw new StorageException(\"That bai khi luu file\", e);\n        }\n    }\n\n    static class StorageException extends RuntimeException {\n        StorageException(String message) { super(message); }\n        StorageException(String message, Throwable cause) { super(message, cause); }\n    }\n}\n",
           "compile": false,
           "citations": [
             "day26-src-5"
@@ -258,25 +258,25 @@
           "id": "day26-blk-12",
           "type": "table",
           "columns": [
-            "Tieu chi",
+            "Tiêu chí",
             "Retry",
             "Circuit Breaker"
           ],
           "rows": [
             [
-              "Trang thai",
-              "Khong luu trang thai (stateless) - moi loi xu ly doc lap",
-              "Co trang thai (Closed/Open/Half-Open) theo doi ti le loi qua thoi gian"
+              "Trạng thái",
+              "Không lưu trạng thái (stateless) - mỗi lỗi xử lý độc lập",
+              "Có trạng thái (Closed/Open/Half-Open) theo dõi tỉ lệ lỗi qua thời gian"
             ],
             [
-              "Muc dich",
-              "Thu lai ngay khi loi la tam thoi (mang chap chon)",
-              "Ngan chan goi lien tuc toi he thong dang gap su co"
+              "Mục đích",
+              "Thử lại ngay khi lỗi là tạm thời (mạng chập chờn)",
+              "Ngăn chặn gọi liên tục tới hệ thống đang gặp sự cố"
             ],
             [
-              "Rui ro neu dung sai",
-              "Thu lai qua nhieu lam nang them he thong dang loi",
-              "Khong phu hop voi loi tam thoi ngan han, don gian mot lan retry la du"
+              "Rủi ro nếu dùng sai",
+              "Thử lại quá nhiều làm nặng thêm hệ thống đang lỗi",
+              "Không phù hợp với lỗi tạm thời ngắn hạn, đơn giản một lần retry là đủ"
             ]
           ],
           "citations": [
@@ -328,7 +328,7 @@
           "id": "day26-blk-14",
           "type": "code",
           "language": "java",
-          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Neu truong chua dau phay, dau nhay kep, hoac xuong dong: bao trong nhay kep\n    // va nhan doi moi dau nhay kep ben trong (theo quy uoc CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\")\n                || value.contains(\"\\n\") || value.contains(\"\\r\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
+          "code": "import java.io.PrintWriter;\nimport java.util.List;\nimport java.util.stream.Collectors;\n\nclass CsvExporter {\n\n    void writeOrders(PrintWriter writer, List<OrderRow> rows) {\n        writer.println(\"id,customer,total\");\n        String body = rows.stream()\n                .map(r -> String.join(\",\",\n                        escape(r.id()), escape(r.customer()), escape(r.total())))\n                .collect(Collectors.joining(\"\\n\"));\n        writer.println(body);\n    }\n\n    // Nếu trường chứa dấu phẩy, dấu nháy kép, hoặc xuống dòng: bao trong nháy kép\n    // và nhân đôi mọi dấu nháy kép bên trong (theo quy ước CSV/RFC 4180).\n    private String escape(String value) {\n        if (value.contains(\",\") || value.contains(\"\\\"\")\n                || value.contains(\"\\n\") || value.contains(\"\\r\")) {\n            return \"\\\"\" + value.replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\";\n        }\n        return value;\n    }\n\n    record OrderRow(String id, String customer, String total) {}\n}\n",
           "compile": true,
           "citations": [
             "day26-src-14",
@@ -338,7 +338,7 @@
         {
           "id": "day26-blk-15",
           "type": "note",
-          "text": "Xuất Excel (.xlsx) không nằm trong resourceIds của bài này - không có tài liệu tham khảo nào trong bộ nguồn của khoá học mô tả thư viện xử lý Excel (ví dụ Apache POI). Nếu cần xuất Excel thay vì CSV, học viên tự tham khảo tài liệu chính thức của thư viện được chọn; nội dung này không được trình bày có trích dẫn ở đây.",
+          "text": "Xuất Excel (.xlsx) nằm ngoài tài liệu tham khảo của bài này - bộ nguồn khoá học chưa có tài liệu mô tả thư viện xử lý Excel (ví dụ Apache POI). Nếu cần xuất Excel thay vì CSV, bạn tự tham khảo tài liệu chính thức của thư viện được chọn; nội dung này không được trình bày có trích dẫn ở đây.",
           "citations": []
         },
         {
@@ -363,6 +363,32 @@
     "Tạo WebClient mới cho mỗi request và không đặt timeout, làm mất connection pool và để lời gọi treo giữ tài nguyên.",
     "Retry một thao tác không idempotent (POST tạo đơn) hoặc retry liên tục không backoff, khiến dữ liệu trùng và làm đối tác quá tải."
   ],
+  "teaching": {
+    "why": "Upload file và gọi API ngoài đều đưa dữ liệu không tin cậy qua biên hệ thống. Nếu xử lý hời hợt, một tên file như `../../...` có thể ghi ra ngoài thư mục cho phép, endpoint download có thể lộ file người khác, còn một dịch vụ tỷ giá treo sẽ giữ hết request thread. CSV tưởng đơn giản nhưng chỉ một dấu phẩy, dấu nháy hoặc xuống dòng cũng đủ làm hỏng dữ liệu nếu không escape đúng.",
+    "javaBridge": "`MultipartFile` chỉ là abstraction cho dữ liệu upload; cuối cùng bạn vẫn dùng `Path`, `Files` và try-with-resources của Java để lưu an toàn. `WebClient` là HTTP client được Spring xây theo mô hình reactive, còn Retry/Circuit Breaker giống vòng lặp retry và state machine Closed/Open/Half-Open mà bạn có thể tự viết bằng Java. CSV export vẫn là ghép chuỗi, nhưng phải tuân theo quy tắc quote/escape chuẩn thay vì `String.join` ngây thơ.",
+    "mentalModel": "Hãy hình dung upload như nhận kiện hàng ở kho: nhãn trên thùng do người lạ viết nên phải chuẩn hoá địa chỉ rồi xác nhận nó vẫn nằm trong kho của bạn trước khi cất. Circuit Breaker giống aptomat: lỗi lặp lại thì ngắt mạch ngay (Open), đợi rồi cho vài lượt thử (Half-Open), ổn thì đóng lại (Closed); Retry chỉ là thử bật lại vài lần với lỗi tạm thời.",
+    "is": "Bài này dạy xử lý file multipart an toàn, trả file qua `ResponseEntity<Resource>`, gọi HTTP ngoài bằng `WebClient`, bảo vệ tích hợp bằng Retry/Circuit Breaker và xuất CSV đúng quy tắc escape.",
+    "isNot": "Kiểm tra extension hoặc `Content-Type` do client gửi không đủ để chứng minh file an toàn; download endpoint cũng không an toàn chỉ vì đường dẫn đã normalize — vẫn phải kiểm tra quyền sở hữu để tránh IDOR. Circuit Breaker không thay thế timeout, và Retry không nên dùng mù quáng cho thao tác ghi không idempotent.",
+    "solves": "Trong Spendwise, V0.8 dùng `MultipartFile`, parse theo từng row và CSV escaping cho import/export sao kê; mỗi row import chạy trong transaction riêng để một dòng lỗi không làm mất toàn batch. V0.9 dùng `WebClient` cùng Retry/Circuit Breaker cho `session-v09-exchange-rate-client`, để dịch vụ tỷ giá chậm hoặc lỗi không kéo sập API chính.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `root.resolve(file.getOriginalFilename()).normalize()` vẫn phải được kiểm tra nằm trong `rootLocation`?",
+        "answer": "`normalize()` chỉ thu gọn các đoạn `..`; nó không cấm kết quả trỏ ra ngoài root. Sau khi chuẩn hoá và chuyển thành đường dẫn tuyệt đối, phải kiểm tra parent/containment trước khi ghi."
+      },
+      {
+        "question": "Một endpoint `/files/{id}` normalize đường dẫn đúng nhưng không kiểm tra file thuộc user hiện tại. Lỗ hổng gì còn lại?",
+        "answer": "IDOR: user đã đăng nhập có thể đổi id để tải file của người khác. Kiểm tra path traversal bảo vệ filesystem, không thay thế kiểm tra authorization/quyền sở hữu."
+      },
+      {
+        "question": "Payment API bị timeout tạm thời một lần. Nên ưu tiên Retry hay Circuit Breaker?",
+        "answer": "Một số lần Retry có backoff phù hợp cho lỗi tạm thời, nếu thao tác an toàn để gọi lại. Circuit Breaker hữu ích khi lỗi kéo dài và cần ngừng gọi để hệ thống ngoài hồi phục; thường phải kết hợp timeout và cân nhắc idempotency."
+      },
+      {
+        "question": "Giá trị CSV là `Lan, \"VIP\"`. Phải ghi thế nào để parser đọc lại đúng một field?",
+        "answer": "Field chứa dấu phẩy và dấu nháy nên phải bọc trong dấu nháy kép, đồng thời nhân đôi dấu nháy bên trong: `\"Lan, \"\"VIP\"\"\"`."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day26-prac-1",

@@ -74,7 +74,7 @@
           "id": "day04-blk-22",
           "type": "code",
           "language": "java",
-          "code": "class Counter {\n    static int created = 0;      // 1 ban duy nhat cho ca class\n    int value = 10;              // field initializer: chay khi new\n    int doubled;\n\n    {\n        // instance initializer block: chay sau field initializer,\n        // truoc than constructor\n        doubled = value * 2;\n    }\n\n    Counter() {\n        created++;\n        System.out.println(value + \" / \" + doubled); // 10 / 20\n    }\n\n    public static void main(String[] args) {\n        Counter a = new Counter();\n        Counter b = a;           // KHONG tao object moi: copy reference\n        b.value = 99;\n        System.out.println(a.value);      // 99 - cung mot object\n        System.out.println(Counter.created); // 1 - chi new mot lan\n    }\n}\n",
+          "code": "class Counter {\n    static int created = 0;      // Một bản duy nhất cho cả class\n    int value = 10;              // Field initializer chạy mỗi lần new\n    int doubled;\n\n    {\n        // Instance initializer block chạy sau field initializer,\n        // trước thân constructor\n        doubled = value * 2;\n    }\n\n    Counter() {\n        created++;\n        System.out.println(value + \" / \" + doubled); // 10 / 20\n    }\n\n    public static void main(String[] args) {\n        Counter a = new Counter();\n        Counter b = a;           // Không tạo object mới: sao chép reference\n        b.value = 99;\n        System.out.println(a.value);      // 99 - cùng một object\n        System.out.println(Counter.created); // 1 - chỉ new một lần\n    }\n}\n",
           "compile": true,
           "citations": [
             "day04-src-1"
@@ -153,7 +153,7 @@
           "id": "day04-blk-5",
           "type": "code",
           "language": "java",
-          "code": "class Book {\n    private final String title;\n    private final String author;\n    private final int totalPages;\n\n    public Book(String title, String author, int totalPages) {\n        this.title = title;\n        this.author = author;\n        this.totalPages = totalPages;\n    }\n\n    // chained constructor: tac gia mac dinh 'Unknown'\n    public Book(String title, int totalPages) {\n        this(title, \"Unknown\", totalPages);\n    }\n\n    public String getTitle() {\n        return title;\n    }\n}\n",
+          "code": "class Book {\n    private final String title;\n    private final String author;\n    private final int totalPages;\n\n    public Book(String title, String author, int totalPages) {\n        this.title = title;\n        this.author = author;\n        this.totalPages = totalPages;\n    }\n\n    // Constructor nối chuỗi: tác giả mặc định là 'Unknown'\n    public Book(String title, int totalPages) {\n        this(title, \"Unknown\", totalPages);\n    }\n\n    public String getTitle() {\n        return title;\n    }\n}\n",
           "compile": true,
           "citations": [
             "day04-src-3",
@@ -335,6 +335,32 @@
     "Trả trực tiếp collection nội bộ từ getter, cho phép bên ngoài sửa trạng thái mà không qua kiểm tra nào.",
     "Dùng record cho entity JPA hoặc cho dữ liệu cần thay đổi sau khi tạo."
   ],
+  "teaching": {
+    "why": "Nếu mọi field đều công khai, bất kỳ đoạn code nào cũng có thể đẩy object vào trạng thái vô lý như tài khoản có số dư âm hoặc cuốn sách không có tiêu đề. Khi đó lỗi xuất hiện xa nơi dữ liệu bị sửa và rất khó truy vết. Bài này dạy bạn biến class thành nơi bảo vệ dữ liệu, không chỉ thành chiếc túi chứa field.",
+    "javaBridge": "Bạn đã viết biến và method; class gom chúng thành một kiểu mới, còn mỗi lần `new` tạo một object có trạng thái riêng trên heap. Constructor giống một method khởi tạo bắt buộc: nó nhận dữ liệu ban đầu, kiểm tra rồi gán vào field. `private` giới hạn đường truy cập, còn method công khai là cửa có kiểm soát để bên ngoài tương tác với object.",
+    "mentalModel": "Hãy hình dung class là một máy bán hàng có vỏ khóa kín: kho hàng và số tiền bên trong là field `private`, còn khe nhận tiền và nút chọn món là các method có ý nghĩa. Người dùng không được mở vỏ rồi gán thẳng số lượng; mọi thay đổi phải đi qua cơ chế của máy để quy tắc luôn đúng. Constructor là bước kiểm tra máy đủ linh kiện trước khi đưa vào sử dụng.",
+    "is": "Encapsulation là việc đặt trạng thái và quy tắc thay đổi trạng thái trong cùng một class, giữ chi tiết bên trong ở phạm vi hẹp và chỉ công khai hành vi hợp lệ.",
+    "isNot": "Encapsulation không phải tự động sinh getter và setter cho mọi field; một setter công khai có thể chỉ đổi cách viết mà vẫn cho phép phá bất biến. `b = a` cũng không tạo bản sao object, mà chỉ sao chép tham chiếu để hai biến cùng trỏ một object.",
+    "solves": "Bài này giúp object luôn hợp lệ ngay từ constructor, tránh rò rỉ trạng thái mutable và làm API của class nói bằng hành vi nghiệp vụ. Trong Spendwise V0.1 (Java Domain), kỹ thuật này xây `Account`, `Money` và `Transaction`: field được giữ kín, constructor chặn dữ liệu sai, còn `Account` thay đổi số dư qua hành vi có nghĩa thay vì `setBalance` công khai.",
+    "selfCheck": [
+      {
+        "question": "Sau `Counter b = a; b.value = 99;`, vì sao đọc `a.value` cũng được 99?",
+        "answer": "Phép gán sao chép reference chứ không sao chép object. `a` và `b` cùng trỏ tới một vùng nhớ trên heap nên sửa qua biến nào cũng tác động cùng object."
+      },
+      {
+        "question": "Vì sao kiểm tra dữ liệu trong constructor tốt hơn tạo object rỗng rồi gọi nhiều setter?",
+        "answer": "Constructor có thể bảo đảm object hợp lệ ngay khi xuất hiện. Cách dùng setter tạo ra một khoảng thời gian object tồn tại với dữ liệu thiếu hoặc mâu thuẫn."
+      },
+      {
+        "question": "Một getter trả thẳng `List` nội bộ có thể phá encapsulation thế nào?",
+        "answer": "Người gọi có thể `clear()` hoặc thêm phần tử mà không qua quy tắc của class. Hãy trả bản sao hoặc danh sách không sửa được và cung cấp method thay đổi có kiểm tra."
+      },
+      {
+        "question": "Khi nào record phù hợp hơn class thông thường, và khi nào không phù hợp?",
+        "answer": "Record phù hợp cho dữ liệu bất biến, trong suốt như DTO hoặc value object vì có sẵn accessor, `equals`, `hashCode`, `toString`. Nó không phù hợp cho object cần thay đổi trạng thái dần hoặc entity JPA cần mô hình khởi tạo đặc thù."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day04-prac-1",
@@ -412,7 +438,7 @@
       "choices": [],
       "correctChoiceIds": [],
       "hint": "Xem lại ví dụ class Book ở phần Access modifier — field private, constructor gán giá trị, getter public trả về giá trị.",
-      "solution": "public class BankAccount {\n    private final double balance;\n\n    public BankAccount(double initialBalance) {\n        if (initialBalance < 0) {\n            throw new IllegalArgumentException(\"balance khong duoc am\");\n        }\n        this.balance = initialBalance;\n    }\n\n    public double getBalance() {\n        return balance;\n    }\n}",
+      "solution": "public class BankAccount {\n    private final double balance;\n\n    public BankAccount(double initialBalance) {\n        if (initialBalance < 0) {\n            throw new IllegalArgumentException(\"balance không được âm\");\n        }\n        this.balance = initialBalance;\n    }\n\n    public double getBalance() {\n        return balance;\n    }\n}",
       "explanation": "Lời giải mẫu khai báo field private, xác thực dữ liệu ngay trong constructor (ném lỗi nếu không hợp lệ), và chỉ cung cấp getter, không có setter trực tiếp — đúng tinh thần encapsulation.",
       "rubric": "Đạt yêu cầu nếu field là private, constructor có xác thực dữ liệu đầu vào, và không có setter public cho phép gán trực tiếp giá trị không qua kiểm tra.",
       "sourceUsage": [

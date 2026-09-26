@@ -52,7 +52,7 @@
         {
           "id": "day17-blk-2",
           "type": "note",
-          "text": "Bài học về Bean Validation (jakarta.validation), custom validator, xử lý lỗi tập trung bằng @RestControllerAdvice, và ProblemDetail (định dạng lỗi chuẩn hóa). Lịch học ngày nay ghi 'Guides/Review' — học viên ôn tập và thực hành lại ví dụ.",
+          "text": "Bài học về Bean Validation (jakarta.validation), custom validator, xử lý lỗi tập trung bằng @RestControllerAdvice, và ProblemDetail (định dạng lỗi chuẩn hóa). Lịch học của ngày này ghi 'Guides/Review' — bạn ôn tập và thực hành lại ví dụ.",
           "citations": []
         }
       ]
@@ -122,7 +122,7 @@
     },
     {
       "id": "day17-sec-custom-validator",
-      "title": "Custom Validator",
+      "title": "Custom validator — bộ kiểm tra tùy chỉnh",
       "blocks": [
         {
           "id": "day17-blk-6",
@@ -137,7 +137,7 @@
           "id": "day17-blk-7",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\n@Constraint(validatedBy = PhoneNumberValidator.class)\n@interface ValidPhoneNumber {\n    String message() default \"số điện thoại không hợp lệ\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\n\nclass PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumber, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        return value != null && value.matches(\"\\\\d{9,11}\");\n    }\n}\n",
+          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\n@Constraint(validatedBy = PhoneNumberValidator.class)\n@interface ValidPhoneNumber {\n    String message() default \"số điện thoại không hợp lệ\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\n\nclass PhoneNumberValidator implements ConstraintValidator<ValidPhoneNumber, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        return value == null || value.matches(\"\\\\d{9,11}\");\n    }\n}\n",
           "compile": false,
           "citations": [
             "day17-src-5",
@@ -166,7 +166,7 @@
           "id": "day17-blk-24",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Documented\n@Constraint(validatedBy = SkuValidator.class)\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface ValidSku {\n    String message() default \"SKU phai co dang AAA-1234\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nclass SkuValidator implements ConstraintValidator<ValidSku, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        // null -> de @NotNull/@NotBlank lo; moi constraint chi kiem tra mot dieu\n        if (value == null) return true;\n        return value.matches(\"[A-Z]{3}-\\\\d{4}\");\n    }\n}\n",
+          "code": "import jakarta.validation.Constraint;\nimport jakarta.validation.ConstraintValidator;\nimport jakarta.validation.ConstraintValidatorContext;\nimport jakarta.validation.Payload;\nimport java.lang.annotation.*;\n\n@Documented\n@Constraint(validatedBy = SkuValidator.class)\n@Target({ElementType.FIELD, ElementType.PARAMETER})\n@Retention(RetentionPolicy.RUNTIME)\npublic @interface ValidSku {\n    String message() default \"SKU phải có dạng AAA-1234\";\n    Class<?>[] groups() default {};\n    Class<? extends Payload>[] payload() default {};\n}\n\nclass SkuValidator implements ConstraintValidator<ValidSku, String> {\n    @Override\n    public boolean isValid(String value, ConstraintValidatorContext context) {\n        // null -> để @NotNull/@NotBlank lo; mỗi constraint chỉ kiểm tra một điều\n        if (value == null) return true;\n        return value.matches(\"[A-Z]{3}-\\\\d{4}\");\n    }\n}\n",
           "compile": false,
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
           "citations": [
@@ -200,7 +200,7 @@
         {
           "id": "day17-blk-10",
           "type": "note",
-          "text": "Mục syllabus ghi 'ProblemDetail (RFC 9457)'; tuy nhiên nguồn tài liệu đã đọc cho Day 17 mô tả ProblemDetail theo RFC 7807 (chưa có fact nào trong resourceIds của Day 17 nhắc RFC 9457) — bài này trích dẫn đúng theo nội dung nguồn (RFC 7807). Ghi chú thêm (không cần trích dẫn vì đây không phải một khẳng định kỹ thuật cần nguồn riêng — chỉ là bối cảnh đặt tên chuẩn): RFC 9457 là bản cập nhật sau này thay thế/obsolete RFC 7807 cho cùng đặc tả ProblemDetail.",
+          "text": "Mục syllabus ghi 'ProblemDetail (RFC 9457)', còn tài liệu tham khảo của bài mô tả phiên bản RFC 7807. RFC 9457 là bản cập nhật thay thế RFC 7807 cho cùng đặc tả Problem Details; các trường cốt lõi `type`, `title`, `status`, `detail`, `instance` vẫn là mô hình bạn cần nắm trong bài này.",
           "citations": []
         },
         {
@@ -246,7 +246,7 @@
           "id": "day17-blk-28",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport java.net.URI;\nimport java.time.Instant;\nimport java.util.LinkedHashMap;\nimport java.util.Map;\n\nclass ResourceNotFoundException extends RuntimeException {\n    ResourceNotFoundException(String message) { super(message); }\n}\n\n@RestControllerAdvice\nclass GlobalExceptionHandler {\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n        pd.setTitle(\"Resource not found\");\n        pd.setType(URI.create(\"https://example.com/problems/not-found\"));\n        pd.setProperty(\"timestamp\", Instant.now());\n        return pd;\n    }\n\n    // loi validate @RequestBody: gom TAT CA field sai, khong chi field dau tien\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex) {\n        Map<String, String> errors = new LinkedHashMap<>();\n        ex.getBindingResult().getFieldErrors()\n          .forEach(fe -> errors.putIfAbsent(fe.getField(), fe.getDefaultMessage()));\n\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, \"Du lieu khong hop le\");\n        pd.setTitle(\"Validation failed\");\n        pd.setProperty(\"errors\", errors);\n        return pd;\n    }\n\n    // luoi an toan cuoi cung: khong bao gio de stack trace ra ngoai\n    @ExceptionHandler(Exception.class)\n    ProblemDetail handleUnexpected(Exception ex) {\n        // log ex day du o day, nhung chi tra thong bao chung cho client\n        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, \"Loi he thong\");\n    }\n}\n",
+          "code": "import org.springframework.http.HttpStatus;\nimport org.springframework.http.ProblemDetail;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport java.net.URI;\nimport java.time.Instant;\nimport java.util.LinkedHashMap;\nimport java.util.Map;\n\nclass ResourceNotFoundException extends RuntimeException {\n    ResourceNotFoundException(String message) { super(message); }\n}\n\n@RestControllerAdvice\nclass GlobalExceptionHandler {\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    ProblemDetail handleNotFound(ResourceNotFoundException ex) {\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());\n        pd.setTitle(\"Resource not found\");\n        pd.setType(URI.create(\"https://example.com/problems/not-found\"));\n        pd.setProperty(\"timestamp\", Instant.now());\n        return pd;\n    }\n\n    // lỗi validate @RequestBody: gom TẤT CẢ field sai, không chỉ field đầu tiên\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex) {\n        Map<String, String> errors = new LinkedHashMap<>();\n        ex.getBindingResult().getFieldErrors()\n          .forEach(fe -> errors.putIfAbsent(fe.getField(), fe.getDefaultMessage()));\n\n        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, \"Dữ liệu không hợp lệ\");\n        pd.setTitle(\"Validation failed\");\n        pd.setProperty(\"errors\", errors);\n        return pd;\n    }\n\n    // lưới an toàn cuối cùng: không bao giờ để stack trace ra ngoài\n    @ExceptionHandler(Exception.class)\n    ProblemDetail handleUnexpected(Exception ex) {\n        // log ex đầy đủ ở đây, nhưng chỉ trả thông báo chung cho client\n        return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, \"Lỗi hệ thống\");\n    }\n}\n",
           "compile": false,
           "partialReason": "Minh họa cách dùng Spring/Jakarta API; không biên dịch độc lập được vì môi trường javac --release 17 của pipeline này không có Spring Framework/Jakarta jar trên classpath (chỉ có JDK chuẩn).",
           "citations": [
@@ -276,6 +276,32 @@
     "Chỉ trả field lỗi đầu tiên thay vì gom toàn bộ field errors, buộc người dùng sửa form theo nhiều lượt.",
     "Kỳ vọng @RestControllerAdvice bắt được lỗi phát sinh trong Filter hoặc Spring Security, trong khi các lỗi đó xảy ra trước DispatcherServlet."
   ],
+  "teaching": {
+    "why": "JSON hợp cú pháp vẫn có thể vô nghĩa: tên chỉ có khoảng trắng, số tiền âm hoặc hai ngày đi ngược thứ tự. Nếu mỗi controller tự viết `if` và `try/catch`, quy tắc bị lặp, lỗi trả về không đồng nhất và dữ liệu xấu có thể lọt tới service. Bài này đặt một cổng kiểm tra chung trước business logic và một lối ra lỗi chung cho toàn API.",
+    "javaBridge": "Trong Java thuần, bạn thường kiểm tra `if (name == null || name.isBlank())` rồi ném exception. Bean Validation chuyển điều kiện đó thành metadata ngay trên DTO bằng `@NotBlank`, `@Min` hoặc constraint riêng; `@Valid` yêu cầu Spring chạy bộ kiểm tra trước khi gọi method. `@RestControllerAdvice` giống một khối `catch` ở cấp ứng dụng, dịch exception thành response HTTP mà không lặp trong từng controller.",
+    "mentalModel": "Hãy hình dung API như cửa kiểm soát ở sân bay: Jackson mở hành lý JSON thành object, validator kiểm tra giấy tờ trước khi hành khách vào khu vực service, còn advice là quầy xử lý sự cố dùng cùng một mẫu biên bản cho mọi cửa. Constraint cấp field kiểm tra một giấy tờ; constraint cấp class so sánh nhiều giấy tờ với nhau; `ProblemDetail` là mẫu biên bản lỗi thống nhất mà client biết đọc.",
+    "is": "Bean Validation khai báo ràng buộc trên dữ liệu đầu vào, còn `@RestControllerAdvice` tập trung chuyển các exception thành `ProblemDetail` nhất quán.",
+    "isNot": "Validation không thay thế quy tắc nghiệp vụ cần trạng thái hiện tại từ database; kiểm tra như “tài khoản còn đủ tiền” thuộc service. Advice cũng không bắt được lỗi phát sinh trước `DispatcherServlet`, chẳng hạn trong security filter.",
+    "solves": "Bài này chặn request sai trước khi controller chạy và đảm bảo client luôn nhận cùng một schema lỗi thay vì nhiều `Map` tùy ý. Trong Spendwise V0.4, request DTO dùng `@Valid` và các constraint Jakarta để từ chối field trống hoặc số tiền sai; một `@RestControllerAdvice` duy nhất dịch lỗi validation và domain exception thành `ProblemDetail` với status phù hợp.",
+    "selfCheck": [
+      {
+        "question": "Một field chuỗi nhận giá trị ba dấu cách. `@NotNull`, `@NotEmpty` và `@NotBlank` xử lý khác nhau thế nào?",
+        "answer": "`@NotNull` và `@NotEmpty` đều cho qua vì giá trị không null và có ký tự. `@NotBlank` từ chối vì sau khi bỏ khoảng trắng chuỗi không còn nội dung."
+      },
+      {
+        "question": "Bạn quên `@Valid` trên một field DTO lồng nhau. Constraint bên trong DTO đó có chạy không?",
+        "answer": "Không. Cần đặt `@Valid` tại field lồng nhau, hoặc `List<@Valid ItemRequest>` với collection, để validation đi sâu vào object con."
+      },
+      {
+        "question": "Vì sao custom validator nên trả `true` khi giá trị là `null` nếu đã có `@NotNull`?",
+        "answer": "Mỗi constraint nên chịu một trách nhiệm: validator riêng kiểm tra định dạng, còn `@NotNull` kiểm tra sự hiện diện. Cách tách này cho thông báo lỗi rõ và cho phép tái sử dụng constraint với field tùy chọn."
+      },
+      {
+        "question": "Exception từ authentication filter có đi vào `@RestControllerAdvice` không?",
+        "answer": "Không, vì filter chạy trước `DispatcherServlet`. Lỗi xác thực và phân quyền cần `AuthenticationEntryPoint` hoặc `AccessDeniedHandler` ở tầng Spring Security."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day17-prac-1",
@@ -303,7 +329,7 @@
       "correctChoiceIds": [
         "day17-prac-1-a"
       ],
-      "hint": "Đọc lại fact về 'Dependency cần thiết từ Boot 2.3' trong bài.",
+      "hint": "Đọc lại phần 'Dependency cần thiết từ Boot 2.3' trong bài.",
       "solution": "“spring-boot-starter-validation” là đáp án đúng vì từ Spring Boot 2.3, ngoài spring-boot-starter-web, phải khai báo starter này để có Hibernate Validator và làm cho @Valid cùng các constraint Jakarta Validation hoạt động.",
       "explanation": "spring-boot-starter-validation là dependency duy nhất trong các lựa chọn được bài chỉ định tường minh cho Bean Validation từ Spring Boot 2.3 và là starter cung cấp implementation Hibernate Validator. spring-boot-starter-actuator không phải starter mà phần Bean Validation yêu cầu; spring-boot-starter-security cũng không thay thế dependency validation cần cho cơ chế @Valid được mô tả; và spring-boot-starter-aop không cung cấp implementation Validator mà bài yêu cầu. Chỉ có spring-boot-starter-web từ phiên bản này là chưa đủ.",
       "rubric": "Chọn đúng tên starter, không nhầm với các starter khác không liên quan validation.",

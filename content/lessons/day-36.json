@@ -44,7 +44,7 @@
   "sections": [
     {
       "id": "day36-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day36-blk-1",
@@ -62,7 +62,7 @@
     },
     {
       "id": "day36-sec-structure",
-      "title": "Cau truc bai trinh bay",
+      "title": "Cấu trúc bài trình bày",
       "blocks": [
         {
           "id": "day36-blk-3",
@@ -73,7 +73,7 @@
         {
           "id": "day36-blk-4",
           "type": "note",
-          "text": "Không có resource nào trong resourceIds của Day 36 mô tả cấu trúc một buổi bảo vệ dự án cụ thể - agenda trên là khung tổ chức do giảng viên biên soạn, không trích dẫn kỹ thuật.",
+          "text": "Tài liệu tham khảo của Day 36 không mô tả cấu trúc một buổi bảo vệ dự án cụ thể; agenda trên là khung tổ chức do giảng viên đề xuất, không phải một khẳng định kỹ thuật.",
           "citations": []
         }
       ]
@@ -86,9 +86,9 @@
           "id": "day36-blk-5",
           "type": "table",
           "columns": [
-            "Hang muc",
-            "Yeu cau toi thieu",
-            "Ghi chu"
+            "Hạng mục",
+            "Yêu cầu tối thiểu",
+            "Ghi chú"
           ],
           "rows": [
             [
@@ -138,7 +138,7 @@
     },
     {
       "id": "day36-sec-evidence",
-      "title": "Bang chung kiem thu",
+      "title": "Bằng chứng kiểm thử",
       "blocks": [
         {
           "id": "day36-blk-6",
@@ -159,7 +159,7 @@
         {
           "id": "day36-blk-8",
           "type": "paragraph",
-          "text": "@DataJpaTest tự động cấu hình H2 in-memory, Hibernate/Spring Data/DataSource, bật SQL logging và cung cấp TestEntityManager để chuẩn bị dữ liệu trước khi gọi repository cần test - phù hợp để kiểm tra query method tùy biến như findByName().",
+          "text": "@DataJpaTest nạp test slice cho JPA, cấu hình Hibernate/Spring Data/DataSource và cung cấp TestEntityManager để chuẩn bị dữ liệu trước khi gọi repository cần test. Nếu có database nhúng trên test classpath và chưa thay DataSource, Spring Boot có thể dùng database đó; annotation không tự cung cấp H2. Cách này phù hợp để kiểm tra query method tùy biến như findByName().",
           "citations": [
             "day36-src-3"
           ]
@@ -206,7 +206,7 @@
         {
           "id": "day36-blk-13",
           "type": "paragraph",
-          "text": "Với integration test cần dữ liệu thật (không phải H2 giả lập), có hai cách quản lý container Testcontainers, khác nhau về vòng đời: (1) khai báo @Bean trả về container trong @TestConfiguration - Spring khởi động bean container này trước các bean khác và dừng sau cùng, gắn đúng với vòng đời ApplicationContext; (2) dùng JUnit extension (@Testcontainers trên test class + @Container trên static field, minh hoạ ở day36-blk-14) - đơn giản hơn để viết, nhưng container gắn với static field nên bị dừng ngay khi test class đó chạy xong; nếu Spring TestContext Framework cache và tái sử dụng cùng một ApplicationContext cho một test class khác sau đó, context đó có thể đang trỏ tới một container đã đóng.",
+          "text": "Integration test cần database thật có thể quản lý Testcontainer theo hai cách. Một `@Bean` trong `@TestConfiguration` gắn vòng đời container với `ApplicationContext`. Cách ngắn hơn là dùng `@Testcontainers` trên test class và `@Container` trên static field; khi đó container dừng sau test class, nên không được tái sử dụng một cached context còn trỏ tới container đã đóng.",
           "citations": [
             "day36-src-6",
             "day36-src-7"
@@ -216,7 +216,7 @@
           "id": "day36-blk-14",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n@Testcontainers\n@SpringBootTest\nclass OrderServiceIntegrationTest {\n\n    // Container thật, chạy song song với ApplicationContext trong test.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16\");\n\n    // Spring Boot tu dong tao JdbcConnectionDetails tu container nay,\n    // khong can khai bao spring.datasource.url thu cong.\n}\n",
+          "code": "import org.springframework.boot.testcontainers.service.connection.ServiceConnection;\nimport org.springframework.boot.test.context.SpringBootTest;\nimport org.testcontainers.containers.PostgreSQLContainer;\nimport org.testcontainers.junit.jupiter.Container;\nimport org.testcontainers.junit.jupiter.Testcontainers;\n\n@Testcontainers\n@SpringBootTest\nclass OrderServiceIntegrationTest {\n\n    // Container thật, chạy song song với ApplicationContext trong test.\n    @Container\n    @ServiceConnection\n    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16\");\n\n    // Spring Boot tự động tạo JdbcConnectionDetails từ container này,\n    // không cần khai báo spring.datasource.url thủ công.\n}\n",
           "compile": false,
           "citations": [
             "day36-src-8"
@@ -244,7 +244,7 @@
     },
     {
       "id": "day36-sec-docs",
-      "title": "Tai lieu API va trien khai",
+      "title": "Tài liệu API và triển khai",
       "blocks": [
         {
           "id": "day36-blk-17",
@@ -285,15 +285,15 @@
     },
     {
       "id": "day36-sec-rubric",
-      "title": "Rubric cham diem",
+      "title": "Rubric chấm điểm",
       "blocks": [
         {
           "id": "day36-blk-21",
           "type": "table",
           "columns": [
-            "Tieu chi",
-            "Trong so",
-            "Mo ta"
+            "Tiêu chí",
+            "Trọng số",
+            "Mô tả"
           ],
           "rows": [
             [
@@ -340,7 +340,7 @@
     },
     {
       "id": "day36-sec-questions",
-      "title": "Ngan hang cau hoi phan bien",
+      "title": "Ngân hàng câu hỏi phản biện",
       "blocks": [
         {
           "id": "day36-blk-23",
@@ -362,6 +362,32 @@
     "Không có test nào dùng Testcontainers với DB thật, chỉ test trên H2 nên không phát hiện được lỗi cú pháp SQL đặc thù của PostgreSQL.",
     "Không giới hạn/tắt springdoc-openapi ở môi trường production, để lộ toàn bộ tài liệu API ra ngoài không cần thiết."
   ],
+  "teaching": {
+    "why": "Một dự án chạy được trên máy bạn chưa đủ để bảo vệ: người đánh giá cần thấy luồng chính, bằng chứng test, tài liệu API và lý do đằng sau quyết định thiết kế. Bài này rèn cách biến code thành một lập luận có thể kiểm chứng thay vì một màn trình diễn may rủi.",
+    "javaBridge": "Bạn đã dùng JUnit để kiểm tra class Java; ở Spring, test slice chỉ nạp phần cần kiểm tra: `@DataJpaTest` cho persistence và `@WebMvcTest` cho web layer. Testcontainers mở một PostgreSQL thật trong container, còn `@ServiceConnection` nối thông tin kết nối vào context thay cho việc tự chép URL và mật khẩu.",
+    "mentalModel": "Hãy coi buổi bảo vệ như phiên tòa kỹ thuật: demo là lời khai, test chạy trực tiếp là vật chứng, Swagger là hồ sơ API, và câu trả lời phản biện giải thích chuỗi suy luận. Một assertion xanh có sức nặng hơn câu ‘máy em chạy được’, nhưng mỗi vật chứng phải đúng tầng mà nó muốn chứng minh.",
+    "is": "Đây là buổi bảo vệ capstone bằng demo, test slice, integration test với database thật, tài liệu API và trả lời phản biện.",
+    "isNot": "Đây không phải bài thi viết hay buổi giới thiệu tính năng mới. `@SpringBootTest` cũng không phải lựa chọn mặc định cho mọi test khi một test slice nhỏ hơn đã đủ chứng minh hành vi.",
+    "solves": "Bài này giúp bạn trình bày kiến trúc và chứng minh các luồng Auth, Product, Cart, Order, testing và deployment của capstone e-commerce. Với Spendwise, Day 36 chỉ mở kiến thức cho V1.0: defense audit, final demo và portfolio README; không trực tiếp triển khai chúng trong buổi này.",
+    "selfCheck": [
+      {
+        "question": "Bạn chỉ cần kiểm tra mapping và status của một controller, repository được mock. Nên chọn annotation nào?",
+        "answer": "Dùng `@WebMvcTest(Controller.class)` với `MockMvc` và mock service. Nó nạp web slice thay vì toàn bộ application context."
+      },
+      {
+        "question": "Vì sao test repository chỉ chạy trên H2 chưa đủ làm bằng chứng tương thích PostgreSQL?",
+        "answer": "H2 có cú pháp và hành vi khác PostgreSQL nên có thể bỏ sót lỗi đặc thù database thật. Ít nhất một integration test với PostgreSQL Testcontainer giúp kiểm tra khoảng cách đó."
+      },
+      {
+        "question": "`@ServiceConnection` giúp bỏ phần cấu hình thủ công nào?",
+        "answer": "Spring Boot đọc container và tạo `ConnectionDetails` như `JdbcConnectionDetails`, rồi dùng nó cho datasource. Bạn không cần lặp `@DynamicPropertySource` để đăng ký URL, username và password cho loại container đã được hỗ trợ."
+      },
+      {
+        "question": "Nếu demo thất bại nhưng test tương ứng đang xanh, bạn nên trình bày thế nào?",
+        "answer": "Nêu rõ phạm vi test chứng minh, chẩn đoán khác biệt môi trường và không tuyên bố luồng demo đã đạt. Bằng chứng phải gắn đúng claim, không dùng một test hẹp để che lỗi vận hành."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day36-prac-1",
@@ -371,7 +397,7 @@
       "choices": [
         {
           "id": "day36-prac-1-a",
-          "text": "@DataJpaTest cấu hình H2 in-memory + repository layer; @WebMvcTest chỉ bootstrap một controller cụ thể cùng MockMvc"
+          "text": "@DataJpaTest nạp JPA repository slice; @WebMvcTest chỉ bootstrap một controller cụ thể cùng MockMvc"
         },
         {
           "id": "day36-prac-1-b",
@@ -390,8 +416,8 @@
         "day36-prac-1-a"
       ],
       "hint": "Nghĩ về tầng nào (Controller hay Repository) mỗi annotation nhắm tới.",
-      "solution": "\"@DataJpaTest cấu hình H2 in-memory + repository layer; @WebMvcTest chỉ bootstrap một controller cụ thể cùng MockMvc\" là đáp án đúng vì hai test slice chỉ nạp phần context cần cho tầng persistence và tầng web tương ứng.",
-      "explanation": "@DataJpaTest cấu hình H2, Hibernate/Spring Data/DataSource và TestEntityManager để kiểm tra repository, còn @WebMvcTest bootstrap một controller với MockMvc để kiểm tra tầng web. Phương án đảo Controller và Repository gán sai mục tiêu của hai annotation; nói chúng tương đương bỏ qua hai test slice khác nhau; nói @WebMvcTest khởi động toàn bộ ApplicationContext cũng sai vì bài nêu chính @SpringBootTest mới dùng toàn bộ context, còn @WebMvcTest chỉ nạp controller được chọn.",
+      "solution": "\"@DataJpaTest nạp JPA repository slice; @WebMvcTest chỉ bootstrap một controller cụ thể cùng MockMvc\" là đáp án đúng vì hai test slice chỉ nạp phần context cần cho tầng persistence và tầng web tương ứng.",
+      "explanation": "@DataJpaTest nạp Hibernate/Spring Data/DataSource và TestEntityManager để kiểm tra repository; nếu dự án có database nhúng trên test classpath, Spring Boot có thể thay DataSource bằng database đó. @WebMvcTest bootstrap một controller với MockMvc để kiểm tra tầng web. Phương án đảo Controller và Repository gán sai mục tiêu của hai annotation; nói chúng tương đương bỏ qua hai test slice khác nhau; nói @WebMvcTest khởi động toàn bộ ApplicationContext cũng sai vì bài nêu chính @SpringBootTest mới dùng toàn bộ context, còn @WebMvcTest chỉ nạp controller được chọn.",
       "rubric": "Liên hệ đúng: mỗi annotation chỉ load phần context cần thiết cho tầng tương ứng.",
       "sourceUsage": [
         "day36-src-3",

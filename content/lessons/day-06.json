@@ -46,7 +46,7 @@
   "sections": [
     {
       "id": "day06-sec-brief",
-      "title": "Đề bài: Employee Management System",
+      "title": "Đề bài: Hệ thống quản lý nhân viên",
       "blocks": [
         {
           "id": "day06-blk-1",
@@ -64,7 +64,7 @@
     },
     {
       "id": "day06-sec-decomposition",
-      "title": "Phân rã thiết kế (guided decomposition)",
+      "title": "Phân rã thiết kế có hướng dẫn",
       "blocks": [
         {
           "id": "day06-blk-3",
@@ -124,7 +124,7 @@
           "id": "day06-blk-8",
           "type": "code",
           "language": "java",
-          "code": "import java.util.ArrayList;\nimport java.util.List;\n\nabstract class Employee {\n    protected final String id;\n    protected final String name;\n    protected final double baseSalary;\n\n    protected Employee(String id, String name, double baseSalary) {\n        this.id = id;\n        this.name = name;\n        this.baseSalary = baseSalary;\n    }\n\n    public abstract double calculateSalary();\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}\n\nclass Developer extends Employee {\n    private final double overtimeHours;\n    private final double bonusRate;\n\n    public Developer(String id, String name, double baseSalary,\n                      double overtimeHours, double bonusRate) {\n        super(id, name, baseSalary);\n        this.overtimeHours = overtimeHours;\n        this.bonusRate = bonusRate;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: luong Developer = baseSalary + (overtimeHours * bonusRate).\n        return 0;\n    }\n}\n\nclass Manager extends Employee {\n    private final int teamSize;\n    private final double kpiMultiplier;\n\n    public Manager(String id, String name, double baseSalary,\n                    int teamSize, double kpiMultiplier) {\n        super(id, name, baseSalary);\n        this.teamSize = teamSize;\n        this.kpiMultiplier = kpiMultiplier;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: luong Manager = (baseSalary + teamSize * 200.0) * kpiMultiplier.\n        return 0;\n    }\n}\n\nrecord EmployeeDTO(String id, String name, double totalSalary) {\n}\n\nclass PayrollService {\n    public List<EmployeeDTO> runPayroll(List<Employee> employees) {\n        List<EmployeeDTO> result = new ArrayList<>();\n        for (Employee employee : employees) {\n            // TODO: tao moi mot EmployeeDTO tu employee.getId()/getName()/calculateSalary()\n            // roi them vao result.\n        }\n        return result;\n    }\n}\n",
+          "code": "import java.util.ArrayList;\nimport java.util.List;\n\nabstract class Employee {\n    protected final String id;\n    protected final String name;\n    protected final double baseSalary;\n\n    protected Employee(String id, String name, double baseSalary) {\n        this.id = id;\n        this.name = name;\n        this.baseSalary = baseSalary;\n    }\n\n    public abstract double calculateSalary();\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}\n\nclass Developer extends Employee {\n    private final double overtimeHours;\n    private final double bonusRate;\n\n    public Developer(String id, String name, double baseSalary,\n                      double overtimeHours, double bonusRate) {\n        super(id, name, baseSalary);\n        this.overtimeHours = overtimeHours;\n        this.bonusRate = bonusRate;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: lương Developer = baseSalary + (overtimeHours * bonusRate).\n        return 0;\n    }\n}\n\nclass Manager extends Employee {\n    private final int teamSize;\n    private final double kpiMultiplier;\n\n    public Manager(String id, String name, double baseSalary,\n                    int teamSize, double kpiMultiplier) {\n        super(id, name, baseSalary);\n        this.teamSize = teamSize;\n        this.kpiMultiplier = kpiMultiplier;\n    }\n\n    @Override\n    public double calculateSalary() {\n        // TODO: lương Manager = (baseSalary + teamSize * 200.0) * kpiMultiplier.\n        return 0;\n    }\n}\n\nrecord EmployeeDTO(String id, String name, double totalSalary) {\n}\n\nclass PayrollService {\n    public List<EmployeeDTO> runPayroll(List<Employee> employees) {\n        List<EmployeeDTO> result = new ArrayList<>();\n        for (Employee employee : employees) {\n            // TODO: tạo một EmployeeDTO từ employee.getId()/getName()/calculateSalary()\n            // rồi thêm vào result.\n        }\n        return result;\n    }\n}\n",
           "compile": true,
           "citations": [
             "day06-src-7",
@@ -188,6 +188,32 @@
     "Quên khai báo Employee là abstract hoặc quên override đầy đủ calculateSalary() ở subclass, dẫn tới lỗi biên dịch.",
     "Chỉ viết test cho từng subclass riêng lẻ mà không có test nào xác nhận PayrollService xử lý đúng danh sách trộn nhiều loại nhân viên."
   ],
+  "teaching": {
+    "why": "Biết từng khái niệm OOP riêng lẻ chưa đủ; bạn cần ghép constructor, encapsulation, abstract class, override, polymorphism và record thành một luồng có đầu ra kiểm chứng được. Bài này đặt chúng vào bài toán tính lương, nơi mỗi loại nhân viên có công thức khác nhau nhưng service không được viết `if-else` theo từng loại. Nếu thiết kế đúng, thêm loại nhân viên mới sẽ không làm PayrollService thay đổi.",
+    "javaBridge": "Từ Day 4, bạn dùng constructor để tạo `Employee` có dữ liệu hợp lệ và field được giữ kín; từ Day 5, lớp con override `calculateSalary()`. `List<Employee>` là danh sách của kiểu chung nhưng có thể chứa cả `Developer` lẫn `Manager`; vòng `for` gọi cùng một method và JVM tự chọn công thức đúng. Record `EmployeeDTO` chỉ mang kết quả ra ngoài, không giữ logic tính lương.",
+    "mentalModel": "Hãy hình dung PayrollService là nhân viên tổng hợp nhận một chồng phong bì cùng nhãn `Employee`. Người tổng hợp không mở hồ sơ để đoán nghề; mỗi phong bì có nút `calculateSalary()` và khi bấm, object bên trong tự dùng đúng công thức của nó. Sau đó kết quả được chép lên một phiếu chỉ đọc — `EmployeeDTO`.",
+    "is": "Assignment này là bài tích hợp OOP, dùng abstract class làm khung chung, subclass giữ công thức riêng, polymorphism điều phối và record mang kết quả.",
+    "isNot": "Đây không phải bài luyện chuỗi `instanceof` hay ép kiểu từng nhân viên trong PayrollService. Cũng không nên đặt công thức của mọi loại vào lớp cha bằng một `switch`, vì như vậy thêm loại mới vẫn phải sửa code cũ.",
+    "solves": "Bài rèn cách phân trách nhiệm giữa domain object, service và DTO, đồng thời dùng test trộn nhiều subtype để chứng minh dynamic dispatch hoạt động. Day 6 là assignment OOP tổng hợp và chưa xây trực tiếp tính năng Spendwise.",
+    "selfCheck": [
+      {
+        "question": "Vì sao `PayrollService` chỉ cần nhận `List<Employee>` mà vẫn tính đúng cho cả Developer và Manager?",
+        "answer": "Mỗi phần tử giữ kiểu thật của object. Lời gọi `employee.calculateSalary()` được JVM phân giải tại runtime tới phiên bản override của đúng subtype."
+      },
+      {
+        "question": "Nếu thêm class `Intern extends Employee`, phần nào phải thêm và phần nào không nên sửa?",
+        "answer": "Thêm class `Intern` và override `calculateSalary()`, kèm test cho công thức mới. `PayrollService.runPayroll()` không nên đổi vì nó đã phụ thuộc vào hợp đồng `Employee`."
+      },
+      {
+        "question": "Vì sao cần một test cho danh sách trộn Developer và Manager thay vì chỉ test từng class riêng?",
+        "answer": "Test trộn xác nhận PayrollService thật sự gọi đa hình qua kiểu `Employee`. Nó có thể phát hiện lỗi điều phối hoặc override sai mà các test công thức riêng lẻ không chứng minh được."
+      },
+      {
+        "question": "Tại sao `EmployeeDTO` phù hợp với record nhưng `Employee` lại là abstract class?",
+        "answer": "DTO chỉ mang dữ liệu kết quả bất biến nên record giảm code lặp. `Employee` cần trạng thái chung, constructor và một hành vi chưa có phần cài đặt để các subtype override, nên abstract class phù hợp hơn."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day06-prac-1",
@@ -196,8 +222,8 @@
       "prompt": "Cài đặt đầy đủ Employee (abstract), Developer, Manager, PayrollService và EmployeeDTO (record) theo đúng đề bài, kèm ít nhất 3 unit test xác nhận calculateSalary() đúng cho từng loại nhân viên.",
       "choices": [],
       "correctChoiceIds": [],
-      "hint": "Bắt đầu từ khung sườn trong mục 'Cài đặt tham khảo' (đã có sẵn field/constructor/kế thừa) — chỉ cần điền vào các chỗ TODO trong calculateSalary() của Developer/Manager và trong PayrollService.runPayroll().",
-      "solution": "Không có công thức lương đầy đủ ở đây — calculateSalary() của Developer/Manager và phần tạo EmployeeDTO trong PayrollService.runPayroll() cố tình để trống dưới dạng TODO trong day06-blk-8 để bạn tự cài đặt theo đúng công thức mô tả trong TODO, rồi tự kiểm tra lại bằng bảng test case gợi ý (day06-blk-9).",
+      "hint": "Bắt đầu từ khung sườn trong mục 'Cài đặt tham khảo'; field, constructor và quan hệ kế thừa đã có sẵn, bạn chỉ cần hoàn thành các TODO trong `calculateSalary()` và `PayrollService.runPayroll()`.",
+      "solution": "Các phần `calculateSalary()` và tạo `EmployeeDTO` được để trống dưới dạng TODO để bạn tự cài đặt theo công thức đã mô tả. Sau đó, hãy tự kiểm tra bằng bảng test case gợi ý ở mục kế tiếp.",
       "explanation": "Không có lời giải cố định — đánh giá theo mức độ đúng cấu trúc OOP.",
       "rubric": "Đạt yêu cầu khi: Employee là abstract với abstract method đúng chữ ký; Developer/Manager override đầy đủ và kế thừa đúng field chung; EmployeeDTO là record; PayrollService dùng polymorphism (không if-else theo loại lớp); có test cho từng subclass và cho PayrollService.",
       "sourceUsage": []

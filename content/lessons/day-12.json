@@ -123,7 +123,7 @@
         {
           "id": "day12-blk-7",
           "type": "note",
-          "text": "Chủ đề này không có nguồn trích dẫn trong resourceIds của riêng Day 12 (2 trong 5 resourceIds là unavailable, 3 còn lại chỉ là nguồn File I/O); nguồn Stream API chi tiết thuộc về resourceIds của Day 10, không được gắn cho Day 12 nên không thể trích dẫn chéo giữa hai bài (xem authoring.limitations). Nội dung dưới đây áp dụng Stream API đã học ở Day 10 bằng kiến thức Java 17 chuẩn.",
+          "text": "Day 12 áp dụng lại Stream API của Day 10 để hoàn thành pipeline; tài liệu tham khảo riêng của bài này tập trung vào File I/O, nên phần dưới đây dùng kiến thức Java 17 chuẩn.",
           "citations": []
         },
         {
@@ -136,10 +136,10 @@
           "id": "day12-blk-15",
           "type": "code",
           "language": "text",
-          "code": "import java.util.List;\nimport java.util.Map;\nimport java.util.stream.Collectors;\nimport java.util.stream.Stream;\n\nclass SalesAggregator {\n\n    Map<String, Long> aggregateByCategory(Stream<SalesRow> validRows) {\n        // TODO: nhom cac SalesRow theo category va cong don revenue (kieu long)\n        // trong cung mot buoc collect(), ngay tren stream nay (khong tao List trung gian).\n        return null;\n    }\n\n    List<Map.Entry<String, Long>> top10ByRevenue(Map<String, Long> byCategory) {\n        // TODO: sap xep cac entry cua Map giam dan theo revenue,\n        // roi lay dung 10 phan tu dau tien (hoac it hon neu co duoi 10 category).\n        return null;\n    }\n}\n",
+          "code": "import java.util.List;\nimport java.util.Map;\nimport java.util.stream.Collectors;\nimport java.util.stream.Stream;\n\nclass SalesAggregator {\n\n    Map<String, Long> aggregateByCategory(Stream<SalesRow> validRows) {\n        // TODO: nhóm các SalesRow theo category và cộng dồn revenue (kiểu long)\n        // trong cùng một bước collect(), ngay trên stream này (không tạo List trung gian).\n        return null;\n    }\n\n    List<Map.Entry<String, Long>> top10ByRevenue(Map<String, Long> byCategory) {\n        // TODO: sắp xếp các entry của Map giảm dần theo revenue,\n        // rồi lấy đúng 10 phần tử đầu tiên (hoặc ít hơn nếu có dưới 10 category).\n        return null;\n    }\n}\n",
           "compile": false,
           "citations": [],
-          "partialReason": "Khung sườn minh họa cú pháp Stream/Collectors chuẩn Java 17; Day 12 không có resourceId riêng nào phủ chủ đề Stream API để gắn citation (xem day12-blk-7 và authoring.limitations), nên khối code không đưa vào bước javac của pipeline."
+          "partialReason": "Khung sườn dùng API Java 17 chuẩn và được để ngoài bước kiểm tra biên dịch độc lập để bạn hoàn thành các TODO."
         }
       ]
     },
@@ -150,7 +150,7 @@
         {
           "id": "day12-blk-9",
           "type": "note",
-          "text": "Chủ đề JMH (Java Microbenchmark Harness) không có nguồn trích dẫn nào trong toàn bộ bộ tài liệu được gắn cho khóa học (không resourceId nào của Day 7-12 đề cập JMH) — xem authoring.limitations. Nội dung dưới đây trình bày ở mức giới thiệu, đủ để học viên bắt đầu đo hiệu năng đúng đắn.",
+          "text": "Tài liệu tham khảo của khóa học chưa có bài riêng về JMH (Java Microbenchmark Harness). Phần dưới đây giới thiệu vừa đủ để bạn bắt đầu đo hiệu năng đúng cách.",
           "citations": []
         },
         {
@@ -163,10 +163,10 @@
           "id": "day12-blk-16",
           "type": "code",
           "language": "text",
-          "code": "// pom.xml can them (Maven):\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-core</artifactId><version>1.37</version></dependency>\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-generator-annprocess</artifactId><version>1.37</version><scope>provided</scope></dependency>\n// Chay: mvn clean package  ->  java -jar target/benchmarks.jar\n\nimport java.util.List;\nimport java.util.Map;\nimport java.util.concurrent.TimeUnit;\nimport org.openjdk.jmh.annotations.*;\n\n@State(Scope.Benchmark)\n@BenchmarkMode(Mode.AverageTime)\n@OutputTimeUnit(TimeUnit.MILLISECONDS)\n@Warmup(iterations = 3)\n@Measurement(iterations = 5)\npublic class AggregationBenchmark {\n\n    List<SalesRow> validRows;\n\n    @Setup\n    public void setup() {\n        // TODO: doc va loc san du lieu mau (vi du 500K dong) vao validRows,\n        // chi thuc hien mot lan truoc khi do (khong tinh vao thoi gian benchmark).\n    }\n\n    @Benchmark\n    public Map<String, Long> sequential() {\n        // TODO: goi phien ban stream() (tuan tu) cua buoc nhom+cong don tren validRows.\n        return null;\n    }\n\n    @Benchmark\n    public Map<String, Long> parallel() {\n        // TODO: goi phien ban parallelStream() (song song) cua cung buoc do tren validRows.\n        return null;\n    }\n}\n",
+          "code": "// pom.xml cần thêm (Maven):\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-core</artifactId><version>1.37</version></dependency>\n// <dependency><groupId>org.openjdk.jmh</groupId><artifactId>jmh-generator-annprocess</artifactId><version>1.37</version><scope>provided</scope></dependency>\n// Chạy: mvn clean package  ->  java -jar target/benchmarks.jar\n\nimport java.util.List;\nimport java.util.Map;\nimport java.util.concurrent.TimeUnit;\nimport org.openjdk.jmh.annotations.*;\n\n@State(Scope.Benchmark)\n@BenchmarkMode(Mode.AverageTime)\n@OutputTimeUnit(TimeUnit.MILLISECONDS)\n@Warmup(iterations = 3)\n@Measurement(iterations = 5)\npublic class AggregationBenchmark {\n\n    List<SalesRow> validRows;\n\n    @Setup\n    public void setup() {\n        // TODO: đọc và lọc sẵn dữ liệu mẫu (ví dụ 500K dòng) vào validRows,\n        // chỉ thực hiện một lần trước khi đo (không tính vào thời gian benchmark).\n    }\n\n    @Benchmark\n    public Map<String, Long> sequential() {\n        // TODO: gọi phiên bản stream() (tuần tự) của bước nhóm+cộng dồn trên validRows.\n        return null;\n    }\n\n    @Benchmark\n    public Map<String, Long> parallel() {\n        // TODO: gọi phiên bản parallelStream() (song song) của cùng bước đó trên validRows.\n        return null;\n    }\n}\n",
           "compile": false,
           "citations": [],
-          "partialReason": "Minh họa cấu trúc và annotation của JMH benchmark; không biên dịch được qua bước kiểm tra tự động của pipeline này vì thư viện JMH (org.openjdk.jmh) không có trên classpath (chỉ có JDK chuẩn) — xem authoring.limitations."
+          "partialReason": "Ví dụ cần thư viện JMH ngoài JDK chuẩn, nên không được đưa vào bước kiểm tra biên dịch độc lập của bài học."
         },
         {
           "id": "day12-blk-11",
@@ -183,7 +183,7 @@
         {
           "id": "day12-blk-12",
           "type": "note",
-          "text": "Chủ đề đồng bộ/thread-safety không có nguồn trích dẫn trong resourceIds của riêng Day 12 — nguồn synchronized/concurrency chi tiết thuộc về resourceIds của Day 11, không được gắn cho Day 12 nên không thể trích dẫn chéo giữa hai bài (xem authoring.limitations). Nội dung dưới đây áp dụng lại mẫu thiết kế synchronized đã học ở Day 11.",
+          "text": "Phần này áp dụng lại kiến thức `synchronized` và thread safety của Day 11 vào pipeline dữ liệu; tài liệu tham khảo riêng của Day 12 tập trung vào File I/O.",
           "citations": []
         },
         {
@@ -222,6 +222,32 @@
     "Bỏ qua charset khi ghi báo cáo chứa tiếng Việt bằng Files.writeString(target, content) — không truyền StandardCharsets.UTF_8 tường minh có thể khiến file xuất ra hiển thị sai ký tự trên môi trường có charset mặc định khác UTF-8 (đặc biệt trên Windows).",
     "Dùng double để cộng dồn revenue (tiền) thay vì kiểu số nguyên như long — lặp lại đúng lỗi đã cảnh báo từ Day 01 (không dùng double cho tiền) và đã mắc lại ở Day 06; sai số làm tròn của double tích lũy qua 500K dòng có thể cho tổng sai lệch."
   ],
+  "teaching": {
+    "why": "Biết từng API riêng lẻ chưa đủ để xử lý một file 500K dòng: chỉ một lần `readAllLines()` hoặc một `List` trung gian cũng phá mục tiêu tiết kiệm bộ nhớ; một benchmark đo sai có thể dẫn bạn tới tối ưu ngược. Assignment này buộc toàn bộ đường đi từ byte trên đĩa tới báo cáo JSON phải đúng, đo được và giữ cùng kết quả khi chạy song song.",
+    "javaBridge": "Bạn ghép lại `Files.lines()` của Day 11 với pipeline `filter`–`groupingBy`–`sorted`–`limit` của Day 10. `try-with-resources` giữ file handle đúng vòng đời; collector thay biến mutable dùng chung; `Files.writeString(..., UTF_8)` ghi kết quả cuối ra đĩa.",
+    "mentalModel": "Hãy hình dung một băng chuyền đi thẳng từ file tới bảng tổng hợp: mỗi dòng chỉ đi qua một lần, dòng lỗi rơi khỏi băng, dòng hợp lệ được cộng vào đúng ô category, rồi các ô được xếp hạng để lấy top 10. Nếu bạn chất toàn bộ hàng vào kho trung gian trước khi cộng, lợi thế streaming biến mất; nếu nhiều công nhân cùng viết một tờ giấy đếm, bạn tạo race condition.",
+    "is": "Đây là assignment tích hợp NIO.2, Stream/Collector, benchmark và xuất JSON thành một pipeline dữ liệu lớn có tiêu chí kiểm chứng.",
+    "isNot": "Đây không phải bài mặc định chuyển mọi pipeline sang parallel stream, cũng không yêu cầu tự viết accumulator mutable khi collector đã làm được. Một lần đo bằng đồng hồ hệ thống chưa phải benchmark đáng tin.",
+    "solves": "Bài này rèn cách đọc dữ liệu lớn theo dòng, loại bản ghi lỗi, nhóm và cộng tiền đúng kiểu, đo trước khi tối ưu, rồi xuất báo cáo UTF-8 hợp lệ. Trong Spendwise, V0.8 dùng cùng hình dạng cho `task-import-row-transaction`: đọc và xử lý CSV tải lên; phần tổng hợp nối với thống kê V0.2 bằng `BigDecimal.reduce`, không dùng `summingDouble`.",
+    "selfCheck": [
+      {
+        "question": "Pipeline gọi `Files.lines()`, sau đó `collect(toList())`, rồi mới `groupingBy`. Có còn tiết kiệm bộ nhớ theo số dòng không?",
+        "answer": "Không. Việc đọc ban đầu là lazy nhưng `toList()` giữ toàn bộ row hợp lệ trong bộ nhớ. Nếu chỉ cần tổng hợp, hãy truyền stream đang mở thẳng vào collector nhóm."
+      },
+      {
+        "question": "Vì sao collector thường tốt hơn một `HashMap` dùng chung được cập nhật trong `parallelStream()`?",
+        "answer": "Collector có cơ chế tích lũy riêng và kết hợp kết quả theo hợp đồng của Stream, tránh shared mutable state. `HashMap` dùng chung vừa không thread-safe vừa khiến pipeline phụ thuộc side effect."
+      },
+      {
+        "question": "Parallel nhanh hơn trong một lần đo trên 500K dòng. Bạn đã có thể kết luận chưa?",
+        "answer": "Chưa. Cần warm-up JIT, nhiều vòng đo, cùng dữ liệu và tiêu thụ kết quả để tránh tối ưu bỏ code; JMH xử lý các bẫy này tốt hơn phép đo thủ công."
+      },
+      {
+        "question": "Category chứa dấu ngoặc kép và dấu gạch chéo ngược. Chỉ nối chuỗi vào JSON có an toàn không?",
+        "answer": "Không. Hai ký tự phải được escape đúng hoặc JSON sẽ hỏng; trong ứng dụng thật nên dùng Jackson `ObjectMapper` thay vì tự ghép chuỗi."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day12-prac-1",
@@ -261,12 +287,12 @@
       "id": "day12-prac-2",
       "type": "coding",
       "interaction": "self-check",
-      "prompt": "Hoàn thành hai method còn để trống trong khung sườn SalesAggregator (day12-blk-15): aggregateByCategory(Stream<SalesRow> validRows) — nhóm theo category và cộng dồn revenue (kiểu long); và top10ByRevenue(Map<String, Long> byCategory) — trả về đúng 10 category có revenue cao nhất, sắp xếp giảm dần.",
+      "prompt": "Hoàn thành hai method còn để trống trong khung sườn `SalesAggregator`: `aggregateByCategory(Stream<SalesRow> validRows)` nhóm theo category và cộng dồn revenue (kiểu `long`); `top10ByRevenue(Map<String, Long> byCategory)` trả về đúng 10 category có revenue cao nhất, sắp xếp giảm dần.",
       "choices": [],
       "correctChoiceIds": [],
       "hint": "aggregateByCategory: dùng Collectors.groupingBy() kết hợp một downstream collector cộng dồn kiểu long (không phải summingDouble — revenue ở đây là long) trong cùng một bước collect(). top10ByRevenue: chuyển Map thành Stream các Map.Entry, dùng Map.Entry.comparingByValue().reversed() để sắp xếp giảm dần, rồi limit(10).",
-      "solution": "Không có cài đặt đầy đủ ở đây — phần thân của cả hai method cố tình để trống dưới dạng TODO trong khung sườn SalesAggregator (day12-blk-15) để bạn tự hoàn thành. Tự kiểm tra bằng cách tính tay kết quả (tổng theo category, và thứ hạng top-10) trên một tập dữ liệu mẫu nhỏ và so sánh với kết quả trả về (xem bảng tiêu chí nghiệm thu ở cuối bài, day12-sec-acceptance).",
-      "explanation": "aggregateByCategory áp dụng Collectors.groupingBy() kết hợp một downstream collector cộng dồn (summing) đã học ở Day 10, dùng kiểu long thay vì double để tránh sai số làm tròn khi cộng dồn tiền (xem day12-blk-5). top10ByRevenue kết hợp Map.Entry.comparingByValue() với reversed() để sắp xếp giảm dần theo revenue, rồi limit(10) để chỉ giữ 10 phần tử đầu.",
+      "solution": "Không có cài đặt đầy đủ ở đây: phần thân của cả hai method trong khung sườn `SalesAggregator` được để trống để bạn tự hoàn thành. Hãy tính tay tổng theo category và thứ hạng top 10 trên một tập dữ liệu mẫu nhỏ, rồi đối chiếu với kết quả trả về và bảng tiêu chí nghiệm thu cuối bài.",
+      "explanation": "`aggregateByCategory` áp dụng `Collectors.groupingBy()` với một downstream collector cộng dồn đã học ở Day 10, dùng `long` thay vì `double` để tránh sai số khi cộng tiền. `top10ByRevenue` kết hợp `Map.Entry.comparingByValue()` với `reversed()`, rồi `limit(10)` để giữ 10 phần tử đầu.",
       "rubric": "Đánh giá đúng: (1) aggregateByCategory nhóm đúng theo category và cộng dồn đúng kiểu long; (2) top10ByRevenue sắp xếp giảm dần (không phải tăng dần) và trả về đúng 10 phần tử (hoặc ít hơn nếu có dưới 10 category); không dùng biến chia sẻ thủ công, không làm thay đổi Map gốc.",
       "sourceUsage": []
     },
@@ -280,7 +306,7 @@
       "hint": "Nghĩ về cách Stream API tự gom kết quả qua collect() mà không cần chia sẻ trạng thái mutable.",
       "solution": "Nếu logic có thể diễn đạt hoàn toàn bằng collect()/reduce() (như aggregateByCategory ở trên), Stream API đã tự đảm bảo an toàn luồng khi gom kết quả mà không cần biến chia sẻ thủ công. Chỉ khi thật sự cần một hiệu ứng phụ (side-effect) ngoài pipeline (ví dụ đếm lỗi song song) mới cần một accumulator đồng bộ riêng, và phải đồng bộ đúng cách (như ThreadSafeAccumulator ở Day 11) để tránh race condition.",
       "explanation": "Ưu tiên cách tiếp cận khai báo (Stream/Collector) trước khi tự quản lý trạng thái chia sẻ thủ công.",
-      "rubric": "Đánh giá học viên nhận diện được khi nào thật sự cần accumulator đồng bộ riêng.",
+      "rubric": "Đánh giá bạn nhận diện được khi nào thật sự cần accumulator đồng bộ riêng.",
       "sourceUsage": []
     },
     {

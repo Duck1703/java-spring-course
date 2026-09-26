@@ -50,7 +50,7 @@
   "sections": [
     {
       "id": "day35-sec-brief",
-      "title": "Pham vi buoi hoc",
+      "title": "Phạm vi buổi học",
       "blocks": [
         {
           "id": "day35-blk-1",
@@ -68,7 +68,7 @@
     },
     {
       "id": "day35-sec-checkout",
-      "title": "Luong checkout va quan ly order",
+      "title": "Luồng checkout và quản lý order",
       "blocks": [
         {
           "id": "day35-blk-3",
@@ -88,7 +88,7 @@
           "id": "day35-blk-5",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\nclass OrderService {\n\n    // REQUIRED (mac dinh): dung transaction hien co hoac tao moi neu chua co.\n    @Transactional\n    public Order checkout(Long userId) {\n        Cart cart = loadCart(userId);\n        Order order = createOrderFromCart(cart);\n        clearCart(cart);\n        return order;\n    }\n\n    private Cart loadCart(Long userId) { return null; }\n    private Order createOrderFromCart(Cart cart) { return null; }\n    private void clearCart(Cart cart) { }\n}\n",
+          "code": "import org.springframework.stereotype.Service;\nimport org.springframework.transaction.annotation.Transactional;\n\n@Service\nclass OrderService {\n\n    // REQUIRED (mặc định): dùng transaction hiện có hoặc tạo mới nếu chưa có.\n    @Transactional\n    public Order checkout(Long userId) {\n        Cart cart = loadCart(userId);\n        Order order = createOrderFromCart(cart);\n        clearCart(cart);\n        return order;\n    }\n\n    private Cart loadCart(Long userId) { return null; }\n    private Order createOrderFromCart(Cart cart) { return null; }\n    private void clearCart(Cart cart) { }\n}\n",
           "compile": false,
           "citations": [
             "day35-src-1"
@@ -106,44 +106,44 @@
         {
           "id": "day35-blk-28",
           "type": "template",
-          "text": "class OrderService {\n\n    // Optimistic locking mac dinh (Product.version, xem Day 20 - day20-blk-55\n    // va day20-blk-56) - da duoc Day 32 (day32-blk-18) chi dinh ap dung cho\n    // dung buoc tru stock khi tao Order. day35-blk-6 chi ban muc isolation:\n    // tu isolation KHONG du de chan lost update, phai them buoc khoa nay.\n    @org.springframework.transaction.annotation.Transactional\n    Order checkout(Long userId) {\n        Cart cart = loadCart(userId);\n        for (CartItem item : cart.getItems()) {\n            reduceStock(item.getProductId(), item.getQuantity());\n        }\n        Order order = createOrderFromCart(cart);\n        clearCart(cart);\n        return order;\n    }\n\n    // Doc Product (co field @Version), tru stock trong bo nho, luu lai.\n    // Hibernate dua version vao menh de WHERE cua cau UPDATE; neu transaction\n    // khac da sua dong nay truoc (vi du checkout dong thoi cho cung san pham),\n    // khong dong nao khop -> ObjectOptimisticLockingFailureException. KHONG tu\n    // bat va lam lai ngam trong method nay - de exception thoat ra ngoai lam\n    // @Transactional cua checkout() rollback toan bo (Order khong duoc tao,\n    // Cart khong bi xoa), tra loi loi cho client de nguoi dung tu bam lai.\n    private void reduceStock(Long productId, int quantity) {\n        Product product = productRepository.findById(productId)\n                .orElseThrow(() -> new IllegalArgumentException(\"San pham khong ton tai\"));\n        if (product.getStock() < quantity) {\n            throw new IllegalStateException(\"Khong du ton kho\");\n        }\n        product.setStock(product.getStock() - quantity);\n        productRepository.save(product);\n    }\n\n    private Cart loadCart(Long userId) { return null; }\n    private Order createOrderFromCart(Cart cart) { return null; }\n    private void clearCart(Cart cart) { }\n}\n",
+          "text": "class OrderService {\n\n    // Optimistic locking mặc định (Product.version, xem Day 20) - đã được Day 32 chi định áp dùng cho\n    // dùng bước trừ stock khi tạo Order. phần liên quan chỉ bàn mức isolation:\n    // từ isolation KHÔNG đủ để chặn lost update, phải thêm bước khóa này.\n    @org.springframework.transaction.annotation.Transactional\n    Order checkout(Long userId) {\n        Cart cart = loadCart(userId);\n        for (CartItem item : cart.getItems()) {\n            reduceStock(item.getProductId(), item.getQuantity());\n        }\n        Order order = createOrderFromCart(cart);\n        clearCart(cart);\n        return order;\n    }\n\n    // Đọc Product (có field @Version), tru stock trong bo nho, luu lai.\n    // Hibernate dua version vao menh để WHERE của cau UPDATE; nếu transaction\n    // khac đã sua dong này truoc (vì du checkout dong thoi cho cung san phạm),\n    // không dòng nào khớp -> ObjectOptimisticLockingFailureException. KHÔNG từ\n    // bat và lam lai ngam trong method này - để exception thoat ra ngoai lam\n    // @Transactional của checkout() rollback toan bo (Order không được tạo,\n    // Cart không bi xoa), trả lỗi lỗi cho client để người dùng từ bam lai.\n    private void reduceStock(Long productId, int quantity) {\n        Product product = productRepository.findById(productId)\n                .orElseThrow(() -> new IllegalArgumentException(\"San phạm không ton tai\"));\n        if (product.getStock() < quantity) {\n            throw new IllegalStateException(\"Không du ton kho\");\n        }\n        product.setStock(product.getStock() - quantity);\n        productRepository.save(product);\n    }\n\n    private Cart loadCart(Long userId) { return null; }\n    private Order createOrderFromCart(Cart cart) { return null; }\n    private void clearCart(Cart cart) { }\n}\n",
           "citations": []
         },
         {
           "id": "day35-blk-32",
           "type": "note",
-          "text": "Hai nhánh thất bại của reduceStock() ở day35-blk-28 phải được ánh xạ thành đúng status code mà API contract Day 31 quy định cho POST /api/orders là 409 Conflict ('một sản phẩm trong giỏ đã hết hàng tại thời điểm checkout'): IllegalStateException('Khong du ton kho') khi đọc thấy stock đã không đủ, và ObjectOptimisticLockingFailureException khi hai checkout đồng thời tranh chấp cùng dòng Product. Cả hai đi ra ngoài @Transactional (rollback toàn bộ) rồi được GlobalExceptionHandler duy nhất của dự án (Day 32 - day32-blk-9, quy ước ở day31-blk-7) chuyển thành ProblemDetail với HttpStatus.CONFLICT. Nếu KHÔNG thêm @ExceptionHandler cho hai exception này, chúng rơi xuống lớp mặc định của Spring Boot và trả 500 - sai contract Day 31. Việc viết hai @ExceptionHandler đó là phần học viên tự hoàn thiện (day32-blk-9 chỉ minh họa ba handler mẫu: 404 cho ResourceNotFoundException, 400 cho MethodArgumentNotValidException và ValidationException), nhưng hành vi 409 quan sát được thì có chấm - xem bảng acceptance day35-blk-26. Về lựa chọn cơ chế: Day 20 (day20-blk-35) có nêu một cách khác là chuyển 'đọc rồi trừ' thành một câu UPDATE nguyên tử ('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?') - đủ để chống race cho riêng bước trừ stock và không cần khóa. Sprint 3 vẫn chọn optimistic locking bằng @Version vì checkout() phải đọc Product trong cùng transaction để tính giá vào OrderItem (day35-blk-3) và để dựng thông báo lỗi nghiệp vụ, nên đằng nào cũng có bước đọc-rồi-ghi trên entity; @Version bảo vệ toàn bộ transaction đó, đúng chỉ định của Day 32 (day32-blk-18) cho use case này. Câu UPDATE nguyên tử là lựa chọn thay thế hợp lệ nếu học viên tách riêng bước trừ stock - miễn là hành vi quan sát được ở bảng acceptance vẫn đúng (chấm hành vi, không chấm cơ chế).",
+          "text": "Hai nhánh thất bại của reduceStock() ở phần này phải được ánh xạ thành đúng status code mà API contract Day 31 quy định cho POST /api/orders là 409 Conflict ('một sản phẩm trong giỏ đã hết hàng tại thời điểm checkout'): IllegalStateException('Không đủ tồn kho') khi đọc thấy stock đã không đủ, và ObjectOptimisticLockingFailureException khi hai checkout đồng thời tranh chấp cùng dòng Product. Cả hai đi ra ngoài @Transactional (rollback toàn bộ) rồi được GlobalExceptionHandler duy nhất của dự án (Day 32, quy ước ở phần này) chuyển thành ProblemDetail với HttpStatus.CONFLICT. Nếu KHÔNG thêm @ExceptionHandler cho hai exception này, chúng rơi xuống lớp mặc định của Spring Boot và trả 500 - sai contract Day 31. Việc viết hai @ExceptionHandler đó là phần bạn tự hoàn thiện (phần liên quan chỉ minh họa ba handler mẫu: 404 cho ResourceNotFoundException, 400 cho MethodArgumentNotValidException và ValidationException), nhưng hành vi 409 quan sát được thì có chấm - xem bảng acceptance phần liên quan. Về lựa chọn cơ chế: Day 20 có nêu một cách khác là chuyển 'đọc rồi trừ' thành một câu UPDATE nguyên tử ('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?') - đủ để chống race cho riêng bước trừ stock và không cần khóa. Sprint 3 vẫn chọn optimistic locking bằng @Version vì checkout() phải đọc Product trong cùng transaction để tính giá vào OrderItem  và để dựng thông báo lỗi nghiệp vụ, nên đằng nào cũng có bước đọc-rồi-ghi trên entity; @Version bảo vệ toàn bộ transaction đó, đúng chỉ định của Day 32 cho use case này. Câu UPDATE nguyên tử là lựa chọn thay thế hợp lệ nếu bạn tách riêng bước trừ stock - miễn là hành vi quan sát được ở bảng acceptance vẫn đúng (chấm hành vi, không chấm cơ chế).",
           "citations": []
         },
         {
           "id": "day35-blk-31",
           "type": "note",
-          "text": "Tham số userId trong checkout(Long userId) ở các khối trên là giá trị SERVER TỰ SUY RA, không phải dữ liệu client gửi lên: theo API contract Day 31, POST /api/orders không có body và không có userId trên path - tầng Controller lấy id chủ sở hữu từ claim sub của JWT đã xác thực (((Jwt) authentication.getPrincipal()).getSubject(), đúng cách đã làm ở CartController day34-blk-17 và đúng mô hình principal-là-Jwt của day33-blk-11) rồi mới truyền xuống OrderService. TUYỆT ĐỐI không nhận userId từ path/body vì client có thể giả mạo để checkout giỏ hàng của người khác. Tương tự, GET /api/admin/orders/export chỉ mở cho ROLE_ADMIN bằng quy tắc phân quyền phía server (Day 23/33), không dựa vào bất kỳ cờ nào do client gửi.",
+          "text": "Tham số userId trong checkout(Long userId) ở các khối trên là giá trị SERVER TỰ SUY RA, không phải dữ liệu client gửi lên: theo API contract Day 31, POST /api/orders không có body và không có userId trên path - tầng Controller lấy id chủ sở hữu từ claim sub của JWT đã xác thực (((Jwt) authentication.getPrincipal()).getSubject(), đúng cách đã làm ở CartController và đúng mô hình principal-là-Jwt của) rồi mới truyền xuống OrderService. TUYỆT ĐỐI không nhận userId từ path/body vì client có thể giả mạo để checkout giỏ hàng của người khác. Tương tự, GET /api/admin/orders/export chỉ mở cho ROLE_ADMIN bằng quy tắc phân quyền phía server (Day 23/33), không dựa vào bất kỳ cờ nào do client gửi.",
           "citations": []
         },
         {
           "id": "day35-blk-33",
           "type": "note",
-          "text": "GET /api/orders/{id} (Day 31 - day31-blk-9) khác Cart (day34-blk-17) và POST /api/orders ở trên: hai chỗ đó không cần so khớp chủ sở hữu tường minh vì luôn tự lọc theo userId hiện tại (giỏ hàng của chính user, checkout dùng giỏ của chính user). Nhưng {id} trên path GET /api/orders/{id} do client tự chọn, nên có thể trỏ tới một Order KHÔNG thuộc về mình - Controller/Service bắt buộc phải tự so sánh chủ sở hữu của Order tải được với claim sub của JWT hiện tại (đọc principal đúng cách đã dùng ở day34-blk-17), rồi mới quyết định trả 403 hay trả dữ liệu, đúng thứ tự lỗi Day 31 quy định cho endpoint này (401; 403 nếu order thuộc user khác; 404 nếu id không tồn tại). Cách tạo đúng 403 cho một user ĐÃ xác thực nhưng thiếu quyền trên đúng tài nguyên đó: ném org.springframework.security.access.AccessDeniedException ngay trong tầng nghiệp vụ sau khi so sánh chủ sở hữu - ExceptionTranslationFilter xử lý AccessDeniedException phát sinh trong toàn bộ filter chain (bao trùm cả phần DispatcherServlet/Controller gọi vào, không riêng gì AuthorizationFilter), và vì user không phải anonymous nên uỷ quyền cho AccessDeniedHandler mặc định trả 403 - cùng quy tắc định tuyến 401-vs-403 đã học ở Day 22 (day22-blk-24), chỉ khác ở đây exception do chính nghiệp vụ ném ra thay vì do AuthorizationFilter tự phát hiện qua authorizeHttpRequests.",
+          "text": "GET /api/orders/{id} (Day 31) khác Cart () và POST /api/orders ở trên: hai chỗ đó không cần so khớp chủ sở hữu tường minh vì luôn tự lọc theo userId hiện tại (giỏ hàng của chính user, checkout dùng giỏ của chính user). Nhưng {id} trên path GET /api/orders/{id} do client tự chọn, nên có thể trỏ tới một Order KHÔNG thuộc về mình - Controller/Service bắt buộc phải tự so sánh chủ sở hữu của Order tải được với claim sub của JWT hiện tại (đọc principal đúng cách đã dùng ở), rồi mới quyết định trả 403 hay trả dữ liệu, đúng thứ tự lỗi Day 31 quy định cho endpoint này (401; 403 nếu order thuộc user khác; 404 nếu id không tồn tại). Cách tạo đúng 403 cho một user ĐÃ xác thực nhưng thiếu quyền trên đúng tài nguyên đó: ném org.springframework.security.access.AccessDeniedException ngay trong tầng nghiệp vụ sau khi so sánh chủ sở hữu - ExceptionTranslationFilter xử lý AccessDeniedException phát sinh trong toàn bộ filter chain (bao trùm cả phần DispatcherServlet/Controller gọi vào, không riêng gì AuthorizationFilter), và vì user không phải anonymous nên uỷ quyền cho AccessDeniedHandler mặc định trả 403 - cùng quy tắc định tuyến 401-vs-403 đã học ở Day 22 (), chỉ khác ở đây exception do chính nghiệp vụ ném ra thay vì do AuthorizationFilter tự phát hiện qua authorizeHttpRequests.",
           "citations": ["day35-src-19", "day35-src-20"]
         },
         {
           "id": "day35-blk-34",
           "type": "template",
-          "text": "class OrderController {\n\n    // Doc chu so huu tu JWT giong het day34-blk-17 (CartController), KHONG\n    // nhan userId tu path/body.\n    @org.springframework.web.bind.annotation.GetMapping(\"/api/orders/{id}\")\n    OrderDto getOrder(@org.springframework.web.bind.annotation.PathVariable Long id,\n                       org.springframework.security.core.Authentication authentication) {\n        Long currentUserId = Long.valueOf(\n            ((org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal()).getSubject());\n\n        Order order = orderRepository.findById(id)\n                .orElseThrow(() -> new ResourceNotFoundException(\"Khong tim thay order\"));\n\n        // So khop chu so huu TRUOC khi tra du lieu - thieu buoc nay se lo don\n        // hang cua nguoi khac cho bat ky user da dang nhap nao doan duoc id\n        // (xem day35-blk-33 ve ly do va co che tao 403).\n        if (!order.getUserId().equals(currentUserId)) {\n            throw new org.springframework.security.access.AccessDeniedException(\n                \"Order khong thuoc ve user hien tai\");\n        }\n\n        return toDto(order);\n    }\n\n    // GET /api/orders (danh sach) tu loc theo currentUserId giong CartController\n    // (day34-blk-17), khong can buoc so khop chu so huu vi khong nhan id tren path.\n\n    private OrderDto toDto(Order order) { return null; }\n}\n",
+          "text": "class OrderController {\n\n    // Đọc chủ sở hữu từ JWT giống hệt phần liên quan (CartController), KHÔNG\n    // nhan userId từ path/body.\n    @org.springframework.web.bind.annotation.GetMapping(\"/api/orders/{id}\")\n    OrderDto getOrder(@org.springframework.web.bind.annotation.PathVariable Long id,\n                       org.springframework.security.core.Authentication authentication) {\n        Long currentUserId = Long.valueOf(\n            ((org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal()).getSubject());\n\n        Order order = orderRepository.findById(id)\n                .orElseThrow(() -> new ResourceNotFoundException(\"Không tim thay order\"));\n\n        // So khớp chủ sở hữu TRƯỚC khi trả dữ liệu - thiếu bước này sẽ lộ đơn\n        // hang của người khac cho bat kỹ user đã dang nhap nao doan được id\n        // (xem phần liên quan ve lý do và có che tạo 403).\n        if (!order.getUserId().equals(currentUserId)) {\n            throw new org.springframework.security.access.AccessDeniedException(\n                \"Order không thuoc ve user hien tai\");\n        }\n\n        return toDto(order);\n    }\n\n    // GET /api/orders (danh sách) từ lọc theo currentUserId giống CartController\n    // , không cần bước so khớp chủ sở hữu vì không nhận id tren path.\n\n    private OrderDto toDto(Order order) { return null; }\n}\n",
           "citations": []
         },
         {
           "id": "day35-blk-7",
           "type": "note",
-          "text": "Không có resource nào trong resourceIds của Day 35 mô tả riêng nghiệp vụ order/checkout - phần thiết kế Order/OrderItem ở trên là quyết định thiết kế nghiệp vụ, chỉ phần @Transactional bao quanh checkout() có trích dẫn kỹ thuật.",
+          "text": "Tài liệu tham khảo của Day 35 không mô tả riêng nghiệp vụ order/checkout; phần thiết kế Order/OrderItem ở trên là quyết định domain design của dự án, còn phần `@Transactional` bao quanh `checkout()` có nguồn kỹ thuật riêng.",
           "citations": []
         }
       ]
     },
     {
       "id": "day35-sec-async",
-      "title": "Gui email xac nhan bat dong bo (@Async)",
+      "title": "Gửi email xác nhận bất đồng bộ (@Async)",
       "blocks": [
         {
           "id": "day35-blk-8",
@@ -157,7 +157,7 @@
           "id": "day35-blk-9",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\nimport java.util.concurrent.CompletableFuture;\n\n@Service\nclass NotificationService {\n\n    // Chay tren luong khac; goi tu OrderService (Spring AOP proxy) moi co hieu luc.\n    @Async\n    public CompletableFuture<Void> sendOrderConfirmation(Long orderId) {\n        // gui email...\n        return CompletableFuture.completedFuture(null);\n    }\n}\n",
+          "code": "import org.springframework.scheduling.annotation.Async;\nimport org.springframework.stereotype.Service;\nimport java.util.concurrent.CompletableFuture;\n\n@Service\nclass NotificationService {\n\n    // Chạy trên luồng khác; gọi từ OrderService (Spring AOP proxy) mới có hiệu lực.\n    @Async\n    public CompletableFuture<Void> sendOrderConfirmation(Long orderId) {\n        // gửi email...\n        return CompletableFuture.completedFuture(null);\n    }\n}\n",
           "compile": false,
           "citations": [
             "day35-src-4",
@@ -187,7 +187,7 @@
         {
           "id": "day35-blk-12",
           "type": "note",
-          "text": "Theo tài liệu Spring Framework, khi không có Executor/TaskExecutor nào khác trong context, @Async mặc định dùng SimpleAsyncTaskExecutor (tạo thread mới cho mỗi lần gọi); dự án chủ động ghi đè bằng ThreadPoolTaskExecutor (implements AsyncConfigurer) để giới hạn corePoolSize/maxPoolSize/queueCapacity, tránh tạo thread không kiểm soát khi có nhiều đơn hàng cùng lúc. (Một ứng dụng Spring Boot có thể đã tự động cấu hình sẵn một TaskExecutor khác trước khi có AsyncConfig này - không có nguồn nào trong khoá học mô tả cơ chế auto-configuration đó, xem authoring.limitations; dù executor mặc định ban đầu là gì, AsyncConfigurer ở day35-blk-11 luôn được Spring ưu tiên dùng cho @Async của dự án, nên hành vi quan sát được không phụ thuộc vào giả định này.)",
+          "text": "Theo tài liệu Spring Framework, khi không có Executor/TaskExecutor nào khác trong context, @Async mặc định dùng SimpleAsyncTaskExecutor (tạo thread mới cho mỗi lần gọi); dự án chủ động ghi đè bằng ThreadPoolTaskExecutor (implements AsyncConfigurer) để giới hạn corePoolSize/maxPoolSize/queueCapacity, tránh tạo thread không kiểm soát khi có nhiều đơn hàng cùng lúc. (Một ứng dụng Spring Boot có thể đã tự động cấu hình sẵn một TaskExecutor khác trước khi có AsyncConfig này - không có nguồn nào trong khoá học mô tả cơ chế auto-configuration đó, xem phần giới hạn nguồn của bài; dù executor mặc định ban đầu là gì, AsyncConfigurer ở luôn được Spring ưu tiên dùng cho @Async của dự án, nên hành vi quan sát được không phụ thuộc vào giả định này.)",
           "citations": [
             "day35-src-6"
           ]
@@ -195,7 +195,7 @@
         {
           "id": "day35-blk-13",
           "type": "note",
-          "text": "AsyncUncaughtExceptionHandler CHỈ áp dụng cho method @Async trả về void (không thể ném exception ra ngoài caller nên cần một handler riêng để log/xử lý), KHÔNG áp dụng cho sendOrderConfirmation() ở day35-blk-9 vì method đó trả về CompletableFuture<Void>, không phải void; cách sendOrderConfirmation() báo lỗi được trình bày riêng ngay bên dưới. Vì vậy AsyncConfig của dự án ở day35-blk-11 chỉ override getAsyncExecutor() và CỐ Ý không đăng ký getAsyncUncaughtExceptionHandler(): toàn bộ tác vụ @Async của capstone đi theo kiểu trả về CompletableFuture. (Bản @Async void của cùng nghiệp vụ gửi email từng xuất hiện ở Day 27 - day27-blk-6; Sprint 3 chốt lại kiểu trả về là CompletableFuture<Void> để quan sát được lỗi, nên bản void đó không còn là hình dạng của dự án. Mẫu cấu hình đầy đủ có handler đã học ở Day 25 - day25-blk-36 - chỉ cần dùng lại nếu về sau dự án thêm một @Async method trả void.)",
+          "text": "AsyncUncaughtExceptionHandler CHỈ áp dụng cho method @Async trả về void (không thể ném exception ra ngoài caller nên cần một handler riêng để log/xử lý), KHÔNG áp dụng cho sendOrderConfirmation() ở vì method đó trả về CompletableFuture<Void>, không phải void; cách sendOrderConfirmation() báo lỗi được trình bày riêng ngay bên dưới. Vì vậy AsyncConfig của dự án ở chỉ override getAsyncExecutor() và CỐ Ý không đăng ký getAsyncUncaughtExceptionHandler(): toàn bộ tác vụ @Async của capstone đi theo kiểu trả về CompletableFuture. (Bản @Async void của cùng nghiệp vụ gửi email từng xuất hiện ở Day 27; Sprint 3 chốt lại kiểu trả về là CompletableFuture<Void> để quan sát được lỗi, nên bản void đó không còn là hình dạng của dự án. Mẫu cấu hình đầy đủ có handler đã học ở Day 25 - chỉ cần dùng lại nếu về sau dự án thêm một @Async method trả void.)",
           "citations": [
             "day35-src-7"
           ]
@@ -209,14 +209,14 @@
         {
           "id": "day35-blk-30",
           "type": "template",
-          "text": "class OrderService {\n\n    // sendOrderConfirmation() tra CompletableFuture<Void> (khong phai void) nen\n    // AsyncUncaughtExceptionHandler (day35-blk-13) KHONG duoc goi khi method nay\n    // nem exception. Loi duoc dua vao chinh CompletableFuture tra ve o trang\n    // thai exceptionally - phai tu gan .exceptionally()/.handle() de quan sat.\n    void checkout(Long userId) {\n        Order order = doCheckout(userId);\n        notificationService.sendOrderConfirmation(order.getId())\n                .exceptionally(ex -> {\n                    log.error(\"Gui email xac nhan don hang {} that bai\", order.getId(), ex);\n                    return null;\n                });\n    }\n\n    private Order doCheckout(Long userId) { return null; }\n}\n",
+          "text": "class OrderService {\n\n    // sendOrderConfirmation() trả CompletableFuture<Void> (không phải void) nen\n    // AsyncUncaughtExceptionHandler  KHÔNG được gọi khi method này\n    // ném exception. Lỗi được dua vao chinh CompletableFuture trả ve o trang\n    // thai exceptionally - phải từ gắn .exceptionally()/.handle() để quan sat.\n    void checkout(Long userId) {\n        Order order = doCheckout(userId);\n        notificationService.sendOrderConfirmation(order.getId())\n                .exceptionally(ex -> {\n                    log.error(\"Gửi email xac nhan don hang {} that bài\", order.getId(), ex);\n                    return null;\n                });\n    }\n\n    private Order doCheckout(Long userId) { return null; }\n}\n",
           "citations": []
         }
       ]
     },
     {
       "id": "day35-sec-csv",
-      "title": "Xuat CSV don hang (admin)",
+      "title": "Xuất CSV đơn hàng (admin)",
       "blocks": [
         {
           "id": "day35-blk-14",
@@ -258,7 +258,7 @@
     },
     {
       "id": "day35-sec-docker",
-      "title": "Hoan thien Docker/docker-compose va CI pipeline",
+      "title": "Hoàn thiện Docker/docker-compose và CI pipeline",
       "blocks": [
         {
           "id": "day35-blk-18",
@@ -281,7 +281,7 @@
           "id": "day35-blk-20",
           "type": "code",
           "language": "dockerfile",
-          "code": "# --- build stage: tach layer bang layertools ---\nFROM eclipse-temurin:17-jre AS builder\nWORKDIR application\nARG JAR_FILE=target/*.jar\nCOPY ${JAR_FILE} application.jar\nRUN java -Djarmode=layertools -jar application.jar extract\n\n# --- final stage: copy tung layer rieng, tan dung Docker layer cache ---\n# Thu tu 4 layer mac dinh (tu it doi nhat den hay doi nhat): dependencies,\n# snapshot-dependencies, resources, application - xem day35-blk-19.\nFROM eclipse-temurin:17-jre\nWORKDIR application\nCOPY --from=builder application/dependencies/ ./\nCOPY --from=builder application/snapshot-dependencies/ ./\nCOPY --from=builder application/resources/ ./\nCOPY --from=builder application/application/ ./\nENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]\n",
+          "code": "# --- build stage: tach layer bằng layertools ---\nFROM eclipse-temurin:17-jre AS builder\nWORKDIR application\nARG JAR_FILE=target/*.jar\nCOPY ${JAR_FILE} application.jar\nRUN java -Djarmode=layertools -jar application.jar extract\n\n# --- final stage: copy tung layer rieng, tan dùng Docker layer cache ---\n# Thử từ 4 layer mặc định (từ ít doi nhất den hay doi nhất): dependencies,\n# snapshot-dependencies, resources, application - xem phần liên quan.\nFROM eclipse-temurin:17-jre\nWORKDIR application\nCOPY --from=builder application/dependencies/ ./\nCOPY --from=builder application/snapshot-dependencies/ ./\nCOPY --from=builder application/resources/ ./\nCOPY --from=builder application/application/ ./\nENTRYPOINT [\"java\", \"org.springframework.boot.loader.launch.JarLauncher\"]\n",
           "compile": false,
           "citations": [
             "day35-src-10",
@@ -300,7 +300,7 @@
         {
           "id": "day35-blk-22",
           "type": "paragraph",
-          "text": "Dependency spring-boot-docker-compose cho phép Spring Boot tự động chạy 'docker compose up' khi ứng dụng khởi động và 'down' khi dừng, dựa trên docker-compose.yml có sẵn (Postgres cho DB) - tự phát hiện service phổ biến và tạo ConnectionDetails bean tương ứng, bỏ qua cấu hình datasource thủ công. (Dự án hiện tại không dùng Redis - xem day30-blk-13 - nên docker-compose.yml chỉ cần khai báo service Postgres; cơ chế tự phát hiện tương tự cũng áp dụng nếu về sau dự án thêm Redis.)",
+          "text": "Dependency spring-boot-docker-compose cho phép Spring Boot tự động chạy 'docker compose up' khi ứng dụng khởi động và 'down' khi dừng, dựa trên docker-compose.yml có sẵn (Postgres cho DB) - tự phát hiện service phổ biến và tạo ConnectionDetails bean tương ứng, bỏ qua cấu hình datasource thủ công. (Dự án hiện tại không dùng Redis - - nên docker-compose.yml chỉ cần khai báo service Postgres; cơ chế tự phát hiện tương tự cũng áp dụng nếu về sau dự án thêm Redis.)",
           "citations": [
             "day35-src-12",
             "day35-src-13"
@@ -317,7 +317,7 @@
         {
           "id": "day35-blk-24",
           "type": "template",
-          "text": "CI pipeline verify - các bước chuẩn: (1) checkout code, (2) ./mvnw test (unit + integration test bằng Testcontainers), (3) ./mvnw spring-boot:build-image, (4) push image lên registry nếu build ở nhánh main. Không có resource nào trong resourceIds của Day 35 mô tả cấu hình CI cụ thể (GitHub Actions/GitLab CI) - trình bày như một khối template không trích dẫn.",
+          "text": "CI pipeline có thể gồm các bước: (1) checkout code, (2) `./mvnw test` để chạy unit và integration test bằng Testcontainers, (3) `./mvnw spring-boot:build-image`, (4) push image lên registry nếu build ở nhánh main. Tài liệu tham khảo của Day 35 không mô tả cấu hình CI cụ thể cho GitHub Actions hoặc GitLab CI; đây là template để bạn điều chỉnh theo nền tảng dự án.",
           "citations": []
         }
       ]
@@ -329,13 +329,13 @@
         {
           "id": "day35-blk-25",
           "type": "note",
-          "text": "Lưu ý về day35-blk-5 (OrderService.checkout()): loadCart/createOrderFromCart/clearCart trong khối code minh họa cố tình trả về null/không làm gì (pseudocode) vì lý do classpath (xem partialReason của block đó), KHÔNG phải một lỗ hổng logic nghiệp vụ cần cảnh báo riêng - đây là quy ước trình bày code Spring nhất quán trong toàn khoá học (minh họa cấu trúc/annotation, không phải cài đặt đầy đủ). Cùng quy ước đó áp dụng cho day35-blk-28 (productRepository chưa khai báo, loadCart/createOrderFromCart/clearCart vẫn là stub), day35-blk-30 (doCheckout/notificationService/log chưa khai báo) và day35-blk-34 (orderRepository/OrderDto/Order/ResourceNotFoundException chưa khai báo, toDto() là stub) - ba block template minh họa cơ chế khóa tồn kho, cách quan sát lỗi @Async, và cách so khớp chủ sở hữu Order, không phải bản cài đặt đầy đủ. Bảng acceptance criteria dưới đây áp dụng cho bản cài đặt THẬT mà học viên tự hoàn thiện, không áp dụng nghĩa đen cho các method stub trong các block minh họa.",
+          "text": "Các khối code trong bài là pseudocode để minh họa annotation và cấu trúc: một số collaborator chưa khai báo, còn `loadCart`, `createOrderFromCart`, `clearCart`, `doCheckout` và `toDto` là stub. Acceptance criteria dưới đây áp dụng cho bản cài đặt thật mà bạn tự hoàn thiện, không áp dụng nghĩa đen cho các stub minh họa.",
           "citations": []
         },
         {
           "id": "day35-blk-27",
           "type": "note",
-          "text": "Bảng acceptance criteria dưới đây áp dụng đầy đủ cho cả 8 hạng mục Sprint 3, không còn hạng mục nào bị loại khỏi điều kiện chấm. Ba điểm trước đây thiếu cơ chế cụ thể hoặc thiếu hẳn hạng mục nay đã được bổ sung ngay trong bài: (1) Tồn kho không xuống âm khi checkout đồng thời - day35-blk-28 áp dụng optimistic locking (@Version trên Product, đã học ở Day 20 - day20-blk-55/day20-blk-56, được Day 32 - day32-blk-18 chỉ định cho đúng use case trừ stock này) vào bước trừ stock trong checkout(); day35-blk-6 (isolation) là điều kiện cần nhưng không đủ, cơ chế khóa ở day35-blk-28 mới là điều kiện đủ để ngăn lost update. (2) Lỗi @Async được xử lý đúng theo kiểu trả về - day35-blk-13 giới hạn lại AsyncUncaughtExceptionHandler CHỈ cho @Async method trả void; sendOrderConfirmation() trả CompletableFuture<Void> nên báo lỗi qua chính CompletableFuture đó, được minh họa ở day35-blk-29/day35-blk-30 bằng .exceptionally() - day35-blk-9 và day35-blk-13 nay đã khớp nhau về kiểu trả về, không còn mâu thuẫn. (3) Phần 'quản lý order' của deliverable (day35-blk-1) trước đây chỉ có checkout và CSV export cho admin, thiếu phía user xem đơn hàng của chính mình - day35-blk-33/day35-blk-34 bổ sung cơ chế so khớp chủ sở hữu cho GET /api/orders/{id} và hạng mục acceptance thứ 8 tương ứng bên dưới, đúng contract 401/403/404 của Day 31.",
+          "text": "Bảng acceptance criteria áp dụng cho đủ tám hạng mục. Ba điểm cần đặc biệt kiểm chứng: tồn kho dùng `@Version` tại bước trừ stock để chống lost update; lỗi từ `CompletableFuture<Void>` được quan sát bằng `.exceptionally()` hoặc `.handle()`; và GET `/api/orders/{id}` so khớp chủ sở hữu với claim `sub` trước khi trả dữ liệu.",
           "citations": []
         },
         {
@@ -354,8 +354,8 @@
             ],
             [
               "Tồn kho không xuống âm khi nhiều user checkout đồng thời sản phẩm sắp hết hàng",
-              "Giả lập 2 request checkout gần như đồng thời cho sản phẩm chỉ còn 1 đơn vị tồn kho (dùng cơ chế reduceStock ở day35-blk-28)",
-              "Đúng 1 trong 2 request thành công (Order được tạo, stock giảm về 0); request còn lại thất bại có kiểm soát (ObjectOptimisticLockingFailureException do xung đột @Version, hoặc IllegalStateException 'Không đủ tồn kho' nếu request đó xử lý sau khi stock đã về 0 - không phải crash/treo ứng dụng) VÀ request thất bại đó trả 409 Conflict dạng ProblemDetail đúng contract Day 31, không phải 500 (xem day35-blk-32); tồn kho cuối cùng KHÔNG bao giờ xuống âm và KHÔNG có 2 Order cùng được tạo cho 1 đơn vị tồn kho duy nhất."
+              "Giả lập 2 request checkout gần như đồng thời cho sản phẩm chỉ còn 1 đơn vị tồn kho (dùng cơ chế reduceStock ở)",
+              "Đúng 1 trong 2 request thành công (Order được tạo, stock giảm về 0); request còn lại thất bại có kiểm soát (ObjectOptimisticLockingFailureException do xung đột @Version, hoặc IllegalStateException 'Không đủ tồn kho' nếu request đó xử lý sau khi stock đã về 0 - không phải crash/treo ứng dụng) VÀ request thất bại đó trả 409 Conflict dạng ProblemDetail đúng contract Day 31, không phải 500; tồn kho cuối cùng KHÔNG bao giờ xuống âm và KHÔNG có 2 Order cùng được tạo cho 1 đơn vị tồn kho duy nhất."
             ],
             [
               "Gửi email xác nhận không chặn luồng chính (@Async)",
@@ -365,11 +365,11 @@
             [
               "Xử lý lỗi khi @Async method thất bại",
               "Ép sendOrderConfirmation() ném exception (ví dụ SMTP lỗi giả lập)",
-              "Ứng dụng không crash và request checkout đã trả response trước đó không bị ảnh hưởng; lỗi được quan sát qua callback .exceptionally() gắn trên CompletableFuture trả về của sendOrderConfirmation() (day35-blk-30) - ví dụ log lỗi kèm orderId. AsyncUncaughtExceptionHandler KHÔNG được gọi trong trường hợp này vì sendOrderConfirmation() trả về CompletableFuture<Void>, không phải void (xem day35-blk-13)."
+              "Ứng dụng không crash và request checkout đã trả response trước đó không bị ảnh hưởng; lỗi được quan sát qua callback .exceptionally() gắn trên CompletableFuture trả về của sendOrderConfirmation() () - ví dụ log lỗi kèm orderId. AsyncUncaughtExceptionHandler KHÔNG được gọi trong trường hợp này vì sendOrderConfirmation() trả về CompletableFuture<Void>, không phải void."
             ],
             [
               "CSV export: escaping đúng chuẩn",
-              "Gọi escapeSpecialCharacters()/convertToCsvRow() (day35-blk-15) với trường dữ liệu chứa dấu phẩy, dấu nháy kép, và ký tự xuống dòng",
+              "Gọi escapeSpecialCharacters()/convertToCsvRow() () với trường dữ liệu chứa dấu phẩy, dấu nháy kép, và ký tự xuống dòng",
               "Trường chứa dấu phẩy/nháy kép được bao trong dấu nháy kép và mỗi dấu nháy kép bên trong được nhân đôi (\"\"); ký tự xuống dòng bị thay bằng khoảng trắng - file CSV kết quả mở đúng số cột khi đọc lại bằng một CSV parser chuẩn"
             ],
             [
@@ -380,12 +380,12 @@
             [
               "docker-compose tự khởi động dependency (DB)",
               "Chạy ứng dụng ở chế độ dev với spring-boot-docker-compose trên classpath và docker-compose.yml có sẵn, KHÔNG tự tay chạy docker run cho Postgres trước",
-              "Ứng dụng tự động chạy 'docker compose up', chờ container sẵn sàng (healthcheck), rồi kết nối thành công tới DB mà không cần thao tác thủ công nào thêm. Redis không phải điều kiện chấm ở đây vì dự án không có code nào kết nối Redis (xem day30-blk-13)."
+              "Ứng dụng tự động chạy 'docker compose up', chờ container sẵn sàng (healthcheck), rồi kết nối thành công tới DB mà không cần thao tác thủ công nào thêm. Redis không phải điều kiện chấm ở đây vì dự án không có code nào kết nối Redis."
             ],
             [
               "Xem đơn hàng (GET /api/orders/{id}): chặn xem đơn của người khác",
               "Đăng nhập bằng 2 tài khoản user khác nhau (A và B); A checkout tạo một Order; dùng token của B gọi GET /api/orders/{id} với id Order vừa tạo của A",
-              "B nhận 403 (không phải 200 lộ dữ liệu, không phải 404 - order vẫn tồn tại, chỉ là không thuộc về B), đúng thứ tự lỗi 401/403/404 của API contract Day 31 (day31-blk-9); A gọi đúng id của chính mình vẫn nhận 200 kèm dữ liệu Order (xem cơ chế so khớp chủ sở hữu ở day35-blk-33/day35-blk-34)"
+              "B nhận 403 (không phải 200 lộ dữ liệu, không phải 404 - order vẫn tồn tại, chỉ là không thuộc về B), đúng thứ tự lỗi 401/403/404 của API contract Day 31 (); A gọi đúng id của chính mình vẫn nhận 200 kèm dữ liệu Order (xem cơ chế so khớp chủ sở hữu ở)"
             ]
           ],
           "citations": [
@@ -418,9 +418,35 @@
     "Không bọc checkout() trong @Transactional, khiến Order được tạo nhưng Cart không được xóa nếu có lỗi giữa chừng.",
     "Gọi trực tiếp method @Async từ cùng một class (không qua Spring AOP proxy) khiến annotation bị bỏ qua hoàn toàn, chạy đồng bộ như bình thường.",
     "Không escape dấu phẩy/dấu nháy kép khi ghi CSV, làm hỏng cấu trúc file khi trường dữ liệu (ví dụ địa chỉ giao hàng) chứa các ký tự này.",
-    "Chỉ dựa vào mức isolation để chống tồn kho xuống âm khi nhiều checkout đồng thời mà không thêm cơ chế khóa (optimistic @Version hoặc pessimistic lock) ở đúng bước trừ stock - isolation kiểm soát mức nhìn thấy dữ liệu, không tự ngăn được lost update (xem day35-blk-6/day35-blk-28).",
-    "Dùng AsyncUncaughtExceptionHandler cho một @Async method trả về CompletableFuture (như sendOrderConfirmation()) - handler này chỉ được Spring gọi cho method @Async trả về void; với method trả Future/CompletableFuture phải tự gắn .exceptionally()/.handle() lên giá trị trả về để quan sát lỗi (xem day35-blk-29/day35-blk-30)."
+    "Chỉ dựa vào mức isolation để chống tồn kho xuống âm khi nhiều checkout đồng thời mà không thêm cơ chế khóa (optimistic @Version hoặc pessimistic lock) ở đúng bước trừ stock - isolation kiểm soát mức nhìn thấy dữ liệu, không tự ngăn được lost update.",
+    "Dùng AsyncUncaughtExceptionHandler cho một @Async method trả về CompletableFuture (như sendOrderConfirmation()) - handler này chỉ được Spring gọi cho method @Async trả về void; với method trả Future/CompletableFuture phải tự gắn .exceptionally()/.handle() lên giá trị trả về để quan sát lỗi."
   ],
+  "teaching": {
+    "why": "Checkout chạm nhiều dữ liệu cùng lúc: trừ tồn kho, tạo Order, xóa Cart và gửi xác nhận. Nếu các bước này không có ranh giới transaction, cơ chế chống ghi đè và luồng bất đồng bộ quan sát được, hệ thống dễ tạo đơn nửa vời, bán vượt tồn kho hoặc nuốt mất lỗi gửi email.",
+    "javaBridge": "Trong Java thuần, `try/catch` không thể tự hoàn tác những câu SQL đã commit; `@Transactional` đặt các thao tác database vào một đơn vị cùng thành công hoặc cùng rollback. `CompletableFuture<Void>` vẫn là future bạn đã biết, còn `@Async` yêu cầu lời gọi đi qua Spring proxy để chuyển việc sang executor khác.",
+    "mentalModel": "Hãy hình dung checkout như đóng một kiện hàng: tạo hóa đơn, trừ kho và dọn giỏ phải nằm trong cùng một niêm phong; một bước lỗi thì mở kiện và trả mọi thứ về trạng thái cũ. Gửi email giống giao phiếu cho quầy thông báo làm sau, nhưng bạn vẫn cần giữ mã theo dõi (`CompletableFuture`) để biết quầy đó thất bại.",
+    "is": "Đây là sprint hoàn thiện checkout nguyên tử, kiểm soát tranh chấp tồn kho, thông báo bất đồng bộ, CSV export và đóng gói vận hành.",
+    "isNot": "`READ_COMMITTED` không tự ngăn lost update, `@Async` không có hiệu lực khi self-invocation, và `CompletableFuture` bị bỏ qua không tự ghi log lỗi. CSV cũng không phải chỉ nối chuỗi bằng dấu phẩy khi dữ liệu có dấu phẩy, dấu nháy kép hoặc xuống dòng.",
+    "solves": "Bài này biến Cart thành Order có lịch sử giá ổn định, bảo vệ tồn kho khi checkout đồng thời và chuẩn bị artifact chạy qua Docker/CI cho capstone e-commerce. Bài không xây Spendwise; lesson map ghi đây là Sprint 3 của dự án capstone riêng.",
+    "selfCheck": [
+      {
+        "question": "Hai request cùng đọc stock bằng 1 rồi cùng trừ. Chỉ dùng `READ_COMMITTED` có đủ không?",
+        "answer": "Không. Isolation đó không tự ngăn lost update; cần optimistic locking bằng `@Version`, pessimistic lock hoặc câu `UPDATE` nguyên tử có điều kiện."
+      },
+      {
+        "question": "Nếu lỗi xảy ra sau khi tạo Order nhưng trước khi xóa Cart trong method `@Transactional`, trạng thái cuối phải ra sao?",
+        "answer": "Exception phải thoát khỏi method để transaction rollback. Không có Order mới được lưu và Cart vẫn giữ nguyên item cũ."
+      },
+      {
+        "question": "`sendOrderConfirmation()` trả `CompletableFuture<Void>` rồi caller bỏ qua kết quả. Lỗi gửi email đi đâu?",
+        "answer": "Future hoàn thành ở trạng thái exceptionally, nhưng không ai quan sát lỗi. Caller cần gắn `.exceptionally(...)` hoặc `.handle(...)` để log hay xử lý."
+      },
+      {
+        "question": "Vì sao OrderItem lưu giá tại checkout còn CartItem thì không?",
+        "answer": "Order là lịch sử giao dịch nên phải giữ giá đã chốt, kể cả Product đổi giá sau đó. Cart chỉ là dự tính mua và cần phản ánh giá hiện tại."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day35-prac-1",
@@ -542,7 +568,7 @@
   ],
   "syllabusAssignments": [],
   "enhancedExercises": [
-    "Gắn .exceptionally() (hoặc .handle()) lên CompletableFuture<Void> trả về của sendOrderConfirmation() để ghi log khi gửi email thất bại, theo đúng mẫu ở day35-blk-30.",
+    "Gắn .exceptionally() (hoặc .handle()) lên CompletableFuture<Void> trả về của sendOrderConfirmation() để ghi log khi gửi email thất bại,.",
     "Thêm bước 'docker compose up -d' vào CI pipeline trước khi chạy integration test bằng Testcontainers."
   ],
   "references": [

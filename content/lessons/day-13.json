@@ -57,7 +57,7 @@
         {
           "id": "day13-blk-2",
           "type": "note",
-          "text": "Bài học mở đầu đơn vị Spring: kiến trúc Spring Boot ở mức tổng quan, IoC container, bean scope, bean lifecycle và các stereotype annotation dùng để đánh dấu bean. Assignment của ngày này không có đề bài chi tiết riêng (chỉ ghi 'Assignment' trong lịch học) — học viên ôn tập và thực hành lại các ví dụ trong bài.",
+          "text": "Bài học mở đầu đơn vị Spring: kiến trúc Spring Boot ở mức tổng quan, IoC container, bean scope, bean lifecycle và các stereotype annotation dùng để đánh dấu bean. Assignment của ngày này không có đề bài chi tiết riêng (chỉ ghi 'Assignment' trong lịch học) — bạn ôn tập và thực hành lại các ví dụ trong bài.",
           "citations": []
         }
       ]
@@ -111,12 +111,12 @@
     },
     {
       "id": "day13-sec-architecture",
-      "title": "Spring Boot Architecture — bối cảnh đóng gói (nhận biết, không phải mô hình tư duy chính)",
+      "title": "Kiến trúc Spring Boot — bối cảnh đóng gói (chỉ cần nhận biết, chưa phải trọng tâm)",
       "blocks": [
         {
           "id": "day13-blk-3",
           "type": "note",
-          "text": "Kiến trúc chi tiết của Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) không có resource nào trong resourceIds của riêng Day 13 mô tả trực tiếp — resource duy nhất liên quan (Learn Spring Boot Series) chỉ là trang mục lục liên kết tới các bài con, không phải bài viết sâu về kiến trúc (xem authoring.limitations). Nội dung dưới đây trình bày ở mức giới thiệu bằng kiến thức chuẩn của Spring Boot: ứng dụng Spring Boot đóng gói một embedded server (Tomcat mặc định), tự động cấu hình bean dựa trên classpath (auto-configuration — sẽ học chi tiết ở Day 14), và cung cấp các starter dependency (spring-boot-starter-web, ...) để gom nhóm các thư viện liên quan. Ví dụ dưới đây là log console minh họa đã chuẩn hoá cho một ứng dụng chỉ thêm dependency spring-boot-starter-web — không viết dòng code cấu hình server nào, nhưng embedded Tomcat vẫn tự khởi động và context vẫn tự dựng xong, minh hoạ trực tiếp cho auto-configuration và embedded server nói ở trên.",
+          "text": "Tài liệu tham khảo của Day 13 chưa có bài nào mô tả trực tiếp kiến trúc chi tiết của Spring Boot (auto-configuration, starter dependency, embedded server, opinionated defaults) — nguồn liên quan duy nhất (Learn Spring Boot Series) chỉ là trang mục lục dẫn tới các bài con, không phải bài viết sâu về kiến trúc. Nội dung dưới đây trình bày ở mức giới thiệu bằng kiến thức chuẩn của Spring Boot: ứng dụng Spring Boot đóng gói một embedded server (Tomcat mặc định), tự động cấu hình bean dựa trên classpath (auto-configuration — sẽ học chi tiết ở Day 14), và cung cấp các starter dependency (spring-boot-starter-web, ...) để gom nhóm các thư viện liên quan. Ví dụ dưới đây là log console minh họa đã chuẩn hoá cho một ứng dụng chỉ thêm dependency spring-boot-starter-web — không viết dòng code cấu hình server nào, nhưng embedded Tomcat vẫn tự khởi động và context vẫn tự dựng xong, minh hoạ trực tiếp cho auto-configuration và embedded server nói ở trên.",
           "citations": []
         },
         {
@@ -145,7 +145,7 @@
         {
           "id": "day13-blk-7",
           "type": "paragraph",
-          "text": "Spring Framework hỗ trợ 6 scope: singleton (mặc định, một instance cho toàn container), prototype (mỗi lần request là một instance mới), và bốn scope chỉ dùng được trong web-aware ApplicationContext: request, session, application, websocket; ngoài ra có thể tạo custom scope. Singleton của Spring là per-container và per-bean (một bean definition trong một container tạo đúng một instance), khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader.",
+          "text": "Spring Framework hỗ trợ 6 scope: singleton (mặc định, một instance cho toàn container), prototype (mỗi lần yêu cầu bean là một instance mới), và bốn scope chỉ dùng được trong web-aware ApplicationContext: request, session, application, websocket; ngoài ra có thể tạo custom scope. Singleton của Spring là per-container và per-bean (một bean definition trong một container tạo đúng một instance), khác với singleton pattern GoF vốn hard-code một instance duy nhất cho mỗi ClassLoader.",
           "citations": [
             "day13-src-4",
             "day13-src-5"
@@ -239,7 +239,7 @@
     },
     {
       "id": "day13-sec-lifecycle",
-      "title": "Bean Lifecycle (giới thiệu)",
+      "title": "Vòng đời bean — bean lifecycle (giới thiệu)",
       "blocks": [
         {
           "id": "day13-blk-34",
@@ -250,7 +250,7 @@
         {
           "id": "day13-blk-12",
           "type": "note",
-          "text": "Chủ đề bean lifecycle (thứ tự gọi các callback khởi tạo/hủy) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
+          "text": "Tài liệu tham khảo của Day 13 chưa có bài riêng về bean lifecycle (thứ tự gọi các callback khởi tạo/hủy), nên phần này trình bày theo kiến thức chuẩn của Spring: một bean có thể khai báo callback khởi tạo bằng annotation `@PostConstruct` (gọi sau khi mọi dependency đã được tiêm) hoặc bằng cách implement interface `InitializingBean` (override `afterPropertiesSet()`); tương tự, callback hủy dùng `@PreDestroy` hoặc implement `DisposableBean` (override `destroy()`). Với bean scope singleton, container gọi callback hủy khi container đóng; với prototype, như đã nêu ở phần scope, container không tự gọi callback hủy.",
           "citations": []
         },
         {
@@ -263,12 +263,12 @@
     },
     {
       "id": "day13-sec-stereotypes",
-      "title": "Stereotype Annotations (giới thiệu)",
+      "title": "Stereotype annotation — đánh dấu vai trò của bean (giới thiệu)",
       "blocks": [
         {
           "id": "day13-blk-13",
           "type": "note",
-          "text": "Chủ đề các stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`) không có resource nào trong resourceIds của riêng Day 13 mô tả (xem authoring.limitations). Kiến thức chuẩn của Spring: `@Component` là annotation gốc, đánh dấu một class để component scanning tự động đăng ký nó thành bean; `@Service`, `@Repository`, `@Controller` là các annotation chuyên biệt hóa của `@Component` cho từng tầng kiến trúc (nghiệp vụ, truy cập dữ liệu, điều khiển web) — về mặt cơ chế chung đều là một bean như nhau, điểm khác biệt là ngữ nghĩa và một số xử lý thêm (ví dụ `@Repository` tự động dịch exception tầng persistence).",
+          "text": "Tài liệu tham khảo của Day 13 chưa có bài riêng về các stereotype annotation (`@Component`, `@Service`, `@Repository`, `@Controller`), nên phần này trình bày theo kiến thức chuẩn của Spring: `@Component` là annotation gốc, đánh dấu một class để component scanning tự động đăng ký nó thành bean; `@Service`, `@Repository`, `@Controller` là các annotation chuyên biệt hóa của `@Component` cho từng tầng kiến trúc (nghiệp vụ, truy cập dữ liệu, điều khiển web) — về mặt cơ chế chung đều là một bean như nhau, điểm khác biệt là ngữ nghĩa và một số xử lý thêm (ví dụ `@Repository` tự động dịch exception tầng persistence).",
           "citations": []
         },
         {
@@ -298,6 +298,32 @@
     "Đặt component ngoài cây package của lớp @SpringBootApplication rồi không hiểu vì sao bean không được tạo.",
     "Dùng javax.annotation.PostConstruct trong Spring Boot 3 thay vì jakarta.annotation.PostConstruct."
   ],
+  "teaching": {
+    "why": "Trong Java thuần, bạn tự `new` mọi object rồi nối chúng với nhau bằng tay trong `main`. Khi số class tăng lên, đoạn nối dây đó phình to, đổi một implementation phải sửa nhiều chỗ, và muốn test một service với bản giả thì phải sửa code. Spring giao việc này cho một container — nhưng nếu không hiểu container làm gì sau lưng bạn (tạo object lúc nào, giữ bao nhiêu instance, khi nào hủy), bạn sẽ gặp những bug khó thấy như dữ liệu của hai người dùng ghi đè nhau hay tài nguyên không được dọn.",
+    "javaBridge": "Trong Java thuần bạn viết `var repo = new InMemoryRepository(); var service = new TransactionService(repo);` — bạn vừa tạo object, vừa nối dây. Spring giữ nguyên ý tưởng truyền dependency qua constructor, chỉ chuyển hai việc đó sang `ApplicationContext`: bạn khai báo bean (bằng `@Bean` hoặc `@Service`), container gọi `new` giúp bạn và đưa đúng dependency vào constructor. Một bean singleton giống hệt việc bạn tạo đúng một object rồi truyền cùng tham chiếu đó cho mọi nơi cần nó.",
+    "mentalModel": "Hãy hình dung `ApplicationContext` như bộ phận kho của một nhà hàng: đầu bếp (class của bạn) chỉ ghi phiếu 'tôi cần dao, cần thớt' (tham số constructor), còn kho chuẩn bị sẵn từ trước giờ mở cửa và giao tận tay. Phần lớn dụng cụ dùng chung cả ca — đó là singleton, nên không ai được ghi chú riêng của từng khách lên đó; một số là đồ dùng một lần (prototype), kho đưa cái mới mỗi lần xin nhưng không thu dọn hộ. Ánh xạ lại: món dụng cụ kho quản lý là bean, quy định mỗi món có bao nhiêu bản và sống bao lâu là scope, còn kiểm tra lúc nhận vào (`@PostConstruct`) và dọn dẹp lúc đóng cửa (`@PreDestroy`) là lifecycle callback.",
+    "is": "Spring IoC container (thường dùng qua `ApplicationContext`) là thành phần tạo object, tiêm dependency và quản lý vòng đời của các object gọi là bean, theo scope và callback mà bạn khai báo.",
+    "isNot": "Singleton của Spring không phải singleton pattern GoF: nó là một instance cho mỗi bean definition trong một container, không phải một instance duy nhất cho cả ClassLoader. Nó cũng không tự thread-safe — field mutable trong bean singleton vẫn bị các request đồng thời ghi đè.",
+    "solves": "Container gỡ bỏ phần nối dây thủ công: class chỉ khai báo cần gì, cấu hình bên ngoài quyết định dùng implementation nào, và lỗi cấu hình lộ ra ngay lúc khởi động thay vì giữa lúc chạy. Trong Spendwise, V0.3 (Spring Boot Core) dùng đúng cơ chế này ở bước bootstrap: thêm `@SpringBootApplication` để dựng `ApplicationContext` mà không sửa một dòng domain nào của V0.1–V0.2, rồi đưa service/repository thành bean singleton stateless do container quản lý.",
+    "selfCheck": [
+      {
+        "question": "Một `@Service` singleton có field `private String currentUser;` được gán ở đầu mỗi request. Chạy thử một mình thì đúng, khi có tải thì sai. Vì sao?",
+        "answer": "Singleton nghĩa là một instance phục vụ mọi request đồng thời, nên các request ghi đè field của nhau. Dữ liệu theo request phải là biến cục bộ trong method hoặc tham số truyền vào."
+      },
+      {
+        "question": "Bạn inject một bean prototype vào một bean singleton qua constructor. Mỗi lần singleton dùng nó, đó có phải là một instance mới không?",
+        "answer": "Không. Prototype chỉ được tạo một lần, lúc singleton được dựng. Nếu cần instance mới cho mỗi lần dùng, hãy inject `ObjectProvider<...>` rồi gọi `getObject()` đúng lúc cần."
+      },
+      {
+        "question": "Vì sao `@PreDestroy` trên một bean prototype không chạy khi context đóng?",
+        "answer": "Container tạo bean prototype, trao cho client rồi ngừng theo dõi nó, nên không gọi destruction callback. Client phải tự dọn tài nguyên của bean đó."
+      },
+      {
+        "question": "Bạn đã dán `@Service` lên một class nhưng Spring vẫn không tạo bean. Nguyên nhân thường gặp là gì?",
+        "answer": "Class nằm ngoài phạm vi component scan: mặc định Spring Boot chỉ quét package của class `@SpringBootApplication` và các package con của nó."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day13-prac-1",

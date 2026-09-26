@@ -204,6 +204,19 @@ class ValidateLessonAcceptsValidFixtureTests(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
+    def test_teaching_scaffold_accepted_when_complete_and_rejected_when_partial(self):
+        teaching = {
+            "why": "a", "javaBridge": "b", "mentalModel": "c", "is": "d", "isNot": "e", "solves": "f",
+            "selfCheck": [{"question": "q1", "answer": "a1"}, {"question": "q2", "answer": "a2"}],
+        }
+        ok = validate_lesson(_lesson(teaching=teaching), _catalog_lesson(), _source_index())
+        self.assertEqual(ok, [])
+        bad = dict(teaching, why="", extra="x", selfCheck=[{"question": "q1"}])
+        errors = validate_lesson(_lesson(teaching=bad), _catalog_lesson(), _source_index())
+        self.assertTrue(any("teaching.why" in e for e in errors))
+        self.assertTrue(any("unexpected key 'extra'" in e for e in errors))
+        self.assertTrue(any("2-4 entries" in e for e in errors))
+
     def test_supplemental_resource_satisfies_sourceusage_validation_unmodified(self):
         """Test J: a resource merged into a catalog lesson via
         tools.course_model.merge_supplemental_resources (the supplemental-source

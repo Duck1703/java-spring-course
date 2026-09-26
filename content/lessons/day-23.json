@@ -76,7 +76,7 @@
           "id": "day23-blk-4",
           "type": "code",
           "language": "java",
-          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.security.access.prepost.PreFilter;\n\nclass ProductAdminService {\n\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    void deleteProduct(Long productId) {\n        // chi ADMIN moi goi duoc method nay tu ben ngoai bean\n    }\n\n    @PreFilter(\"filterObject.ownerIdentity == authentication.name\")\n    void bulkUpdate(java.util.List<OrderEntity> orders) {\n        // Danh sach va ownerIdentity phai do server nap, khong lay owner tu request body.\n        // Filter chi giu phan tu thuoc chuoi dinh danh da xac thuc.\n    }\n}\n",
+          "code": "import org.springframework.security.access.prepost.PreAuthorize;\nimport org.springframework.security.access.prepost.PreFilter;\n\nclass ProductAdminService {\n\n    @PreAuthorize(\"hasRole('ADMIN')\")\n    void deleteProduct(Long productId) {\n        // chỉ ADMIN mới gọi được method này từ bên ngoài bean\n    }\n\n    @PreFilter(\"filterObject.ownerIdentity == authentication.name\")\n    void bulkUpdate(java.util.List<OrderEntity> orders) {\n        // Danh sách và ownerIdentity phải do server nạp, không lấy owner từ request body.\n        // Filter chỉ giữ phần tử thuộc chuỗi định danh đã xác thực.\n    }\n}\n",
           "compile": false,
           "citations": [
             "day23-src-2",
@@ -144,7 +144,7 @@
         {
           "id": "day23-blk-7",
           "type": "note",
-          "text": "Cấu hình CORS (Cross-Origin Resource Sharing) qua CorsConfigurationSource để cho phép front-end ở domain khác gọi API không có resource nào trong resourceIds của Day 23 mô tả trực tiếp (xem authoring.limitations) - trình bày bằng kiến thức chuẩn của Spring: khai báo allowedOrigins/allowedMethods/allowedHeaders trong một @Bean CorsConfigurationSource, rồi bật http.cors() trong SecurityFilterChain.",
+          "text": "Cấu hình CORS (Cross-Origin Resource Sharing) qua CorsConfigurationSource để cho phép front-end ở domain khác gọi API chưa có tài liệu tham khảo riêng nào của Day 23 mô tả trực tiếp - trình bày bằng kiến thức chuẩn của Spring: khai báo allowedOrigins/allowedMethods/allowedHeaders trong một @Bean CorsConfigurationSource, rồi bật http.cors() trong SecurityFilterChain.",
           "citations": []
         },
         {
@@ -195,7 +195,7 @@
         {
           "id": "day23-blk-31",
           "type": "template",
-          "text": "@Configuration\nclass CorsConfig {\n\n    @Bean\n    CorsConfigurationSource corsConfigurationSource() {\n        CorsConfiguration configuration = new CorsConfiguration();\n        // Liet ke origin cu the duoc phep goi API - KHONG dung \"*\" vi API nay\n        // doi hoi xac thuc (allowCredentials=true khong duoc di cung origin \"*\").\n        configuration.setAllowedOrigins(List.of(\"https://app.example.com\"));\n        configuration.setAllowedMethods(List.of(\"GET\", \"POST\", \"PUT\", \"DELETE\"));\n        configuration.setAllowedHeaders(List.of(\"Authorization\", \"Content-Type\"));\n        configuration.setAllowCredentials(true);\n\n        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();\n        source.registerCorsConfiguration(\"/api/**\", configuration);\n        return source;\n    }\n}\n\n// Ghep vao SecurityFilterChain da khai bao o Day 22 (SecurityConfig): chinh\n// loi goi .cors(...) moi la thu dang ky CorsFilter vao chain - khong khai bao\n// .cors(...) thi bean CorsConfigurationSource o tren khong duoc Spring\n// Security su dung. Vi tri cua CorsFilter trong chain do framework quyet dinh\n// theo thu tu co dinh (xem day22-blk-30), KHONG phu thuoc vi tri dong\n// .cors(...) trong code; thu tu khai bao chi co y nghia voi cac rule matcher\n// ben trong .authorizeHttpRequests(...) (xem day22-blk-8).\n@Bean\nSecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n        .cors(cors -> {}) // doc CorsConfigurationSource tu bean da khai bao o tren\n        .authorizeHttpRequests(auth -> auth\n            .requestMatchers(\"/api/public/**\").permitAll()\n            .anyRequest().authenticated())\n        .sessionManagement(session -> session\n            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n        .build();\n}\n",
+          "text": "@Configuration\nclass CorsConfig {\n\n    @Bean\n    CorsConfigurationSource corsConfigurationSource() {\n        CorsConfiguration configuration = new CorsConfiguration();\n        // Liệt kê origin cụ thể được phép gọi API - KHÔNG dùng \"*\" vì API này\n        // đòi hỏi xác thực (allowCredentials=true không được đi cùng origin \"*\").\n        configuration.setAllowedOrigins(List.of(\"https://app.example.com\"));\n        configuration.setAllowedMethods(List.of(\"GET\", \"POST\", \"PUT\", \"DELETE\"));\n        configuration.setAllowedHeaders(List.of(\"Authorization\", \"Content-Type\"));\n        configuration.setAllowCredentials(true);\n\n        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();\n        source.registerCorsConfiguration(\"/api/**\", configuration);\n        return source;\n    }\n}\n\n// Ghép vào SecurityFilterChain đã khai báo ở Day 22 (SecurityConfig): chính\n// lời gọi .cors(...) mới là thứ đăng ký CorsFilter vào chain - không khai báo\n// .cors(...) thì bean CorsConfigurationSource ở trên không được Spring\n// Security sử dụng. Vị trí của CorsFilter trong chain do framework quyết định\n// theo thứ tự cố định (xem day22-blk-30), KHÔNG phụ thuộc vị trí dòng\n// .cors(...) trong code; thứ tự khai báo chỉ có ý nghĩa với các rule matcher\n// bên trong .authorizeHttpRequests(...) (xem day22-blk-8).\n@Bean\nSecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n        .cors(cors -> {}) // đọc CorsConfigurationSource từ bean đã khai báo ở trên\n        .authorizeHttpRequests(auth -> auth\n            .requestMatchers(\"/api/public/**\").permitAll()\n            .anyRequest().authenticated())\n        .sessionManagement(session -> session\n            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))\n        .build();\n}\n",
           "citations": []
         },
         {
@@ -256,7 +256,7 @@
           "id": "day23-blk-13",
           "type": "code",
           "language": "java",
-          "code": "import jakarta.persistence.*;\nimport java.util.List;\n\nclass N1ProblemDemo {\n\n    // Neu category la @ManyToOne(fetch = FetchType.LAZY), vong lap\n    // duoi day van gay N+1: 1 query lay danh sach Product, roi\n    // them 1 query rieng cho moi lan p.getCategory().getName() duoc\n    // goi lan dau (proxy lazy tu tai du lieu ngay khi truy cap).\n    void printCategoryNamesNaively(List<ProductEntity> products) {\n        for (ProductEntity p : products) {\n            System.out.println(p.getCategory().getName());\n        }\n    }\n}\n",
+          "code": "import jakarta.persistence.*;\nimport java.util.List;\n\nclass N1ProblemDemo {\n\n    // Nếu category là @ManyToOne(fetch = FetchType.LAZY), vòng lặp\n    // dưới đây vẫn gây N+1: 1 query lấy danh sách Product, rồi\n    // thêm 1 query riêng cho mỗi lần p.getCategory().getName() được\n    // gọi lần đầu (proxy lazy tự tải dữ liệu ngay khi truy cập).\n    void printCategoryNamesNaively(List<ProductEntity> products) {\n        for (ProductEntity p : products) {\n            System.out.println(p.getCategory().getName());\n        }\n    }\n}\n",
           "compile": false,
           "citations": [
             "day23-src-13",
@@ -308,6 +308,32 @@
     "Kết luận không có N+1 vì test trên dữ liệu nhỏ ở máy dev, trong khi số round-trip chỉ bộc lộ dưới dữ liệu thật.",
     "JOIN FETCH nhiều collection cùng lúc hoặc kết hợp JOIN FETCH với phân trang, gây phồng dòng và phân trang trong bộ nhớ."
   ],
+  "teaching": {
+    "why": "Nếu chỉ chặn quyền ở tầng Controller (`@PreAuthorize` trên endpoint), bạn dễ quên rằng một method khác trong cùng service có thể gọi thẳng vào business logic mà bỏ qua lớp kiểm tra đó. Không hiểu CORS thì bạn sẽ hoảng khi front-end domain khác gọi API bị trình duyệt chặn dù server chạy đúng; không hiểu N+1 thì API danh sách chạy chậm dần khi dữ liệu tăng mà không rõ vì sao.",
+    "javaBridge": "`@PreAuthorize` giống một câu `if (!hasRole) throw new AccessDeniedException();` bạn từng tự viết ở đầu method, chỉ khác là Spring áp nó qua AOP proxy trước khi method thật chạy. `@PreFilter`/`@PostFilter` giống việc bạn tự lọc một `List` bằng `removeIf` trước/sau khi xử lý. N+1 là vấn đề bạn có thể tái hiện bằng JDBC thuần: một vòng lặp gọi thêm một `SELECT` mỗi lần thay vì gộp lại thành một câu truy vấn.",
+    "mentalModel": "Hãy hình dung `@PreAuthorize` như bảo vệ đứng gác NGAY TRƯỚC CỬA method — nhưng nếu ai đó trèo tường vào thẳng cùng bean qua lời gọi nội bộ (self-invocation qua `this`), bảo vệ này không có tác dụng vì AOP proxy bị bỏ qua. CORS giống hải quan ở biên giới trình duyệt: trình duyệt quyết định có cho JavaScript ở domain khác đọc response hay không, dựa trên header server khai báo. N+1 giống việc bạn ra chợ mua 10 món nhưng đi 10 chuyến riêng thay vì hỏi gộp luôn từ đầu.",
+    "is": "Method Security (`@PreAuthorize`/`@PostAuthorize`/`@PreFilter`/`@PostFilter`) chặn quyền tại tầng method bất kể nơi gọi tới, CORS là cơ chế trình duyệt cho phép/chặn gọi cross-origin dựa trên header server khai báo, còn N+1 là hiện tượng một truy vấn danh sách sinh thêm N truy vấn phụ khi truy cập từng quan hệ lazy.",
+    "isNot": "`@PreAuthorize` không bảo vệ được lời gọi method từ chính bean đó qua `this` — AOP proxy chỉ chặn được lời gọi từ bên ngoài bean. Và đổi `FetchType.LAZY` thành `EAGER` không tự sửa N+1 — FetchType chỉ quyết định thời điểm nạp, không quyết định gộp truy vấn hay không.",
+    "solves": "Bài này giúp bạn chặn quyền đúng chỗ (tại tầng nghiệp vụ, không chỉ tầng HTTP) và tránh API chậm dần theo dữ liệu. Trong Spendwise, V0.6 dùng session-ownership-checks để áp dụng đúng mẫu `@PreFilter`/điều kiện SpEL này khi kiểm tra ai được xem transaction của ai, còn cách khắc phục N+1 cụ thể sẽ áp dụng ở Day 24 (Lab 8) cho API danh sách sản phẩm.",
+    "selfCheck": [
+      {
+        "question": "`ProductAdminService.deleteProduct()` có `@PreAuthorize(\"hasRole('ADMIN')\")`. Nếu một method khác cùng class gọi `this.deleteProduct(id)` trực tiếp, quyền có được kiểm tra không?",
+        "answer": "Không — self-invocation qua `this` không đi qua Spring AOP proxy, nên `@PreAuthorize` bị bỏ qua hoàn toàn. Muốn kiểm tra quyền, lời gọi phải đến từ bên ngoài bean (ví dụ từ Controller)."
+      },
+      {
+        "question": "Front-end gọi API và bị trình duyệt báo lỗi CORS dù server trả 200 khi test bằng Postman. Vì sao Postman không gặp lỗi này?",
+        "answer": "CORS là chính sách của trình duyệt, không phải của server — Postman không thực thi JavaScript nên không áp same-origin policy, còn trình duyệt sẽ chặn response nếu server không khai báo đúng origin trong CorsConfigurationSource."
+      },
+      {
+        "question": "Đổi `@ManyToOne(fetch = FetchType.LAZY)` sang `FetchType.EAGER` có sửa được N+1 không?",
+        "answer": "Không — EAGER chỉ khiến Hibernate nạp quan hệ ngay lập tức thay vì trì hoãn, nhưng vẫn có thể phát sinh N truy vấn riêng lẻ nếu không gộp bằng JOIN FETCH/@EntityGraph; EAGER còn có thể nạp dữ liệu không cần dùng, làm chậm hơn."
+      },
+      {
+        "question": "Vì sao endpoint dùng Bearer JWT trong header thường không cần bật CSRF protection, trong khi endpoint dùng cookie/session lại cần?",
+        "answer": "CSRF khai thác việc trình duyệt tự động đính kèm cookie có sẵn vào request giả mạo; Bearer token phải được JavaScript tự set nên request giả mạo từ trang khác không có được token đó."
+      }
+    ]
+  },
   "practices": [
     {
       "id": "day23-prac-1",
@@ -368,7 +394,7 @@
       "hint": "Nghĩ về việc CSRF khai thác cookie mà trình duyệt tự động đính kèm, không liên quan tới Bearer token.",
       "solution": "CSRF là rủi ro khi trình duyệt tự động đính kèm cookie session vào request, kể cả request do trang khác khởi tạo. Phần dùng JWT qua header Authorization không bị ảnh hưởng vì trình duyệt không tự đính kèm header đó, nhưng phần còn dùng cookie/session vẫn có nguy cơ bị giả mạo request nếu tắt CSRF toàn cục - CSRF cần được bật/tắt theo đúng cơ chế xác thực của từng phần, không phải một quyết định áp dụng chung cho toàn ứng dụng.",
       "explanation": "Liên hệ CSRF với cơ chế trình duyệt tự động đính kèm cookie, không phải header Authorization.",
-      "rubric": "Đánh giá học viên nêu đúng lý do CSRF gắn với cookie/session, không phải Bearer token qua header.",
+      "rubric": "Đánh giá bạn nêu đúng lý do CSRF gắn với cookie/session, không phải Bearer token qua header.",
       "sourceUsage": [
         "day23-src-8"
       ]
